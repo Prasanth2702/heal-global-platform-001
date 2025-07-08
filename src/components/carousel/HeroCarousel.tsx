@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +13,37 @@ import { ArrowRight, Play, Calendar, Users, Heart, Shield, Zap, Globe } from 'lu
 import Autoplay from 'embla-carousel-autoplay';
 import heroImage from "@/assets/medical-hero.jpg";
 
-const heroSlides = [
+interface CarouselSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  image: string;
+  ctaText: string;
+  secondaryCtaText: string;
+  ctaLink: string;
+  badge: string;
+  badgeColor: string;
+  features: string[];
+  stats: {
+    primary: string;
+    primaryLabel: string;
+    secondary: string;
+    secondaryLabel: string;
+  };
+  gradient: string;
+  isActive: boolean;
+  promotionType: 'platform' | 'hospital' | 'clinic' | 'service' | 'camp' | 'facility';
+  location?: string;
+  contactInfo?: string;
+  specialOffers?: string;
+  validUntil?: string;
+}
+
+// Default slides - these would be loaded from admin-managed content
+const defaultHeroSlides: CarouselSlide[] = [
   {
-    id: 1,
+    id: '1',
     title: "AI-Powered Medical Triage",
     subtitle: "Instant Health Guidance",
     description: "Get immediate medical advice with our advanced AI that analyzes symptoms and connects you with the right specialist in seconds.",
@@ -24,12 +52,15 @@ const heroSlides = [
     secondaryCtaText: "Watch Demo",
     ctaLink: "/ai-triage",
     badge: "NEW",
+    badgeColor: "blue",
     features: ["24/7 Available", "Multi-language", "HIPAA Secure"],
     stats: { primary: "10K+", primaryLabel: "Consultations", secondary: "98%", secondaryLabel: "Accuracy" },
-    gradient: "from-blue-600 via-purple-600 to-teal-600"
+    gradient: "from-blue-600 via-purple-600 to-teal-600",
+    isActive: true,
+    promotionType: "platform"
   },
   {
-    id: 2,
+    id: '2',
     title: "NextGen Unified Medical Platform",
     subtitle: "Complete Healthcare Ecosystem",
     description: "AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities.",
@@ -38,12 +69,15 @@ const heroSlides = [
     secondaryCtaText: "Learn More",
     ctaLink: "/register/patient",
     badge: "FEATURED",
+    badgeColor: "green",
     features: ["AI-Enhanced", "Multilingual", "Compliance-Ready"],
     stats: { primary: "50+", primaryLabel: "Countries", secondary: "1M+", secondaryLabel: "Users" },
-    gradient: "from-green-600 via-emerald-600 to-teal-600"
+    gradient: "from-green-600 via-emerald-600 to-teal-600",
+    isActive: true,
+    promotionType: "platform"
   },
   {
-    id: 3,
+    id: '3',
     title: "Secure Digital Health Records",
     subtitle: "Your Health, Always Accessible",
     description: "Bank-level security for your medical records with instant sharing capabilities and lifetime access from anywhere in the world.",
@@ -52,12 +86,15 @@ const heroSlides = [
     secondaryCtaText: "View Security",
     ctaLink: "/vault",
     badge: "SECURE",
+    badgeColor: "orange",
     features: ["Bank-level Security", "Instant Sharing", "Global Access"],
     stats: { primary: "256-bit", primaryLabel: "Encryption", secondary: "99.9%", secondaryLabel: "Uptime" },
-    gradient: "from-orange-600 via-red-600 to-pink-600"
+    gradient: "from-orange-600 via-red-600 to-pink-600",
+    isActive: true,
+    promotionType: "platform"
   },
   {
-    id: 4,
+    id: '4',
     title: "Telemedicine Revolution",
     subtitle: "Healthcare Without Boundaries",
     description: "High-quality video consultations with board-certified physicians. Healthcare that comes to you, wherever you are.",
@@ -66,13 +103,36 @@ const heroSlides = [
     secondaryCtaText: "Meet Doctors",
     ctaLink: "/appointments",
     badge: "POPULAR",
+    badgeColor: "purple",
     features: ["HD Video Calls", "Board-Certified", "Insurance Accepted"],
     stats: { primary: "5 min", primaryLabel: "Avg Wait", secondary: "24/7", secondaryLabel: "Available" },
-    gradient: "from-purple-600 via-indigo-600 to-blue-600"
+    gradient: "from-purple-600 via-indigo-600 to-blue-600",
+    isActive: true,
+    promotionType: "platform"
   }
 ];
 
 const HeroCarousel = () => {
+  const [heroSlides, setHeroSlides] = useState<CarouselSlide[]>(defaultHeroSlides);
+  
+  // In a real implementation, this would fetch from your API/database
+  useEffect(() => {
+    // Fetch admin-managed slides
+    const loadSlides = async () => {
+      try {
+        // Replace with actual API call
+        // const response = await fetch('/api/carousel-slides');
+        // const slides = await response.json();
+        // setHeroSlides(slides.filter(slide => slide.isActive));
+        setHeroSlides(defaultHeroSlides.filter(slide => slide.isActive));
+      } catch (error) {
+        console.error('Failed to load carousel slides:', error);
+      }
+    };
+    
+    loadSlides();
+  }, []);
+
   const plugin = React.useRef(
     Autoplay({ delay: 6000, stopOnInteraction: true })
   );
@@ -121,6 +181,23 @@ const HeroCarousel = () => {
                         <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
                           {slide.description}
                         </p>
+                        
+                        {/* Location and Special Offers for Promotions */}
+                        {slide.location && (
+                          <p className="text-md text-white/90 mt-4">
+                            📍 {slide.location}
+                          </p>
+                        )}
+                        {slide.specialOffers && (
+                          <p className="text-md text-yellow-200 mt-2 font-semibold">
+                            🎉 {slide.specialOffers}
+                          </p>
+                        )}
+                        {slide.contactInfo && (
+                          <p className="text-md text-white/90 mt-2">
+                            📞 {slide.contactInfo}
+                          </p>
+                        )}
                       </div>
                       
                       {/* Features */}

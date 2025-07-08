@@ -6,6 +6,7 @@ import VideoConsultation from "@/components/consultations/VideoConsultation";
 import PatientNotes from "@/components/consultations/PatientNotes";
 import PrescriptionGenerator from "@/components/prescriptions/PrescriptionGenerator";
 import AppointmentReminders from "@/components/appointments/AppointmentReminders";
+import IntegrationSettings from "@/components/settings/IntegrationSettings";
 
 const AppointmentSystemPage = () => {
   return (
@@ -19,13 +20,14 @@ const AppointmentSystemPage = () => {
         </div>
 
         <Tabs defaultValue="calendar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="booking">Book Appointment</TabsTrigger>
             <TabsTrigger value="video">Video Consultation</TabsTrigger>
             <TabsTrigger value="notes">Patient Notes</TabsTrigger>
             <TabsTrigger value="prescription">Prescription</TabsTrigger>
             <TabsTrigger value="reminders">Reminders</TabsTrigger>
+            <TabsTrigger value="integrations">API Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar">
@@ -63,6 +65,10 @@ const AppointmentSystemPage = () => {
 
           <TabsContent value="reminders">
             <AppointmentReminders />
+          </TabsContent>
+
+          <TabsContent value="integrations">
+            <IntegrationSettings />
           </TabsContent>
         </Tabs>
       </div>

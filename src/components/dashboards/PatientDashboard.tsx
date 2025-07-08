@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign } from "lucide-react";
+import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings } from "lucide-react";
 import DoctorSearch from "@/components/patient/DoctorSearch";
 import AppointmentManagement from "@/components/patient/AppointmentManagement";
 import DocumentVault from "@/components/patient/DocumentVault";
 import RecordSharing from "@/components/patient/RecordSharing";
 import PaymentManagement from "@/components/patient/PaymentManagement";
+import PatientProfile from "@/components/patient/PatientProfile";
 
 const PatientDashboard = () => {
-  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments" | "profile">("overview");
 
   const upcomingAppointments = [
     {
@@ -54,15 +55,20 @@ const PatientDashboard = () => {
     }
   ];
 
+  if (activeTab === "profile") {
+    return <PatientProfile onBack={() => setActiveTab("overview")} />;
+  }
+
   if (activeTab !== "overview") {
     return (
       <div className="p-6">
         <div className="mb-6">
-          <div className="flex space-x-1 p-1 bg-muted rounded-lg w-fit">
+          <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab("overview")}
+              className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
             >
               Overview
             </Button>
@@ -70,35 +76,45 @@ const PatientDashboard = () => {
               variant={activeTab === "search" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("search")}
+              className={activeTab === "search" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
             >
+              <Search className="h-4 w-4 mr-1" />
               Find Doctors
             </Button>
             <Button
               variant={activeTab === "appointments" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("appointments")}
+              className={activeTab === "appointments" ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white" : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"}
             >
+              <Calendar className="h-4 w-4 mr-1" />
               Appointments
             </Button>
             <Button
               variant={activeTab === "documents" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("documents")}
+              className={activeTab === "documents" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"}
             >
+              <FileText className="h-4 w-4 mr-1" />
               Medical Vault
             </Button>
             <Button
               variant={activeTab === "sharing" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("sharing")}
+              className={activeTab === "sharing" ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" : "hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"}
             >
+              <Shield className="h-4 w-4 mr-1" />
               Share Records
             </Button>
             <Button
               variant={activeTab === "payments" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("payments")}
+              className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
             >
+              <DollarSign className="h-4 w-4 mr-1" />
               Payments
             </Button>
           </div>
@@ -114,90 +130,120 @@ const PatientDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-blue-50/30 via-purple-50/30 to-pink-50/30 min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Patient Dashboard</h1>
-          <p className="text-muted-foreground">Manage your health and appointments</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Patient Dashboard
+          </h1>
+          <p className="text-lg text-muted-foreground">✨ Manage your health and appointments with AI-powered insights</p>
         </div>
-        <div className="flex space-x-1 p-1 bg-muted rounded-lg">
+        <div className="flex items-center space-x-3">
           <Button
-            variant="default"
-            size="sm"
-            onClick={() => setActiveTab("overview")}
+            onClick={() => setActiveTab("profile")}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            Overview
+            <Settings className="h-4 w-4 mr-2" />
+            My Profile
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("search")}
-          >
-            Find Doctors
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("appointments")}
-          >
-            Appointments
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("documents")}
-          >
-            Medical Vault
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("sharing")}
-          >
-            Share Records
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("payments")}
-          >
-            Payments
-          </Button>
+          <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setActiveTab("overview")}
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+            >
+              Overview
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("search")}
+              className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
+            >
+              <Search className="h-4 w-4 mr-1" />
+              Find Doctors
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("appointments")}
+              className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Appointments
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("documents")}
+              className="hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              Medical Vault
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("sharing")}
+              className="hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"
+            >
+              <Shield className="h-4 w-4 mr-1" />
+              Share Records
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("payments")}
+              className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Payments
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card variant="patient">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-purple-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming Appointments</CardTitle>
-            <CardDescription className="text-2xl font-bold text-patient">
+            <CardTitle className="text-sm font-medium text-blue-100">Upcoming Appointments</CardTitle>
+            <CardDescription className="text-3xl font-bold text-white flex items-center">
+              <Calendar className="h-6 w-6 mr-2" />
               {upcomingAppointments.length}
             </CardDescription>
           </CardHeader>
         </Card>
         
-        <Card variant="patient">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Medical Reports</CardTitle>
-            <CardDescription className="text-2xl font-bold text-patient">
+            <CardTitle className="text-sm font-medium text-emerald-100">Medical Reports</CardTitle>
+            <CardDescription className="text-3xl font-bold text-white flex items-center">
+              <FileText className="h-6 w-6 mr-2" />
               {recentReports.length}
             </CardDescription>
           </CardHeader>
         </Card>
         
-        <Card variant="patient">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Prescriptions</CardTitle>
-            <CardDescription className="text-2xl font-bold text-patient">3</CardDescription>
+            <CardTitle className="text-sm font-medium text-orange-100">Active Prescriptions</CardTitle>
+            <CardDescription className="text-3xl font-bold text-white flex items-center">
+              <Heart className="h-6 w-6 mr-2" />
+              3
+            </CardDescription>
           </CardHeader>
         </Card>
         
-        <Card variant="patient">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Health Score</CardTitle>
-            <CardDescription className="text-2xl font-bold text-patient">85%</CardDescription>
+            <CardTitle className="text-sm font-medium text-purple-100">Health Score</CardTitle>
+            <CardDescription className="text-3xl font-bold text-white flex items-center">
+              <Star className="h-6 w-6 mr-2" />
+              85%
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -205,10 +251,10 @@ const PatientDashboard = () => {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="mr-2 h-5 w-5" />
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
+          <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center text-xl">
+              <Calendar className="mr-2 h-6 w-6" />
               Upcoming Appointments
             </CardTitle>
           </CardHeader>
@@ -224,7 +270,7 @@ const PatientDashboard = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs bg-patient/10 text-patient px-2 py-1 rounded">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                       {appointment.type}
                     </span>
                     <div className="mt-2">
@@ -236,8 +282,7 @@ const PatientDashboard = () => {
                 </div>
               ))}
               <Button 
-                variant="patient" 
-                className="w-full"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
                 onClick={() => setActiveTab("search")}
               >
                 <Search className="mr-2 h-4 w-4" />
@@ -248,10 +293,10 @@ const PatientDashboard = () => {
         </Card>
 
         {/* Recent Medical Reports */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-emerald-50">
+          <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center text-xl">
+              <FileText className="mr-2 h-6 w-6" />
               Medical Vault
             </CardTitle>
           </CardHeader>
@@ -270,8 +315,7 @@ const PatientDashboard = () => {
                 </div>
               ))}
               <Button 
-                variant="patient" 
-                className="w-full"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
                 onClick={() => setActiveTab("documents")}
               >
                 <FileText className="mr-2 h-4 w-4" />
@@ -283,20 +327,20 @@ const PatientDashboard = () => {
       </div>
 
       {/* Care Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Heart className="mr-2 h-5 w-5" />
-            Recommended Care Plans
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+          <CardTitle className="flex items-center text-xl">
+            <Heart className="mr-2 h-6 w-6" />
+            💎 Recommended Care Plans
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-purple-100">
             Subscribe to specialized care packages for chronic conditions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             {carePlans.map((plan) => (
-              <Card key={plan.id} variant="patient">
+              <Card key={plan.id} className="border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
@@ -304,7 +348,7 @@ const PatientDashboard = () => {
                       <CardDescription>{plan.description}</CardDescription>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-patient">{plan.price}</p>
+                      <p className="text-2xl font-bold text-purple-600">{plan.price}</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -312,12 +356,12 @@ const PatientDashboard = () => {
                   <ul className="space-y-2 mb-4">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-sm">
-                        <div className="h-1.5 w-1.5 rounded-full bg-patient mr-2"></div>
+                        <div className="h-1.5 w-1.5 rounded-full bg-purple-500 mr-2"></div>
                         {feature}
                       </li>
                     ))}
                   </ul>
-                  <Button variant="patient" className="w-full">
+                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
                     <Plus className="mr-2 h-4 w-4" />
                     Subscribe Now
                   </Button>
@@ -329,56 +373,53 @@ const PatientDashboard = () => {
       </Card>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Frequently used features</CardDescription>
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50">
+        <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-t-lg">
+          <CardTitle className="text-xl">🚀 Quick Actions</CardTitle>
+          <CardDescription className="text-indigo-100">Frequently used features</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Button 
-              variant="patient" 
-              className="h-20 flex-col"
+              className="h-24 flex-col bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setActiveTab("search")}
             >
-              <Search className="h-6 w-6 mb-2" />
-              <span className="text-sm">Find Doctors</span>
+              <Search className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Find Doctors</span>
             </Button>
             <Button 
-              variant="patient" 
-              className="h-20 flex-col"
+              className="h-24 flex-col bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setActiveTab("appointments")}
             >
-              <Calendar className="h-6 w-6 mb-2" />
-              <span className="text-sm">Appointments</span>
+              <Calendar className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Appointments</span>
             </Button>
             <Button 
-              variant="patient" 
-              className="h-20 flex-col"
+              className="h-24 flex-col bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setActiveTab("documents")}
             >
-              <FileText className="h-6 w-6 mb-2" />
-              <span className="text-sm">Medical Vault</span>
+              <FileText className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Medical Vault</span>
             </Button>
             <Button 
-              variant="patient" 
-              className="h-20 flex-col"
+              className="h-24 flex-col bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setActiveTab("sharing")}
             >
-              <Shield className="h-6 w-6 mb-2" />
-              <span className="text-sm">Share Records</span>
+              <Shield className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Share Records</span>
             </Button>
             <Button 
-              variant="patient" 
-              className="h-20 flex-col"
+              className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setActiveTab("payments")}
             >
-              <DollarSign className="h-6 w-6 mb-2" />
-              <span className="text-sm">Payments</span>
+              <DollarSign className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Payments</span>
             </Button>
-            <Button variant="patient" className="h-20 flex-col">
-              <Clock className="h-6 w-6 mb-2" />
-              <span className="text-sm">Emergency SOS</span>
+            <Button 
+              className="h-24 flex-col bg-gradient-to-br from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse"
+            >
+              <Clock className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Emergency SOS</span>
             </Button>
           </div>
         </CardContent>

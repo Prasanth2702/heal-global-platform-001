@@ -21,6 +21,7 @@ import DocumentVaultPage from "./pages/DocumentVaultPage";
 import SecureViewPage from "./pages/SecureViewPage";
 import PaymentSystemPage from "./pages/PaymentSystemPage";
 import ApiSetupPage from "./pages/ApiSetupPage";
+import QATestingPage from "./pages/QATestingPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import InstallPrompt from "./components/pwa/InstallPrompt";
 
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/secure-view/:token" element={<SecureViewPage />} />
           <Route path="/payments" element={<PaymentSystemPage />} />
           <Route path="/api-setup" element={<ApiSetupPage />} />
+          <Route path="/qa-testing" element={<QATestingPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

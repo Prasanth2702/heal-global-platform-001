@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Calendar, Search } from "lucide-react";
 import heroImage from "@/assets/medical-hero.jpg";
-import QuickSetup from "@/components/ai/QuickSetup";
 import PromotionCarousel from "@/components/carousel/PromotionCarousel";
 import SEOHead from "@/components/seo/SEOHead";
 import { organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema } from "@/components/seo/StructuredData";
@@ -151,21 +150,6 @@ const LandingPage = () => {
             </p>
           </div>
           <PromotionCarousel />
-        </div>
-      </section>
-
-      {/* AI Setup Section */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Enable AI Features</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Unlock the full potential of our AI-powered healthcare platform
-            </p>
-          </div>
-          <div className="max-w-4xl mx-auto">
-            <QuickSetup />
-          </div>
         </div>
       </section>
 

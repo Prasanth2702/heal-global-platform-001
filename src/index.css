@@ -2,41 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* NextGen Medical Platform Design System */
 
 @layer base {
   :root {
+    /* Core Brand Colors - Medical Theme */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 221 39% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 221 39% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 221 39% 11%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Medical Primary - Trust Blue */
+    --primary: 214 100% 40%;
+    --primary-foreground: 0 0% 100%;
+    --primary-muted: 214 100% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Medical Secondary - Health Green */
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Professional Grays */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Patient Portal */
+    --accent-patient: 214 100% 40%;
+    --accent-patient-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Accent - Doctor Portal */
+    --accent-doctor: 142 71% 45%;
+    --accent-doctor-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Accent - Facility Portal */
+    --accent-facility: 262 83% 58%;
+    --accent-facility-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    /* Accent - Admin Portal */
+    --accent-admin: 25 95% 53%;
+    --accent-admin-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 214 100% 40%;
+
+    --radius: 0.75rem;
+
+    /* Medical Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(214 100% 40%), hsl(142 71% 45%));
+    --gradient-patient: linear-gradient(135deg, hsl(214 100% 40%), hsl(214 100% 60%));
+    --gradient-doctor: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 65%));
+    --gradient-facility: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 78%));
+    --gradient-admin: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 73%));
+
+    /* Professional Shadows */
+    --shadow-soft: 0 2px 10px -2px hsl(214 100% 40% / 0.1);
+    --shadow-medium: 0 8px 30px -8px hsl(214 100% 40% / 0.15);
+    --shadow-strong: 0 20px 40px -12px hsl(214 100% 40% / 0.25);
+
+    /* Smooth Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --sidebar-background: 0 0% 98%;
 

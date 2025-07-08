@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					muted: 'hsl(var(--primary-muted))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -40,10 +41,6 @@ export default {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
-				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
-				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
@@ -51,6 +48,23 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				// Medical Portal Theme Colors
+				patient: {
+					DEFAULT: 'hsl(var(--accent-patient))',
+					foreground: 'hsl(var(--accent-patient-foreground))'
+				},
+				doctor: {
+					DEFAULT: 'hsl(var(--accent-doctor))',
+					foreground: 'hsl(var(--accent-doctor-foreground))'
+				},
+				facility: {
+					DEFAULT: 'hsl(var(--accent-facility))',
+					foreground: 'hsl(var(--accent-facility-foreground))'
+				},
+				admin: {
+					DEFAULT: 'hsl(var(--accent-admin))',
+					foreground: 'hsl(var(--accent-admin-foreground))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -67,6 +81,22 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-patient': 'var(--gradient-patient)',
+				'gradient-doctor': 'var(--gradient-doctor)',
+				'gradient-facility': 'var(--gradient-facility)',
+				'gradient-admin': 'var(--gradient-admin)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'medium': 'var(--shadow-medium)',
+				'strong': 'var(--shadow-strong)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
 			},
 			keyframes: {
 				'accordion-down': {

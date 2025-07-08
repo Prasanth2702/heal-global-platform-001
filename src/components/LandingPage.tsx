@@ -1,0 +1,190 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Calendar, Search } from "lucide-react";
+import heroImage from "@/assets/medical-hero.jpg";
+
+const LandingPage = () => {
+  const userTypes = [
+    {
+      title: "Patients",
+      description: "Book appointments, access medical records, and manage your health journey",
+      icon: User,
+      variant: "patient" as const,
+      features: ["Book Appointments", "Digital Medical Records", "Health Timeline", "Emergency SOS"]
+    },
+    {
+      title: "Medical Professionals", 
+      description: "Manage your practice, access patient records, and provide teleconsultations",
+      icon: User,
+      variant: "doctor" as const,
+      features: ["Patient Management", "e-Prescriptions", "Teleconsultation", "Revenue Dashboard"]
+    },
+    {
+      title: "Medical Facilities",
+      description: "Streamline operations, manage departments, and track facility analytics",
+      icon: Calendar,
+      variant: "facility" as const,
+      features: ["Department Management", "Staff Scheduling", "Analytics Dashboard", "Invoice Generation"]
+    },
+    {
+      title: "Admin Portal",
+      description: "Platform oversight, user management, and comprehensive analytics",
+      icon: Search,
+      variant: "admin" as const,
+      features: ["User Approval", "Platform Analytics", "Role Management", "Compliance Monitoring"]
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-hero"></div>
+            <span className="text-xl font-bold">NextGen Medical</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost">Sign In</Button>
+            <Button variant="hero">Get Started</Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative">
+        <div className="absolute inset-0 bg-gradient-hero opacity-90"></div>
+        <div 
+          className="relative h-[600px] bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
+          <div className="container relative z-10 flex h-full items-center">
+            <div className="max-w-2xl text-white">
+              <h1 className="text-5xl font-bold leading-tight mb-6">
+                NextGen Unified Medical Platform
+              </h1>
+              <p className="text-xl mb-8 text-white/90">
+                AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, 
+                medical professionals, and healthcare facilities in one powerful platform.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button variant="hero" size="xl">
+                  Get Started Today
+                </Button>
+                <Button variant="outline" size="xl" className="border-white text-white hover:bg-white hover:text-foreground">
+                  Learn More
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* User Types Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Choose Your Portal</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Access specialized features designed for your role in the healthcare ecosystem
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {userTypes.map((userType, index) => {
+              const IconComponent = userType.icon;
+              return (
+                <Card key={index} variant={userType.variant} className="group cursor-pointer h-full">
+                  <CardHeader className="text-center">
+                    <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-${userType.variant}`}>
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-xl mb-2">{userType.title}</CardTitle>
+                    <CardDescription className="text-center">
+                      {userType.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {userType.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-center text-sm">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary mr-2"></div>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button 
+                      variant={userType.variant} 
+                      className="w-full mt-6 group-hover:scale-105 transition-transform"
+                    >
+                      Access Portal
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20">
+        <div className="container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Advanced Healthcare Technology</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Powered by AI, built for compliance, designed for the future of healthcare
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle className="text-xl mb-2">AI-Powered Features</CardTitle>
+                <CardDescription>
+                  Smart scheduling, diagnostic assistance, and automated workflows
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle className="text-xl mb-2">Compliance Ready</CardTitle>
+                <CardDescription>
+                  HIPAA, MOH-UAE, NABH compliant with full audit trails
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle className="text-xl mb-2">Multilingual Support</CardTitle>
+                <CardDescription>
+                  Real-time translation and voice assistance for better accessibility
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-12 bg-muted/30">
+        <div className="container">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <div className="h-8 w-8 rounded-lg bg-gradient-hero"></div>
+              <span className="text-xl font-bold">NextGen Medical</span>
+            </div>
+            <p className="text-muted-foreground text-center md:text-right">
+              © 2024 NextGen Medical Platform. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;

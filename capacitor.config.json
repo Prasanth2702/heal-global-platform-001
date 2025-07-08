@@ -1,0 +1,22 @@
+{
+  "appId": "app.lovable.c614cd7ed723486cbca976adcd7b4ee9",
+  "appName": "heal-global-platform",
+  "webDir": "dist",
+  "server": {
+    "url": "https://c614cd7e-d723-486c-bca9-76adcd7b4ee9.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#ffffff",
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "showSpinner": true,
+      "spinnerColor": "#999999"
+    }
+  }
+}

@@ -16,6 +16,7 @@ import SuperAdminDashboardPage from "./pages/SuperAdminDashboardPage";
 import SubAdminDashboardPage from "./pages/SubAdminDashboardPage";
 import AppointmentSystemPage from "./pages/AppointmentSystemPage";
 import DocumentVaultPage from "./pages/DocumentVaultPage";
+import SecureViewPage from "./pages/SecureViewPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/dashboard/sub-admin" element={<SubAdminDashboardPage />} />
           <Route path="/appointments" element={<AppointmentSystemPage />} />
           <Route path="/vault" element={<DocumentVaultPage />} />
+          <Route path="/secure-view/:token" element={<SecureViewPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

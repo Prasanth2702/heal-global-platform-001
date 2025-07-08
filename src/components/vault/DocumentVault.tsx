@@ -25,6 +25,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { format } from "date-fns";
+import SecureShareDialog from "./SecureShareDialog";
 
 interface MedicalDocument {
   id: string;
@@ -304,9 +305,10 @@ const DocumentVault = () => {
                           <Button variant="ghost" size="sm">
                             <Download className="h-3 w-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => shareDocument(doc.id)}>
-                            <Share2 className="h-3 w-3" />
-                          </Button>
+                          <SecureShareDialog 
+                            documents={documents}
+                            onShare={(config) => console.log("Secure share config:", config)}
+                          />
                           <Button variant="ghost" size="sm">
                             <Trash2 className="h-3 w-3" />
                           </Button>

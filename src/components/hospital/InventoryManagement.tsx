@@ -192,7 +192,12 @@ const InventoryManagement = () => {
               ...formData, 
               purchaseDate: new Date(formData.purchaseDate),
               expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : undefined,
-              status: getStockStatus({ ...item, ...formData } as InventoryItem)
+              status: getStockStatus({ 
+                ...item, 
+                ...formData, 
+                purchaseDate: new Date(formData.purchaseDate),
+                expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : undefined
+              })
             }
           : item
       ));
@@ -209,7 +214,7 @@ const InventoryManagement = () => {
         expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : undefined,
         status: "in_stock"
       };
-      newItem.status = getStockStatus(newItem as InventoryItem);
+      newItem.status = getStockStatus(newItem);
       setInventoryItems(prev => [...prev, newItem]);
       toast({
         title: "Item Added",

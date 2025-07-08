@@ -2,14 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus } from "lucide-react";
+import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign } from "lucide-react";
 import DoctorSearch from "@/components/patient/DoctorSearch";
 import AppointmentManagement from "@/components/patient/AppointmentManagement";
 import DocumentVault from "@/components/patient/DocumentVault";
 import RecordSharing from "@/components/patient/RecordSharing";
+import PaymentManagement from "@/components/patient/PaymentManagement";
 
 const PatientDashboard = () => {
-  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments">("overview");
 
   const upcomingAppointments = [
     {
@@ -93,6 +94,13 @@ const PatientDashboard = () => {
             >
               Share Records
             </Button>
+            <Button
+              variant={activeTab === "payments" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("payments")}
+            >
+              Payments
+            </Button>
           </div>
         </div>
 
@@ -100,6 +108,7 @@ const PatientDashboard = () => {
         {activeTab === "appointments" && <AppointmentManagement />}
         {activeTab === "documents" && <DocumentVault />}
         {activeTab === "sharing" && <RecordSharing />}
+        {activeTab === "payments" && <PaymentManagement />}
       </div>
     );
   }
@@ -147,6 +156,13 @@ const PatientDashboard = () => {
             onClick={() => setActiveTab("sharing")}
           >
             Share Records
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab("payments")}
+          >
+            Payments
           </Button>
         </div>
       </div>
@@ -319,7 +335,7 @@ const PatientDashboard = () => {
           <CardDescription>Frequently used features</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Button 
               variant="patient" 
               className="h-20 flex-col"
@@ -351,6 +367,14 @@ const PatientDashboard = () => {
             >
               <Shield className="h-6 w-6 mb-2" />
               <span className="text-sm">Share Records</span>
+            </Button>
+            <Button 
+              variant="patient" 
+              className="h-20 flex-col"
+              onClick={() => setActiveTab("payments")}
+            >
+              <DollarSign className="h-6 w-6 mb-2" />
+              <span className="text-sm">Payments</span>
             </Button>
             <Button variant="patient" className="h-20 flex-col">
               <Clock className="h-6 w-6 mb-2" />

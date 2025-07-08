@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
+import OTPLogin from "./OTPLogin";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -58,12 +60,18 @@ const LoginForm = () => {
     }, 1500);
   };
 
+  const handleLoginSuccess = () => {
+    setTimeout(() => {
+      navigate(config.dashboardRoute);
+    }, 1500);
+  };
+
   const handleOTPLogin = () => {
     toast({
-      title: "OTP Sent!",
-      description: "Please check your phone for the verification code.",
+      title: "Login Successful!",
+      description: `Welcome back! Redirecting to your ${userType} dashboard...`,
     });
-    // Will implement OTP flow with Supabase later
+    handleLoginSuccess();
   };
 
   return (
@@ -72,70 +80,65 @@ const LoginForm = () => {
       description={config.description}
       userType={config.variant}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="email">Email or Phone</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            placeholder="Enter your email or phone number"
-            required
-          />
-        </div>
+      <Tabs defaultValue="email" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="email">Email/Password</TabsTrigger>
+          <TabsTrigger value="otp">OTP Login</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="email" className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email or Phone</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="Enter your email or phone number"
+                required
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-            placeholder="Enter your password"
-            required
-          />
-        </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
 
-        <div className="text-right">
-          <Button variant="link" className="p-0 h-auto text-sm">
-            Forgot password?
-          </Button>
-        </div>
+            <div className="text-right">
+              <Button variant="link" className="p-0 h-auto text-sm">
+                Forgot password?
+              </Button>
+            </div>
 
-        <Button type="submit" variant={config.variant} className="w-full" size="lg">
-          Sign In
-        </Button>
+            <Button type="submit" variant={config.variant} className="w-full" size="lg">
+              Sign In
+            </Button>
+          </form>
+        </TabsContent>
+        
+        <TabsContent value="otp" className="space-y-4">
+          <OTPLogin userType={config.variant} onSuccess={handleOTPLogin} />
+        </TabsContent>
+      </Tabs>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleOTPLogin}
+      <div className="text-center text-sm text-muted-foreground">
+        Don't have an account?{" "}
+        <Button 
+          variant="link" 
+          className="p-0 h-auto" 
+          onClick={() => navigate(`/register/${userType}`)}
         >
-          Login with OTP
+          Register here
         </Button>
-
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Button 
-            variant="link" 
-            className="p-0 h-auto" 
-            onClick={() => navigate(`/register/${userType}`)}
-          >
-            Register here
-          </Button>
-        </div>
-      </form>
+      </div>
     </AuthLayout>
   );
 };

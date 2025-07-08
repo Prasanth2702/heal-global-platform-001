@@ -7,9 +7,11 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PatientRegistration from "./components/auth/PatientRegistration";
 import DoctorRegistration from "./components/auth/DoctorRegistration";
+import FacilityRegistration from "./components/auth/FacilityRegistration";
 import LoginForm from "./components/auth/LoginForm";
 import PatientDashboardPage from "./pages/PatientDashboardPage";
 import DoctorDashboardPage from "./pages/DoctorDashboardPage";
+import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +27,11 @@ const App = () => (
           {/* Authentication Routes */}
           <Route path="/register/patient" element={<PatientRegistration />} />
           <Route path="/register/doctor" element={<DoctorRegistration />} />
+          <Route path="/register/facility" element={<FacilityRegistration />} />
           <Route path="/login/:userType" element={<LoginForm />} />
+          
+          {/* Onboarding Routes */}
+          <Route path="/onboarding/:userType" element={<OnboardingWizard />} />
           
           {/* Dashboard Routes */}
           <Route path="/dashboard/patient" element={<PatientDashboardPage />} />

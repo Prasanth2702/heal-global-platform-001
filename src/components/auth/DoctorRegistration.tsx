@@ -56,7 +56,7 @@ const DoctorRegistration = () => {
     });
     
     setTimeout(() => {
-      navigate("/dashboard/doctor");
+      navigate("/onboarding/doctor");
     }, 2000);
   };
 

@@ -46,7 +46,7 @@ const PatientRegistration = () => {
     });
     
     setTimeout(() => {
-      navigate("/dashboard/patient");
+      navigate("/onboarding/patient");
     }, 2000);
   };
 

@@ -17,6 +17,7 @@ import SubAdminDashboardPage from "./pages/SubAdminDashboardPage";
 import AppointmentSystemPage from "./pages/AppointmentSystemPage";
 import DocumentVaultPage from "./pages/DocumentVaultPage";
 import SecureViewPage from "./pages/SecureViewPage";
+import PaymentSystemPage from "./pages/PaymentSystemPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/appointments" element={<AppointmentSystemPage />} />
           <Route path="/vault" element={<DocumentVaultPage />} />
           <Route path="/secure-view/:token" element={<SecureViewPage />} />
+          <Route path="/payments" element={<PaymentSystemPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

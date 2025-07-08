@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Calendar, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import HeroCarousel from "@/components/carousel/HeroCarousel";
 import PromotionCarousel from "@/components/carousel/PromotionCarousel";
 import SEOHead from "@/components/seo/SEOHead";
 import { organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema } from "@/components/seo/StructuredData";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const userTypes = [
     {
       title: "Patients",
@@ -101,7 +103,7 @@ const LandingPage = () => {
                     <Button 
                       variant={userType.variant} 
                       className="w-full mt-6 group-hover:scale-105 transition-transform"
-                      onClick={() => window.location.href = `/register/${userType.variant}`}
+                      onClick={() => navigate(`/register/${userType.variant}`)}
                     >
                       Access Portal
                     </Button>

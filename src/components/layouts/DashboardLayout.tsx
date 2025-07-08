@@ -161,7 +161,11 @@ const DashboardLayout = ({ children, userType }: DashboardLayoutProps) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/dashboard/${userType}/profile`)}
+            >
               <User className="mr-2 h-4 w-4" />
               Profile
             </Button>

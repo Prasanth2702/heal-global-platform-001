@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +12,36 @@ import PaymentManagement from "@/components/patient/PaymentManagement";
 import PatientProfile from "@/components/patient/PatientProfile";
 
 const PatientDashboard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments" | "profile">("overview");
+
+  // Update tab based on URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/profile')) setActiveTab('profile');
+    else if (path.includes('/search')) setActiveTab('search');
+    else if (path.includes('/appointments')) setActiveTab('appointments');
+    else if (path.includes('/records')) setActiveTab('documents');
+    else if (path.includes('/sharing')) setActiveTab('sharing');
+    else if (path.includes('/payments')) setActiveTab('payments');
+    else setActiveTab('overview');
+  }, [location.pathname]);
+
+  // Update URL when tab changes
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    const basePath = '/dashboard/patient';
+    switch (tab) {
+      case 'overview': navigate(basePath); break;
+      case 'profile': navigate(`${basePath}/profile`); break;
+      case 'search': navigate(`${basePath}/search`); break;
+      case 'appointments': navigate(`${basePath}/appointments`); break;
+      case 'documents': navigate(`${basePath}/records`); break;
+      case 'sharing': navigate(`${basePath}/sharing`); break;
+      case 'payments': navigate(`${basePath}/payments`); break;
+    }
+  };
 
   const upcomingAppointments = [
     {
@@ -56,7 +86,7 @@ const PatientDashboard = () => {
   ];
 
   if (activeTab === "profile") {
-    return <PatientProfile onBack={() => setActiveTab("overview")} />;
+    return <PatientProfile onBack={() => handleTabChange("overview")} />;
   }
 
   if (activeTab !== "overview") {
@@ -67,7 +97,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("overview")}
+              onClick={() => handleTabChange("overview")}
               className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
             >
               Overview
@@ -75,7 +105,7 @@ const PatientDashboard = () => {
             <Button
               variant={activeTab === "search" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab("search")}
+              onClick={() => handleTabChange("search")}
               className={activeTab === "search" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
             >
               <Search className="h-4 w-4 mr-1" />
@@ -84,7 +114,7 @@ const PatientDashboard = () => {
             <Button
               variant={activeTab === "appointments" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab("appointments")}
+              onClick={() => handleTabChange("appointments")}
               className={activeTab === "appointments" ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white" : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"}
             >
               <Calendar className="h-4 w-4 mr-1" />
@@ -93,7 +123,7 @@ const PatientDashboard = () => {
             <Button
               variant={activeTab === "documents" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab("documents")}
+              onClick={() => handleTabChange("documents")}
               className={activeTab === "documents" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"}
             >
               <FileText className="h-4 w-4 mr-1" />
@@ -102,7 +132,7 @@ const PatientDashboard = () => {
             <Button
               variant={activeTab === "sharing" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab("sharing")}
+              onClick={() => handleTabChange("sharing")}
               className={activeTab === "sharing" ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" : "hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"}
             >
               <Shield className="h-4 w-4 mr-1" />
@@ -111,7 +141,7 @@ const PatientDashboard = () => {
             <Button
               variant={activeTab === "payments" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab("payments")}
+              onClick={() => handleTabChange("payments")}
               className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
             >
               <DollarSign className="h-4 w-4 mr-1" />
@@ -141,7 +171,7 @@ const PatientDashboard = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={() => setActiveTab("profile")}
+            onClick={() => handleTabChange("profile")}
             className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -151,7 +181,7 @@ const PatientDashboard = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={() => setActiveTab("overview")}
+              onClick={() => handleTabChange("overview")}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
             >
               Overview
@@ -159,7 +189,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("search")}
+              onClick={() => handleTabChange("search")}
               className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
             >
               <Search className="h-4 w-4 mr-1" />
@@ -168,7 +198,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("appointments")}
+              onClick={() => handleTabChange("appointments")}
               className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
             >
               <Calendar className="h-4 w-4 mr-1" />
@@ -177,7 +207,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("documents")}
+              onClick={() => handleTabChange("documents")}
               className="hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"
             >
               <FileText className="h-4 w-4 mr-1" />
@@ -186,7 +216,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("sharing")}
+              onClick={() => handleTabChange("sharing")}
               className="hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"
             >
               <Shield className="h-4 w-4 mr-1" />
@@ -195,7 +225,7 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab("payments")}
+              onClick={() => handleTabChange("payments")}
               className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
             >
               <DollarSign className="h-4 w-4 mr-1" />
@@ -283,7 +313,7 @@ const PatientDashboard = () => {
               ))}
               <Button 
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-                onClick={() => setActiveTab("search")}
+                onClick={() => handleTabChange("search")}
               >
                 <Search className="mr-2 h-4 w-4" />
                 Find & Book Doctors
@@ -316,7 +346,7 @@ const PatientDashboard = () => {
               ))}
               <Button 
                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-                onClick={() => setActiveTab("documents")}
+                onClick={() => handleTabChange("documents")}
               >
                 <FileText className="mr-2 h-4 w-4" />
                 Manage Documents
@@ -382,35 +412,35 @@ const PatientDashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Button 
               className="h-24 flex-col bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setActiveTab("search")}
+              onClick={() => handleTabChange("search")}
             >
               <Search className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Find Doctors</span>
             </Button>
             <Button 
               className="h-24 flex-col bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setActiveTab("appointments")}
+              onClick={() => handleTabChange("appointments")}
             >
               <Calendar className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Appointments</span>
             </Button>
             <Button 
               className="h-24 flex-col bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setActiveTab("documents")}
+              onClick={() => handleTabChange("documents")}
             >
               <FileText className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Medical Vault</span>
             </Button>
             <Button 
               className="h-24 flex-col bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setActiveTab("sharing")}
+              onClick={() => handleTabChange("sharing")}
             >
               <Shield className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Share Records</span>
             </Button>
             <Button 
               className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setActiveTab("payments")}
+              onClick={() => handleTabChange("payments")}
             >
               <DollarSign className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Payments</span>

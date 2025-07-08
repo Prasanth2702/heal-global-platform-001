@@ -50,10 +50,19 @@ const App = () => (
           
           {/* Dashboard Routes */}
           <Route path="/dashboard/patient" element={<PatientDashboardPage />} />
+          <Route path="/dashboard/patient/*" element={<PatientDashboardPage />} />
           <Route path="/dashboard/doctor" element={<DoctorDashboardPage />} />
+          <Route path="/dashboard/doctor/*" element={<DoctorDashboardPage />} />
           <Route path="/dashboard/hospital" element={<HospitalDashboardPage />} />
+          <Route path="/dashboard/hospital/*" element={<HospitalDashboardPage />} />
+          <Route path="/dashboard/facility" element={<HospitalDashboardPage />} />
+          <Route path="/dashboard/facility/*" element={<HospitalDashboardPage />} />
           <Route path="/dashboard/super-admin" element={<SuperAdminDashboardPage />} />
+          <Route path="/dashboard/super-admin/*" element={<SuperAdminDashboardPage />} />
           <Route path="/dashboard/sub-admin" element={<SubAdminDashboardPage />} />
+          <Route path="/dashboard/sub-admin/*" element={<SubAdminDashboardPage />} />
+          <Route path="/dashboard/admin" element={<SuperAdminDashboardPage />} />
+          <Route path="/dashboard/admin/*" element={<SuperAdminDashboardPage />} />
           <Route path="/appointments" element={<AppointmentSystemPage />} />
           <Route path="/vault" element={<DocumentVaultPage />} />
           <Route path="/secure-view/:token" element={<SecureViewPage />} />

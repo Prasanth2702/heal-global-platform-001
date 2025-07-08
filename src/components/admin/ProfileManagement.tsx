@@ -96,3 +96,5 @@ const ProfileManagement = () => {
     </div>
   );
 };
+
+export default ProfileManagement;

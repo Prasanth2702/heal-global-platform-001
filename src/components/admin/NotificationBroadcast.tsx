@@ -106,3 +106,5 @@ const NotificationBroadcast = () => {
     </div>
   );
 };
+
+export default NotificationBroadcast;

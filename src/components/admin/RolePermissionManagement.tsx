@@ -60,3 +60,5 @@ const RolePermissionManagement = () => {
     </div>
   );
 };
+
+export default RolePermissionManagement;

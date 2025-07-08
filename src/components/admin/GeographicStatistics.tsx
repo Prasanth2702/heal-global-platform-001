@@ -91,3 +91,5 @@ const GeographicStatistics = () => {
     </div>
   );
 };
+
+export default GeographicStatistics;

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ApiKeyProvider } from "@/contexts/ApiKeyContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PatientRegistration from "./components/auth/PatientRegistration";
@@ -18,16 +19,18 @@ import AppointmentSystemPage from "./pages/AppointmentSystemPage";
 import DocumentVaultPage from "./pages/DocumentVaultPage";
 import SecureViewPage from "./pages/SecureViewPage";
 import PaymentSystemPage from "./pages/PaymentSystemPage";
+import ApiSetupPage from "./pages/ApiSetupPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+    <ApiKeyProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           
@@ -50,12 +53,14 @@ const App = () => (
           <Route path="/vault" element={<DocumentVaultPage />} />
           <Route path="/secure-view/:token" element={<SecureViewPage />} />
           <Route path="/payments" element={<PaymentSystemPage />} />
+          <Route path="/api-setup" element={<ApiSetupPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </ApiKeyProvider>
   </QueryClientProvider>
 );
 

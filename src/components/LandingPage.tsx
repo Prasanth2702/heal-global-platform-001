@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Calendar, Search } from "lucide-react";
-import heroImage from "@/assets/medical-hero.jpg";
+import HeroCarousel from "@/components/carousel/HeroCarousel";
 import PromotionCarousel from "@/components/carousel/PromotionCarousel";
 import SEOHead from "@/components/seo/SEOHead";
 import { organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema } from "@/components/seo/StructuredData";
@@ -62,35 +62,8 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative">
-        <div className="absolute inset-0 bg-gradient-hero opacity-90"></div>
-        <div 
-          className="relative h-[600px] bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
-          <div className="container relative z-10 flex h-full items-center">
-            <div className="max-w-2xl text-white">
-              <h1 className="text-5xl font-bold leading-tight mb-6">
-                NextGen Unified Medical Platform
-              </h1>
-              <p className="text-xl mb-8 text-white/90">
-                AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, 
-                medical professionals, and healthcare facilities in one powerful platform.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="xl">
-                  Get Started Today
-                </Button>
-                <Button variant="outline" size="xl" className="border-white text-white hover:bg-white hover:text-foreground">
-                  Learn More
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Smart Hero Carousel */}
+      <HeroCarousel />
 
       {/* User Types Section */}
       <section className="py-20 bg-muted/30">

@@ -117,6 +117,7 @@ const LandingPage = () => {
                     <Button 
                       variant={userType.variant} 
                       className="w-full mt-6 group-hover:scale-105 transition-transform"
+                      onClick={() => window.location.href = `/register/${userType.variant}`}
                     >
                       Access Portal
                     </Button>

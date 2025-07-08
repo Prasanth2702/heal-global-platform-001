@@ -11,6 +11,7 @@ import FacilityRegistration from "./components/auth/FacilityRegistration";
 import LoginForm from "./components/auth/LoginForm";
 import PatientDashboardPage from "./pages/PatientDashboardPage";
 import DoctorDashboardPage from "./pages/DoctorDashboardPage";
+import HospitalDashboardPage from "./pages/HospitalDashboardPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           {/* Dashboard Routes */}
           <Route path="/dashboard/patient" element={<PatientDashboardPage />} />
           <Route path="/dashboard/doctor" element={<DoctorDashboardPage />} />
+          <Route path="/dashboard/hospital" element={<HospitalDashboardPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

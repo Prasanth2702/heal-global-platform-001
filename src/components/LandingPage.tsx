@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { User, Calendar, Search } from "lucide-react";
 import heroImage from "@/assets/medical-hero.jpg";
 import QuickSetup from "@/components/ai/QuickSetup";
+import PromotionCarousel from "@/components/carousel/PromotionCarousel";
+import SEOHead from "@/components/seo/SEOHead";
+import { organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema } from "@/components/seo/StructuredData";
 
 const LandingPage = () => {
   const userTypes = [
@@ -37,7 +40,15 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead 
+        title="NextGen Medical Platform - AI-Enhanced Healthcare Ecosystem"
+        description="AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities in one powerful platform."
+        keywords="medical platform, healthcare, AI medical, telemedicine, patient portal, doctor portal, medical records, appointments, HIPAA compliance, multilingual healthcare"
+        jsonLd={[organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema]}
+      />
+      
+      <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
@@ -130,6 +141,19 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Promotions Carousel */}
+      <section className="py-16 bg-muted/30">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Featured Healthcare Solutions</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Discover our latest innovations in digital healthcare technology
+            </p>
+          </div>
+          <PromotionCarousel />
+        </div>
+      </section>
+
       {/* AI Setup Section */}
       <section className="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="container">
@@ -156,29 +180,29 @@ const LandingPage = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card variant="elevated">
+            <Card variant="elevated" className="hover-scale">
               <CardHeader>
                 <CardTitle className="text-xl mb-2">AI-Powered Features</CardTitle>
                 <CardDescription>
-                  Smart scheduling, diagnostic assistance, and automated workflows
+                  Smart scheduling, diagnostic assistance, and automated workflows powered by advanced machine learning
                 </CardDescription>
               </CardHeader>
             </Card>
             
-            <Card variant="elevated">
+            <Card variant="elevated" className="hover-scale">
               <CardHeader>
                 <CardTitle className="text-xl mb-2">Compliance Ready</CardTitle>
                 <CardDescription>
-                  HIPAA, MOH-UAE, NABH compliant with full audit trails
+                  HIPAA, MOH-UAE, NABH compliant with full audit trails and data encryption
                 </CardDescription>
               </CardHeader>
             </Card>
             
-            <Card variant="elevated">
+            <Card variant="elevated" className="hover-scale">
               <CardHeader>
                 <CardTitle className="text-xl mb-2">Multilingual Support</CardTitle>
                 <CardDescription>
-                  Real-time translation and voice assistance for better accessibility
+                  Real-time translation and voice assistance in 50+ languages for better accessibility
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -200,7 +224,8 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 };
 

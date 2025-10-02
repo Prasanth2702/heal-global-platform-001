@@ -24,10 +24,16 @@ import ApiSetupPage from "./pages/ApiSetupPage";
 import QATestingPage from "./pages/QATestingPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import InstallPrompt from "./components/pwa/InstallPrompt";
+import MaintenancePage from "./pages/MaintenancePage";
 
 const queryClient = new QueryClient();
+const MAINTENANCE = true;
 
-const App = () => (
+const App = () => {
+  if (MAINTENANCE) {
+    return  <MaintenancePage></MaintenancePage>
+  }
+  return (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <ApiKeyProvider>
@@ -77,7 +83,8 @@ const App = () => (
       </TooltipProvider>
       </ApiKeyProvider>
     </HelmetProvider>
-  </QueryClientProvider>
-);
+  </QueryClientProvider>  
+  )
+};
 
 export default App;

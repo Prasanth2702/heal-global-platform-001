@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
 import OTPLogin from "./OTPLogin";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -46,10 +47,25 @@ const LoginForm = () => {
 
   const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mock login - will connect to Supabase later
+
+  const { email, password } = formData;
+  const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+  if (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Login Successful!",
       description: `Welcome back! Redirecting to your ${userType} dashboard...`,

@@ -55,7 +55,7 @@ const PatientDashboard = () => {
     {
       id: 2,
       doctor: "Dr. Michael Chen",
-      specialty: "Dermatologist", 
+      specialty: "Dermatologist",
       date: "2024-01-18",
       time: "2:30 PM",
       type: "Teleconsultation"
@@ -246,7 +246,7 @@ const PatientDashboard = () => {
             </CardDescription>
           </CardHeader>
         </Card>
-        
+
         <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-emerald-100">Medical Reports</CardTitle>
@@ -256,7 +256,7 @@ const PatientDashboard = () => {
             </CardDescription>
           </CardHeader>
         </Card>
-        
+
         <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-orange-100">Active Prescriptions</CardTitle>
@@ -266,7 +266,7 @@ const PatientDashboard = () => {
             </CardDescription>
           </CardHeader>
         </Card>
-        
+
         <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-purple-100">Health Score</CardTitle>
@@ -311,7 +311,7 @@ const PatientDashboard = () => {
                   </div>
                 </div>
               ))}
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
                 onClick={() => handleTabChange("search")}
               >
@@ -344,7 +344,7 @@ const PatientDashboard = () => {
                   </Button>
                 </div>
               ))}
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
                 onClick={() => handleTabChange("documents")}
               >
@@ -410,42 +410,42 @@ const PatientDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => handleTabChange("search")}
             >
               <Search className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Find Doctors</span>
             </Button>
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => handleTabChange("appointments")}
             >
               <Calendar className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Appointments</span>
             </Button>
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => handleTabChange("documents")}
             >
               <FileText className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Medical Vault</span>
             </Button>
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => handleTabChange("sharing")}
             >
               <Shield className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Share Records</span>
             </Button>
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => handleTabChange("payments")}
             >
               <DollarSign className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Payments</span>
             </Button>
-            <Button 
+            <Button
               className="h-24 flex-col bg-gradient-to-br from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse"
             >
               <Clock className="h-8 w-8 mb-2" />

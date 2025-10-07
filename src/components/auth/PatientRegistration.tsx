@@ -12,6 +12,8 @@ import { CalendarIcon, Phone, Globe, Heart, Shield, Sparkles } from 'lucide-reac
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import AuthLayout from './AuthLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { Patient } from '@/Models/Patient';
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -33,26 +35,30 @@ const PatientRegistration = () => {
   const { toast } = useToast();
   const [date, setDate] = useState<Date>();
   const [showManualDate, setShowManualDate] = useState(false);
-  
-  const [formData, setFormData] = useState({
+  const [isTermsAccepted, setTermsAccepted] = useState(false);
+  const [isPrivacyAccepted, setPrivacyAccepted] = useState(false);
+  const [password, setPassword] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
+  const [phoneNumber, setPhoneNumber] = useState('123456789');
+  const [emergencyContactCountryCode, setEmergencyContactCountryCode] = useState('+1');
+  const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState('123456789');
+   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+
+  const [formData, setformData] = useState<Patient>({
     firstName: '',
     lastName: '',
-    email: '',
-    countryCode: '+1',
-    phone: '',
+    phoneNumber: '',
     dateOfBirth: '',
-    manualYear: '',
-    manualMonth: '',
-    manualDay: '',
     gender: '',
-    emergencyContact: '',
-    emergencyCountryCode: '+1',
-    emergencyPhone: '',
     bloodGroup: '',
-    allergies: '',
+    avatarUrl: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    userType: 'patient',
+    knownAllergies: '',
     currentMedications: '',
-    termsAccepted: false,
-    privacyAccepted: false
+    emailAddress: '',
   });
 
   const months = [
@@ -63,10 +69,65 @@ const PatientRegistration = () => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = (formData: Patient) => {
+    const errors: { [key: string]: string } = {};
+    let valid = true;
+
+    if (!formData.emailAddress) {
+      errors.emailAddress = "Email is required";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+      errors.emailAddress = "Invalid email format";
+      valid = false;
+    }
+
+    if (!formData.phoneNumber) {
+      errors.phoneNumber = "Phone number is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
+      errors.phoneNumber = "Invalid phone number format";
+      valid = false;
+    }
+
+    if (!formData.emergencyContactPhone) {
+      errors.emergencyContactPhone = "Phone number is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.emergencyContactPhone.replace(/\s/g, ""))) {
+      errors.emergencyContactPhone = "Invalid phone number format";
+      valid = false;
+    }
+
+    if(!formData.gender){
+      errors.gender = "gender is required";
+      valid = false;
+    }
+
+    if(!formData.bloodGroup){
+      errors.bloodGroup = "Blood group is required";
+      valid = false;
+    }
+
+
+    setErrors(errors);
+
+    const firstErrorKey = Object.keys(errors)[0];
+      if (firstErrorKey) {
+        toast({
+          title: "Error in registering patient",
+          description: errors[firstErrorKey],
+          variant: "destructive",
+          className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+        });
+        valid = false;
+      }
+    return valid;
+  };
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.termsAccepted || !formData.privacyAccepted) {
+
+    if (!isTermsAccepted || !isPrivacyAccepted) {
       toast({
         title: 'Agreement Required',
         description: 'Please accept the terms and privacy policy to continue.',
@@ -76,13 +137,74 @@ const PatientRegistration = () => {
       return;
     }
 
-    // Mock registration - will connect to Supabase later
+
+    const patientFullData = {
+      ...formData,
+      phoneNumber: countryCode + phoneNumber,
+      emergencyContactPhone: emergencyContactCountryCode + emergencyPhoneNumber,
+      dateOfBirth: formData.dateOfBirth || (date ? format(date, 'yyyy-MM-dd') : ''),
+    };
+
+    setformData(patientFullData);
+
+    console.log(patientFullData);
+
+    if (!validateForm(patientFullData)) {
+      console.log(errors);     
+      return;
+    }
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: patientFullData.emailAddress,
+      password: password,
+      options: {
+        data: {
+          firstName: patientFullData.firstName,
+          lastName: patientFullData.lastName,
+        },
+      },
+    });
+
+    if (signUpError) {
+    toast({
+      title: 'Registration Failed',
+      description: signUpError.message, 
+      variant: 'destructive',
+      className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+    });
+    return;
+  }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: patientFullData.firstName,
+        last_name: patientFullData.lastName,
+        phone_number: patientFullData.phoneNumber,
+        role: patientFullData.userType,
+        date_of_birth: patientFullData.dateOfBirth,
+        gender: patientFullData.gender,
+        emergency_contact_name: patientFullData.emergencyContactName,
+        blood_group: patientFullData.bloodGroup,
+        emergency_contact_number: patientFullData.emergencyContactPhone,
+        known_allergies: patientFullData.knownAllergies,
+        current_medications: patientFullData.currentMedications
+      })
+      .eq('email', patientFullData.emailAddress);
+
+    if (error) {
+      console.error('Update error:', error.message);
+    } else {
+      console.log('Row updated:', data);
+    }
+
+
     toast({
       title: '🎉 Registration Successful!',
       description: 'Welcome to NextGen Medical Platform. Redirecting to your dashboard...',
       className: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'
     });
-    
+
     setTimeout(() => {
       navigate('/onboarding/patient');
     }, 2000);
@@ -91,19 +213,10 @@ const PatientRegistration = () => {
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     if (selectedDate) {
-      setFormData({
+      setformData({
         ...formData,
         dateOfBirth: format(selectedDate, 'yyyy-MM-dd')
       });
-    }
-  };
-
-  const handleManualDateChange = () => {
-    if (formData.manualYear && formData.manualMonth && formData.manualDay) {
-      const monthIndex = months.indexOf(formData.manualMonth);
-      const dateString = `${formData.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(formData.manualDay).padStart(2, '0')}`;
-      setFormData({ ...formData, dateOfBirth: dateString });
-      setDate(new Date(dateString));
     }
   };
 
@@ -133,7 +246,7 @@ const PatientRegistration = () => {
               <Input
                 id="firstName"
                 value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                onChange={(e) => setformData({ ...formData, firstName: e.target.value })}
                 className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
                 placeholder="Enter your first name"
                 required
@@ -144,7 +257,7 @@ const PatientRegistration = () => {
               <Input
                 id="lastName"
                 value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                onChange={(e) => setformData({ ...formData, lastName: e.target.value })}
                 className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
                 placeholder="Enter your last name"
                 required
@@ -153,23 +266,39 @@ const PatientRegistration = () => {
           </div>
 
           <div>
+            <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
+              placeholder="enter your password"
+              required
+            />
+          </div>
+
+          <div>
             <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              value={formData.emailAddress}
+              onChange={(e) => setformData({ ...formData, emailAddress: e.target.value })}
               className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
               placeholder="your.email@example.com"
               required
             />
+            {errors.emailAddress && (
+              <p className="text-red-500 text-sm mt-1">{errors.emailAddress}</p>
+                )}
           </div>
 
           {/* Phone with Country Code */}
           <div>
             <Label className="text-sm font-semibold text-gray-700">Phone Number</Label>
             <div className="flex mt-2 space-x-2">
-              <Select value={formData.countryCode} onValueChange={(value) => setFormData({...formData, countryCode: value})}>
+              <Select value={countryCode} onValueChange={(value) => setCountryCode(value)}>
                 <SelectTrigger className="w-24 border-2 focus:border-blue-500 bg-white/80">
                   <SelectValue />
                 </SelectTrigger>
@@ -186,12 +315,15 @@ const PatientRegistration = () => {
               </Select>
               <Input
                 type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="flex-1 border-2 focus:border-blue-500 transition-colors bg-white/80"
                 placeholder="Enter phone number"
                 required
               />
+              {errors.phoneNumber && (
+               <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+              )}
             </div>
           </div>
 
@@ -226,94 +358,16 @@ const PatientRegistration = () => {
                     />
                   </PopoverContent>
                 </Popover>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowManualDate(!showManualDate)}
-                  className="border-2 hover:border-purple-500 bg-white/80"
-                >
-                  <Globe className="mr-2 h-4 w-4" />
-                  Manual Entry
-                </Button>
               </div>
-              
-              {showManualDate && (
-                <div className="grid grid-cols-3 gap-3 p-4 bg-white/60 rounded-lg border-2 border-dashed border-purple-300">
-                  <div>
-                    <Label className="text-xs font-semibold text-gray-600">Year</Label>
-                    <Select 
-                      value={formData.manualYear} 
-                      onValueChange={(value) => {
-                        setFormData({...formData, manualYear: value});
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
-                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
-                        <SelectValue placeholder="Year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {years.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-xs font-semibold text-gray-600">Month</Label>
-                    <Select 
-                      value={formData.manualMonth} 
-                      onValueChange={(value) => {
-                        setFormData({...formData, manualMonth: value});
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
-                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
-                        <SelectValue placeholder="Month" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((month) => (
-                          <SelectItem key={month} value={month}>
-                            {month}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-xs font-semibold text-gray-600">Day</Label>
-                    <Select 
-                      value={formData.manualDay} 
-                      onValueChange={(value) => {
-                        setFormData({...formData, manualDay: value});
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
-                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
-                        <SelectValue placeholder="Day" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                          <SelectItem key={day} value={day.toString()}>
-                            {day}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
+
+
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</Label>
-              <Select value={formData.gender} onValueChange={(value) => setFormData({...formData, gender: value})}>
+              <Select value={formData.gender} onValueChange={(value) => setformData({ ...formData, gender: value })}>
                 <SelectTrigger className="mt-2 border-2 focus:border-blue-500 bg-white/80">
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -324,11 +378,14 @@ const PatientRegistration = () => {
                   <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.gender && (
+                <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+              )}
             </div>
-            
+
             <div>
               <Label htmlFor="bloodGroup" className="text-sm font-semibold text-gray-700">Blood Group</Label>
-              <Select value={formData.bloodGroup} onValueChange={(value) => setFormData({...formData, bloodGroup: value})}>
+              <Select value={formData.bloodGroup} onValueChange={(value) => setformData({ ...formData, bloodGroup: value })}>
                 <SelectTrigger className="mt-2 border-2 focus:border-red-500 bg-white/80">
                   <SelectValue placeholder="Select blood group" />
                 </SelectTrigger>
@@ -343,29 +400,32 @@ const PatientRegistration = () => {
                   <SelectItem value="O-">O- 🩸</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.bloodGroup && (
+                <p className="text-red-500 text-sm mt-1">{errors.bloodGroup}</p>
+              )}
             </div>
           </div>
 
           {/* Emergency Contact with Country Code */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-800">Emergency Contact Information</h3>
-            
+
             <div>
               <Label htmlFor="emergencyContact" className="text-sm font-semibold text-gray-700">Emergency Contact Name</Label>
               <Input
                 id="emergencyContact"
-                value={formData.emergencyContact}
-                onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
+                value={formData.emergencyContactName}
+                onChange={(e) => setformData({ ...formData, emergencyContactName: e.target.value })}
                 className="mt-2 border-2 focus:border-orange-500 transition-colors bg-white/80"
                 placeholder="Full name of emergency contact"
                 required
               />
             </div>
-            
+
             <div>
               <Label className="text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
               <div className="flex mt-2 space-x-2">
-                <Select value={formData.emergencyCountryCode} onValueChange={(value) => setFormData({...formData, emergencyCountryCode: value})}>
+                <Select value={emergencyContactCountryCode} onValueChange={(value) => setEmergencyContactCountryCode(value)}>
                   <SelectTrigger className="w-24 border-2 focus:border-orange-500 bg-white/80">
                     <SelectValue />
                   </SelectTrigger>
@@ -382,12 +442,15 @@ const PatientRegistration = () => {
                 </Select>
                 <Input
                   type="tel"
-                  value={formData.emergencyPhone}
-                  onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})}
+                  value={emergencyPhoneNumber}
+                  onChange={(e) => setEmergencyPhoneNumber(e.target.value)}
                   className="flex-1 border-2 focus:border-orange-500 transition-colors bg-white/80"
                   placeholder="Emergency contact phone"
                   required
                 />
+                {errors.emergencyPhoneNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.emergencyPhoneNumber}</p>
+                )}
               </div>
             </div>
           </div>
@@ -396,8 +459,8 @@ const PatientRegistration = () => {
             <Label htmlFor="allergies" className="text-sm font-semibold text-gray-700">Known Allergies</Label>
             <Input
               id="allergies"
-              value={formData.allergies}
-              onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+              value={formData.knownAllergies}
+              onChange={(e) => setformData({ ...formData, knownAllergies: e.target.value })}
               className="mt-2 border-2 focus:border-yellow-500 transition-colors bg-white/80"
               placeholder="Enter any known allergies (e.g., Penicillin, Shellfish)"
             />
@@ -408,7 +471,7 @@ const PatientRegistration = () => {
             <Input
               id="currentMedications"
               value={formData.currentMedications}
-              onChange={(e) => setFormData({...formData, currentMedications: e.target.value})}
+              onChange={(e) => setformData({ ...formData, currentMedications: e.target.value })}
               className="mt-2 border-2 focus:border-green-500 transition-colors bg-white/80"
               placeholder="List current medications with dosage"
             />
@@ -418,8 +481,8 @@ const PatientRegistration = () => {
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="terms"
-                checked={formData.termsAccepted}
-                onCheckedChange={(checked) => setFormData({...formData, termsAccepted: checked as boolean})}
+                checked={isTermsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
                 className="border-2 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-purple-500"
               />
               <Label htmlFor="terms" className="text-sm font-medium">
@@ -429,8 +492,8 @@ const PatientRegistration = () => {
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="privacy"
-                checked={formData.privacyAccepted}
-                onCheckedChange={(checked) => setFormData({...formData, privacyAccepted: checked as boolean})}
+                checked={isPrivacyAccepted}
+                onCheckedChange={(checked) => setPrivacyAccepted(checked as boolean)}
                 className="border-2 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-purple-500"
               />
               <Label htmlFor="privacy" className="text-sm font-medium">
@@ -439,8 +502,8 @@ const PatientRegistration = () => {
             </div>
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Heart className="mr-2 h-5 w-5" />
@@ -449,9 +512,9 @@ const PatientRegistration = () => {
 
           <div className="text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <Button 
-              variant="link" 
-              className="p-0 h-auto font-semibold text-blue-600 hover:text-purple-600 transition-colors" 
+            <Button
+              variant="link"
+              className="p-0 h-auto font-semibold text-blue-600 hover:text-purple-600 transition-colors"
               onClick={() => navigate("/login/patient")}
             >
               Sign in here →

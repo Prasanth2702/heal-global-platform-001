@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,20 +6,22 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  Edit, 
-  Save, 
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Edit,
+  Save,
   X,
   Camera,
   Heart,
   Activity,
   Shield
 } from 'lucide-react';
+import { Patient } from '@/Models/Patient';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -28,37 +30,179 @@ interface PatientProfileProps {
 const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@email.com',
-    phone: '+1 (555) 123-4567',
-    dateOfBirth: '1990-05-15',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    address: '123 Main St, City, State 12345',
-    emergencyContact: 'Jane Smith',
-    emergencyPhone: '+1 (555) 123-4568',
-    allergies: 'Penicillin, Shellfish',
-    currentMedications: 'Lisinopril 10mg daily',
-    medicalHistory: 'Hypertension, Type 2 Diabetes',
-    profileImage: ''
+  const [profileData, setProfileData] = useState<Patient>({
+    firstName: '',
+    lastName: '',
+    emailAddress: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    avatarUrl: '',
+    gender: '',
+    bloodGroup: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    knownAllergies: '',
+    currentMedications: '',
+    userType: 'patient'
   });
 
-  const handleSave = () => {
-    setIsEditing(false);
-    toast({
-      title: 'Profile Updated',
-      description: 'Your profile has been successfully updated.',
-      className: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'
-    });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        console.error('Auth error:', authError?.message || 'User not found');
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError.message);
+        return;
+      }
+
+      if (profile) {
+        setProfileData({
+          firstName: profile.first_name || '',
+          lastName: profile.last_name || '',
+          emailAddress: profile.email || '',
+          phoneNumber: profile.phone_number || '',
+          dateOfBirth: profile.date_of_birth || '',
+          avatarUrl: profile.avatar_url || '',
+          gender: profile.gender || '',
+          bloodGroup: profile.blood_group || '',
+          emergencyContactName: profile.emergency_contact_name || '',
+          emergencyContactPhone: profile.emergency_contact_number || '',
+          knownAllergies: profile.known_allergies || '',
+          currentMedications: profile.current_medications || '',
+          userType: profile.user_type || 'patient',
+        });
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  	
+  // Validation function
+  const validateForm = (formData: Patient) => {
+    const errors: { [key: string]: string } = {};
+    let valid = true;
+    if (!formData.emailAddress) {
+      errors.emailAddress = "Email is required";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+      errors.emailAddress = "Invalid email format";
+      valid = false;
+    }
+    if (!formData.phoneNumber) {
+      errors.phoneNumber = "Phone number is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
+      errors.phoneNumber = "Invalid phone number format";
+      valid = false;
+    }
+    if (!formData.emergencyContactPhone) {
+      errors.emergencyContactPhone = "Emergency contact phone is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.emergencyContactPhone.replace(/\s/g, ""))) {
+      errors.emergencyContactPhone = "Invalid phone number format";
+      valid = false;
+    }
+    if (!formData.gender) {
+      errors.gender = "Gender is required";
+      valid = false;
+    }
+    if (!formData.bloodGroup) {
+      errors.bloodGroup = "Blood group is required";
+      valid = false;
+    }
+    setErrors(errors);
+    const firstErrorKey = Object.keys(errors)[0];
+    if (firstErrorKey) {
+      toast({
+        title: "Validation Error",
+        description: errors[firstErrorKey],
+        variant: "destructive",
+        className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+      });
+    }
+    return valid;
   };
+
+
+
+  const handleSave = async () => {
+
+    if (!validateForm(profileData)) return;
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      toast({
+        title: 'Authentication Error',
+        description: authError?.message || 'User not found.',
+        className: 'bg-red-500 text-white',
+      });
+      return;
+    }
+
+    const updates = {
+      user_id: user.id,
+      first_name: profileData.firstName,
+      last_name: profileData.lastName,
+      email: profileData.emailAddress,
+      phone_number: profileData.phoneNumber,
+      date_of_birth: profileData.dateOfBirth,
+      avatar_url: profileData.avatarUrl,
+      gender: profileData.gender,
+      blood_group: profileData.bloodGroup,
+      emergency_contact_name: profileData.emergencyContactName,
+      emergency_contact_number: profileData.emergencyContactPhone,
+      known_allergies: profileData.knownAllergies,
+      current_medications: profileData.currentMedications,
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert(updates, { onConflict: 'user_id' }); 
+
+    if (error) {
+      toast({
+        title: 'Update Failed',
+        description: error.message,
+        className: 'bg-red-500 text-white',
+      });
+    } else {
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been successfully updated.',
+        className: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0',
+      });
+      setIsEditing(false);
+      setErrors({});
+    }
+  };
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setProfileData(prev => ({ ...prev, profileImage: imageUrl }));
+      setProfileData(prev => ({ ...prev, avatarUrl: imageUrl }));
       toast({
         title: 'Profile Picture Updated',
         description: 'Your profile picture has been updated.',
@@ -72,8 +216,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onBack}
             className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
           >
@@ -87,14 +231,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
             <p className="text-muted-foreground">Manage your personal information and health data</p>
           </div>
         </div>
-        
-        <Button 
+
+        <Button
           onClick={isEditing ? handleSave : () => setIsEditing(true)}
-          className={`${
-            isEditing 
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600' 
+          className={`${isEditing
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
               : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-          } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+            } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
         >
           {isEditing ? (
             <>
@@ -116,7 +259,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
           <div className="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
             <div className="relative">
               <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
-                <AvatarImage src={profileData.profileImage} />
+                <AvatarImage src={profileData.avatarUrl} />
                 <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
                   {profileData.firstName[0]}{profileData.lastName[0]}
                 </AvatarFallback>
@@ -133,13 +276,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {profileData.firstName} {profileData.lastName}
               </h2>
-              <p className="text-lg text-muted-foreground mb-4">{profileData.email}</p>
-              
+              <p className="text-lg text-muted-foreground mb-4">{profileData.emailAddress}</p>
+
               <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                 <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">
                   <Heart className="h-3 w-3 mr-1" />
@@ -182,7 +325,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.firstName}</p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700">Last Name</Label>
               {isEditing ? (
@@ -196,42 +339,42 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.lastName}</p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email</Label>
               {isEditing ? (
                 <Input
                   id="email"
                   type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                  value={profileData.emailAddress}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, emailAddress: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors" disabled 
                 />
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium flex items-center">
                   <Mail className="h-4 w-4 mr-2 text-blue-500" />
-                  {profileData.email}
+                  {profileData.emailAddress}
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">Phone Number</Label>
               {isEditing ? (
                 <Input
                   id="phone"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                  value={profileData.phoneNumber}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
                   className="mt-2 border-2 focus:border-blue-500 transition-colors"
                 />
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium flex items-center">
                   <Phone className="h-4 w-4 mr-2 text-green-500" />
-                  {profileData.phone}
+                  {profileData.phoneNumber}
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="dateOfBirth" className="text-sm font-semibold text-gray-700">Date of Birth</Label>
               {isEditing ? (
@@ -249,7 +392,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</Label>
               {isEditing ? (
@@ -269,23 +412,6 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
               )}
             </div>
           </div>
-          
-          <div>
-            <Label htmlFor="address" className="text-sm font-semibold text-gray-700">Address</Label>
-            {isEditing ? (
-              <Input
-                id="address"
-                value={profileData.address}
-                onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
-                className="mt-2 border-2 focus:border-blue-500 transition-colors"
-              />
-            ) : (
-              <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium flex items-center">
-                <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                {profileData.address}
-              </p>
-            )}
-          </div>
         </CardContent>
       </Card>
 
@@ -300,6 +426,34 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
         <CardContent className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
+              <Label htmlFor="emergencyContact" className="text-sm font-semibold text-gray-700">Emergency Contact</Label>
+              {isEditing ? (
+                <Input
+                  id="emergencyContact"
+                  value={profileData.emergencyContactName}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, emergencyContactName: e.target.value }))}
+                  className="mt-2 border-2 focus:border-emerald-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.emergencyContactName}</p>
+              )}
+            </div>
+              <div>
+              <Label htmlFor="emergencyContactPhone" className="text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
+              {isEditing ? (
+                <Input
+                  id="emergencyContact"
+                  value={profileData.emergencyContactPhone}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, emergencyContactPhone: e.target.value }))}
+                  className="mt-2 border-2 focus:border-emerald-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.emergencyContactPhone}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
               <Label htmlFor="bloodGroup" className="text-sm font-semibold text-gray-700">Blood Group</Label>
               {isEditing ? (
                 <select
@@ -320,38 +474,24 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
               ) : (
                 <p className="mt-2 p-3 bg-red-50 rounded-lg font-medium text-red-700">{profileData.bloodGroup}</p>
               )}
-            </div>
-            
-            <div>
-              <Label htmlFor="emergencyContact" className="text-sm font-semibold text-gray-700">Emergency Contact</Label>
-              {isEditing ? (
-                <Input
-                  id="emergencyContact"
-                  value={profileData.emergencyContact}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, emergencyContact: e.target.value }))}
-                  className="mt-2 border-2 focus:border-emerald-500 transition-colors"
-                />
-              ) : (
-                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.emergencyContact}</p>
-              )}
-            </div>
           </div>
-          
+
+
           <div>
             <Label htmlFor="allergies" className="text-sm font-semibold text-gray-700">Known Allergies</Label>
             {isEditing ? (
               <Input
                 id="allergies"
-                value={profileData.allergies}
-                onChange={(e) => setProfileData(prev => ({ ...prev, allergies: e.target.value }))}
+                value={profileData.knownAllergies}
+                onChange={(e) => setProfileData(prev => ({ ...prev, knownAllergies: e.target.value }))}
                 className="mt-2 border-2 focus:border-emerald-500 transition-colors"
                 placeholder="List any known allergies"
               />
             ) : (
-              <p className="mt-2 p-3 bg-orange-50 rounded-lg font-medium text-orange-700">{profileData.allergies}</p>
+              <p className="mt-2 p-3 bg-orange-50 rounded-lg font-medium text-orange-700">{profileData.knownAllergies}</p>
             )}
           </div>
-          
+
           <div>
             <Label htmlFor="currentMedications" className="text-sm font-semibold text-gray-700">Current Medications</Label>
             {isEditing ? (
@@ -366,19 +506,19 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
               <p className="mt-2 p-3 bg-blue-50 rounded-lg font-medium text-blue-700">{profileData.currentMedications}</p>
             )}
           </div>
-          
+
           <div>
             <Label htmlFor="medicalHistory" className="text-sm font-semibold text-gray-700">Medical History</Label>
             {isEditing ? (
               <Input
                 id="medicalHistory"
-                value={profileData.medicalHistory}
+                value={profileData.currentMedications}
                 onChange={(e) => setProfileData(prev => ({ ...prev, medicalHistory: e.target.value }))}
                 className="mt-2 border-2 focus:border-emerald-500 transition-colors"
                 placeholder="Brief medical history"
               />
             ) : (
-              <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.medicalHistory}</p>
+              <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.currentMedications}</p>
             )}
           </div>
         </CardContent>

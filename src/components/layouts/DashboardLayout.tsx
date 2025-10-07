@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -63,14 +64,29 @@ const DashboardLayout = ({ children, userType }: DashboardLayoutProps) => {
   };
 
   const config = userTypeConfig[userType];
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
 
-  const handleLogout = () => {
+    if (error) {
+      toast({
+        title: "Logout Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
+      variant: "default",
     });
+
     navigate("/");
   };
+
+   
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;

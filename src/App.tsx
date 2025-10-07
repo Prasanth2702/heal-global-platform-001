@@ -27,7 +27,7 @@ import InstallPrompt from "./components/pwa/InstallPrompt";
 import MaintenancePage from "./pages/MaintenancePage";
 
 const queryClient = new QueryClient();
-const MAINTENANCE = true;
+const MAINTENANCE = false;
 
 const App = () => {
   if (MAINTENANCE) {

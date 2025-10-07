@@ -42,7 +42,13 @@ const PatientRegistration = () => {
   const [phoneNumber, setPhoneNumber] = useState('123456789');
   const [emergencyContactCountryCode, setEmergencyContactCountryCode] = useState('+1');
   const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState('123456789');
-   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [manualDate, setManualDate] = useState({
+    manualYear: '',
+    manualMonth: '',
+    manualDay: ''
+  });
+
 
 
   const [formData, setformData] = useState<Patient>({
@@ -107,6 +113,25 @@ const PatientRegistration = () => {
       valid = false;
     }
 
+    if (showManualDate) {
+      if (!manualDate.manualYear) {
+        errors.manualYear = "Year is required";
+        valid = false;
+      }
+      if (!manualDate.manualMonth) {
+        errors.manualMonth = "Month is required";
+        valid = false;
+      }
+      if (!manualDate.manualDay) {
+        errors.manualDay = "Day is required";
+        valid = false;
+      }
+    } else if (!formData.dateOfBirth) {
+      // Regular date picker required if manual not used
+      errors.dateOfBirth = "Date of birth is required";
+      valid = false;
+    }
+
 
     setErrors(errors);
 
@@ -137,12 +162,13 @@ const PatientRegistration = () => {
       return;
     }
 
+  
 
     const patientFullData = {
       ...formData,
       phoneNumber: countryCode + phoneNumber,
       emergencyContactPhone: emergencyContactCountryCode + emergencyPhoneNumber,
-      dateOfBirth: formData.dateOfBirth || (date ? format(date, 'yyyy-MM-dd') : ''),
+      dateOfBirth: format(formData.dateOfBirth, 'yyyy-MM-dd')
     };
 
     setformData(patientFullData);
@@ -174,21 +200,24 @@ const PatientRegistration = () => {
     });
     return;
   }
-
+ 
+  
     const { data, error } = await supabase
       .from('profiles')
       .update({
         first_name: patientFullData.firstName,
         last_name: patientFullData.lastName,
         phone_number: patientFullData.phoneNumber,
-        role: patientFullData.userType,
+        role: 'patient',
         date_of_birth: patientFullData.dateOfBirth,
         gender: patientFullData.gender,
         emergency_contact_name: patientFullData.emergencyContactName,
         blood_group: patientFullData.bloodGroup,
         emergency_contact_number: patientFullData.emergencyContactPhone,
         known_allergies: patientFullData.knownAllergies,
-        current_medications: patientFullData.currentMedications
+        current_medications: patientFullData.currentMedications,
+        avatar_url:patientFullData.avatarUrl,
+        email:patientFullData.emailAddress
       })
       .eq('email', patientFullData.emailAddress);
 
@@ -212,13 +241,24 @@ const PatientRegistration = () => {
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
-    if (selectedDate) {
+    if (selectedDate && !showManualDate) {
       setformData({
         ...formData,
         dateOfBirth: format(selectedDate, 'yyyy-MM-dd')
       });
     }
   };
+
+  const handleManualDateChange = () => {
+    if (manualDate.manualYear && manualDate.manualMonth && manualDate.manualDay) {
+      const monthIndex = months.indexOf(manualDate.manualMonth);
+      const dateString = `${manualDate.manualYear}-${String(monthIndex + 1).
+        padStart(2, '0')}-${String(manualDate.manualDay).padStart(2, '0')}`;
+      setDate(new Date(dateString));
+      setformData(formData => ({ ...formData, dateOfBirth: dateString }));
+    }
+  };
+
 
   return (
     <AuthLayout
@@ -339,7 +379,7 @@ const PatientRegistration = () => {
                       className={cn(
                         "justify-start text-left font-normal border-2 hover:border-blue-500 bg-white/80",
                         !date && "text-muted-foreground"
-                      )}
+                      )} disabled={showManualDate}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {date ? format(date, "PPP") : <span>Pick a date</span>}
@@ -357,9 +397,106 @@ const PatientRegistration = () => {
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
-                </Popover>
+                </Popover >
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowManualDate(!showManualDate)}
+                  className="border-2 hover:border-purple-500 bg-white/80"
+                >
+                  <Globe className="mr-2 h-4 w-4" />
+                  Manual Entry
+                </Button>
               </div>
-
+            
+              
+              {showManualDate && (
+                <div className="grid grid-cols-3 gap-3 p-4 bg-white/60 rounded-lg border-2 border-dashed border-purple-300">
+                  <div>
+                    <Label className="text-xs font-semibold text-gray-600">Year</Label>
+                    <Select
+                      value={manualDate.manualYear}
+                      onValueChange={(value) => {
+                        setManualDate(prev => ({
+                          ...prev,      
+                          manualYear: value
+                        }));
+                        setTimeout(handleManualDateChange, 100);
+                      }}
+                    >
+                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
+                        <SelectValue placeholder="Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.manualYear && (
+                      <p className="text-red-500 text-xs mt-1">{errors.manualYear}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs font-semibold text-gray-600">Month</Label>
+                    <Select
+                      value={manualDate.manualMonth}
+                      onValueChange={(value) => {
+                          setManualDate(prev => ({
+                          ...prev,      
+                          manualMonth: value
+                        }));
+                        setTimeout(handleManualDateChange, 100);
+                      }}
+                    >
+                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {months.map((month) => (
+                          <SelectItem key={month} value={month}>
+                            {month}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                     {errors.manualMonth && (
+                      <p className="text-red-500 text-xs mt-1">{errors.manualMonth}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs font-semibold text-gray-600">Day</Label>
+                    <Select
+                      value={manualDate.manualDay}
+                      onValueChange={(value) => {
+                          setManualDate(prev => ({
+                          ...prev,      
+                          manualDay: value
+                        }));
+                        setTimeout(handleManualDateChange, 100);
+                      }}
+                    >
+                      <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
+                        <SelectValue placeholder="Day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                          <SelectItem key={day} value={day.toString()}>
+                            {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                     {errors.manualDay && (
+                      <p className="text-red-500 text-xs mt-1">{errors.manualDay}</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>

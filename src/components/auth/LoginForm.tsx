@@ -47,34 +47,64 @@ const LoginForm = () => {
 
   const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const checkEmailInProfiles = async (email) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .single();
 
-  const { email, password } = formData;
-  const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-  if (error) {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive"
-      });
-      return;
+    if (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+    else{
+      console.log(data);
     }
 
-    toast({
-      title: "Login Successful!",
-      description: `Welcome back! Redirecting to your ${userType} dashboard...`,
-    });
-    
-    setTimeout(() => {
-      navigate(config.dashboardRoute);
-    }, 1500);
+    return !!data;
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { email, password } = formData;
+
+    const emailExists = await checkEmailInProfiles(email);
+    if (emailExists) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password. Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Login Successful!",
+        description: `Welcome back! Redirecting to your ${userType} dashboard...`,
+      });
+
+      setTimeout(() => {
+        navigate(config.dashboardRoute);
+      }, 1500);
+
+    } else {
+      console.log("Email is not registered. Please sign up first");
+      toast({
+        title: "Login failed",
+        description: "Email is not registered. Please sign up first",
+        variant: "destructive"
+      });
+    }
+  };
+
 
   const handleLoginSuccess = () => {
     setTimeout(() => {

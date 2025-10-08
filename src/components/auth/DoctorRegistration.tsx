@@ -7,27 +7,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+
 import AuthLayout from "./AuthLayout";
+import { MedicalProfessional } from "@/Models/MedicalProfessional";
+import { supabase } from "@/integrations/supabase/client";
 
 const DoctorRegistration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
+  const [password, setPassword] = useState('');
+  const [termsAccepted,setTermsAccepted] = useState(false);
+  const [kycAccepted,setKycAccepted] = useState(false);  
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  const [formData, setFormData] = useState<MedicalProfessional>({
     firstName: "",
     lastName: "",
-    email: "",
-    phone: "",
-    specialty: "",
+    emailAddress: "",
+    phoneNumber: "",
+    medicalSpeciality: "",
     licenseNumber: "",
-    graduationYear: "",
+    graduationYear: new Date().getFullYear(),
     medicalSchool: "",
-    experience: "",
-    languages: "",
-    consultationFee: "",
-    qualifications: "",
-    about: "",
-    termsAccepted: false,
-    kycAccepted: false
+    yearsOfExperience: 0,
+    languagesKnown: "",
+    consultationFees: 0,
+    additionalQualifications: "",
+    aboutYourself: "",
+    kycVerified: false
   });
 
   const specialties = [
@@ -37,10 +44,49 @@ const DoctorRegistration = () => {
     "Homeopath", "Psychologist", "ENT Specialist", "Ophthalmologist"
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  
+
+
+  const validateForm = (formData: MedicalProfessional) => {
+    const errors: { [key: string]: string } = {};
+    let valid = true;
+
+    if (!formData.emailAddress) {
+      errors.emailAddress = "Email is required";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+      errors.emailAddress = "Invalid email format";
+      valid = false;
+    }
+
+    if (!formData.phoneNumber) {
+      errors.phoneNumber = "Phone number is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
+      errors.phoneNumber = "Invalid phone number format";
+      valid = false;
+    }
+
+
+    setErrors(errors);
+
+    const firstErrorKey = Object.keys(errors)[0];
+    if (firstErrorKey) {
+      toast({
+        title: "Error in registering Medical Professional",
+        description: errors[firstErrorKey],
+        variant: "destructive",
+        className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+      });
+      valid = false;
+    }
+    return valid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.termsAccepted || !formData.kycAccepted) {
+    if (!termsAccepted || !kycAccepted) {
       toast({
         title: "Agreement Required",
         description: "Please accept all terms and KYC verification to continue.",
@@ -49,7 +95,85 @@ const DoctorRegistration = () => {
       return;
     }
 
-    // Mock registration - will connect to Supabase later
+    const doctorFullData = {
+          ...formData
+    };
+    
+    setFormData(doctorFullData);
+    
+    console.log(doctorFullData);
+
+     if (!validateForm(doctorFullData)) {
+      console.log(errors);     
+      return;
+    }
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: doctorFullData.emailAddress,
+          password: password,
+          options: {
+            data: {
+              firstName: doctorFullData.firstName,
+              lastName: doctorFullData.lastName,
+            },
+          },
+    });
+
+     if (signUpError) {
+    toast({
+      title: 'Registration Failed',
+      description: signUpError.message, 
+      variant: 'destructive',
+      className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+    });
+    return;
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: doctorFullData.firstName,
+        last_name: doctorFullData.lastName,
+        phone_number: doctorFullData.phoneNumber,
+        role: 'doctor',
+        email: doctorFullData.emailAddress
+      })
+      .eq('email', doctorFullData.emailAddress);
+
+    if (error) {
+      console.error('Update error:', error.message);
+    } else {
+      console.log('Row updated:', data);
+    }
+
+    const { data: medProfData, error: medProfError } = await supabase
+      .from('medical_professionals')
+      .insert({
+        user_id: signUpData.user?.id,
+        medical_speciality: doctorFullData.medicalSpeciality,
+        license_number: doctorFullData.licenseNumber,
+        graduation_year: doctorFullData.graduationYear,
+        medical_school: doctorFullData.medicalSchool,
+        years_experience: doctorFullData.yearsOfExperience,
+        languages_known: doctorFullData.languagesKnown,
+        consultation_fee: doctorFullData.consultationFees,
+        education: doctorFullData.additionalQualifications,
+        about_yourself: doctorFullData.aboutYourself
+      });
+
+
+    if (medProfError) {
+      console.error('Update error for medical_professionals:', medProfError.message);
+    } else {
+      console.log('Medical professionals row updated:', medProfData);
+    }
+
+    toast({
+      title: "Registration Submitted!",
+      description: "Your application is under review. You'll receive verification status within 24-48 hours.",
+    });
+
+
     toast({
       title: "Registration Submitted!",
       description: "Your application is under review. You'll receive verification status within 24-48 hours.",
@@ -93,8 +217,21 @@ const DoctorRegistration = () => {
           <Input
             id="email"
             type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            value={formData.emailAddress}
+            onChange={(e) => setFormData({...formData, emailAddress: e.target.value})}
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
+            placeholder="enter your password"
             required
           />
         </div>
@@ -104,22 +241,22 @@ const DoctorRegistration = () => {
           <Input
             id="phone"
             type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
             required
           />
         </div>
 
         <div>
           <Label htmlFor="specialty">Medical Specialty</Label>
-          <Select value={formData.specialty} onValueChange={(value) => setFormData({...formData, specialty: value})}>
+          <Select value={formData.medicalSpeciality} onValueChange={(value) => setFormData({...formData, medicalSpeciality: value})}>
             <SelectTrigger>
               <SelectValue placeholder="Select your specialty" />
             </SelectTrigger>
             <SelectContent>
-              {specialties.map((specialty) => (
-                <SelectItem key={specialty} value={specialty.toLowerCase().replace(/\s+/g, '-')}>
-                  {specialty}
+              {specialties.map((medicalSpeciality) => (
+                <SelectItem key={medicalSpeciality} value={medicalSpeciality.toLowerCase().replace(/\s+/g, '-')}>
+                  {medicalSpeciality}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -144,7 +281,7 @@ const DoctorRegistration = () => {
               min="1950"
               max={new Date().getFullYear()}
               value={formData.graduationYear}
-              onChange={(e) => setFormData({...formData, graduationYear: e.target.value})}
+              onChange={(e) => setFormData({...formData, graduationYear: Number(e.target.value) })}
               required
             />
           </div>
@@ -168,8 +305,8 @@ const DoctorRegistration = () => {
               type="number"
               min="0"
               max="50"
-              value={formData.experience}
-              onChange={(e) => setFormData({...formData, experience: e.target.value})}
+              value={formData.yearsOfExperience}
+              onChange={(e) => setFormData({...formData, yearsOfExperience: Number(e.target.value)})}
               required
             />
           </div>
@@ -179,8 +316,8 @@ const DoctorRegistration = () => {
               id="consultationFee"
               type="number"
               min="0"
-              value={formData.consultationFee}
-              onChange={(e) => setFormData({...formData, consultationFee: e.target.value})}
+              value={formData.consultationFees}
+              onChange={(e) => setFormData({...formData, consultationFees: Number(e.target.value)})}
               placeholder="e.g., 500"
             />
           </div>
@@ -190,8 +327,8 @@ const DoctorRegistration = () => {
           <Label htmlFor="languages">Languages Spoken</Label>
           <Input
             id="languages"
-            value={formData.languages}
-            onChange={(e) => setFormData({...formData, languages: e.target.value})}
+            value={formData.languagesKnown}
+            onChange={(e) => setFormData({...formData, languagesKnown: e.target.value})}
             placeholder="e.g., English, Hindi, Regional languages"
             required
           />
@@ -201,8 +338,8 @@ const DoctorRegistration = () => {
           <Label htmlFor="qualifications">Additional Qualifications</Label>
           <Textarea
             id="qualifications"
-            value={formData.qualifications}
-            onChange={(e) => setFormData({...formData, qualifications: e.target.value})}
+            value={formData.additionalQualifications}
+            onChange={(e) => setFormData({...formData, additionalQualifications: e.target.value})}
             placeholder="List your degrees, certifications, specializations..."
             rows={3}
           />
@@ -212,8 +349,8 @@ const DoctorRegistration = () => {
           <Label htmlFor="about">About Yourself</Label>
           <Textarea
             id="about"
-            value={formData.about}
-            onChange={(e) => setFormData({...formData, about: e.target.value})}
+            value={formData.aboutYourself}
+            onChange={(e) => setFormData({...formData, aboutYourself: e.target.value})}
             placeholder="Brief introduction about your practice, approach, achievements..."
             rows={4}
           />
@@ -223,8 +360,8 @@ const DoctorRegistration = () => {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="terms"
-              checked={formData.termsAccepted}
-              onCheckedChange={(checked) => setFormData({...formData, termsAccepted: checked as boolean})}
+              checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
             />
             <Label htmlFor="terms" className="text-sm">
               I accept the Terms and Conditions for Medical Professionals
@@ -233,8 +370,8 @@ const DoctorRegistration = () => {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="kyc"
-              checked={formData.kycAccepted}
-              onCheckedChange={(checked) => setFormData({...formData, kycAccepted: checked as boolean})}
+              checked={kycAccepted}
+              onCheckedChange={(checked) => setKycAccepted(checked as boolean)}
             />
             <Label htmlFor="kyc" className="text-sm">
               I consent to KYC verification and license validation

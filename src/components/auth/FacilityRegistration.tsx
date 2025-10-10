@@ -5,39 +5,42 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate } from "react-router-dom";
+import { UNSAFE_ErrorResponseImpl, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
+import { MedicalFacility } from "@/Models/MedicalFacility";
+import { supabase } from "@/integrations/supabase/client";
 
 const FacilityRegistration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    facilityName: "",
-    facilityType: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-    latitude: "",
-    longitude: "",
-    licenseNumber: "",
-    establishedYear: "",
-    totalBeds: "",
+  const [formData, setFormData] = useState<MedicalFacility>({
+    facilityName: '',
+    facilityType: '',
+    phoneNumber: '',
+    emailAddress: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    latitude: 0,
+    longitude: 0,
+    licenseNumber: '',
+    establishedYear: 2025,
+    totalBeds: 0,
     departments: [] as string[],
     emergencyServices: false,
     ambulanceService: false,
     onlineConsultation: false,
     homeVisit: false,
-    insuranceAccepted: "",
-    operatingHours: "",
-    website: "",
-    description: "",
-    termsAccepted: false,
-    kycAccepted: false
+    insurancePartners: '',
+    operatingHours: '',
+    website: '',
+    aboutFacility: ''
   });
+  const [password,setPassword] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [kycAccepted,setKycAccepted] = useState(false);
 
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
@@ -60,11 +63,10 @@ const FacilityRegistration = () => {
             const { latitude, longitude } = position.coords;
             setFormData(prev => ({
               ...prev,
-              latitude: latitude.toString(),
-              longitude: longitude.toString()
+              latitude: latitude,
+              longitude: longitude
             }));
 
-            // Mock reverse geocoding - in real app, use a geocoding service
             toast({
               title: "Location Detected",
               description: `GPS coordinates captured: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
@@ -100,10 +102,10 @@ const FacilityRegistration = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.termsAccepted || !formData.kycAccepted) {
+    if (!termsAccepted || !kycAccepted) {
       toast({
         title: "Agreement Required",
         description: "Please accept all terms and KYC verification to continue.",
@@ -121,7 +123,84 @@ const FacilityRegistration = () => {
       return;
     }
 
-    // Mock registration - will connect to Supabase later
+    const facilityFullData = {
+          ...formData
+    };
+
+    console.log(facilityFullData);
+
+     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: facilityFullData.emailAddress,
+              password: password,
+              options: {
+                data: {
+                  firstName: facilityFullData.facilityName
+                },
+              },
+        });
+    
+         if (signUpError) {
+        toast({
+          title: 'Registration Failed for the facility',
+          description: signUpError.message, 
+          variant: 'destructive',
+          className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+        });
+        return;
+        }
+    
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({
+            first_name: facilityFullData.facilityName,
+            phone_number: facilityFullData.phoneNumber,
+            role: 'hospital_admin',
+            email: facilityFullData.emailAddress
+          })
+          .eq('email', facilityFullData.emailAddress);
+    
+        if (error) {
+          console.error('Update error:', error.message);
+        } else {
+          console.log('Row updated:', data);
+        }
+    
+    const { data: facilityProfData, error: facilityProfError } = await supabase
+      .from('facilities')
+      .insert({
+        admin_user_id: signUpData.user?.id,
+        facility_name: facilityFullData.facilityName,
+        facility_type: facilityFullData.facilityType,
+        address: facilityFullData.address,
+        city: facilityFullData.city,
+        state: facilityFullData.state,
+        pincode: facilityFullData.pincode,
+        latitude: facilityFullData.latitude,
+        longitude: facilityFullData.longitude,
+        license_number: facilityFullData.licenseNumber,
+        established_year: facilityFullData.establishedYear,
+        total_beds: facilityFullData.totalBeds,
+        departments: facilityFullData.departments,
+        insurance_partners: facilityFullData.insurancePartners,
+        operating_hours: facilityFullData.operatingHours,
+        website: facilityFullData.website,
+        about_facility: facilityFullData.aboutFacility,
+        additional_services: {
+          emergencyServices: facilityFullData.emergencyServices,
+          ambulanceService: facilityFullData.ambulanceService,
+          onlineConsultation: facilityFullData.onlineConsultation,
+          homeVisit: facilityFullData.homeVisit
+        }
+      });
+    
+    
+        if (facilityProfError) {
+          console.error('Update error for medical_professionals:', facilityProfError.message);
+        } else {
+          console.log('Medical professionals row updated:', facilityProfData);
+        }
+    
+    
     toast({
       title: "Registration Submitted!",
       description: "Your facility registration is under review. Redirecting to onboarding...",
@@ -172,8 +251,8 @@ const FacilityRegistration = () => {
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              value={formData.emailAddress}
+              onChange={(e) => setFormData({...formData, emailAddress: e.target.value})}
               required
             />
           </div>
@@ -182,11 +261,23 @@ const FacilityRegistration = () => {
             <Input
               id="phone"
               type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
               required
             />
           </div>
+        </div>
+
+         <div>
+          <Label htmlFor="facilityName">Password</Label>
+          <Input
+            id="password"
+            value={password}
+            type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter facility name"
+            required
+          />
         </div>
 
         <div>
@@ -259,7 +350,7 @@ const FacilityRegistration = () => {
               min="1900"
               max={new Date().getFullYear()}
               value={formData.establishedYear}
-              onChange={(e) => setFormData({...formData, establishedYear: e.target.value})}
+              onChange={(e) => setFormData({...formData, establishedYear: Number(e.target.value)})}
               required
             />
           </div>
@@ -272,7 +363,7 @@ const FacilityRegistration = () => {
             type="number"
             min="0"
             value={formData.totalBeds}
-            onChange={(e) => setFormData({...formData, totalBeds: e.target.value})}
+            onChange={(e) => setFormData({...formData, totalBeds: Number(e.target.value)})}
             placeholder="Enter 0 if not applicable"
           />
         </div>
@@ -299,8 +390,9 @@ const FacilityRegistration = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="emergency"
-                checked={formData.emergencyServices}
-                onCheckedChange={(checked) => setFormData({...formData, emergencyServices: checked as boolean})}
+                checked={formData.emergencyServices}                
+                onCheckedChange={(checked) => 
+                  setFormData({...formData, emergencyServices: checked as boolean})}
               />
               <Label htmlFor="emergency" className="text-sm">24/7 Emergency Services</Label>
             </div>
@@ -324,7 +416,9 @@ const FacilityRegistration = () => {
               <Checkbox
                 id="homevisit"
                 checked={formData.homeVisit}
-                onCheckedChange={(checked) => setFormData({...formData, homeVisit: checked as boolean})}
+                onCheckedChange={(checked) =>
+                  setFormData(formData => ({ ...formData, homeVisit: checked as boolean}))
+                }
               />
               <Label htmlFor="homevisit" className="text-sm">Home Visit Service</Label>
             </div>
@@ -335,8 +429,8 @@ const FacilityRegistration = () => {
           <Label htmlFor="insuranceAccepted">Insurance Partners</Label>
           <Input
             id="insuranceAccepted"
-            value={formData.insuranceAccepted}
-            onChange={(e) => setFormData({...formData, insuranceAccepted: e.target.value})}
+            value={formData.insurancePartners}
+            onChange={(e) => setFormData({...formData, insurancePartners: e.target.value})}
             placeholder="e.g., ICICI Lombard, Star Health, Cashless accepted"
           />
         </div>
@@ -367,8 +461,8 @@ const FacilityRegistration = () => {
           <Label htmlFor="description">About Your Facility</Label>
           <Textarea
             id="description"
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
+            value={formData.aboutFacility}
+            onChange={(e) => setFormData({...formData, aboutFacility: e.target.value})}
             placeholder="Brief description of your facility, specialties, achievements..."
             rows={4}
           />
@@ -378,8 +472,8 @@ const FacilityRegistration = () => {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="terms"
-              checked={formData.termsAccepted}
-              onCheckedChange={(checked) => setFormData({...formData, termsAccepted: checked as boolean})}
+              checked={termsAccepted}
+              onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
             />
             <Label htmlFor="terms" className="text-sm">
               I accept the Terms and Conditions for Medical Facilities
@@ -388,8 +482,8 @@ const FacilityRegistration = () => {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="kyc"
-              checked={formData.kycAccepted}
-              onCheckedChange={(checked) => setFormData({...formData, kycAccepted: checked as boolean})}
+              checked={kycAccepted}
+              onCheckedChange={(checked) => setKycAccepted(checked as boolean)}
             />
             <Label htmlFor="kyc" className="text-sm">
               I consent to KYC verification and license validation

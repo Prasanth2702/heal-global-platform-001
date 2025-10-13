@@ -127,7 +127,6 @@ const PatientRegistration = () => {
         valid = false;
       }
     } else if (!formData.dateOfBirth) {
-      // Regular date picker required if manual not used
       errors.dateOfBirth = "Date of birth is required";
       valid = false;
     }
@@ -168,7 +167,7 @@ const PatientRegistration = () => {
       ...formData,
       phoneNumber: countryCode + phoneNumber,
       emergencyContactPhone: emergencyContactCountryCode + emergencyPhoneNumber,
-      dateOfBirth: format(formData.dateOfBirth, 'yyyy-MM-dd')
+      dateOfBirth: formData.dateOfBirth
     };
 
     setformData(patientFullData);
@@ -208,14 +207,7 @@ const PatientRegistration = () => {
         first_name: patientFullData.firstName,
         last_name: patientFullData.lastName,
         phone_number: patientFullData.phoneNumber,
-        role: 'patient',
-        date_of_birth: patientFullData.dateOfBirth,
-        gender: patientFullData.gender,
-        emergency_contact_name: patientFullData.emergencyContactName,
-        blood_group: patientFullData.bloodGroup,
-        emergency_contact_number: patientFullData.emergencyContactPhone,
-        known_allergies: patientFullData.knownAllergies,
-        current_medications: patientFullData.currentMedications,
+        role: 'patient',     
         avatar_url:patientFullData.avatarUrl,
         email:patientFullData.emailAddress
       })
@@ -227,7 +219,28 @@ const PatientRegistration = () => {
       console.log('Row updated:', data);
     }
 
+    console.log("date of birth"+patientFullData.dateOfBirth);
 
+    const { data: patientData, error: patientError } = await supabase
+      .from('patients')
+      .upsert({
+        user_id: signUpData.user?.id,
+        gender: patientFullData.gender,
+        emergency_contact_name: patientFullData.emergencyContactName,
+        date_of_birth: date,
+        blood_group: patientFullData.bloodGroup,
+        emergency_contact_number: patientFullData.emergencyContactPhone,
+        known_allergies: patientFullData.knownAllergies,
+        current_medications: patientFullData.currentMedications,
+      });
+
+    
+        if (patientError) {
+          console.error('Update error for patients:', patientError.message);
+        } else {
+          console.log('Patients row updated:', patientData);
+        }
+  
     toast({
       title: '🎉 Registration Successful!',
       description: 'Welcome to NextGen Medical Platform. Redirecting to your dashboard...',

@@ -38,13 +38,14 @@ const FacilityRegistration = () => {
     website: '',
     aboutFacility: ''
   });
-  const [password,setPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [kycAccepted,setKycAccepted] = useState(false);
+  const [kycAccepted, setKycAccepted] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
-    "Homeopathy Clinic", "Physiotherapy Center", "Dental Clinic", 
+    "Homeopathy Clinic", "Physiotherapy Center", "Dental Clinic",
     "Eye Care Center", "Maternity Home", "Nursing Home", "Rehabilitation Center"
   ];
 
@@ -102,9 +103,49 @@ const FacilityRegistration = () => {
     }));
   };
 
+  const validateForm = (formData: MedicalFacility) => {
+    const errors: { [key: string]: string } = {};
+    let valid = true;
+
+    if (!formData.emailAddress) {
+      errors.emailAddress = "Email is required";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+      errors.emailAddress = "Invalid email format";
+      valid = false;
+    }
+
+    if (!formData.phoneNumber) {
+      errors.phoneNumber = "Phone number is required";
+      valid = false;
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
+      errors.phoneNumber = "Invalid phone number format";
+      valid = false;
+    }
+
+    if (formData.departments.length === 0) {
+      errors.departments = "Please select at least one department/service.";
+      valid = false;
+    }
+    setErrors(errors);
+
+    const firstErrorKey = Object.keys(errors)[0];
+    if (firstErrorKey) {
+      toast({
+        title: "Error in registering Medical Facility",
+        description: errors[firstErrorKey],
+        variant: "destructive",
+        className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+      });
+      valid = false;
+    }
+    return valid;
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!termsAccepted || !kycAccepted) {
       toast({
         title: "Agreement Required",
@@ -114,57 +155,53 @@ const FacilityRegistration = () => {
       return;
     }
 
-    if (formData.departments.length === 0) {
-      toast({
-        title: "Departments Required",
-        description: "Please select at least one department/service.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const facilityFullData = {
-          ...formData
+      ...formData
     };
 
     console.log(facilityFullData);
 
-     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-              email: facilityFullData.emailAddress,
-              password: password,
-              options: {
-                data: {
-                  firstName: facilityFullData.facilityName
-                },
-              },
-        });
-    
-         if (signUpError) {
-        toast({
-          title: 'Registration Failed for the facility',
-          description: signUpError.message, 
-          variant: 'destructive',
-          className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
-        });
-        return;
-        }
-    
-        const { data, error } = await supabase
-          .from('profiles')
-          .update({
-            first_name: facilityFullData.facilityName,
-            phone_number: facilityFullData.phoneNumber,
-            role: 'hospital_admin',
-            email: facilityFullData.emailAddress
-          })
-          .eq('email', facilityFullData.emailAddress);
-    
-        if (error) {
-          console.error('Update error:', error.message);
-        } else {
-          console.log('Row updated:', data);
-        }
-    
+    if (!validateForm(facilityFullData)) {
+      console.log(errors);
+      return;
+    }
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: facilityFullData.emailAddress,
+      password: password,
+      options: {
+        data: {
+          firstName: facilityFullData.facilityName
+        },
+      },
+    });
+
+    if (signUpError) {
+      toast({
+        title: 'Registration Failed for the facility',
+        description: signUpError.message,
+        variant: 'destructive',
+        className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+      });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: facilityFullData.facilityName,
+        phone_number: facilityFullData.phoneNumber,
+        role: 'hospital_admin',
+        email: facilityFullData.emailAddress
+      })
+      .eq('email', facilityFullData.emailAddress);
+
+    if (error) {
+      console.error('Update error:', error.message);
+    } else {
+      console.log('Row updated:', data);
+    }
+
     const { data: facilityProfData, error: facilityProfError } = await supabase
       .from('facilities')
       .insert({
@@ -192,20 +229,20 @@ const FacilityRegistration = () => {
           homeVisit: facilityFullData.homeVisit
         }
       });
-    
-    
-        if (facilityProfError) {
-          console.error('Update error for medical_professionals:', facilityProfError.message);
-        } else {
-          console.log('Medical professionals row updated:', facilityProfData);
-        }
-    
-    
+
+
+    if (facilityProfError) {
+      console.error('Update error for medical_professionals:', facilityProfError.message);
+    } else {
+      console.log('Medical professionals row updated:', facilityProfData);
+    }
+
+
     toast({
       title: "Registration Submitted!",
       description: "Your facility registration is under review. Redirecting to onboarding...",
     });
-    
+
     setTimeout(() => {
       navigate("/onboarding/facility");
     }, 2000);
@@ -223,7 +260,7 @@ const FacilityRegistration = () => {
           <Input
             id="facilityName"
             value={formData.facilityName}
-            onChange={(e) => setFormData({...formData, facilityName: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, facilityName: e.target.value })}
             placeholder="Enter facility name"
             required
           />
@@ -231,7 +268,7 @@ const FacilityRegistration = () => {
 
         <div>
           <Label htmlFor="facilityType">Facility Type</Label>
-          <Select value={formData.facilityType} onValueChange={(value) => setFormData({...formData, facilityType: value})}>
+          <Select value={formData.facilityType} onValueChange={(value) => setFormData({ ...formData, facilityType: value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select facility type" />
             </SelectTrigger>
@@ -252,7 +289,7 @@ const FacilityRegistration = () => {
               id="email"
               type="email"
               value={formData.emailAddress}
-              onChange={(e) => setFormData({...formData, emailAddress: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
               required
             />
           </div>
@@ -262,20 +299,20 @@ const FacilityRegistration = () => {
               id="phone"
               type="tel"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               required
             />
           </div>
         </div>
 
-         <div>
+        <div>
           <Label htmlFor="facilityName">Password</Label>
           <Input
             id="password"
             value={password}
             type="password"
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter facility name"
+            placeholder="Enter your password"
             required
           />
         </div>
@@ -285,7 +322,7 @@ const FacilityRegistration = () => {
           <Textarea
             id="address"
             value={formData.address}
-            onChange={(e) => setFormData({...formData, address: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             placeholder="Enter complete address"
             required
           />
@@ -297,7 +334,7 @@ const FacilityRegistration = () => {
             <Input
               id="city"
               value={formData.city}
-              onChange={(e) => setFormData({...formData, city: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               required
             />
           </div>
@@ -306,7 +343,7 @@ const FacilityRegistration = () => {
             <Input
               id="state"
               value={formData.state}
-              onChange={(e) => setFormData({...formData, state: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
               required
             />
           </div>
@@ -315,7 +352,7 @@ const FacilityRegistration = () => {
             <Input
               id="pincode"
               value={formData.pincode}
-              onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
               required
             />
           </div>
@@ -338,7 +375,7 @@ const FacilityRegistration = () => {
             <Input
               id="licenseNumber"
               value={formData.licenseNumber}
-              onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
               required
             />
           </div>
@@ -350,7 +387,7 @@ const FacilityRegistration = () => {
               min="1900"
               max={new Date().getFullYear()}
               value={formData.establishedYear}
-              onChange={(e) => setFormData({...formData, establishedYear: Number(e.target.value)})}
+              onChange={(e) => setFormData({ ...formData, establishedYear: Number(e.target.value) })}
               required
             />
           </div>
@@ -363,7 +400,7 @@ const FacilityRegistration = () => {
             type="number"
             min="0"
             value={formData.totalBeds}
-            onChange={(e) => setFormData({...formData, totalBeds: Number(e.target.value)})}
+            onChange={(e) => setFormData({ ...formData, totalBeds: Number(e.target.value) })}
             placeholder="Enter 0 if not applicable"
           />
         </div>
@@ -390,9 +427,9 @@ const FacilityRegistration = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="emergency"
-                checked={formData.emergencyServices}                
-                onCheckedChange={(checked) => 
-                  setFormData({...formData, emergencyServices: checked as boolean})}
+                checked={formData.emergencyServices}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, emergencyServices: checked as boolean })}
               />
               <Label htmlFor="emergency" className="text-sm">24/7 Emergency Services</Label>
             </div>
@@ -400,7 +437,7 @@ const FacilityRegistration = () => {
               <Checkbox
                 id="ambulance"
                 checked={formData.ambulanceService}
-                onCheckedChange={(checked) => setFormData({...formData, ambulanceService: checked as boolean})}
+                onCheckedChange={(checked) => setFormData({ ...formData, ambulanceService: checked as boolean })}
               />
               <Label htmlFor="ambulance" className="text-sm">Ambulance Service</Label>
             </div>
@@ -408,7 +445,7 @@ const FacilityRegistration = () => {
               <Checkbox
                 id="teleconsult"
                 checked={formData.onlineConsultation}
-                onCheckedChange={(checked) => setFormData({...formData, onlineConsultation: checked as boolean})}
+                onCheckedChange={(checked) => setFormData({ ...formData, onlineConsultation: checked as boolean })}
               />
               <Label htmlFor="teleconsult" className="text-sm">Online Consultation</Label>
             </div>
@@ -417,7 +454,7 @@ const FacilityRegistration = () => {
                 id="homevisit"
                 checked={formData.homeVisit}
                 onCheckedChange={(checked) =>
-                  setFormData(formData => ({ ...formData, homeVisit: checked as boolean}))
+                  setFormData(formData => ({ ...formData, homeVisit: checked as boolean }))
                 }
               />
               <Label htmlFor="homevisit" className="text-sm">Home Visit Service</Label>
@@ -430,7 +467,7 @@ const FacilityRegistration = () => {
           <Input
             id="insuranceAccepted"
             value={formData.insurancePartners}
-            onChange={(e) => setFormData({...formData, insurancePartners: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, insurancePartners: e.target.value })}
             placeholder="e.g., ICICI Lombard, Star Health, Cashless accepted"
           />
         </div>
@@ -440,7 +477,7 @@ const FacilityRegistration = () => {
           <Input
             id="operatingHours"
             value={formData.operatingHours}
-            onChange={(e) => setFormData({...formData, operatingHours: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, operatingHours: e.target.value })}
             placeholder="e.g., Mon-Sat: 9AM-9PM, Sun: 9AM-6PM"
             required
           />
@@ -452,7 +489,7 @@ const FacilityRegistration = () => {
             id="website"
             type="url"
             value={formData.website}
-            onChange={(e) => setFormData({...formData, website: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
             placeholder="https://www.yourfacility.com"
           />
         </div>
@@ -462,7 +499,7 @@ const FacilityRegistration = () => {
           <Textarea
             id="description"
             value={formData.aboutFacility}
-            onChange={(e) => setFormData({...formData, aboutFacility: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, aboutFacility: e.target.value })}
             placeholder="Brief description of your facility, specialties, achievements..."
             rows={4}
           />

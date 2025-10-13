@@ -172,12 +172,6 @@ const DoctorRegistration = () => {
       title: "Registration Submitted!",
       description: "Your application is under review. You'll receive verification status within 24-48 hours.",
     });
-
-
-    toast({
-      title: "Registration Submitted!",
-      description: "Your application is under review. You'll receive verification status within 24-48 hours.",
-    });
     
     setTimeout(() => {
       navigate("/onboarding/doctor");

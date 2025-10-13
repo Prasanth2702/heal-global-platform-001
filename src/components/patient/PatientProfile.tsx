@@ -18,10 +18,12 @@ import {
   Camera,
   Heart,
   Activity,
-  Shield
+  Shield,
+  ConeIcon
 } from 'lucide-react';
 import { Patient } from '@/Models/Patient';
 import { supabase } from '@/integrations/supabase/client';
+import { profile } from 'console';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -60,48 +62,55 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
         return;
       }
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profilesData, error: profilesDataError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      if (profileError) {
-        console.error('Profile fetch error:', profileError.message);
+      if (profilesDataError) {
+        console.error('Profile fetch error:', profilesDataError.message);
         return;
       }
 
-      if (profile) {
+
+      const { data: patientData, error: patientDataError } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (patientDataError) {
+        console.error('Profile fetch error:', patientDataError.message);
+        return;
+      }
+      if (patientData) {
         setProfileData({
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-          emailAddress: profile.email || '',
-          phoneNumber: profile.phone_number || '',
-          dateOfBirth: profile.date_of_birth || '',
-          avatarUrl: profile.avatar_url || '',
-          gender: profile.gender || '',
-          bloodGroup: profile.blood_group || '',
-          emergencyContactName: profile.emergency_contact_name || '',
-          emergencyContactPhone: profile.emergency_contact_number || '',
-          knownAllergies: profile.known_allergies || '',
-          currentMedications: profile.current_medications || '',
-          userType: profile.user_type || 'patient',
+          firstName: profilesData.first_name || '',
+          lastName: profilesData.last_name || '',
+          emailAddress: profilesData.email || '',
+          phoneNumber: profilesData.phone_number || '',
+          avatarUrl: profilesData.avatar_url || '',
+          userType: profilesData.user_type || 'patient',
+          dateOfBirth: patientData.date_of_birth || '',
+          gender: patientData.gender || '',
+          bloodGroup: patientData.blood_group || '',
+          emergencyContactName: patientData.emergency_contact_name || '',
+          emergencyContactPhone: patientData.emergency_contact_number || '',
+          knownAllergies: patientData.known_allergies || '',
+          currentMedications: patientData.current_medications || ''
         });
       }
     };
-
     fetchProfile();
   }, []);
 
-  	
+
   // Validation function
   const validateForm = (formData: Patient) => {
     const errors: { [key: string]: string } = {};
     let valid = true;
-    if (!formData.emailAddress) {
-      errors.emailAddress = "Email is required";
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
       errors.emailAddress = "Invalid email format";
       valid = false;
     }
@@ -160,30 +169,38 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
       return;
     }
 
-    const updates = {
+    const profilesUpdate = {
       user_id: user.id,
       first_name: profileData.firstName,
       last_name: profileData.lastName,
       email: profileData.emailAddress,
       phone_number: profileData.phoneNumber,
+      avatar_url: profileData.avatarUrl
+    };
+
+    const patientsUpdate = {
+      user_id: user.id,
       date_of_birth: profileData.dateOfBirth,
-      avatar_url: profileData.avatarUrl,
       gender: profileData.gender,
       blood_group: profileData.bloodGroup,
       emergency_contact_name: profileData.emergencyContactName,
       emergency_contact_number: profileData.emergencyContactPhone,
       known_allergies: profileData.knownAllergies,
       current_medications: profileData.currentMedications,
-    };
+    }
 
-    const { error } = await supabase
+    const { error: profilesUpdateError } = await supabase
       .from('profiles')
-      .upsert(updates, { onConflict: 'user_id' }); 
+      .upsert(profilesUpdate, { onConflict: 'user_id' });
 
-    if (error) {
+    const { error: patientsUpdateError } = await supabase
+      .from('patients')
+      .upsert(patientsUpdate, { onConflict: 'user_id' });
+
+    if (profilesUpdateError || patientsUpdateError) {
       toast({
         title: 'Update Failed',
-        description: error.message,
+        description: profilesUpdateError.message,
         className: 'bg-red-500 text-white',
       });
     } else {
@@ -235,8 +252,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
         <Button
           onClick={isEditing ? handleSave : () => setIsEditing(true)}
           className={`${isEditing
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-              : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+            : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
             } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
         >
           {isEditing ? (
@@ -261,7 +278,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
               <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
                 <AvatarImage src={profileData.avatarUrl} />
                 <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
-                  {profileData.firstName[0]}{profileData.lastName[0]}
+                  {(profileData.firstName?.[0] || profileData.lastName?.[0] || '')}
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
@@ -348,7 +365,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                   type="email"
                   value={profileData.emailAddress}
                   onChange={(e) => setProfileData(prev => ({ ...prev, emailAddress: e.target.value }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors" disabled 
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors" disabled
                 />
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium flex items-center">
@@ -438,7 +455,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.emergencyContactName}</p>
               )}
             </div>
-              <div>
+            <div>
               <Label htmlFor="emergencyContactPhone" className="text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
               {isEditing ? (
                 <Input
@@ -454,26 +471,26 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
           </div>
 
           <div>
-              <Label htmlFor="bloodGroup" className="text-sm font-semibold text-gray-700">Blood Group</Label>
-              {isEditing ? (
-                <select
-                  id="bloodGroup"
-                  value={profileData.bloodGroup}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, bloodGroup: e.target.value }))}
-                  className="mt-2 w-full p-3 border-2 rounded-lg focus:border-emerald-500 transition-colors"
-                >
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-              ) : (
-                <p className="mt-2 p-3 bg-red-50 rounded-lg font-medium text-red-700">{profileData.bloodGroup}</p>
-              )}
+            <Label htmlFor="bloodGroup" className="text-sm font-semibold text-gray-700">Blood Group</Label>
+            {isEditing ? (
+              <select
+                id="bloodGroup"
+                value={profileData.bloodGroup}
+                onChange={(e) => setProfileData(prev => ({ ...prev, bloodGroup: e.target.value }))}
+                className="mt-2 w-full p-3 border-2 rounded-lg focus:border-emerald-500 transition-colors"
+              >
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            ) : (
+              <p className="mt-2 p-3 bg-red-50 rounded-lg font-medium text-red-700">{profileData.bloodGroup}</p>
+            )}
           </div>
 
 

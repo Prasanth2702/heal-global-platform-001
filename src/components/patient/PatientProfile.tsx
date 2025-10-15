@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
+import {  
   User,
   Mail,
   Phone,
@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { Patient } from '@/Models/Patient';
 import { supabase } from '@/integrations/supabase/client';
-import { profile } from 'console';
+import { profile } from 'console'
+import {User as SupabaseUser} from '@supabase/supabase-js'
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -32,6 +33,7 @@ interface PatientProfileProps {
 const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [user,setUser] = useState<SupabaseUser>(null);
   const [profileData, setProfileData] = useState<Patient>({
     firstName: '',
     lastName: '',
@@ -61,6 +63,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
         console.error('Auth error:', authError?.message || 'User not found');
         return;
       }
+
+      setUser(user);
 
       const { data: profilesData, error: profilesDataError } = await supabase
         .from('profiles')
@@ -155,20 +159,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
 
     if (!validateForm(profileData)) return;
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      toast({
-        title: 'Authentication Error',
-        description: authError?.message || 'User not found.',
-        className: 'bg-red-500 text-white',
-      });
+    if(!user){
       return;
     }
-
     const profilesUpdate = {
       user_id: user.id,
       first_name: profileData.firstName,
@@ -214,18 +207,53 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
     }
   };
 
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileData(prev => ({ ...prev, avatarUrl: imageUrl }));
+    if (!file) return;
+
+    const filePath = `profile_images/${Date.now()}_${file.name}`;
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('heal_med_app_images_bucket')
+      .upload(filePath, file);
+
+    if (uploadError) {
       toast({
-        title: 'Profile Picture Updated',
-        description: 'Your profile picture has been updated.',
-        className: 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0'
+        title: 'Upload Failed',
+        description: 'Failed to upload profile picture. Please try again.',
       });
+      return;
     }
+
+    const { data: urlData} =  supabase.storage
+      .from('heal_med_app_images_bucket')
+      .getPublicUrl(filePath);
+
+    const publicUrl = urlData.publicUrl;
+
+    console.log("publicUrl"+publicUrl);
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl }) 
+      .eq('user_id', user?.id);
+
+    if (updateError) {
+      toast({
+        title: 'Profile Update Failed',
+        description: 'Failed to update profile picture URL. Please try again.',
+      });
+      return;
+    }
+
+    console.log("public url:"+publicUrl);
+
+    setProfileData(prev => ({ ...prev, avatarUrl: publicUrl }));
+    toast({
+      title: 'Profile Picture Updated',
+      description: 'Your profile picture has been updated.',
+      className: 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0'
+    });
   };
 
   return (

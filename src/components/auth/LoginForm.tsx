@@ -47,12 +47,13 @@ const LoginForm = () => {
 
   const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
 
-  const checkEmailInProfiles = async (email) => {
+  const checkEmailInProfiles = async (email : string) => {
+    const lowerCaseEmail = email.toLowerCase();
     const { data, error } = await supabase
       .from('profiles')
       .select('email')
-      .eq('email', email)
-      .single();
+      .eq('email', lowerCaseEmail)
+      .maybeSingle();
 
     if (error) {
       console.error('Error checking email:', error);

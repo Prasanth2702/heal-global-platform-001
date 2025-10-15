@@ -103,12 +103,12 @@ const PatientRegistration = () => {
       valid = false;
     }
 
-    if(!formData.gender){
+    if (!formData.gender) {
       errors.gender = "gender is required";
       valid = false;
     }
 
-    if(!formData.bloodGroup){
+    if (!formData.bloodGroup) {
       errors.bloodGroup = "Blood group is required";
       valid = false;
     }
@@ -135,15 +135,15 @@ const PatientRegistration = () => {
     setErrors(errors);
 
     const firstErrorKey = Object.keys(errors)[0];
-      if (firstErrorKey) {
-        toast({
-          title: "Error in registering patient",
-          description: errors[firstErrorKey],
-          variant: "destructive",
-          className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
-        });
-        valid = false;
-      }
+    if (firstErrorKey) {
+      toast({
+        title: "Error in registering patient",
+        description: errors[firstErrorKey],
+        variant: "destructive",
+        className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+      });
+      valid = false;
+    }
     return valid;
   };
 
@@ -161,7 +161,7 @@ const PatientRegistration = () => {
       return;
     }
 
-  
+
 
     const patientFullData = {
       ...formData,
@@ -175,12 +175,12 @@ const PatientRegistration = () => {
     console.log(patientFullData);
 
     if (!validateForm(patientFullData)) {
-      console.log(errors);     
+      console.log(errors);
       return;
     }
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: patientFullData.emailAddress,
+      email: patientFullData.emailAddress.toLowerCase(),
       password: password,
       options: {
         data: {
@@ -191,27 +191,26 @@ const PatientRegistration = () => {
     });
 
     if (signUpError) {
-    toast({
-      title: 'Registration Failed',
-      description: signUpError.message, 
-      variant: 'destructive',
-      className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
-    });
-    return;
-  }
- 
-  
+      toast({
+        title: 'Registration Failed',
+        description: signUpError.message,
+        variant: 'destructive',
+        className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+      });
+      return;
+    }
+
+
     const { data, error } = await supabase
       .from('profiles')
       .update({
         first_name: patientFullData.firstName,
         last_name: patientFullData.lastName,
         phone_number: patientFullData.phoneNumber,
-        role: 'patient',     
-        avatar_url:patientFullData.avatarUrl,
-        email:patientFullData.emailAddress
+        role: 'patient',
+        email: patientFullData.emailAddress.toLowerCase()
       })
-      .eq('email', patientFullData.emailAddress);
+      .eq('email', patientFullData.emailAddress.toLowerCase());
 
     if (error) {
       console.error('Update error:', error.message);
@@ -219,7 +218,8 @@ const PatientRegistration = () => {
       console.log('Row updated:', data);
     }
 
-    console.log("date of birth"+patientFullData.dateOfBirth);
+    console.log("date of birth" + patientFullData.dateOfBirth);
+    console.log("date of birth from date" + date);
 
     const { data: patientData, error: patientError } = await supabase
       .from('patients')
@@ -234,13 +234,13 @@ const PatientRegistration = () => {
         current_medications: patientFullData.currentMedications,
       });
 
-    
-        if (patientError) {
-          console.error('Update error for patients:', patientError.message);
-        } else {
-          console.log('Patients row updated:', patientData);
-        }
-  
+
+    if (patientError) {
+      console.error('Update error for patients:', patientError.message);
+    } else {
+      console.log('Patients row updated:', patientData);
+    }
+
     toast({
       title: '🎉 Registration Successful!',
       description: 'Welcome to NextGen Medical Platform. Redirecting to your dashboard...',
@@ -253,8 +253,8 @@ const PatientRegistration = () => {
   };
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
-    setDate(selectedDate);
     if (selectedDate && !showManualDate) {
+      setDate(selectedDate);
       setformData({
         ...formData,
         dateOfBirth: format(selectedDate, 'yyyy-MM-dd')
@@ -262,7 +262,7 @@ const PatientRegistration = () => {
     }
   };
 
-  const handleManualDateChange = () => {
+  const handleManualDateChange1 = () => {
     if (manualDate.manualYear && manualDate.manualMonth && manualDate.manualDay) {
       const monthIndex = months.indexOf(manualDate.manualMonth);
       const dateString = `${manualDate.manualYear}-${String(monthIndex + 1).
@@ -271,6 +271,23 @@ const PatientRegistration = () => {
       setformData(formData => ({ ...formData, dateOfBirth: dateString }));
     }
   };
+
+  const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
+    if (
+      updatedManualDate.manualYear &&
+      updatedManualDate.manualMonth &&
+      updatedManualDate.manualDay
+    ) {
+      const monthIndex = months.indexOf(updatedManualDate.manualMonth);
+      const dateString = `${updatedManualDate.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(updatedManualDate.manualDay).padStart(2, '0')}`;
+      setDate(new Date(dateString));
+      setformData(formData => ({
+        ...formData,
+        dateOfBirth: dateString
+      }));
+    }
+  };
+
 
 
   return (
@@ -344,7 +361,7 @@ const PatientRegistration = () => {
             />
             {errors.emailAddress && (
               <p className="text-red-500 text-sm mt-1">{errors.emailAddress}</p>
-                )}
+            )}
           </div>
 
           {/* Phone with Country Code */}
@@ -375,7 +392,7 @@ const PatientRegistration = () => {
                 required
               />
               {errors.phoneNumber && (
-               <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
               )}
             </div>
           </div>
@@ -421,22 +438,20 @@ const PatientRegistration = () => {
                   Manual Entry
                 </Button>
               </div>
-            
-              
+
+
               {showManualDate && (
                 <div className="grid grid-cols-3 gap-3 p-4 bg-white/60 rounded-lg border-2 border-dashed border-purple-300">
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Year</Label>
-                    <Select
-                      value={manualDate.manualYear}
-                      onValueChange={(value) => {
-                        setManualDate(prev => ({
-                          ...prev,      
-                          manualYear: value
-                        }));
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
+                      <Select
+                        value={manualDate.manualYear}
+                        onValueChange={(value) => {
+                          const updatedManualDate = { ...manualDate, manualYear: value };
+                          setManualDate(updatedManualDate);
+                          handleManualDateChange(updatedManualDate);
+                        }}
+                      >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
@@ -452,19 +467,17 @@ const PatientRegistration = () => {
                       <p className="text-red-500 text-xs mt-1">{errors.manualYear}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Month</Label>
-                    <Select
-                      value={manualDate.manualMonth}
-                      onValueChange={(value) => {
-                          setManualDate(prev => ({
-                          ...prev,      
-                          manualMonth: value
-                        }));
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
+                      <Select
+                        value={manualDate.manualMonth}
+                        onValueChange={(value) => {
+                          const updatedManualDate = { ...manualDate, manualMonth: value };
+                          setManualDate(updatedManualDate);
+                          handleManualDateChange(updatedManualDate);
+                        }}
+                      >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Month" />
                       </SelectTrigger>
@@ -476,23 +489,21 @@ const PatientRegistration = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                     {errors.manualMonth && (
+                    {errors.manualMonth && (
                       <p className="text-red-500 text-xs mt-1">{errors.manualMonth}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Day</Label>
-                    <Select
-                      value={manualDate.manualDay}
-                      onValueChange={(value) => {
-                          setManualDate(prev => ({
-                          ...prev,      
-                          manualDay: value
-                        }));
-                        setTimeout(handleManualDateChange, 100);
-                      }}
-                    >
+                      <Select
+                        value={manualDate.manualDay}
+                        onValueChange={(value) => {
+                          const updatedManualDate = { ...manualDate, manualDay: value };
+                          setManualDate(updatedManualDate);
+                          handleManualDateChange(updatedManualDate);
+                        }}
+                      >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Day" />
                       </SelectTrigger>
@@ -504,7 +515,7 @@ const PatientRegistration = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                     {errors.manualDay && (
+                    {errors.manualDay && (
                       <p className="text-red-500 text-xs mt-1">{errors.manualDay}</p>
                     )}
                   </div>
@@ -599,7 +610,7 @@ const PatientRegistration = () => {
                   required
                 />
                 {errors.emergencyPhoneNumber && (
-                <p className="text-red-500 text-sm mt-1">{errors.emergencyPhoneNumber}</p>
+                  <p className="text-red-500 text-sm mt-1">{errors.emergencyPhoneNumber}</p>
                 )}
               </div>
             </div>

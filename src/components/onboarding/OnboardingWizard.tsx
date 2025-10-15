@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, Camera, Calendar, Clock, Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const OnboardingWizard = () => {
   const navigate = useNavigate();
@@ -66,23 +67,71 @@ const OnboardingWizard = () => {
     }
   };
 
-  const handleProfileImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Mock image upload - in real app, upload to cloud storage
-      setProfileImage(URL.createObjectURL(file));
+    if (!file) return;
+
+    const filePath = `profile_images/${Date.now()}_${file.name}`;
+    const { error: uploadError } = await supabase
+      .storage
+      .from('heal_med_app_images_bucket')
+      .upload(filePath, file);
+
+    if (uploadError) {
       toast({
-        title: "Profile Picture Updated",
-        description: "Your profile picture has been uploaded successfully.",
+        title: "Uploading of the profile picture failed",
+        description: uploadError.message,
       });
+      return;
     }
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      toast({
+        title: "User not authenticated",
+        description: "Please log in to update your profile image.",
+      });
+      return;
+    }
+
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('heal_med_app_images_bucket')
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicUrlData?.publicUrl;
+
+    setProfileImage(publicUrl);
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('user_id', user.id);
+
+    if (updateError) {
+      toast({
+        title: "Failed to save the profile picture",
+        description: updateError.message,
+      });
+      return;
+    }
+
+    console.log("after setting profile" + profileImage);
+
+    toast({
+      title: "Profile Picture Updated",
+      description: "Your profile picture has been uploaded and saved.",
+    });
   };
 
   const nextStep = () => {
     if (currentStep < config.totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
       toast({
         title: "Onboarding Complete!",
         description: "Welcome to NextGen Medical Platform. Redirecting to your dashboard...",

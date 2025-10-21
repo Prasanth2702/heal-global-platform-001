@@ -10,6 +10,23 @@ import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
 import { MedicalFacility } from "@/Models/MedicalFacility";
 import { supabase } from "@/integrations/supabase/client";
+import '../../styles/form-input-styles.css';
+import { isValidPhoneNumber } from "@/utils/phoneValidation";
+
+const countryCodes = [
+  { code: '+1', country: 'US', flag: '🇺🇸' },
+  { code: '+44', country: 'UK', flag: '🇬🇧' },
+  { code: '+91', country: 'India', flag: '🇮🇳' },
+  { code: '+61', country: 'Australia', flag: '🇦🇺' },
+  { code: '+81', country: 'Japan', flag: '🇯🇵' },
+  { code: '+49', country: 'Germany', flag: '🇩🇪' },
+  { code: '+33', country: 'France', flag: '🇫🇷' },
+  { code: '+86', country: 'China', flag: '🇨🇳' },
+  { code: '+7', country: 'Russia', flag: '🇷🇺' },
+  { code: '+55', country: 'Brazil', flag: '🇧🇷' },
+  { code: '+971', country: 'UAE', flag: '🇦🇪' },
+  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
+];
 
 const FacilityRegistration = () => {
   const navigate = useNavigate();
@@ -39,9 +56,13 @@ const FacilityRegistration = () => {
     aboutFacility: ''
   });
   const [password, setPassword] = useState('');
+  const [repeatPassword,setRepeatPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [kycAccepted, setKycAccepted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
 
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
@@ -107,6 +128,11 @@ const FacilityRegistration = () => {
     const errors: { [key: string]: string } = {};
     let valid = true;
 
+    if (password !== repeatPassword) {
+      errors.repeatPassword = "Passwords do not match";
+      valid = false;
+    }
+
     if (!formData.emailAddress) {
       errors.emailAddress = "Email is required";
       valid = false;
@@ -118,8 +144,8 @@ const FacilityRegistration = () => {
     if (!formData.phoneNumber) {
       errors.phoneNumber = "Phone number is required";
       valid = false;
-    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
-      errors.phoneNumber = "Invalid phone number format";
+    } else if (!isValidPhoneNumber(formData.phoneNumber)) {
+      errors.phoneNumber = "Invalid phone number";
       valid = false;
     }
 
@@ -156,7 +182,8 @@ const FacilityRegistration = () => {
     }
 
     const facilityFullData = {
-      ...formData
+      ...formData,
+      phoneNumber: countryCode + phoneNumber
     };
 
     console.log(facilityFullData);
@@ -256,18 +283,19 @@ const FacilityRegistration = () => {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="facilityName">Facility Name</Label>
+          <Label  className="label-required" htmlFor="facilityName">Facility Name</Label>
           <Input
             id="facilityName"
             value={formData.facilityName}
             onChange={(e) => setFormData({ ...formData, facilityName: e.target.value })}
             placeholder="Enter facility name"
+            minLength={1} maxLength={50}
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="facilityType">Facility Type</Label>
+          <Label  className="label-required" htmlFor="facilityType">Facility Type</Label>
           <Select value={formData.facilityType} onValueChange={(value) => setFormData({ ...formData, facilityType: value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select facility type" />
@@ -282,9 +310,8 @@ const FacilityRegistration = () => {
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
+        <div>
+            <Label  className="label-required" htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -292,21 +319,48 @@ const FacilityRegistration = () => {
               onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
               required
             />
+            {errors.emailAddress && (
+              <p className="text-red-500 text-sm mt-1">{errors.emailAddress}</p>
+            )}
           </div>
-          <div>
-            <Label htmlFor="phone">Phone Number</Label>
+           {/* Phone with Country Code */}
+        <div>
+          <Label className="label-required text-sm font-semibold text-gray-700">Phone Number</Label>
+          <div className="flex mt-2 space-x-2">
+            <Select value={countryCode} onValueChange={(value) => setCountryCode(value)}>
+              <SelectTrigger className="label-required w-24 border-2 focus:border-blue-500 bg-white/80">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {countryCodes.map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    <span className="flex items-center space-x-2">
+                      <span>{country.flag}</span>
+                      <span>{country.code}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
-              id="phone"
               type="tel"
-              value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="flex-1 border-2 focus:border-blue-500 transition-colors bg-white/80"
+              placeholder="Enter phone number"
               required
             />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+            )}
           </div>
         </div>
 
+
+
+
         <div>
-          <Label htmlFor="facilityName">Password</Label>
+          <Label  className="label-required" htmlFor="password">Password</Label>
           <Input
             id="password"
             value={password}
@@ -316,43 +370,61 @@ const FacilityRegistration = () => {
             required
           />
         </div>
+        <div>
+          <Label  className="label-required" htmlFor="password">Repeat Password</Label>
+          <Input
+            id="repeatpassword"
+            value={repeatPassword}
+            type="password"
+            onChange={(e) => setRepeatPassword(e.target.value)}
+            placeholder="Enter your password again"
+            required
+          />
+          {errors.repeatPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.repeatPassword}</p>
+            )}
+        </div>
 
         <div>
-          <Label htmlFor="address">Address</Label>
+          <Label  className="label-required" htmlFor="address">Address</Label>
           <Textarea
             id="address"
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             placeholder="Enter complete address"
+            maxLength={100}
             required
           />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="city">City</Label>
+            <Label  className="label-required" htmlFor="city">City</Label>
             <Input
               id="city"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               required
+              minLength={2} maxLength={50}
             />
           </div>
           <div>
-            <Label htmlFor="state">State</Label>
+            <Label  className="label-required" htmlFor="state">State</Label>
             <Input
               id="state"
               value={formData.state}
               onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              minLength={2} maxLength={50}
               required
             />
           </div>
           <div>
-            <Label htmlFor="pincode">Pincode</Label>
+            <Label  className="label-required" htmlFor="pincode">Pincode</Label>
             <Input
               id="pincode"
               value={formData.pincode}
               onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+              minLength={3} maxLength={10}
               required
             />
           </div>
@@ -371,16 +443,17 @@ const FacilityRegistration = () => {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="licenseNumber">Medical License Number</Label>
+            <Label  className="label-required" htmlFor="licenseNumber">Medical License Number</Label>
             <Input
               id="licenseNumber"
               value={formData.licenseNumber}
               onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+              minLength={1} maxLength={50}
               required
             />
           </div>
           <div>
-            <Label htmlFor="establishedYear">Established Year</Label>
+            <Label  className="label-required" htmlFor="establishedYear">Established Year</Label>
             <Input
               id="establishedYear"
               type="number"
@@ -406,7 +479,7 @@ const FacilityRegistration = () => {
         </div>
 
         <div>
-          <Label>Departments/Services Available</Label>
+          <Label className="label-required">Departments/Services Available</Label>
           <div className="grid grid-cols-2 gap-2 mt-2 max-h-32 overflow-y-auto border rounded p-3">
             {departments.map((department) => (
               <div key={department} className="flex items-center space-x-2">
@@ -418,6 +491,11 @@ const FacilityRegistration = () => {
                 <Label htmlFor={department} className="text-sm">{department}</Label>
               </div>
             ))}
+
+            {errors.departments && (
+              <p className="text-red-500 text-sm mt-1">{errors.departments}</p>
+            )}
+            
           </div>
         </div>
 
@@ -469,16 +547,18 @@ const FacilityRegistration = () => {
             value={formData.insurancePartners}
             onChange={(e) => setFormData({ ...formData, insurancePartners: e.target.value })}
             placeholder="e.g., ICICI Lombard, Star Health, Cashless accepted"
+            maxLength={100}
           />
         </div>
 
         <div>
-          <Label htmlFor="operatingHours">Operating Hours</Label>
+          <Label  className="label-required" htmlFor="operatingHours">Operating Hours</Label>
           <Input
             id="operatingHours"
             value={formData.operatingHours}
             onChange={(e) => setFormData({ ...formData, operatingHours: e.target.value })}
             placeholder="e.g., Mon-Sat: 9AM-9PM, Sun: 9AM-6PM"
+            minLength={1} maxLength={100}
             required
           />
         </div>
@@ -491,6 +571,7 @@ const FacilityRegistration = () => {
             value={formData.website}
             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
             placeholder="https://www.yourfacility.com"
+            maxLength={100}
           />
         </div>
 
@@ -502,6 +583,7 @@ const FacilityRegistration = () => {
             onChange={(e) => setFormData({ ...formData, aboutFacility: e.target.value })}
             placeholder="Brief description of your facility, specialties, achievements..."
             rows={4}
+            maxLength={200}
           />
         </div>
 

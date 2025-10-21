@@ -30,13 +30,6 @@ const LandingPage = () => {
       icon: Calendar,
       variant: "facility" as const,
       features: ["Department Management", "Staff Scheduling", "Analytics Dashboard", "Invoice Generation"]
-    },
-    {
-      title: "Admin Portal",
-      description: "Platform oversight, user management, and comprehensive analytics",
-      icon: Search,
-      variant: "admin" as const,
-      features: ["User Approval", "Platform Analytics", "Role Management", "Compliance Monitoring"]
     }
   ];
 
@@ -80,7 +73,7 @@ const LandingPage = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
             {userTypes.map((userType, index) => {
               const IconComponent = userType.icon;
               return (

@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 import AuthLayout from './AuthLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Patient } from '@/Models/Patient';
+import '../../styles/form-input-styles.css';
+import { isValidPhoneNumber } from '../../utils/phoneValidation';
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -38,10 +40,11 @@ const PatientRegistration = () => {
   const [isTermsAccepted, setTermsAccepted] = useState(false);
   const [isPrivacyAccepted, setPrivacyAccepted] = useState(false);
   const [password, setPassword] = useState('');
-  const [countryCode, setCountryCode] = useState('+1');
-  const [phoneNumber, setPhoneNumber] = useState('123456789');
-  const [emergencyContactCountryCode, setEmergencyContactCountryCode] = useState('+1');
-  const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState('123456789');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [emergencyContactCountryCode, setEmergencyContactCountryCode] = useState('+91');
+  const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [manualDate, setManualDate] = useState({
     manualYear: '',
@@ -79,6 +82,12 @@ const PatientRegistration = () => {
     const errors: { [key: string]: string } = {};
     let valid = true;
 
+    if (password !== repeatPassword) {
+      errors.repeatPassword = "Passwords do not match";
+      valid = false;
+    }
+    console.log('Passwords match.');
+
     if (!formData.emailAddress) {
       errors.emailAddress = "Email is required";
       valid = false;
@@ -90,16 +99,16 @@ const PatientRegistration = () => {
     if (!formData.phoneNumber) {
       errors.phoneNumber = "Phone number is required";
       valid = false;
-    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
-      errors.phoneNumber = "Invalid phone number format";
+    } else if (!isValidPhoneNumber(formData.phoneNumber)) {
+      errors.phoneNumber = "Invalid phone number";
       valid = false;
     }
 
     if (!formData.emergencyContactPhone) {
       errors.emergencyContactPhone = "Phone number is required";
       valid = false;
-    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.emergencyContactPhone.replace(/\s/g, ""))) {
-      errors.emergencyContactPhone = "Invalid phone number format";
+    } else if (!isValidPhoneNumber(formData.emergencyContactPhone)) {
+      errors.emergencyContactPhone = "Invalid phone number for Emergency contact";
       valid = false;
     }
 
@@ -176,6 +185,7 @@ const PatientRegistration = () => {
 
     if (!validateForm(patientFullData)) {
       console.log(errors);
+      console.log("validated with errors");
       return;
     }
 
@@ -312,44 +322,61 @@ const PatientRegistration = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700">First Name</Label>
+              <Label htmlFor="firstName"  className="label-required text-sm font-semibold text-gray-700">First Name
+                </Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => setformData({ ...formData, firstName: e.target.value })}
                 className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
-                placeholder="Enter your first name"
+                placeholder="Enter your first name" minLength={1} maxLength={50}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700">Last Name</Label>
+              <Label htmlFor="lastName" className="label-required text-sm font-semibold text-gray-700">Last Name</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setformData({ ...formData, lastName: e.target.value })}
                 className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
-                placeholder="Enter your last name"
+                placeholder="Enter your last name" minLength={1} maxLength={50}
                 required
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+            <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
-              placeholder="enter your password"
+              placeholder="enter your password" minLength={6}
               required
             />
           </div>
+        
+            <div>
+            <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">Repeat Password</Label>
+            <Input
+              id="repeatpassword"
+              type="password"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+              className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
+              placeholder="enter your password again" minLength={6}
+              required
+            />
+            {errors.repeatPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.repeatPassword}</p>
+            )}
+          </div>
 
           <div>
-            <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
+            <Label htmlFor="email" className="label-required text-sm font-semibold text-gray-700">Email Address</Label>
             <Input
               id="email"
               type="email"
@@ -366,10 +393,10 @@ const PatientRegistration = () => {
 
           {/* Phone with Country Code */}
           <div>
-            <Label className="text-sm font-semibold text-gray-700">Phone Number</Label>
+            <Label className="label-required text-sm font-semibold text-gray-700">Phone Number</Label>
             <div className="flex mt-2 space-x-2">
               <Select value={countryCode} onValueChange={(value) => setCountryCode(value)}>
-                <SelectTrigger className="w-24 border-2 focus:border-blue-500 bg-white/80">
+                <SelectTrigger className="label-required w-24 border-2 focus:border-blue-500 bg-white/80">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -399,7 +426,7 @@ const PatientRegistration = () => {
 
           {/* Enhanced Date of Birth */}
           <div>
-            <Label className="text-sm font-semibold text-gray-700">Date of Birth</Label>
+            <Label className="label-required text-sm font-semibold text-gray-700">Date of Birth</Label>
             <div className="mt-2 space-y-3">
               <div className="flex items-center space-x-4">
                 <Popover>
@@ -527,7 +554,7 @@ const PatientRegistration = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</Label>
+              <Label htmlFor="gender" className="label-required text-sm font-semibold text-gray-700">Gender</Label>
               <Select value={formData.gender} onValueChange={(value) => setformData({ ...formData, gender: value })}>
                 <SelectTrigger className="mt-2 border-2 focus:border-blue-500 bg-white/80">
                   <SelectValue placeholder="Select gender" />
@@ -545,7 +572,7 @@ const PatientRegistration = () => {
             </div>
 
             <div>
-              <Label htmlFor="bloodGroup" className="text-sm font-semibold text-gray-700">Blood Group</Label>
+              <Label htmlFor="bloodGroup" className="label-required text-sm font-semibold text-gray-700">Blood Group</Label>
               <Select value={formData.bloodGroup} onValueChange={(value) => setformData({ ...formData, bloodGroup: value })}>
                 <SelectTrigger className="mt-2 border-2 focus:border-red-500 bg-white/80">
                   <SelectValue placeholder="Select blood group" />
@@ -572,19 +599,19 @@ const PatientRegistration = () => {
             <h3 className="font-semibold text-gray-800">Emergency Contact Information</h3>
 
             <div>
-              <Label htmlFor="emergencyContact" className="text-sm font-semibold text-gray-700">Emergency Contact Name</Label>
+              <Label htmlFor="emergencyContact" className="label-required text-sm font-semibold text-gray-700">Emergency Contact Name</Label>
               <Input
                 id="emergencyContact"
                 value={formData.emergencyContactName}
                 onChange={(e) => setformData({ ...formData, emergencyContactName: e.target.value })}
                 className="mt-2 border-2 focus:border-orange-500 transition-colors bg-white/80"
-                placeholder="Full name of emergency contact"
+                placeholder="Full name of emergency contact" minLength={1} maxLength={50}
                 required
               />
             </div>
 
             <div>
-              <Label className="text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
+              <Label className="label-required text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
               <div className="flex mt-2 space-x-2">
                 <Select value={emergencyContactCountryCode} onValueChange={(value) => setEmergencyContactCountryCode(value)}>
                   <SelectTrigger className="w-24 border-2 focus:border-orange-500 bg-white/80">
@@ -623,7 +650,7 @@ const PatientRegistration = () => {
               value={formData.knownAllergies}
               onChange={(e) => setformData({ ...formData, knownAllergies: e.target.value })}
               className="mt-2 border-2 focus:border-yellow-500 transition-colors bg-white/80"
-              placeholder="Enter any known allergies (e.g., Penicillin, Shellfish)"
+              placeholder="Enter any known allergies (e.g., Penicillin, Shellfish)"  maxLength={200}
             />
           </div>
 
@@ -634,7 +661,7 @@ const PatientRegistration = () => {
               value={formData.currentMedications}
               onChange={(e) => setformData({ ...formData, currentMedications: e.target.value })}
               className="mt-2 border-2 focus:border-green-500 transition-colors bg-white/80"
-              placeholder="List current medications with dosage"
+              placeholder="List current medications with dosage"  maxLength={200}
             />
           </div>
 

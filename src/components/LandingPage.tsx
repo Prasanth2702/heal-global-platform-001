@@ -58,7 +58,10 @@ const LandingPage = () => {
             <span className="text-xl font-bold">NextGen Medical</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost">Sign In</Button>
+            <Button variant="ghost" onClick={() => {
+                document.getElementById('user-types')?.scrollIntoView({ behavior: 'smooth' });
+              }}>Sign In 
+            </Button>
             <Button variant="hero">Get Started</Button>
           </div>
         </div>
@@ -68,7 +71,7 @@ const LandingPage = () => {
       <HeroCarousel />
 
       {/* User Types Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-muted/30" id="user-types">
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Choose Your Portal</h2>

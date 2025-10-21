@@ -46,6 +46,9 @@ const LoginForm = () => {
   };
 
   const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
+  
+  const userRole = (userType=='facility')? 'hospital_admin' : userType;
+
 
   const checkEmailInProfiles = async (email : string) => {
     const lowerCaseEmail = email.toLowerCase();
@@ -53,6 +56,7 @@ const LoginForm = () => {
       .from('profiles')
       .select('email')
       .eq('email', lowerCaseEmail)
+      .eq('role',userRole)
       .maybeSingle();
 
     if (error) {
@@ -62,7 +66,6 @@ const LoginForm = () => {
     else{
       console.log(data);
     }
-
     return !!data;
   };
 

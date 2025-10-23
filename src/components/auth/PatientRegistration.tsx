@@ -429,36 +429,23 @@ const PatientRegistration = () => {
             <Label className="label-required text-sm font-semibold text-gray-700">Date of Birth</Label>
             <div className="mt-2 space-y-3">
               <div className="flex items-center space-x-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "justify-start text-left font-normal border-2 hover:border-blue-500 bg-white/80",
-                        !date && "text-muted-foreground"
-                      )} disabled={showManualDate}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={handleDateSelect}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover >
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value);
+                    handleDateSelect(selectedDate);
+                    setformData(formData => ({ ...formData, dateOfBirth: e.target.value }));
+                  }}
+                  disabled = {showManualDate}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowManualDate(!showManualDate)}
+                  disabled = {showManualDate}
                   className="border-2 hover:border-purple-500 bg-white/80"
                 >
                   <Globe className="mr-2 h-4 w-4" />

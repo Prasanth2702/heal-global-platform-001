@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity } from "lucide-react";
+import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings } from "lucide-react";
 import DepartmentManagement from "@/components/hospital/DepartmentManagement";
 import StaffManagement from "@/components/hospital/StaffManagement";
 import TimeSlotManagement from "@/components/hospital/TimeSlotManagement";
 import HospitalPayments from "@/components/hospital/HospitalPayments";
 import HospitalEarnings from "@/components/hospital/HospitalEarnings";
+
 import InventoryManagement from "@/components/hospital/InventoryManagement";
 import FacilityCertifications from "@/components/hospital/FacilityCertifications";
 import AppointmentFlow from "@/components/hospital/AppointmentFlow";
+import FacilityProfile from "../hospital/FacilityProfile";
 
 const HospitalDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -37,7 +39,7 @@ const HospitalDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -70,8 +72,14 @@ const HospitalDashboard = () => {
             <FileText className="h-4 w-4" />
             <span className="hidden sm:inline">Facility</span>
           </TabsTrigger>
+          <TabsTrigger value="profile" className="flex items-center space-x-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">My profile</span>
+          </TabsTrigger>
         </TabsList>
-
+        <TabsContent value="profile">
+          <FacilityProfile />
+        </TabsContent>
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>

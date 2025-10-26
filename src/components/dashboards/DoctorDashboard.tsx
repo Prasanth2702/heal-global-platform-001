@@ -1,8 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, Clock, FileText, TrendingUp } from "lucide-react";
+import { Calendar, User, Clock, FileText, TrendingUp,Settings} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import DoctorProfile from "../doctor/DoctorProfile";
 
 const DoctorDashboard = () => {
+
+  const location = useLocation();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile">("overview");
+  
+    useEffect(() => {
+      const path = location.pathname;
+      if (path.includes('/appointments')) setActiveTab('appointments');
+      else if (path.includes('/patients')) setActiveTab('patients');
+      else if (path.includes('/analytics')) setActiveTab('analytics');
+      else if (path.includes('/profile')) setActiveTab('profile');
+      else setActiveTab('overview');
+    }, [location.pathname]);
+  
+    const handleTabChange = (tab: typeof activeTab) => {
+      setActiveTab(tab);
+      const basePath = '/dashboard/doctor';
+      switch (tab) {
+        case 'overview': navigate(basePath); break;
+        case 'appointments': navigate(`${basePath}/appointments`); break;
+        case 'analytics': navigate(`${basePath}/analytics`); break;
+        case 'profile': navigate(`${basePath}/profile`); break;
+      }
+    };
+
   const todayAppointments = [
     {
       id: 1,
@@ -33,6 +61,10 @@ const DoctorDashboard = () => {
     { id: 3, name: "Lisa Garcia", lastVisit: "2024-01-10", condition: "Routine Checkup" }
   ];
 
+   if (activeTab === "profile") {
+      return <DoctorProfile onBack={() => handleTabChange("overview")} />;
+    }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -40,6 +72,14 @@ const DoctorDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold">Doctor Dashboard</h1>
           <p className="text-muted-foreground">Manage your practice and patients</p>
+        </div>
+        <div>
+           <Button
+            onClick={() => handleTabChange("profile")}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <Settings className="h-4 w-4 mr-2" />
+            My Profile
+          </Button>
         </div>
         <div className="flex gap-2">
           <Button variant="doctor" size="lg">

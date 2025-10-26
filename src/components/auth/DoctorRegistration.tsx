@@ -256,7 +256,7 @@ const DoctorRegistration = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
-            placeholder="enter your password" minLength={6}
+            placeholder="Enter your password" minLength={6}
             required
           />
         </div>
@@ -269,7 +269,7 @@ const DoctorRegistration = () => {
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
             className="mt-2 border-2 focus:border-blue-500 transition-colors bg-white/80"
-            placeholder="enter your password again" minLength={6}
+            placeholder="Enter your password again" minLength={6}
             required
           />
           {errors.repeatPassword && (

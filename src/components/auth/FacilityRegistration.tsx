@@ -289,7 +289,7 @@ const FacilityRegistration = () => {
             value={formData.facilityName}
             onChange={(e) => setFormData({ ...formData, facilityName: e.target.value })}
             placeholder="Enter facility name"
-            minLength={1} maxLength={50}
+            minLength={1} maxLength={100}
             required
           />
         </div>
@@ -369,7 +369,7 @@ const FacilityRegistration = () => {
             placeholder="Enter your password"
             required
           />
-        </div>
+        </div>   
         <div>
           <Label  className="label-required" htmlFor="password">Repeat Password</Label>
           <Input

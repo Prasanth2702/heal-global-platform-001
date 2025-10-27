@@ -272,15 +272,6 @@ const PatientRegistration = () => {
     }
   };
 
-  const handleManualDateChange1 = () => {
-    if (manualDate.manualYear && manualDate.manualMonth && manualDate.manualDay) {
-      const monthIndex = months.indexOf(manualDate.manualMonth);
-      const dateString = `${manualDate.manualYear}-${String(monthIndex + 1).
-        padStart(2, '0')}-${String(manualDate.manualDay).padStart(2, '0')}`;
-      setDate(new Date(dateString));
-      setformData(formData => ({ ...formData, dateOfBirth: dateString }));
-    }
-  };
 
   const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
     if (

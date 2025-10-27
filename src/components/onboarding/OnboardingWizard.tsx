@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Camera, Calendar, Clock, Check, ArrowRight, ArrowLeft } from "lucide-react";
+import { Upload, Camera, Calendar, Clock, Check, ArrowRight, ArrowLeft, Telescope } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useEffect } from "react";
 
 const OnboardingWizard = () => {
   const navigate = useNavigate();
@@ -16,6 +18,88 @@ const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
   const [profileImage, setProfileImage] = useState<string>("");
+  const [user, setUser] = useState<SupabaseUser>(null);
+
+
+  const [selectedDay, setSelectedDay] = useState<string>('Monday');
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const [slotsByDay, setSlotsByDay] = useState<{ [key: string]: { clinic: string[], tele: string[] } }>(
+    () =>
+      daysOfWeek.reduce(
+        (acc, day) => ({
+          ...acc,
+          [day]: { clinic: [], tele: [] }
+        }),
+        {}
+      )
+  );
+  const [selectedType, setSelectedType] = useState<'Clinic' | 'Tele'>('Clinic');
+  const timeSlots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+
+
+
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        toast({
+          title: "User not authenticated",
+          description: "Please log in to update your profile image.",
+        });
+        return;
+      }
+      setUser(user);
+    };
+
+    checkUser();
+  }, []);
+
+  const buildSlotData = (slotsByDay, doctorId, facilityId = null) => {
+    let rows = [];
+    Object.entries(slotsByDay).forEach(([weekday, slotObj]) => {
+      Object.entries(slotObj).forEach(([slotType, slots]) => {
+        slots.forEach(start => {
+          rows.push({
+            doctor_id: doctorId,
+            facility_id: facilityId,
+            day_of_week: weekday, 
+            start_time: start,
+            end_time: `${String(Number(start.split(':')[0]) + 1).padStart(2, '0')}:${start.split(':')[1]}`,
+            is_available: true,
+            slot_type: slotType
+          });
+        });
+      });
+    });
+    return rows;
+  };
+
+  const updateDoctorTimeslots = async ({
+    doctorId,
+    facilityId = null
+  }) => {
+    const rows = buildSlotData(slotsByDay, doctorId, facilityId);
+
+    const { error } = await supabase
+      .from('time_slots')
+      .insert(rows);
+
+    if (error) {
+      toast({
+        title: "Failed to save timeslots",
+        description: error.message,
+      });
+      return false;
+    }
+    return true;
+  };
+
+
 
   const userTypeConfig = {
     patient: {
@@ -29,7 +113,7 @@ const OnboardingWizard = () => {
       finalRoute: "/dashboard/patient"
     },
     doctor: {
-      title: "Complete Your Professional Profile", 
+      title: "Complete Your Professional Profile",
       totalSteps: 4,
       steps: [
         { title: "Upload License & Certificates", description: "Add your medical license and certifications" },
@@ -55,15 +139,32 @@ const OnboardingWizard = () => {
   const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
   const progress = (currentStep / config.totalSteps) * 100;
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      const fileNames = Array.from(files).map(file => file.name);
-      setUploadedDocs(prev => [...prev, ...fileNames]);
-      toast({
-        title: "Files Uploaded",
-        description: `${fileNames.length} file(s) uploaded successfully.`,
-      });
+    if (!files) return;
+    for (let file of files) {
+      const filePath = `medical_documents/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase
+        .storage
+        .from('heal_med_app_files_bucket')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        toast({
+          title: "Uploading of the file failed",
+          description: error.message,
+        });
+        return;
+      }
+      else {
+        toast({
+          title: "Files Uploaded",
+          description: `file(s) uploaded successfully.`,
+        });
+      }
     }
   };
 
@@ -81,19 +182,6 @@ const OnboardingWizard = () => {
       toast({
         title: "Uploading of the profile picture failed",
         description: uploadError.message,
-      });
-      return;
-    }
-
-    const {
-      data: { user },
-      error: userError
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      toast({
-        title: "User not authenticated",
-        description: "Please log in to update your profile image.",
       });
       return;
     }
@@ -128,7 +216,24 @@ const OnboardingWizard = () => {
     });
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
+    if (currentStep === 3 && userType === "doctor") {
+
+      if (!user?.id) {
+        toast({ title: "User error", description: "User id missing." });
+        return;
+      }
+      const doctorId = user.id;
+
+      const success = await updateDoctorTimeslots({
+        doctorId,
+        facilityId: null
+      });
+
+      if (!success) return;
+    }
+
+
     if (currentStep < config.totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -158,7 +263,7 @@ const OnboardingWizard = () => {
               <h3 className="text-lg font-semibold mb-2">{config.steps[0].title}</h3>
               <p className="text-muted-foreground">{config.steps[0].description}</p>
             </div>
-            
+
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
               <Input
                 type="file"
@@ -207,9 +312,9 @@ const OnboardingWizard = () => {
             <div className="flex flex-col items-center space-y-4">
               {profileImage ? (
                 <div className="relative">
-                  <img 
-                    src={profileImage} 
-                    alt="Profile" 
+                  <img
+                    src={profileImage}
+                    alt="Profile"
                     className="w-32 h-32 rounded-full object-cover border-4 border-primary"
                   />
                   <Button
@@ -255,28 +360,81 @@ const OnboardingWizard = () => {
             {userType === "doctor" && (
               <div className="space-y-4">
                 <div>
-                  <Label>Working Hours</Label>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div>
-                      <Label htmlFor="start-time" className="text-sm">Start Time</Label>
-                      <Input id="start-time" type="time" defaultValue="09:00" />
-                    </div>
-                    <div>
-                      <Label htmlFor="end-time" className="text-sm">End Time</Label>
-                      <Input id="end-time" type="time" defaultValue="17:00" />
-                    </div>
-                  </div>
-                </div>
-                <div>
                   <Label>Working Days</Label>
-                  <div className="grid grid-cols-4 gap-2 mt-2">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                      <Button key={day} variant="outline" size="sm" className="text-xs">
-                        {day}
+                  <div className="flex gap-2 mt-2">
+                    {daysOfWeek.map(day => (
+                      <Button
+                        key={day}
+                        variant={selectedDay === day ? "default" : "outline"}
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setSelectedDay(day)}
+                      >
+                        {day.slice(0, 3)}
                       </Button>
                     ))}
                   </div>
                 </div>
+                <div className="mt-4">
+                  <Label>Consultation Type</Label>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    {['Clinic', 'Tele'].map(type => (
+                      <Button
+                        key={type}
+                        variant={selectedType === type ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedType(type as 'Clinic' | 'Tele')}
+                      >
+                        {type === 'Tele' ? 'Tele-Consultation' : 'Clinic Consultation'}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Label>Choose Timeslots</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {timeSlots.map(slot => (
+                      <Button
+                        key={slot}
+                        variant={
+                          slotsByDay[selectedDay][selectedType.toLowerCase()].includes(slot)
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => {
+                          const daySlots = slotsByDay[selectedDay][selectedType.toLowerCase()];
+                          if (daySlots.includes(slot)) {
+                            setSlotsByDay(prev => ({
+                              ...prev,
+                              [selectedDay]: {
+                                ...prev[selectedDay],
+                                [selectedType.toLowerCase()]: daySlots.filter(s => s !== slot)
+                              }
+                            }));
+                          } else if (
+                            !slotsByDay[selectedDay][selectedType === 'Clinic' ? 'tele' : 'clinic'].includes(slot)
+                          ) {
+                            setSlotsByDay(prev => ({
+                              ...prev,
+                              [selectedDay]: {
+                                ...prev[selectedDay],
+                                [selectedType.toLowerCase()]: [...daySlots, slot]
+                              }
+                            }));
+                          }
+                        }}
+                        disabled={
+                          slotsByDay[selectedDay][selectedType === 'Clinic' ? 'tele' : 'clinic'].includes(slot)
+                        }
+                      >
+                        {slot}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             )}
           </div>
@@ -337,7 +495,7 @@ const OnboardingWizard = () => {
               Step {currentStep} of {config.totalSteps}
             </span>
           </div>
-          
+
           <CardTitle className="text-center">{config.title}</CardTitle>
           <div className="space-y-2">
             <Progress value={progress} className="w-full" />
@@ -359,7 +517,7 @@ const OnboardingWizard = () => {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
-            
+
             <Button onClick={nextStep}>
               {currentStep === config.totalSteps ? 'Complete Setup' : 'Next Step'}
               {currentStep < config.totalSteps && <ArrowRight className="ml-2 h-4 w-4" />}

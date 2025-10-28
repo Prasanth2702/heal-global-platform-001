@@ -16,6 +16,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Patient } from '@/Models/Patient';
 import '../../styles/form-input-styles.css';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
+import { usePopup } from '@/contexts/popup-context';
+import TermsConditionsPolicyContent from '../commons/policies/TermsConditionsPolicyContent';
+import PrivacyPolicyContent from '../commons/policies/PrivacyPolicyContent';
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -35,6 +38,7 @@ const countryCodes = [
 const PatientRegistration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { openPopup } = usePopup();
   const [date, setDate] = useState<Date>();
   const [showManualDate, setShowManualDate] = useState(false);
   const [isTermsAccepted, setTermsAccepted] = useState(false);
@@ -289,6 +293,24 @@ const PatientRegistration = () => {
     }
   };
 
+  const termsContent = (
+    <>
+      <h2 className="font-bold text-lg mb-3">Terms and Conditions</h2>
+      <div className="text-gray-700 text-sm space-y-2">
+        <p>Your terms and conditions details here...</p>
+      </div>
+    </>
+  );
+
+  const privacyContent = (
+    <>
+      <h2 className="font-bold text-lg mb-3">Privacy Policy</h2>
+      <div className="text-gray-700 text-sm space-y-2">
+        <p>Your privacy policy details here...</p>
+      </div>
+    </>
+  );
+
 
 
   return (
@@ -313,8 +335,8 @@ const PatientRegistration = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName"  className="label-required text-sm font-semibold text-gray-700">First Name
-                </Label>
+              <Label htmlFor="firstName" className="label-required text-sm font-semibold text-gray-700">First Name
+              </Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
@@ -349,8 +371,8 @@ const PatientRegistration = () => {
               required
             />
           </div>
-        
-            <div>
+
+          <div>
             <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">Repeat Password</Label>
             <Input
               id="repeatpassword"
@@ -429,14 +451,14 @@ const PatientRegistration = () => {
                     handleDateSelect(selectedDate);
                     setformData(formData => ({ ...formData, dateOfBirth: e.target.value }));
                   }}
-                  disabled = {showManualDate}
+                  disabled={showManualDate}
                   className="mt-2 border-2 focus:border-blue-500 transition-colors"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowManualDate(!showManualDate)}
-                  disabled = {showManualDate}
+                  disabled={showManualDate}
                   className="border-2 hover:border-purple-500 bg-white/80"
                 >
                   <Globe className="mr-2 h-4 w-4" />
@@ -449,14 +471,14 @@ const PatientRegistration = () => {
                 <div className="grid grid-cols-3 gap-3 p-4 bg-white/60 rounded-lg border-2 border-dashed border-purple-300">
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Year</Label>
-                      <Select
-                        value={manualDate.manualYear}
-                        onValueChange={(value) => {
-                          const updatedManualDate = { ...manualDate, manualYear: value };
-                          setManualDate(updatedManualDate);
-                          handleManualDateChange(updatedManualDate);
-                        }}
-                      >
+                    <Select
+                      value={manualDate.manualYear}
+                      onValueChange={(value) => {
+                        const updatedManualDate = { ...manualDate, manualYear: value };
+                        setManualDate(updatedManualDate);
+                        handleManualDateChange(updatedManualDate);
+                      }}
+                    >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
@@ -475,14 +497,14 @@ const PatientRegistration = () => {
 
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Month</Label>
-                      <Select
-                        value={manualDate.manualMonth}
-                        onValueChange={(value) => {
-                          const updatedManualDate = { ...manualDate, manualMonth: value };
-                          setManualDate(updatedManualDate);
-                          handleManualDateChange(updatedManualDate);
-                        }}
-                      >
+                    <Select
+                      value={manualDate.manualMonth}
+                      onValueChange={(value) => {
+                        const updatedManualDate = { ...manualDate, manualMonth: value };
+                        setManualDate(updatedManualDate);
+                        handleManualDateChange(updatedManualDate);
+                      }}
+                    >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Month" />
                       </SelectTrigger>
@@ -501,14 +523,14 @@ const PatientRegistration = () => {
 
                   <div>
                     <Label className="text-xs font-semibold text-gray-600">Day</Label>
-                      <Select
-                        value={manualDate.manualDay}
-                        onValueChange={(value) => {
-                          const updatedManualDate = { ...manualDate, manualDay: value };
-                          setManualDate(updatedManualDate);
-                          handleManualDateChange(updatedManualDate);
-                        }}
-                      >
+                    <Select
+                      value={manualDate.manualDay}
+                      onValueChange={(value) => {
+                        const updatedManualDate = { ...manualDate, manualDay: value };
+                        setManualDate(updatedManualDate);
+                        handleManualDateChange(updatedManualDate);
+                      }}
+                    >
                       <SelectTrigger className="border-2 focus:border-purple-500 bg-white">
                         <SelectValue placeholder="Day" />
                       </SelectTrigger>
@@ -628,7 +650,7 @@ const PatientRegistration = () => {
               value={formData.knownAllergies}
               onChange={(e) => setformData({ ...formData, knownAllergies: e.target.value })}
               className="mt-2 border-2 focus:border-yellow-500 transition-colors bg-white/80"
-              placeholder="Enter any known allergies (e.g., Penicillin, Shellfish)"  maxLength={200}
+              placeholder="Enter any known allergies (e.g., Penicillin, Shellfish)" maxLength={200}
             />
           </div>
 
@@ -639,7 +661,7 @@ const PatientRegistration = () => {
               value={formData.currentMedications}
               onChange={(e) => setformData({ ...formData, currentMedications: e.target.value })}
               className="mt-2 border-2 focus:border-green-500 transition-colors bg-white/80"
-              placeholder="List current medications with dosage"  maxLength={200}
+              placeholder="List current medications with dosage" maxLength={200}
             />
           </div>
 
@@ -652,18 +674,36 @@ const PatientRegistration = () => {
                 className="border-2 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-purple-500"
               />
               <Label htmlFor="terms" className="text-sm font-medium">
-                I accept the <span className="text-blue-600 font-semibold cursor-pointer hover:underline">Terms and Conditions</span>
+                I accept the <span className="text-blue-600 font-semibold cursor-pointer hover:underline"
+                 onClick={(e) => {
+                  e.stopPropagation();
+                  openPopup(<TermsConditionsPolicyContent />);
+                   }}>
+                  Terms and Conditions</span>
               </Label>
             </div>
-            <div className="flex items-center space-x-3">
+          
+            <div className="flex items-center space-x-2">
               <Checkbox
                 id="privacy"
                 checked={isPrivacyAccepted}
                 onCheckedChange={(checked) => setPrivacyAccepted(checked as boolean)}
                 className="border-2 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-purple-500"
               />
-              <Label htmlFor="privacy" className="text-sm font-medium">
-                I accept the <span className="text-blue-600 font-semibold cursor-pointer hover:underline">Privacy Policy</span> and consent to data processing
+              <Label htmlFor="privacy" className="text-sm font-medium whitespace-nowrap cursor-pointer">
+                I accept the
+              </Label>
+              <span
+                className="text-sm text-blue-600 whitespace-nowrap  font-semibold cursor-pointer hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openPopup(<PrivacyPolicyContent />);
+                }}
+              >
+                Privacy Policy
+              </span>
+              <Label htmlFor="privacy" className="text-sm font-medium  cursor-pointer">
+                and consent to data processing
               </Label>
             </div>
           </div>

@@ -1,29 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, DollarSign, Video, MapPin, Plus, Edit, Save, Calendar } from "lucide-react";
+
+import { Clock, DollarSign, Video, MapPin, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import WeeklyScheduleGrid from "./WeeklyScheduleGrid";
 
-interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  slotType: "consultation" | "emergency" | "break";
-}
+type SlotType = "clinic" | "tele" | null;
 
-interface DaySchedule {
-  day: string;
-  isActive: boolean;
-  timeSlots: TimeSlot[];
-}
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const timeSlots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
 interface ConsultationFees {
   inPerson: number;
@@ -32,65 +26,43 @@ interface ConsultationFees {
   emergency: number;
 }
 
-const AvailabilityManagement = () => {
+interface AvailabilityManagementProps {
+  onBack: () => void;
+}
+
+const AvailabilityManagement: React.FC<AvailabilityManagementProps> = ({ onBack }) => {
+
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Mock data for schedule
-  const [weeklySchedule, setWeeklySchedule] = useState<DaySchedule[]>([
-    {
-      day: "Monday",
-      isActive: true,
-      timeSlots: [
-        { id: "mon-1", startTime: "09:00", endTime: "12:00", isAvailable: true, slotType: "consultation" },
-        { id: "mon-2", startTime: "14:00", endTime: "18:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Tuesday",
-      isActive: true,
-      timeSlots: [
-        { id: "tue-1", startTime: "09:00", endTime: "12:00", isAvailable: true, slotType: "consultation" },
-        { id: "tue-2", startTime: "14:00", endTime: "17:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Wednesday",
-      isActive: true,
-      timeSlots: [
-        { id: "wed-1", startTime: "10:00", endTime: "13:00", isAvailable: true, slotType: "consultation" },
-        { id: "wed-2", startTime: "15:00", endTime: "18:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Thursday",
-      isActive: true,
-      timeSlots: [
-        { id: "thu-1", startTime: "09:00", endTime: "12:00", isAvailable: true, slotType: "consultation" },
-        { id: "thu-2", startTime: "14:00", endTime: "17:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Friday",
-      isActive: true,
-      timeSlots: [
-        { id: "fri-1", startTime: "09:00", endTime: "12:00", isAvailable: true, slotType: "consultation" },
-        { id: "fri-2", startTime: "14:00", endTime: "16:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Saturday",
-      isActive: true,
-      timeSlots: [
-        { id: "sat-1", startTime: "10:00", endTime: "14:00", isAvailable: true, slotType: "consultation" },
-      ]
-    },
-    {
-      day: "Sunday",
-      isActive: false,
-      timeSlots: []
-    }
-  ]);
+  const [saving, setSaving] = useState(false);
+
+  // State for slot types by day and time
+  const [slotsByDay, setSlotsByDay] = useState<{ [day: string]: { [slot: string]: SlotType } }>(() => {
+    const init: { [day: string]: { [slot: string]: SlotType } } = {};
+    daysOfWeek.forEach(day => {
+      init[day] = {};
+      timeSlots.forEach(slot => {
+        init[day][slot] = null;
+      });
+    });
+    return init;
+  });
+
+  // State for slot IDs by day and time
+  const [slotsById, setSlotsById] = useState<{ [day: string]: { [slot: string]: string | null } }>(() => {
+    const init: { [day: string]: { [slot: string]: string | null } } = {};
+    daysOfWeek.forEach(day => {
+      init[day] = {};
+      timeSlots.forEach(slot => {
+        init[day][slot] = null;
+      });
+    });
+    return init;
+  });
+
+  // To track original slot types for change detection
+  const [originalSlotsByDay, setOriginalSlotsByDay] = useState<{ [day: string]: { [slot: string]: SlotType } }>({});
 
   const [consultationFees, setConsultationFees] = useState<ConsultationFees>({
     inPerson: 800,
@@ -110,13 +82,152 @@ const AvailabilityManagement = () => {
     inPersonEnabled: true
   });
 
-  const handleSaveSchedule = () => {
-    toast({
-      title: "Schedule Updated",
-      description: "Your availability and timings have been saved successfully.",
-    });
-    setIsEditing(false);
+  // Extracted fetchSlots for reuse after save
+  const fetchSlots = async () => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        toast({ title: "Error", description: "Unable to get user info.", variant: "destructive" });
+        navigate("/login/doctor");
+        return;
+      }
+      if (!user) {
+        toast({ title: "Authentication Required", description: "Please log in to manage availability", variant: 'destructive' });
+        navigate("/login/doctor");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("time_slots")
+        .select("id, day_of_week, start_time, slot_type")
+        .eq("doctor_id", user.id)
+        .eq("is_available", true);
+
+      if (error) {
+        toast({ title: "Failed to load time slots", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      const loadedSlots: { [day: string]: { [slot: string]: SlotType } } = {};
+      const loadedIds: { [day: string]: { [slot: string]: string | null } } = {};
+
+      daysOfWeek.forEach(day => {
+        loadedSlots[day] = {};
+        loadedIds[day] = {};
+        timeSlots.forEach(slot => {
+          loadedSlots[day][slot] = null;
+          loadedIds[day][slot] = null;
+        });
+      });
+
+      data?.forEach(slot => {
+        if (slot.day_of_week && slot.start_time && slot.slot_type) {
+          const normalizedTime = slot.start_time.length > 5 ? slot.start_time.substring(0, 5) : slot.start_time;
+          loadedSlots[slot.day_of_week][normalizedTime] = slot.slot_type as SlotType;
+          loadedIds[slot.day_of_week][normalizedTime] = slot.id || null;
+        }
+      });
+
+      setSlotsByDay(loadedSlots);
+      setSlotsById(loadedIds);
+      setOriginalSlotsByDay(loadedSlots);
+    } catch (err) {
+      toast({ title: "Error", description: "Something went wrong loading slots.", variant: "destructive" });
+    }
   };
+
+  useEffect(() => {
+    fetchSlots();
+  }, [navigate, toast]);
+
+  const updateSlotType = (day: string, slot: string, type: SlotType) => {
+    setSlotsByDay(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [slot]: type,
+      }
+    }));
+  };
+
+  const padHour = (hour: number) => hour.toString().padStart(2, "0");
+
+
+  const handleSaveSchedule = async () => {
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast({ title: "Not authenticated", description: "Please login", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+
+    const slotsToInsertOrUpdate: any[] = [];
+    const slotsToDelete: string[] = [];
+
+    for (const day in slotsByDay) {
+      for (const slot in slotsByDay[day]) {
+        const currentType = slotsByDay[day][slot];
+        const originalType = originalSlotsByDay[day]?.[slot];
+        const slotId = slotsById[day]?.[slot];
+
+        if (currentType !== originalType) {
+          if (currentType === null && originalType !== null && slotId) {
+            // Schedule slot deleted - mark for delete by id
+            slotsToDelete.push(slotId);
+          } else if (currentType !== null) {
+            // Schedule slot inserted or changed - build data for upsert
+            const slotData: any = {
+              doctor_id: user.id,
+              day_of_week: day,
+              start_time: slot,
+              end_time: padHour(parseInt(slot.split(":")[0]) + 1) + ":" + slot.split(":")[1],
+              slot_type: currentType,
+              is_available: true,
+            };
+            if (typeof slotId === "string" && slotId.trim() !== "") {
+              slotData.id = slotId;
+            }
+            slotsToInsertOrUpdate.push(slotData);
+          }
+        }
+      }
+    }
+
+    // Delete slots by id
+    for (const id of slotsToDelete) {
+      const { error } = await supabase
+        .from('time_slots')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast({ title: "Error deleting slots", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
+
+    if (slotsToInsertOrUpdate.length > 0) {
+      const { error } = await supabase
+        .from('time_slots')
+        .upsert(slotsToInsertOrUpdate, { onConflict: 'id' });
+
+      if (error) {
+        toast({ title: "Error saving slots", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
+
+    toast({ title: "Schedule saved", description: "Availability updated successfully." });
+    setSaving(false);
+    setIsEditing(false);
+
+    await fetchSlots();
+  };
+
 
   const handleSaveFees = () => {
     toast({
@@ -125,30 +236,20 @@ const AvailabilityManagement = () => {
     });
   };
 
-  const toggleDayAvailability = (dayIndex: number) => {
-    const updatedSchedule = [...weeklySchedule];
-    updatedSchedule[dayIndex].isActive = !updatedSchedule[dayIndex].isActive;
-    setWeeklySchedule(updatedSchedule);
-  };
-
-  const addTimeSlot = (dayIndex: number) => {
-    const newSlot: TimeSlot = {
-      id: `${weeklySchedule[dayIndex].day.toLowerCase()}-${Date.now()}`,
-      startTime: "09:00",
-      endTime: "10:00",
-      isAvailable: true,
-      slotType: "consultation"
-    };
-    
-    const updatedSchedule = [...weeklySchedule];
-    updatedSchedule[dayIndex].timeSlots.push(newSlot);
-    setWeeklySchedule(updatedSchedule);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4 m-2">
+         <Button
+            variant="outline"
+            onClick={onBack}
+            className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+          >
+            <X className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
+          </div>
         <div>
           <h2 className="text-2xl font-bold">Availability & Timings</h2>
           <p className="text-muted-foreground">
@@ -156,7 +257,7 @@ const AvailabilityManagement = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button 
+          <Button
             variant={isEditing ? "default" : "outline"}
             onClick={() => setIsEditing(!isEditing)}
           >
@@ -164,100 +265,40 @@ const AvailabilityManagement = () => {
             {isEditing ? "Cancel" : "Edit Schedule"}
           </Button>
           {isEditing && (
-            <Button variant="doctor" onClick={handleSaveSchedule}>
+            <Button variant="doctor" onClick={handleSaveSchedule} disabled={saving}>
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              {saving ? "Saving..." : "Save Changes"}
             </Button>
           )}
         </div>
       </div>
 
-      <Tabs defaultValue="schedule" className="w-full">
+      <Tabs defaultValue="view-weekly" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
+          <TabsTrigger value="view-weekly">Edit Weekly Schedule</TabsTrigger>
           <TabsTrigger value="fees">Consultation Fees</TabsTrigger>
           <TabsTrigger value="preferences">Booking Preferences</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="schedule" className="space-y-4">
-          {/* Weekly Schedule */}
-          <div className="grid gap-4">
-            {weeklySchedule.map((daySchedule, dayIndex) => (
-              <Card key={daySchedule.day} className={!daySchedule.isActive ? "opacity-50" : ""}>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{daySchedule.day}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor={`${daySchedule.day}-active`} className="text-sm">
-                        Available
-                      </Label>
-                      <Switch
-                        id={`${daySchedule.day}-active`}
-                        checked={daySchedule.isActive}
-                        onCheckedChange={() => toggleDayAvailability(dayIndex)}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-                {daySchedule.isActive && (
-                  <CardContent>
-                    <div className="space-y-3">
-                      {daySchedule.timeSlots.map((slot, slotIndex) => (
-                        <div key={slot.id} className="flex items-center space-x-4 p-3 border rounded-lg">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="time"
-                              value={slot.startTime}
-                              disabled={!isEditing}
-                              className="w-24"
-                            />
-                            <span>to</span>
-                            <Input
-                              type="time"
-                              value={slot.endTime}
-                              disabled={!isEditing}
-                              className="w-24"
-                            />
-                          </div>
-                          <Select value={slot.slotType} disabled={!isEditing}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="consultation">Consultation</SelectItem>
-                              <SelectItem value="emergency">Emergency</SelectItem>
-                              <SelectItem value="break">Break</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Badge variant={slot.isAvailable ? "secondary" : "destructive"}>
-                            {slot.isAvailable ? "Available" : "Blocked"}
-                          </Badge>
-                          {isEditing && (
-                            <Button size="sm" variant="outline">
-                              Remove
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      {isEditing && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addTimeSlot(dayIndex)}
-                          className="w-full"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Time Slot
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
+
+        <TabsContent value="view-weekly" className="space-y-6 p-4">
+          <WeeklyScheduleGrid
+            slotsByDay={slotsByDay}
+            updateSlotType={updateSlotType}
+            isEditing={isEditing}
+          />
+
+          {isEditing && (
+            <Button
+              variant="doctor"
+              onClick={handleSaveSchedule}
+              disabled={saving}
+              className="mt-4"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
         </TabsContent>
 
         <TabsContent value="fees" className="space-y-4">

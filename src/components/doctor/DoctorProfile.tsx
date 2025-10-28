@@ -459,49 +459,21 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
               <Label htmlFor="licenseNumber" className="text-sm font-semibold text-gray-700">
                 License Number
               </Label>
-              {isEditing ? (
-                <Input
-                  id="licenseNumber"
-                  value={profileData.licenseNumber}
-                  onChange={e => setProfileData(prev => ({ ...prev, licenseNumber: e.target.value }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
-                />
-              ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.licenseNumber}</p>
-              )}
             </div>
 
             <div>
               <Label htmlFor="graduationYear" className="text-sm font-semibold text-gray-700">
                 Graduation Year
               </Label>
-              {isEditing ? (
-                <Input
-                  id="graduationYear"
-                  type="number"
-                  value={profileData.graduationYear}
-                  onChange={e => setProfileData(prev => ({ ...prev, graduationYear: parseInt(e.target.value, 10) || 0 }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
-                />
-              ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.graduationYear}</p>
-              )}
             </div>
 
             <div>
               <Label htmlFor="medicalSchool" className="text-sm font-semibold text-gray-700">
                 Medical School
               </Label>
-              {isEditing ? (
-                <Input
-                  id="medicalSchool"
-                  value={profileData.medicalSchool}
-                  onChange={e => setProfileData(prev => ({ ...prev, medicalSchool: e.target.value }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
-                />
-              ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.medicalSchool}</p>
-              )}
             </div>
 
             <div>

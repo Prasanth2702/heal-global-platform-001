@@ -4,12 +4,13 @@ import { Calendar, User, Clock, FileText, TrendingUp,Settings} from "lucide-reac
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
+import AvailabilityManagement from "../doctor/AvailabilityManagement";
 
 const DoctorDashboard = () => {
 
   const location = useLocation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar">("overview");
   
     useEffect(() => {
       const path = location.pathname;
@@ -17,6 +18,7 @@ const DoctorDashboard = () => {
       else if (path.includes('/patients')) setActiveTab('patients');
       else if (path.includes('/analytics')) setActiveTab('analytics');
       else if (path.includes('/profile')) setActiveTab('profile');
+      else if (path.includes('/calendar')) setActiveTab('calendar');
       else setActiveTab('overview');
     }, [location.pathname]);
   
@@ -28,6 +30,7 @@ const DoctorDashboard = () => {
         case 'appointments': navigate(`${basePath}/appointments`); break;
         case 'analytics': navigate(`${basePath}/analytics`); break;
         case 'profile': navigate(`${basePath}/profile`); break;
+        case 'calendar': navigate(`${basePath}/calendar`); break;
       }
     };
 
@@ -65,6 +68,9 @@ const DoctorDashboard = () => {
       return <DoctorProfile onBack={() => handleTabChange("overview")} />;
     }
 
+  if (activeTab === "calendar") {
+      return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
+    }
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -82,7 +88,7 @@ const DoctorDashboard = () => {
           </Button>
         </div>
         <div className="flex gap-2">
-          <Button variant="doctor" size="lg">
+          <Button variant="doctor" size="lg" onClick={() => handleTabChange("calendar")}>
             <Calendar className="mr-2 h-4 w-4" />
             View Calendar
           </Button>

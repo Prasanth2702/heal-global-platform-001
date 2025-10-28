@@ -25,6 +25,7 @@ import QATestingPage from "./pages/QATestingPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import InstallPrompt from "./components/pwa/InstallPrompt";
 import MaintenancePage from "./pages/MaintenancePage";
+import { PopupProvider } from '@/contexts/popup-context';
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -35,6 +36,7 @@ const App = () => {
   }
   return (
   <QueryClientProvider client={queryClient}>
+   <PopupProvider>
     <HelmetProvider>
       <ApiKeyProvider>
         <TooltipProvider>
@@ -83,6 +85,7 @@ const App = () => {
       </TooltipProvider>
       </ApiKeyProvider>
     </HelmetProvider>
+    </PopupProvider>
   </QueryClientProvider>  
   )
 };

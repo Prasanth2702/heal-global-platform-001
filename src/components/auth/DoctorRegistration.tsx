@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { usePopup } from '@/contexts/popup-context';
 
 import AuthLayout from "./AuthLayout";
 import { MedicalProfessional } from "@/Models/MedicalProfessional";
 import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
+import DoctorsTermConditionsPolicy from "../commons/policies/DoctorsTermConditionsPolicy";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -32,6 +34,7 @@ const countryCodes = [
 const DoctorRegistration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { openPopup } = usePopup();
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -430,8 +433,21 @@ const DoctorRegistration = () => {
               checked={termsAccepted}
               onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
             />
-            <Label htmlFor="terms" className="text-sm">
-              I accept the Terms and Conditions for Medical Professionals
+
+            <Label htmlFor="privacy" className="text-sm font-medium whitespace-nowrap cursor-pointer">
+              I accept the
+            </Label>
+            <span
+              className="text-sm text-blue-600 whitespace-nowrap font-semibold cursor-pointer hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                openPopup(<DoctorsTermConditionsPolicy />);
+              }}
+            >
+              terms & conditions
+            </span>
+            <Label htmlFor="privacy" className="text-sm font-medium whitespace-nowrap cursor-pointer">
+              for the medical professionals
             </Label>
           </div>
           <div className="flex items-center space-x-2">

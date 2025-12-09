@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ApiKeyProvider } from "@/contexts/ApiKeyContext";
 import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index";
@@ -26,9 +25,17 @@ import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import InstallPrompt from "./components/pwa/InstallPrompt";
 import MaintenancePage from "./pages/MaintenancePage";
 import { PopupProvider } from '@/contexts/popup-context';
+import DoctorProfile from "./components/doctor/DoctorProfile";   // 🔥 ADDED
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom"; // 🔥 ADDED
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
+// 🔥ADDED
+ const DoctorProfilePage = () => {
+  const navigate = useNavigate();
+  return <DoctorProfile onBack={() => navigate(-1)} />;
+};
+
 
 const App = () => {
   if (MAINTENANCE) {
@@ -77,6 +84,9 @@ const App = () => {
           <Route path="/payments" element={<PaymentSystemPage />} />
           <Route path="/api-setup" element={<ApiSetupPage />} />
           <Route path="/qa-testing" element={<QATestingPage />} />
+
+          {/* 🔥 Dynamic doctor profile page */}
+       <Route path="/doctor/:id" element={<DoctorProfilePage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

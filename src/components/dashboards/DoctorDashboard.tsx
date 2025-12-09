@@ -14,6 +14,7 @@ const DoctorDashboard = () => {
   
     useEffect(() => {
       const path = location.pathname;
+        console.log("Navigate to tab:",path);
       if (path.includes('/appointments')) setActiveTab('appointments');
       else if (path.includes('/patients')) setActiveTab('patients');
       else if (path.includes('/analytics')) setActiveTab('analytics');
@@ -23,6 +24,7 @@ const DoctorDashboard = () => {
     }, [location.pathname]);
   
     const handleTabChange = (tab: typeof activeTab) => {
+      console.log("Navigate to tab:",tab);
       setActiveTab(tab);
       const basePath = '/dashboard/doctor';
       switch (tab) {
@@ -65,10 +67,12 @@ const DoctorDashboard = () => {
   ];
 
    if (activeTab === "profile") {
+    console.log("Rendering DoctorProfile");
       return <DoctorProfile onBack={() => handleTabChange("overview")} />;
     }
 
   if (activeTab === "calendar") {
+      console.log("Rendering AvailabilityManagement");
       return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
     }
   return (

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { profile } from 'console';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
+import { useParams, useNavigate } from "react-router-dom";  // 🟢 ADDED
 
 export type UserRole = 'medicalProfessional';
 
@@ -34,10 +35,15 @@ export interface MedicalProfessional {
 }
 
 interface DoctorProfileProps {
-  onBack: () => void;
+  onBack?: () => void;  
+  // 🟢 It remains optional
 }
 
 const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
+ const { id } = useParams();  
+ const navigate = useNavigate();
+  // 🟢 ADDED — so the system knows which doctor to load when a patient opens /doctor/:id
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState<SupabaseUser>(null);
@@ -122,7 +128,18 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     };
     fetchProfile();
   }, []);
-
+  // -----------------------------
+  //  🔙 BACK BUTTON BEHAVIOR FIX
+  // -----------------------------
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 🟡 Use existing parent behavior (doctor side)
+    } else {
+      navigate(-1);  
+      // 🟢 ADDED fallback for patient navigation
+      // So when patient opens /doctor/46 → Back will return to the search list
+    }
+  };
   // Validation function customized for doctor profile
   const validateForm = (formData: MedicalProfessional) => {
     const errors: { [key: string]: string } = {};
@@ -286,7 +303,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={onBack}
+           onClick={handleBack}   // 🟡 CHANGED — now uses new function
             className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
           >
             <X className="h-4 w-4" />

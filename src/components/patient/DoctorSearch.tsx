@@ -2,32 +2,29 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Clock, Phone, Calendar, Filter } from "lucide-react";
+import { MapPin, Star, Clock, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";  // 🟢 ADDED
-import { useNavigate } from "react-router-dom"; // 🟢 ADDED
-import React from "react"; // 🟢 
-
-
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import React from "react";
 
 interface Doctor {
   id: string;
-  user_id: string;      // 🔵Updated (8/12)
-  name: string;          // 🔵 UPDATED (from static fields to dynamic)
+  user_id: string;
+  name: string;
   specialty: string;
   rating: number;
   experience: string;
-  location?: string;     // 🔵 UPDATED (optional)
-  distance?: string;     // 🔵 UPDATED
+  location?: string;
+  distance?: string;
   consultationFee: number;
   availability: string;
-  hospital?: string;     // 🔵 UPDATED
-  image?: string;        // 🔵 UPDATED
+  hospital?: string;
+  image?: string;
 }
-// console.log("DoctorSearch component loaded");
 
 const DoctorSearch = () => {
   const { toast } = useToast();
@@ -35,38 +32,66 @@ const DoctorSearch = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [doctors, setDoctors] = useState<Doctor[]>([]); // 🟢 ADDED
-  const [loading, setLoading] = useState(true);         // 🟢 ADDED
-  const navigate = useNavigate();                       // 🟢 ADDED
-  const [expandedDoctorId, setExpandedDoctorId] = useState(null); // ⭐ holds selected doctor
-  const [timeSlots, setTimeSlots] = useState([]); // 🟢
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
+  const [timeSlots, setTimeSlots] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
 
+  // calendar UI state
+  const [selectedDay, setSelectedDay] = useState<number>(0); // index 0..6, default today
 
   const specialties = [
     "General Physician", "Cardiologist", "Dermatologist", "Neurologist",
     "Orthopedic", "Pediatrician", "Gynecologist", "Psychiatrist",
     "Dentist", "Physiotherapist", "Dietician", "Ophthalmologist"
   ];
+
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const TIME_RANGE = ["9:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00", "14:00:00", "15:00:00", "16:00:00", "17:00:00", "18:00:00"];
- 
+
+  // ------------------------
+  // Helpers
+  // ------------------------
+  const formatDayLabel = (date: Date, index: number) => {
+    if (index === 0) return "Today";
+    if (index === 1) return "Tomorrow";
+    // Mon, 21 Jan
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  };
+
+  const formatDateNumber = (date: Date) => {
+    return date.getDate();
+  };
+
+  const formatTimePretty = (timeStr: string) => {
+    // timeStr is "HH:MM:SS"
+    const hh = parseInt(timeStr.slice(0, 2), 10);
+    const mm = timeStr.slice(3, 5);
+    const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+    const ampm = hh >= 12 ? "PM" : "AM";
+    return `${hour12}:${mm} ${ampm}`;
+  };
+
+  // ------------------------
+  // Data fetchers
+  // ------------------------
   const fetchDoctors = async () => {
     setLoading(true);
-
     const { data, error } = await supabase
       .from("medical_professionals")
       .select(`
-    *,
-    medical_professionals_user_id_fkey (
-      first_name,
-      last_name,
-      avatar_url,
-      user_id
-    )
-  `);
-    // console.log("Fetching doctors from Supabase...",data[0].medical_professionals_user_id_fkey.user_id);
-    // console.log("Fetched doctors data in:", data);
+        *,
+        medical_professionals_user_id_fkey (
+          first_name,
+          last_name,
+          avatar_url,
+          user_id
+        )
+      `);
+
     if (error) {
       console.error(error);
       setLoading(false);
@@ -90,68 +115,83 @@ const DoctorSearch = () => {
         hospital: item.medical_school || "Not specified",
         location: item.about_yourself || "Location not provided",
         image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-      };
+      } as Doctor;
     });
 
-    // console.log("Mapped doctors data:", mapped[1].availability);
     setDoctors(mapped);
     setLoading(false);
   };
-  const fetchTimeSlots = async (doctorId) => {
-    const { data, error } = await supabase
-      .from("time_slots")
-      .select("*")
-      .eq("doctor_id", doctorId)
-      .eq('is_available', true);
 
-    if (error) return console.error(error);
-    console.log("Fetched time slots for doctor", doctorId, data);
-    setTimeSlots(data);  // store in state
-  };
+  /**
+   * Fetch time_slots for doctor (only available ones).
+   * Also fetch bookings for the doctor (used to mark booked slots).
+   */
+  const fetchTimeSlotsAndBookings = async (doctorId: string) => {
+    try {
+      // fetch available time slots
+      const { data: slotsData, error: slotsError } = await supabase
+        .from("time_slots")
+        .select("*")
+        .eq("doctor_id", doctorId)
+        .eq("is_available", true);
 
+      if (slotsError) {
+        console.error("time_slots fetch error", slotsError);
+        setTimeSlots([]);
+      } else {
+        setTimeSlots(slotsData || []);
+      }
 
-
-  // 🟢 ADDED — fetch when component loads
-  useEffect(() => {
-
-    fetchDoctors();
-
-  }, []);
-
-
-  const filteredDoctors = searchQuery.trim() === "" ? [] :
-    doctors.filter(doctor => {
-      const matchesSearch =
-        doctor.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        doctor.hospital?.toLowerCase().includes(searchQuery.toLowerCase().trim());
-
-      const matchesSpecialty =
-        !selectedSpecialty || doctor.specialty === selectedSpecialty;
-
-      const matchesLocation =
-        !locationFilter ||
-        doctor.location?.toLowerCase().includes(locationFilter.toLowerCase());
-
-      return matchesSearch && matchesSpecialty && matchesLocation;
-    });
-
-  const toggleExpand = async (doctorId) => {
-    // Close previous section OR open new one
-    setExpandedDoctorId((prev) => (prev === doctorId ? null : doctorId));
-
-    // 🟢 IMPORTANT: Reset previous selected slot
-    setSelectedSlot(null);
-
-    // 🟢 (optional but recommended) Clear old time slots
-    setTimeSlots([]);
-
-    if (doctorId !== expandedDoctorId) {
-      fetchTimeSlots(doctorId);
+      // fetch bookings for this doctor
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("doctor_id", doctorId);
+             console.log("Fetched bookings data:", bookingsData,doctorId);
+      if (bookingsError) {
+        console.error("bookings fetch error", bookingsError);
+        setBookings([]);
+      } else {
+        setBookings(bookingsData || []);
+      }
+      console.log("Fetched time slots:", bookings);
+    } catch (err) {
+      console.error("fetchTimeSlotsAndBookings error", err);
+      setTimeSlots([]);
+      setBookings([]);
     }
   };
 
+  // ------------------------
+  // Effects
+  // ------------------------
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
+  // ------------------------
+  // Handlers
+  // ------------------------
+  const toggleExpand = async (doctorId: string) => {
+    // If closing same doctor, collapse and reset selection + data
+    if (expandedDoctorId === doctorId) {
+      setExpandedDoctorId(null);
+      setSelectedSlot(null);
+      setTimeSlots([]);
+      setBookings([]);
+      setSelectedDay(0);
+      return;
+    }
+
+    // Opening a new doctor: reset previous selection/data then fetch new
+    setExpandedDoctorId(doctorId);
+    setSelectedSlot(null);
+    setTimeSlots([]);
+    setBookings([]);
+    setSelectedDay(0);
+
+    await fetchTimeSlotsAndBookings(doctorId);
+  };
 
   const detectLocation = () => {
     if (navigator.geolocation) {
@@ -161,7 +201,6 @@ const DoctorSearch = () => {
             title: "Location Detected",
             description: "Searching for doctors near your location...",
           });
-          // In real app, use coordinates to filter nearby doctors
         },
         () => {
           toast({
@@ -174,17 +213,39 @@ const DoctorSearch = () => {
     }
   };
 
-  const handleBookAppointment = (doctor, slot) => {
+  const handleBookAppointment = (doctor: Doctor, slot: any) => {
     console.log("Booking with doctor:", doctor);
     console.log("Selected slot:", slot);
 
     toast({
       title: "Booking Appointment",
-      description: `Booking ${doctor.name} at ${slot.start_time}`,
+      description: `Booking ${doctor.name} at ${formatTimePretty(slot.start_time)}`,
+    });
+
+    navigate(`/book-appointment/${doctor.user_id}`, {
+      state: { slotId: slot.id }
     });
   };
 
+  // ------------------------
+  // Filtered doctors for search
+  // ------------------------
+  const filteredDoctors = searchQuery.trim() === "" ? [] :
+    doctors.filter(doctor => {
+      const term = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        doctor.name.toLowerCase().includes(term) ||
+        doctor.specialty.toLowerCase().includes(term) ||
+        doctor.hospital?.toLowerCase().includes(term);
 
+      const matchesSpecialty = !selectedSpecialty || doctor.specialty === selectedSpecialty;
+      const matchesLocation = !locationFilter || doctor.location?.toLowerCase().includes(locationFilter.toLowerCase());
+      return matchesSearch && matchesSpecialty && matchesLocation;
+    });
+
+  // ------------------------
+  // Render
+  // ------------------------
   return (
     <div className="space-y-6">
       {/* --- Search Header --- */}
@@ -258,12 +319,9 @@ const DoctorSearch = () => {
         ) : (
           <div className="space-y-4">
             {filteredDoctors.map((doctor) => (
-              console.log("Rendering doctor:", doctor.user_id),
-
               <Card
                 key={doctor.id}
-                className="hover:shadow-medium transition "
-              // onClick={() => toggleExpand(doctor.user_id)}
+                className="hover:shadow-medium transition"
               >
                 <CardContent className="p-6">
                   {/* Row Top */}
@@ -304,12 +362,11 @@ const DoctorSearch = () => {
                           ₹{doctor.consultationFee} Consultation
                         </span>
                       </div>
+
                       <div className="mt-3">
-                        {/* // ⭐ NEW: View Availability Button */}
                         <Button
                           variant="patient"
                           size="sm"
-                          // onClick={() => navigate(`/doctor-availability/${doctor.user_id}`)}
                           onClick={() => toggleExpand(doctor.user_id)}
                         >
                           View Availability
@@ -317,78 +374,108 @@ const DoctorSearch = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* -------------------------
+                      Expanded availability area
+                      ------------------------- */}
                   {expandedDoctorId === doctor.user_id && (
                     <div className="mt-4 p-4 rounded-xl border shadow bg-white">
 
                       <h3 className="font-semibold mb-3 text-lg">Available Slots</h3>
 
-                      {/* 🟥 If NO SLOTS → show ONLY this message */}
                       {timeSlots.length === 0 ? (
                         <p className="text-red-600 font-medium">Doctor is not available.</p>
                       ) : (
                         <>
-                          {/* 🟦 If slots exist → render calendar */}
-                          <div className="space-y-4 overflow-x-auto pb-2">
-                            {DAYS.filter(day =>
-                              timeSlots.some(s => s.day_of_week === day)
-                            ).map(day => {
-                              const slots = timeSlots.filter(s => s.day_of_week === day);
+                          {/* Calendar strip: next 7 days */}
+                          <div className="flex gap-3 overflow-x-auto py-2">
+                            {Array.from({ length: 7 }).map((_, index) => {
+                              const date = new Date();
+                              date.setDate(date.getDate() + index);
+
+                              const label = formatDayLabel(date, index);
+                              const dayNumber = formatDateNumber(date);
+
+                              const fullDayName = date.toLocaleDateString("en-US", { weekday: "long" });
+                              const slotsForThisDay = timeSlots.filter(s => s.day_of_week === fullDayName);
+
+                              const isActiveDay = selectedDay === index;
 
                               return (
-                                <div key={day} className="py-1">
-
-                                  {/* Day Title */}
-                                  <div className="font-medium text-sm mb-2">{day}</div>
-
-                                  {/* Slots Row */}
-                                  <div className="flex gap-2 overflow-x-auto">
-                                    {slots.map(slot => {
-                                      let isSelected = false;
-                                      isSelected = selectedSlot?.id === slot.id;
-
-                                      const borderColor =
-                                        slot.slot_type === "clinic"
-                                          ? "border-green-500"
-                                          : "border-blue-500";
-
-                                      const bgColor =
-                                        slot.slot_type === "clinic"
-                                          ? "bg-green-100"
-                                          : "bg-blue-100";
-
-                                      return (
-                                        <div
-                                          key={slot.id}
-                                          onClick={() => setSelectedSlot(slot)}
-                                          className={`
-                          w-16 h-12 min-w-[4rem]
-                          flex flex-col items-center justify-center
-                          text-xs rounded-md cursor-pointer 
-                          ${bgColor}
-                          ${isSelected ? `border-2 ${borderColor}` : "border border-gray-300"}
-                          hover:opacity-90 transition
-                        `}
-                                        >
-                                          <span className="font-semibold">
-                                            {slot.start_time.slice(0, 5)}
-                                          </span>
-                                          <span className="text-[10px] text-gray-600">
-                                            {slot.slot_type === "clinic" ? "C" : "T"}
-                                          </span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
+                                <div key={index} className="min-w-[110px]">
+                                  <button
+                                    onClick={() => { setSelectedDay(index); setSelectedSlot(null); }}
+                                    className={`w-full px-3 py-2 rounded-lg text-center transition
+                                      ${isActiveDay ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
+                                      border ${isActiveDay ? "border-blue-600" : "border-gray-200"}`}
+                                  >
+                                    <div className="text-xs font-medium">
+                                      {label}
+                                    </div>
+                                    <div className="text-lg font-bold mt-1">
+                                      {dayNumber}
+                                    </div>
+                                    <div className={`${isActiveDay ? "text-[11px] text-white-500 mt-1" :"text-[11px] text-gray-400 mt-1"}`}>
+                                      {slotsForThisDay.length} slot{slotsForThisDay.length !== 1 ? "s" : ""}
+                                    </div>
+                                  </button>
                                 </div>
                               );
                             })}
                           </div>
 
-                          {/* Info text */}
+                          {/* Slots for selected day (compact grid) */}
+                          <div className="mt-4">
+                            {(() => {
+                              const date = new Date();
+                              date.setDate(date.getDate() + selectedDay);
+                              const fullDayName = date.toLocaleDateString("en-US", { weekday: "long" });
+
+                              const slots = timeSlots.filter(s => s.day_of_week === fullDayName);
+
+                              if (slots.length === 0) {
+                                return <p className="text-gray-500 text-sm">No slots available for this day.</p>;
+                              }
+
+                              // render slots as compact boxes
+                              return (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                  {slots.map(slot => {
+                                    const isBooked = bookings.some(b => b.time_slot_id === slot.id);
+                                    console.log("Slot",slot.id,"isBooked:",isBooked , bookings);
+                                    const isSelected = selectedSlot?.id === slot.id;
+
+                                    // static tailwind classes (no dynamic `bg-${color}` strings)
+                                    const bgClass = isBooked ? "bg-red-100" : (slot.slot_type === "clinic" ? "bg-green-50" : "bg-blue-50");
+                                    const selectedBorderClass = isBooked ? "border-red-600" : (slot.slot_type === "clinic" ? "border-2 border-green-600" : "border-2 border-blue-600");
+
+                                    return (
+                                      <div
+                                        key={slot.id}
+                                        onClick={() => { if (!isBooked) setSelectedSlot(slot); }}
+                                        className={`
+                                          p-2 rounded-md cursor-pointer text-sm transition
+                                          ${bgClass}
+                                          ${isSelected && !isBooked ? selectedBorderClass : "border border-gray-300"}
+                                          ${isBooked ? "opacity-60 cursor-not-allowed" : ""}
+                                        `}
+                                      >
+                                        <div className="font-medium">{formatTimePretty(slot.start_time)} - {formatTimePretty(slot.end_time)}</div>
+                                        <div className="text-[11px] text-gray-600 capitalize">{slot.slot_type}</div>
+                                        <div className={`text-[11px] mt-1 font-semibold ${isBooked ? "text-red-600" : "text-green-600"}`}>
+                                          {isBooked ? "Booked" : "Available"}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {/* helper text */}
                           {!selectedSlot && (
-                            <p className="text-gray-500 text-xs mt-2">
-                              Please select a slot to book an appointment.
-                            </p>
+                            <p className="text-gray-500 text-xs mt-2">Please select a slot to book an appointment.</p>
                           )}
 
                           {/* Book button */}
@@ -402,13 +489,9 @@ const DoctorSearch = () => {
                             Book Appointment
                           </Button>
                         </>
-
                       )}
-
                     </div>
                   )}
-
-
 
                 </CardContent>
               </Card>

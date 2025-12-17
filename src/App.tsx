@@ -27,6 +27,7 @@ import MaintenancePage from "./pages/MaintenancePage";
 import { PopupProvider } from '@/contexts/popup-context';
 import DoctorProfile from "./components/doctor/DoctorProfile";   // 🔥 ADDED
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom"; // 🔥 ADDED
+import AppointmentBooking from "./components/appointments/AppointmentBooking";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -87,6 +88,8 @@ const App = () => {
 
           {/* 🔥 Dynamic doctor profile page */}
        <Route path="/doctor/:id" element={<DoctorProfilePage />} />
+       <Route path="/book-appointment" element={<AppointmentBooking />} />
+
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

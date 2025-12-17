@@ -1,333 +1,404 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Phone, Video, User, MoreHorizontal } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+// ========================================
+// AppointmentManagement.tsx
+// Patient Appointment Page (Upcoming + Past)
+// ========================================
 
+import React, { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
+import AppointmentCard from "./AppointmentCard"; // your existing card component
+
+// ------------------------
+// Supabase Client
+// ------------------------
+import { supabase } from "@/integrations/supabase/client";
+import VideoMeeting from "../VideoMeeting";
+
+// ------------------------
+// Types for safety & clarity
+// ------------------------ 
 interface Appointment {
   id: string;
   doctorName: string;
   specialty: string;
-  date: string;
-  time: string;
-  type: "in-person" | "teleconsultation";
-  status: "upcoming" | "completed" | "cancelled";
+  date: string; // yyyy-mm-dd
+  time: string; // "10:00 - 10:30"
+  type: string; // in-person or teleconsultation
+  status: string; // upcoming / completed / cancelled
   location: string;
-  consultationFee: number;
-  doctorImage: string;
+  consultationFee: number | null;
+  doctorImage?: string;
+  doctorId: string;
+  doctorVerified: boolean; // Add this
+  slotStartTime: string; // Add this (HH:MM format)
+  slotEndTime: string; // Add this (HH:MM format)
 }
 
-const AppointmentManagement = () => {
+interface VideoMeetingState {
+  showMeeting: boolean;
+  meetingId: string;
+  doctorName: string;
+}
+
+interface Profile {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+// ------------------------
+// Component
+// ------------------------
+export default function AppointmentManagement() {
   const { toast } = useToast();
+
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
 
-  // Mock data - will be replaced with real data from Supabase
-  const appointments: Appointment[] = [
-    {
-      id: "1",
-      doctorName: "Dr. Sarah Johnson",
-      specialty: "Cardiologist",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      type: "in-person",
-      status: "upcoming",
-      location: "Apollo Hospital, Sector 26",
-      consultationFee: 800,
-      doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face"
-    },
-    {
-      id: "2",
-      doctorName: "Dr. Michael Chen",
-      specialty: "Dermatologist",
-      date: "2024-01-18",
-      time: "2:30 PM",
-      type: "teleconsultation",
-      status: "upcoming",
-      location: "Online Consultation",
-      consultationFee: 600,
-      doctorImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face"
-    },
-    {
-      id: "3",
-      doctorName: "Dr. Priya Sharma",
-      specialty: "Pediatrician",
-      date: "2024-01-10",
-      time: "11:00 AM",
-      type: "in-person",
-      status: "completed",
-      location: "Max Hospital, Sector 19",
-      consultationFee: 700,
-      doctorImage: "https://images.unsplash.com/photo-1594824275948-b1ad70b45c6b?w=150&h=150&fit=crop&crop=face"
-    },
-    {
-      id: "4",
-      doctorName: "Dr. Rajesh Kumar",
-      specialty: "Orthopedic",
-      date: "2024-01-08",
-      time: "4:00 PM",
-      type: "in-person",
-      status: "cancelled",
-      location: "Fortis Hospital, Sector 62",
-      consultationFee: 900,
-      doctorImage: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face"
+  const [videoMeeting, setVideoMeeting] = useState<VideoMeetingState>({
+    showMeeting: false,
+    meetingId: "",
+    doctorName: "",
+  });
+
+  const apiKey = import.meta.env.VITE_VIDEOSDK_API_KEY;
+
+
+  const [profile, setProfile] = useState<Profile | null>(null);
+  // Load appointments when screen opens
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  // -------------------------------------------------------------
+  // Fetch appointments belonging ONLY to the logged-in patient
+  // -------------------------------------------------------------
+  const fetchAppointments = async () => {
+    try {
+      // 1️⃣ Get patient information
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) return;
+
+      // 2️⃣ Get all appointments for this patient
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(
+          `
+          id,
+          doctor_id,
+          doctor_name,
+          appointment_date,
+          time_slot_id,
+          status,
+          type,
+          consultation_fee,
+          reason
+        `
+        )
+        .eq("patient_id", user.id)
+        .order("appointment_date", { ascending: true });
+
+      if (error) {
+        toast({ title: "Error", description: "Could not load appointments" });
+        return;
+      }
+
+      // 3️⃣ For each appointment → fetch the time slot details
+      const enriched = await Promise.all(
+        data.map(async (apt) => {
+          const { data: slot } = await supabase
+            .from("time_slots")
+            .select("start_time, end_time, slot_type")
+            .eq("id", apt.time_slot_id)
+            .single();
+
+          // Check if doctor is verified
+          const { data: doctorVerification } = await supabase
+            .from("medical_professionals")
+            .select("is_verified")
+            .eq("user_id", apt.doctor_id)
+            .single();
+
+          return {
+            id: apt.id,
+            doctorName: apt.doctor_name,
+            specialty: apt.reason ?? "Consultation",
+            date: apt.appointment_date?.split("T")[0], // format → yyyy-mm-dd
+            time: slot ? `${slot.start_time} - ${slot.end_time}` : "",
+            type: slot?.slot_type === "tele" ? "teleconsultation" : "in-person",
+            status: apt.status,
+            location: slot?.slot_type === "tele" ? "Online" : "Clinic",
+            consultationFee: apt.consultation_fee,
+            doctorImage: "/doctor-placeholder.png",
+            doctorId: apt.doctor_id,
+            doctorVerified: doctorVerification?.is_verified || false, // Add this
+            slotStartTime: slot?.start_time || "", // Add for timing check
+            slotEndTime: slot?.end_time || "", // Add for timing check
+          };
+        })
+      );
+
+      setAppointments(enriched);
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, user_id, first_name, last_name, email")
+          .eq("user_id", user.id)
+          .single(); // 👈 because one user has one profile
+
+        if (profileError) {
+          toast({
+            title: "Error",
+            description: "Failed to load profile details",
+          });
+          return;
+        }
+
+        console.log("Profile Data:", profileData);
+
+
+    } catch (err) {
+      console.error("Error fetching:", err);
     }
-  ];
-
-  const upcomingAppointments = appointments.filter(apt => apt.status === "upcoming");
-  const pastAppointments = appointments.filter(apt => apt.status !== "upcoming");
-
-  const handleReschedule = (appointmentId: string) => {
-    toast({
-      title: "Reschedule Appointment",
-      description: "Opening calendar to select new date and time...",
-    });
-    // Navigate to reschedule page
   };
 
-  const handleCancel = (appointmentId: string) => {
-    toast({
-      title: "Appointment Cancelled",
-      description: "Your appointment has been cancelled. Refund will be processed within 3-5 business days.",
-    });
-    // Handle cancellation
-  };
+  // -------------------------------------------------------------
+  // Split into upcoming / past
+  // -------------------------------------------------------------
+  const today = new Date().toISOString().split("T")[0];
 
-  const handleJoinCall = (appointmentId: string) => {
-    toast({
-      title: "Joining Video Call",
-      description: "Starting video consultation...",
-    });
-    // Navigate to video call interface
-  };
+  const upcomingAppointments = appointments.filter((apt) => {
+    return apt.status === "confirmed" && apt.date >= today;
+  });
 
-  const handleViewPrescription = (appointmentId: string) => {
-    toast({
-      title: "Opening Prescription",
-      description: "Loading your prescription and medical notes...",
-    });
-    // Navigate to prescription view
-  };
+  const pastAppointments = appointments.filter((apt) => {
+    return (
+      apt.date < today ||
+      apt.status === "completed" ||
+      apt.status === "cancelled"
+    );
+  });
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "upcoming":
-        return "default";
-      case "completed":
-        return "secondary";
-      case "cancelled":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
+  // ---------------------------
+  // videosdk Meeting
+  // ---------------------------
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+  const handleLeaveMeeting = () => {
+    console.log("Leaving meeting");
+    setVideoMeeting({
+      showMeeting: false,
+      meetingId: "",
+      doctorName: "",
     });
   };
 
-  const AppointmentCard = ({ appointment }: { appointment: Appointment }) => (
-    <Card key={appointment.id} className="hover:shadow-medium transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Doctor Image */}
-          <div className="flex-shrink-0">
-            <img
-              src={appointment.doctorImage}
-              alt={appointment.doctorName}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          </div>
 
-          {/* Appointment Info */}
-          <div className="flex-1 space-y-3">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <div>
-                <h4 className="text-lg font-semibold">{appointment.doctorName}</h4>
-                <p className="text-muted-foreground">{appointment.specialty}</p>
-              </div>
-              <Badge variant={getStatusBadgeVariant(appointment.status)}>
-                {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-              </Badge>
-            </div>
+   const getDisplayName = () => {
+     if (profile?.first_name && profile?.last_name) {
+       return `${profile.first_name} ${profile.last_name}`;
+     } else if (profile?.email) {
+       return profile.email;
+     } else {
+       return "Participant";
+     }
+   };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                {formatDate(appointment.date)}
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-2" />
-                {appointment.time}
-              </div>
-              <div className="flex items-center">
-                {appointment.type === "teleconsultation" ? (
-                  <Video className="h-4 w-4 mr-2" />
-                ) : (
-                  <MapPin className="h-4 w-4 mr-2" />
-                )}
-                {appointment.location}
-              </div>
-              <div className="flex items-center">
-                <span className="font-medium text-green-600">
-                  ₹{appointment.consultationFee}
-                </span>
-              </div>
-            </div>
+const canJoinMeeting = (
+  appointmentDate: string,
+  slotStartTime: string,
+  slotEndTime: string
+) => {
+  const now = new Date();
+  const appointmentDateObj = new Date(appointmentDate);
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2">
-              {appointment.status === "upcoming" && (
-                <>
-                  {appointment.type === "teleconsultation" && (
-                    <Button 
-                      size="sm" 
-                      variant="patient"
-                      onClick={() => handleJoinCall(appointment.id)}
-                    >
-                      <Video className="mr-2 h-4 w-4" />
-                      Join Call
-                    </Button>
-                  )}
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleReschedule(appointment.id)}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Reschedule
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleCancel(appointment.id)}
-                  >
-                    Cancel
-                  </Button>
-                </>
-              )}
+  // Parse start time (e.g., "10:00")
+  const [startHour, startMinute] = slotStartTime.split(":").map(Number);
+  const appointmentStartTime = new Date(appointmentDateObj);
+  appointmentStartTime.setHours(startHour, startMinute, 0, 0);
 
-              {appointment.status === "completed" && (
-                <>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleViewPrescription(appointment.id)}
-                  >
-                    View Prescription
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Phone className="mr-2 h-4 w-4" />
-                    Call Doctor
-                  </Button>
-                  <Button size="sm" variant="patient">
-                    Book Again
-                  </Button>
-                </>
-              )}
+  // Parse end time (e.g., "10:30")
+  const [endHour, endMinute] = slotEndTime.split(":").map(Number);
+  const appointmentEndTime = new Date(appointmentDateObj);
+  appointmentEndTime.setHours(endHour, endMinute, 0, 0);
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>View Details</DropdownMenuItem>
-                  <DropdownMenuItem>Download Receipt</DropdownMenuItem>
-                  <DropdownMenuItem>Rate & Review</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+  // Allow joining 10 minutes before start time
+  const tenMinutesBefore = new Date(
+    appointmentStartTime.getTime() - 10 * 60000
   );
 
+  // Allow joining up to 1 hour after end time
+  const oneHourAfter = new Date(appointmentEndTime.getTime() + 60 * 60000);
+
+  return now >= tenMinutesBefore && now <= oneHourAfter;
+};
+
+  const handleJoinVideo = (appointmentId: string) => {
+    const appointment = appointments.find((apt) => apt.id === appointmentId);
+    if (!appointment) return;
+
+    if (!apiKey) {
+      toast({
+        title: "Error",
+        description: "Video conferencing is not configured properly",
+      });
+      return;
+    }
+
+    // Check if doctor is verified (only for teleconsultation)
+    if (
+      appointment.type === "teleconsultation" &&
+      !appointment.doctorVerified
+    ) {
+      toast({
+        title: "Doctor Not Verified",
+        description:
+          "Doctor verification is pending. Meeting cannot be started.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check timing restrictions
+    if (
+      !canJoinMeeting(
+        appointment.date,
+        appointment.slotStartTime,
+        appointment.slotEndTime
+      )
+    ) {
+      toast({
+        title: "Cannot Join Meeting",
+        description:
+          "You can only join the meeting 10 minutes before and up to 1 hour after the scheduled time",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setVideoMeeting({
+      showMeeting: true,
+      meetingId: appointment.doctorId,
+      doctorName: appointment.doctorName,
+    });
+  };
+
+  if (videoMeeting.showMeeting) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white">
+        <VideoMeeting
+          isHost={false}
+          apiKey={apiKey}
+          meetingId={videoMeeting.meetingId}
+          name={getDisplayName()}
+          onMeetingLeave={handleLeaveMeeting}
+          micEnabled={true}
+          webcamEnabled={true}
+          containerId="video-container"
+          meetingTitle={`Consultation with ${videoMeeting.doctorName}`}
+        />
+      </div>
+    );
+  }
+
+  const [userRole, setUserRole] = useState<'patient' | 'doctor'>('patient');
+
+// In fetchAppointments or useEffect
+const checkUserRole = async (userId: string) => {
+  // Check if user exists in medical_professionals table
+  const { data } = await supabase
+    .from("medical_professionals")
+    .select("id")
+    .eq("user_id", userId)
+    .single();
+  
+  if (data) {
+    setUserRole('doctor');
+  } else {
+    setUserRole('patient');
+  }
+};
+
+  // ---------------------------
+  // UI Rendering
+  // ---------------------------
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Appointments</h2>
-        <Button variant="patient">
-          <Calendar className="mr-2 h-4 w-4" />
-          Book New Appointment
-        </Button>
-      </div>
+    <div className="p-4 max-w-4xl mx-auto">
+      <h2 className="text-xl font-semibold mb-4">My Appointments</h2>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 p-1 bg-muted rounded-lg w-fit">
-        <Button
-          variant={activeTab === "upcoming" ? "default" : "ghost"}
-          size="sm"
+      {/* --------------------------------- */}
+      {/*        Toggle Buttons (Tabs)      */}
+      {/* --------------------------------- */}
+      <div className="flex gap-3 mb-6">
+        <button
           onClick={() => setActiveTab("upcoming")}
+          className={`px-4 py-2 rounded-lg font-medium border 
+            ${
+              activeTab === "upcoming"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white"
+            } `}
         >
-          Upcoming ({upcomingAppointments.length})
-        </Button>
-        <Button
-          variant={activeTab === "past" ? "default" : "ghost"}
-          size="sm"
+          Upcoming
+        </button>
+
+        <button
           onClick={() => setActiveTab("past")}
+          className={`px-4 py-2 rounded-lg font-medium border
+            ${
+              activeTab === "past"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white"
+            } `}
         >
-          Past Appointments ({pastAppointments.length})
-        </Button>
+          Past
+        </button>
       </div>
 
-      {/* Appointments List */}
-      <div className="space-y-4">
-        {activeTab === "upcoming" && (
-          <>
-            {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} />
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No Upcoming Appointments</h3>
-                  <p className="text-muted-foreground mb-4">
-                    You don't have any scheduled appointments.
-                  </p>
-                  <Button variant="patient">
-                    Book Your First Appointment
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </>
-        )}
+      {/* --------------------------------- */}
+      {/*        Upcoming Appointments      */}
+      {/* --------------------------------- */}
+      {activeTab === "upcoming" && (
+        <div className="space-y-4">
+          {upcomingAppointments.length === 0 && (
+            <p className="text-gray-400 text-sm">No upcoming appointments</p>
+          )}
 
-        {activeTab === "past" && (
-          <>
-            {pastAppointments.length > 0 ? (
-              pastAppointments.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} />
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No Past Appointments</h3>
-                  <p className="text-muted-foreground">
-                    Your appointment history will appear here.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </>
-        )}
-      </div>
+          {upcomingAppointments.map((apt) => (
+            <AppointmentCard
+              key={apt.id}
+              appointment={apt}
+              userRole={userRole} // Pass user role
+              onJoinVideo={handleJoinVideo}
+              // onJoinVideo={() => console.log("Join video")}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* --------------------------------- */}
+      {/*        Past Appointments          */}
+      {/* --------------------------------- */}
+      {activeTab === "past" && (
+        <div className="space-y-4">
+          {pastAppointments.length === 0 && (
+            <p className="text-gray-400 text-sm">No past appointments</p>
+          )}
+
+          {pastAppointments.map((apt) => (
+            <AppointmentCard
+              key={apt.id}
+              appointment={apt}
+              userRole={()=>{}}
+              onJoinVideo={() => {}}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
-
-export default AppointmentManagement;

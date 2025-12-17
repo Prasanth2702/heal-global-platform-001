@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
 import AvailabilityManagement from "../doctor/AvailabilityManagement";
+import DoctorAppointmentManagement from "../doctor/DoctorAppointmentManagement";
 
 const DoctorDashboard = () => {
 
@@ -75,6 +76,12 @@ const DoctorDashboard = () => {
       console.log("Rendering AvailabilityManagement");
       return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
     }
+    // this added
+    if (activeTab === "appointments") {
+  console.log("Rendering DoctorAppointmentManagement");
+  return <DoctorAppointmentManagement />;
+}
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -172,10 +179,16 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
               ))}
-              <Button variant="doctor" className="w-full">
-                <Calendar className="mr-2 h-4 w-4" />
-                Manage Schedule
-              </Button>
+              {/* this button is modified */}
+             <Button
+  variant="doctor"
+  className="w-full"
+  onClick={() => handleTabChange("appointments")}
+>
+  <Calendar className="mr-2 h-4 w-4" />
+  View Appointments
+</Button>
+
             </div>
           </CardContent>
         </Card>
@@ -235,10 +248,16 @@ const DoctorDashboard = () => {
               <TrendingUp className="h-6 w-6 mb-2" />
               <span className="text-sm">Analytics</span>
             </Button>
-            <Button variant="doctor" className="h-20 flex-col">
-              <Clock className="h-6 w-6 mb-2" />
-              <span className="text-sm">Teleconsult</span>
-            </Button>
+            {/* This button is modified */}
+           <Button
+  variant="doctor"
+  className="h-20 flex-col"
+  onClick={() => handleTabChange("appointments")}
+>
+  <Clock className="h-6 w-6 mb-2" />
+  <span className="text-sm">Appointments</span>
+</Button>
+
           </div>
         </CardContent>
       </Card>

@@ -15,6 +15,7 @@ import { MapPin, Star, Clock, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+
 interface Doctor {
   id: string;
   user_id: string;
@@ -37,6 +38,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+
 const DoctorSearch = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,8 +52,14 @@ const DoctorSearch = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
   const [bookingInfo, setBookingInfo] = useState(null);
   const [notes, setNotes] = useState("");
+
+const [bookingInfo, setBookingInfo] = useState(null);
+const [notes, setNotes] = useState("");
+
+
 
   // const [, setSelectedDate] = useState<Date | null>(null);
 
@@ -72,6 +80,7 @@ const DoctorSearch = () => {
     "Dietician",
     "Ophthalmologist",
   ];
+
 
   // ------------------------
   // Helpers
@@ -198,12 +207,16 @@ const DoctorSearch = () => {
   // ------------------------
   const toggleExpand = async (doctorId: string) => {
     // If closing same doctor, collapse and reset selection + data
+
     console.log(
       "Toggling expand for doctorId:",
       doctorId,
       "Current expandedDoctorId:",
       expandedDoctorId
     );
+
+    console.log("Toggling expand for doctorId:", doctorId, "Current expandedDoctorId:", expandedDoctorId);
+
     if (expandedDoctorId === doctorId) {
       setExpandedDoctorId(null);
       setSelectedSlot(null);
@@ -253,6 +266,7 @@ const DoctorSearch = () => {
 
     toast({
       title: "Booking Appointment",
+
       description: `Booking ${doctor.name} at ${formatTimePretty(
         slot.start_time
       )}  ${
@@ -273,6 +287,20 @@ const DoctorSearch = () => {
     };
     setBookingInfo(bookingData);
     setConfirmOpen(true);
+
+      description: `Booking ${doctor.name} at ${formatTimePretty(slot.start_time)}  ${date === 0 ? "Today" : date === 1 ? `Tomorrow ${newDate.getDate()} / ${newDate.getMonth() + 1}` : `  ${newDate.getDate()}  / ${newDate.getMonth() + 1} date`}`,
+    });
+   const bookingData = {
+    slot_id: slot.id,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    booking_date: newDate.toISOString().split("T")[0],
+    doctor_id: slot.doctor_id,
+    doctor_name: doctor.name,
+  };
+  setBookingInfo(bookingData);
+  setConfirmOpen(true);
+
   };
 
   // ------------------------
@@ -338,6 +366,48 @@ const DoctorSearch = () => {
       // toast.error("Unable to book appointment");
     }
   };
+
+  console.log("Filtered Doctors:", filteredDoctors);
+  // ------------------------  Pass confirm booking to backend
+  const handleConfirmBooking = async () => {
+  if (!bookingInfo) return;
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    console.log("Booking Info:", token);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const response = await fetch(
+     'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee',
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+     body: JSON.stringify({
+  patient_id: user.id,
+  doctor_id: bookingInfo.doctor_id,
+  booking_date: bookingInfo.booking_date,
+  time_slot_id: bookingInfo.slot_id,
+  notes: notes || null,
+}),
+
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+
+    // toast.success("Appointment Confirmed!");
+    setConfirmOpen(false);
+
+  } catch (err) {
+    // toast.error("Unable to book appointment");
+  }
+};
+
 
   // ------------------------
   // Render
@@ -451,7 +521,7 @@ const DoctorSearch = () => {
                           <span className="ml-1">{doctor.rating}</span>
                         </div>
                       </div>
-
+                         
                       <div className="text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4 inline mr-1" />
                         {doctor.location || "Location not provided"}
@@ -472,6 +542,7 @@ const DoctorSearch = () => {
                         <Button
                           variant="patient"
                           size="sm"
+
                           onClick={() => {
                             console.log(
                               "Toggling availability for user ID:",
@@ -479,6 +550,9 @@ const DoctorSearch = () => {
                             );
                             toggleExpand(doctor.user_id);
                           }}
+
+                          onClick={() => { console.log("Toggling availability for user ID:", doctor.user_id); toggleExpand(doctor.user_id); }}
+
                         >
                           View Availability
                         </Button>
@@ -504,6 +578,7 @@ const DoctorSearch = () => {
                           {/* Calendar strip: next 14 days */}
                           <div className="flex gap-3 overflow-x-auto py-2">
                             {Array.from({ length: 14 }).map((_, index) => {
+
                               // 1. Selected date
                               const date = new Date();
                               date.setDate(date.getDate() + index);
@@ -512,6 +587,7 @@ const DoctorSearch = () => {
                               const dayNumber = formatDateNumber(date);
 
                               // 2. Day name
+
                               const dayOfWeek = date.toLocaleDateString(
                                 "en-US",
                                 { weekday: "long" }
@@ -520,12 +596,20 @@ const DoctorSearch = () => {
                               // 3. Get all slots for this day-of-week
                               const slotsForDay = timeSlots.filter(
                                 (s) => s.day_of_week === dayOfWeek
+
+                              const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
+
+                              // 3. Get all slots for this day-of-week
+                              const slotsForDay = timeSlots.filter(
+                                s => s.day_of_week === dayOfWeek
+
                               );
 
                               // 4. Convert date to YYYY-MM-DD
                               const dateISO = date.toISOString().split("T")[0];
 
                               // 5. Find bookings for this exact date
+
                               const bookingsForDay = bookings.filter((b) => {
                                 const bookingISO = new Date(b.appointment_date)
                                   .toISOString()
@@ -543,6 +627,25 @@ const DoctorSearch = () => {
                                 (slot) => !bookedSlotIds.has(slot.id)
                               ).length;
 
+
+                              const bookingsForDay = bookings.filter(b => {
+                                const bookingISO = new Date(b.appointment_date)
+                                  .toISOString()
+                                  .split("T")[0];
+
+                                return bookingISO === dateISO;
+                              });
+
+                              // 6. Available slots = slots - bookedSlots
+                              const bookedSlotIds = new Set(
+                                bookingsForDay.map(b => b.time_slot_id)
+                              );
+
+                              const availableSlotsCount = slotsForDay.filter(
+                                slot => !bookedSlotIds.has(slot.id)
+                              ).length;
+
+
                               // 7. Render date header
                               const isActiveDay = selectedDay === index;
 
@@ -554,6 +657,7 @@ const DoctorSearch = () => {
                                       setSelectedSlot(null);
                                     }}
                                     className={`w-full px-3 py-2 rounded-lg text-center transition
+
                                     ${
                                       isActiveDay
                                         ? "bg-blue-600 text-white"
@@ -564,6 +668,10 @@ const DoctorSearch = () => {
                                         ? "border-blue-600"
                                         : "border-gray-200"
                                     }`}
+
+                                    ${isActiveDay ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
+                                    border ${isActiveDay ? "border-blue-600" : "border-gray-200"}`}
+
                                   >
                                     <div className="text-xs font-medium">
                                       {label}
@@ -582,12 +690,21 @@ const DoctorSearch = () => {
                                     >
                                       {availableSlotsCount} slot
                                       {availableSlotsCount !== 1 ? "s" : ""}
+
+                                      className={`${isActiveDay
+                                        ? "text-[11px] text-white mt-1"
+                                        : "text-[11px] text-gray-400 mt-1"
+                                        }`}
+                                    >
+                                      {availableSlotsCount} slot{availableSlotsCount !== 1 ? "s" : ""}
+
                                     </div>
                                   </button>
                                 </div>
                               );
                             })}
                           </div>
+
 
                           {/* Slots for selected day (compact grid) */}
                           <div className="mt-4">
@@ -693,6 +810,8 @@ const DoctorSearch = () => {
                                 </div>
                               );
                             })()}
+
+
                           </div>
 
                           {/* helper text */}

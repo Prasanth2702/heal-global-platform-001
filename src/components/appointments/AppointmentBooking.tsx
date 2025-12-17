@@ -1,225 +1,152 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Clock, User, Video, CreditCard, MessageSquare } from "lucide-react";
-import { format } from "date-fns";
+import toast, { Toaster } from "react-hot-toast";
+import { Loader2 } from "lucide-react"; // ✅ spinner icon
+import { flushSync } from "react-dom";
 
-const AppointmentBooking = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [appointmentType, setAppointmentType] = useState("");
-  const [paymentOption, setPaymentOption] = useState("");
 
-  const timeSlots = [
-    "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-    "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
-    "05:00 PM", "05:30 PM"
-  ];
+export default function AppointmentBooking() {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const doctors = [
-    { id: "1", name: "Dr. Smith", specialty: "Cardiology", fee: 1200 },
-    { id: "2", name: "Dr. Johnson", specialty: "General Medicine", fee: 800 },
-    { id: "3", name: "Dr. Brown", specialty: "Orthopedics", fee: 1000 }
-  ];
+  const { slot_id, start_time, end_time, booking_date, doctor_id } =
+    location.state || {};
 
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [doctorName, setDoctorName] = useState("Loading...");
+  const [userId, setUserId] = useState("");
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <CalendarIcon className="h-5 w-5" />
-            <span>Book Appointment</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Doctor Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Select Doctor</Label>
-              <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a doctor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id}>
-                      <div className="flex justify-between items-center w-full">
-                        <div>
-                          <p className="font-medium">{doctor.name}</p>
-                          <p className="text-sm text-muted-foreground">{doctor.specialty}</p>
-                        </div>
-                        <Badge variant="secondary">₹{doctor.fee}</Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+  // ---------------- LOAD USER + DOCTOR ----------------
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUserId(data.user.id);
 
-            <div>
-              <Label>Appointment Type</Label>
-              <Select value={appointmentType} onValueChange={setAppointmentType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="in-person">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>In-Person Consultation</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="video">
-                    <div className="flex items-center space-x-2">
-                      <Video className="h-4 w-4" />
-                      <span>Video Consultation</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="group-video">
-                    <div className="flex items-center space-x-2">
-                      <Video className="h-4 w-4" />
-                      <span>3-Way Video Conference</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      const { data: doc } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("user_id", doctor_id)
+        .single();
 
-          {/* Date and Time Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Select Date</Label>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                disabled={(date) => date < new Date()}
-                className="rounded-md border"
-              />
-            </div>
+      if (doc) {
+        setDoctorName(`Dr. ${doc.first_name} ${doc.last_name}`);
+      }
+    })();
+  }, [doctor_id]);
 
-            <div>
-              <Label>Available Time Slots</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {timeSlots.map((slot) => (
-                  <Button
-                    key={slot}
-                    variant={selectedSlot === slot ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSlot(slot)}
-                    className="justify-start"
-                  >
-                    <Clock className="h-3 w-3 mr-1" />
-                    {slot}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+  // ---------------- CONFIRM APPOINTMENT ----------------
+ const handleConfirm = async () => {
+  if (isSubmitting) return;
 
-          {/* Patient Information */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Patient Information</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="patient-name">Patient Name</Label>
-                <Input id="patient-name" placeholder="Enter patient name" />
-              </div>
-              <div>
-                <Label htmlFor="patient-phone">Phone Number</Label>
-                <Input id="patient-phone" placeholder="Enter phone number" />
-              </div>
-              <div>
-                <Label htmlFor="patient-email">Email Address</Label>
-                <Input id="patient-email" type="email" placeholder="Enter email" />
-              </div>
-              <div>
-                <Label htmlFor="patient-age">Age</Label>
-                <Input id="patient-age" type="number" placeholder="Enter age" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="symptoms">Symptoms/Reason for Visit</Label>
-              <Textarea 
-                id="symptoms" 
-                placeholder="Describe symptoms or reason for consultation"
-                rows={3}
-              />
-            </div>
-          </div>
+  // 🔒 FORCE UI UPDATE IMMEDIATELY
+  flushSync(() => {
+    setIsSubmitting(true);
+  });
 
-          {/* Payment Options */}
-          <div>
-            <Label className="text-base font-medium">Payment Option</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              <Button
-                variant={paymentOption === "pre-payment" ? "default" : "outline"}
-                onClick={() => setPaymentOption("pre-payment")}
-                className="justify-start h-auto p-4"
-              >
-                <div className="flex items-start space-x-3">
-                  <CreditCard className="h-5 w-5 mt-1" />
-                  <div className="text-left">
-                    <p className="font-medium">Pre-Payment</p>
-                    <p className="text-sm text-muted-foreground">Pay now to confirm appointment</p>
-                  </div>
-                </div>
-              </Button>
-              <Button
-                variant={paymentOption === "post-payment" ? "default" : "outline"}
-                onClick={() => setPaymentOption("post-payment")}
-                className="justify-start h-auto p-4"
-              >
-                <div className="flex items-start space-x-3">
-                  <MessageSquare className="h-5 w-5 mt-1" />
-                  <div className="text-left">
-                    <p className="font-medium">Post-Payment</p>
-                    <p className="text-sm text-muted-foreground">Pay after consultation</p>
-                  </div>
-                </div>
-              </Button>
-            </div>
-          </div>
+  if (!userId) {
+    toast.error("Please login first");
+    setIsSubmitting(false);
+    return;
+  }
 
-          {/* Appointment Summary */}
-          {selectedDate && selectedSlot && selectedDoctor && (
-            <Card className="bg-accent">
-              <CardContent className="pt-6">
-                <h3 className="font-medium mb-3">Appointment Summary</h3>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Doctor:</strong> {doctors.find(d => d.id === selectedDoctor)?.name}</p>
-                  <p><strong>Date:</strong> {format(selectedDate, "PPP")}</p>
-                  <p><strong>Time:</strong> {selectedSlot}</p>
-                  <p><strong>Type:</strong> {appointmentType.replace("-", " ").toUpperCase()}</p>
-                  <p><strong>Fee:</strong> ₹{doctors.find(d => d.id === selectedDoctor)?.fee}</p>
-                  <p><strong>Payment:</strong> {paymentOption.replace("-", " ").toUpperCase()}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) throw new Error("Authentication failed");
 
-          {/* Action Buttons */}
-          <div className="flex space-x-4">
-            <Button size="lg" className="flex-1">
-              {paymentOption === "pre-payment" ? "Book & Pay Now" : "Book Appointment"}
-            </Button>
-            <Button variant="outline" size="lg">
-              Save as Draft
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    const response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          patient_id: userId,
+          doctor_id,
+          facility_id: null,
+          booking_date,
+          time_slot_id: slot_id,
+          notes: null,
+        }),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Booking failed");
+
+    toast.success("Appointment Confirmed!");
+    navigate("/appointments");
+
+  } catch (err: any) {
+    toast.error(err.message || "Something went wrong");
+    setIsSubmitting(false); // 🔓 unlock only on error
+  }
 };
 
-export default AppointmentBooking;
+
+
+  return (
+    <>
+      <Toaster />
+      <div className="max-w-lg mx-auto p-6 mt-10">
+        <Card className="shadow-xl border border-gray-200 rounded-2xl">
+          <CardContent className="p-6 space-y-6">
+            <h2 className="text-2xl font-semibold text-center mb-4">
+              Confirm Appointment
+            </h2>
+
+            {/* Appointment Summary */}
+            <div className="space-y-3 text-gray-700">
+              <p>
+                <span className="font-semibold">Doctor:</span> {doctorName}
+              </p>
+              <p>
+                <span className="font-semibold">Date:</span> {booking_date}
+              </p>
+              <p>
+                <span className="font-semibold">Time:</span>{" "}
+                {start_time} - {end_time}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4">
+              {/* ❌ Cancel disabled while loading */}
+            <Button
+  variant="outline"
+  disabled={isSubmitting}
+  onClick={() => navigate(-1)}
+>
+  Cancel
+</Button>
+
+
+              {/* ✅ Confirm with loader */}
+   <Button
+  onClick={handleConfirm}
+  disabled={isSubmitting}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+>
+  {isSubmitting ? (
+    <span className="flex items-center gap-2">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      Confirming...
+    </span>
+  ) : (
+    "Confirm Appointment"
+  )}
+</Button>
+
+
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}

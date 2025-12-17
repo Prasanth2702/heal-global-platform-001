@@ -2,32 +2,37 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Clock, Phone, Calendar, Filter } from "lucide-react";
+import { MapPin, Star, Clock, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";  // 🟢 ADDED
-import { useNavigate } from "react-router-dom"; // 🟢 ADDED
-import React from "react"; // 🟢 
+import { supabase } from "@/integrations/supabase/client";
 
 
 
 interface Doctor {
   id: string;
-  user_id: string;      // 🔵Updated (8/12)
-  name: string;          // 🔵 UPDATED (from static fields to dynamic)
+  user_id: string;
+  name: string;
   specialty: string;
   rating: number;
   experience: string;
-  location?: string;     // 🔵 UPDATED (optional)
-  distance?: string;     // 🔵 UPDATED
+  location?: string;
+  distance?: string;
   consultationFee: number;
   availability: string;
-  hospital?: string;     // 🔵 UPDATED
-  image?: string;        // 🔵 UPDATED
+  hospital?: string;
+  image?: string;
 }
-// console.log("DoctorSearch component loaded");
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
 
 const DoctorSearch = () => {
   const { toast } = useToast();
@@ -35,38 +40,69 @@ const DoctorSearch = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [doctors, setDoctors] = useState<Doctor[]>([]); // 🟢 ADDED
-  const [loading, setLoading] = useState(true);         // 🟢 ADDED
-  const navigate = useNavigate();                       // 🟢 ADDED
-  const [expandedDoctorId, setExpandedDoctorId] = useState(null); // ⭐ holds selected doctor
-  const [timeSlots, setTimeSlots] = useState([]); // 🟢
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
+  const [timeSlots, setTimeSlots] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+const [bookingInfo, setBookingInfo] = useState(null);
+const [notes, setNotes] = useState("");
 
+
+  // const [, setSelectedDate] = useState<Date | null>(null);
+
+  // calendar UI state
+  const [selectedDay, setSelectedDay] = useState<number>(0); // index 0..6, default today
 
   const specialties = [
     "General Physician", "Cardiologist", "Dermatologist", "Neurologist",
     "Orthopedic", "Pediatrician", "Gynecologist", "Psychiatrist",
     "Dentist", "Physiotherapist", "Dietician", "Ophthalmologist"
   ];
-  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const TIME_RANGE = ["9:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00", "14:00:00", "15:00:00", "16:00:00", "17:00:00", "18:00:00"];
- 
+
+  
+  // ------------------------
+  // Helpers
+  // ------------------------
+  const formatDayLabel = (date: Date, index: number) => {
+    if (index === 0) return "Today";
+    if (index === 1) return "Tomorrow";
+    // Mon, 21 Jan
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  };
+
+  const formatDateNumber = (date: Date) => {
+    return date.getDate();
+  };
+
+  const formatTimePretty = (timeStr: string) => {
+    // timeStr is "HH:MM:SS"
+    const hh = parseInt(timeStr.slice(0, 2), 10);
+    const mm = timeStr.slice(3, 5);
+    const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+    const ampm = hh >= 12 ? "PM" : "AM";
+    return `${hour12}:${mm} ${ampm}`;
+  };
+
+  // ------------------------
+  // Data fetchers
+  // ------------------------
   const fetchDoctors = async () => {
     setLoading(true);
-
     const { data, error } = await supabase
       .from("medical_professionals")
       .select(`
-    *,
-    medical_professionals_user_id_fkey (
-      first_name,
-      last_name,
-      avatar_url,
-      user_id
-    )
-  `);
-    // console.log("Fetching doctors from Supabase...",data[0].medical_professionals_user_id_fkey.user_id);
-    // console.log("Fetched doctors data in:", data);
+        *,
+        medical_professionals_user_id_fkey (
+          first_name,
+          last_name,
+          avatar_url,
+          user_id
+        )
+      `);
+
     if (error) {
       console.error(error);
       setLoading(false);
@@ -90,68 +126,84 @@ const DoctorSearch = () => {
         hospital: item.medical_school || "Not specified",
         location: item.about_yourself || "Location not provided",
         image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-      };
+      } as Doctor;
     });
 
-    // console.log("Mapped doctors data:", mapped[1].availability);
     setDoctors(mapped);
     setLoading(false);
   };
-  const fetchTimeSlots = async (doctorId) => {
-    const { data, error } = await supabase
-      .from("time_slots")
-      .select("*")
-      .eq("doctor_id", doctorId)
-      .eq('is_available', true);
 
-    if (error) return console.error(error);
-    console.log("Fetched time slots for doctor", doctorId, data);
-    setTimeSlots(data);  // store in state
-  };
+  /**
+   * Fetch time_slots for doctor (only available ones).
+   * Also fetch bookings for the doctor (used to mark booked slots).
+   */
+  const fetchTimeSlotsAndBookings = async (doctorId: string) => {
+    try {
+      // fetch available time slots
+      const { data: slotsData, error: slotsError } = await supabase
+        .from("time_slots")
+        .select("*")
+        .eq("doctor_id", doctorId)
+        .eq("is_available", true);
 
+      if (slotsError) {
+        console.error("time_slots fetch error", slotsError);
+        setTimeSlots([]);
+      } else {
+        setTimeSlots(slotsData || []);
+      }
 
-
-  // 🟢 ADDED — fetch when component loads
-  useEffect(() => {
-
-    fetchDoctors();
-
-  }, []);
-
-
-  const filteredDoctors = searchQuery.trim() === "" ? [] :
-    doctors.filter(doctor => {
-      const matchesSearch =
-        doctor.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        doctor.hospital?.toLowerCase().includes(searchQuery.toLowerCase().trim());
-
-      const matchesSpecialty =
-        !selectedSpecialty || doctor.specialty === selectedSpecialty;
-
-      const matchesLocation =
-        !locationFilter ||
-        doctor.location?.toLowerCase().includes(locationFilter.toLowerCase());
-
-      return matchesSearch && matchesSpecialty && matchesLocation;
-    });
-
-  const toggleExpand = async (doctorId) => {
-    // Close previous section OR open new one
-    setExpandedDoctorId((prev) => (prev === doctorId ? null : doctorId));
-
-    // 🟢 IMPORTANT: Reset previous selected slot
-    setSelectedSlot(null);
-
-    // 🟢 (optional but recommended) Clear old time slots
-    setTimeSlots([]);
-
-    if (doctorId !== expandedDoctorId) {
-      fetchTimeSlots(doctorId);
+      // fetch bookings for this doctor
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("doctor_id", doctorId);
+      console.log("Fetched bookings data:", doctorId);
+      if (bookingsError) {
+        console.error("bookings fetch error", bookingsError);
+        setBookings([]);
+      } else {
+        setBookings(bookingsData || []);
+      }
+      console.log("Fetched time slots:", bookings);
+    } catch (err) {
+      console.error("fetchTimeSlotsAndBookings error", err);
+      setTimeSlots([]);
+      setBookings([]);
     }
   };
 
+  // ------------------------
+  // Effects
+  // ------------------------
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
+  // ------------------------
+  // Handlers
+  // ------------------------
+  const toggleExpand = async (doctorId: string) => {
+    // If closing same doctor, collapse and reset selection + data
+    console.log("Toggling expand for doctorId:", doctorId, "Current expandedDoctorId:", expandedDoctorId);
+    if (expandedDoctorId === doctorId) {
+      setExpandedDoctorId(null);
+      setSelectedSlot(null);
+      setTimeSlots([]);
+      setBookings([]);
+      setSelectedDay(0);
+      return;
+    }
+
+    // Opening a new doctor: reset previous selection/data then fetch new
+    setExpandedDoctorId(doctorId);
+    setSelectedSlot(null);
+    setTimeSlots([]);
+    setBookings([]);
+    setSelectedDay(0);
+
+    await fetchTimeSlotsAndBookings(doctorId);
+  };
 
   const detectLocation = () => {
     if (navigator.geolocation) {
@@ -161,7 +213,6 @@ const DoctorSearch = () => {
             title: "Location Detected",
             description: "Searching for doctors near your location...",
           });
-          // In real app, use coordinates to filter nearby doctors
         },
         () => {
           toast({
@@ -174,17 +225,90 @@ const DoctorSearch = () => {
     }
   };
 
-  const handleBookAppointment = (doctor, slot) => {
+  const handleBookNow = (slot, date, doctor) => {
+    const newDate = new Date();
+    newDate.setDate(newDate.getDate() + date);
     console.log("Booking with doctor:", doctor);
     console.log("Selected slot:", slot);
+    console.log("Booking date:", date, newDate);
 
     toast({
       title: "Booking Appointment",
-      description: `Booking ${doctor.name} at ${slot.start_time}`,
+      description: `Booking ${doctor.name} at ${formatTimePretty(slot.start_time)}  ${date === 0 ? "Today" : date === 1 ? `Tomorrow ${newDate.getDate()} / ${newDate.getMonth() + 1}` : `  ${newDate.getDate()}  / ${newDate.getMonth() + 1} date`}`,
     });
+   const bookingData = {
+    slot_id: slot.id,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    booking_date: newDate.toISOString().split("T")[0],
+    doctor_id: slot.doctor_id,
+    doctor_name: doctor.name,
+  };
+  setBookingInfo(bookingData);
+  setConfirmOpen(true);
   };
 
+  // ------------------------
+  // Filtered doctors for search
+  // ------------------------
+  const filteredDoctors = searchQuery.trim() === "" ? [] :
+    doctors.filter(doctor => {
+      const term = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        doctor.name.toLowerCase().includes(term) ||
+        doctor.specialty.toLowerCase().includes(term) ||
+        doctor.hospital?.toLowerCase().includes(term);
 
+      const matchesSpecialty = !selectedSpecialty || doctor.specialty === selectedSpecialty;
+      const matchesLocation = !locationFilter || doctor.location?.toLowerCase().includes(locationFilter.toLowerCase());
+      return matchesSearch && matchesSpecialty && matchesLocation;
+    });
+
+  console.log("Filtered Doctors:", filteredDoctors);
+  // ------------------------  Pass confirm booking to backend
+  const handleConfirmBooking = async () => {
+  if (!bookingInfo) return;
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    console.log("Booking Info:", token);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const response = await fetch(
+     'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee',
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+     body: JSON.stringify({
+  patient_id: user.id,
+  doctor_id: bookingInfo.doctor_id,
+  booking_date: bookingInfo.booking_date,
+  time_slot_id: bookingInfo.slot_id,
+  notes: notes || null,
+}),
+
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+
+    // toast.success("Appointment Confirmed!");
+    setConfirmOpen(false);
+
+  } catch (err) {
+    // toast.error("Unable to book appointment");
+  }
+};
+
+
+  // ------------------------
+  // Render
+  // ------------------------
   return (
     <div className="space-y-6">
       {/* --- Search Header --- */}
@@ -258,12 +382,9 @@ const DoctorSearch = () => {
         ) : (
           <div className="space-y-4">
             {filteredDoctors.map((doctor) => (
-              console.log("Rendering doctor:", doctor.user_id),
-
               <Card
                 key={doctor.id}
-                className="hover:shadow-medium transition "
-              // onClick={() => toggleExpand(doctor.user_id)}
+                className="hover:shadow-medium transition"
               >
                 <CardContent className="p-6">
                   {/* Row Top */}
@@ -288,7 +409,7 @@ const DoctorSearch = () => {
                           <span className="ml-1">{doctor.rating}</span>
                         </div>
                       </div>
-
+                         
                       <div className="text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4 inline mr-1" />
                         {doctor.location || "Location not provided"}
@@ -304,111 +425,204 @@ const DoctorSearch = () => {
                           ₹{doctor.consultationFee} Consultation
                         </span>
                       </div>
+
                       <div className="mt-3">
-                        {/* // ⭐ NEW: View Availability Button */}
                         <Button
                           variant="patient"
                           size="sm"
-                          // onClick={() => navigate(`/doctor-availability/${doctor.user_id}`)}
-                          onClick={() => toggleExpand(doctor.user_id)}
+                          onClick={() => { console.log("Toggling availability for user ID:", doctor.user_id); toggleExpand(doctor.user_id); }}
                         >
                           View Availability
                         </Button>
                       </div>
                     </div>
                   </div>
+
+                  {/* -------------------------
+                      Expanded availability area
+                      ------------------------- */}
                   {expandedDoctorId === doctor.user_id && (
                     <div className="mt-4 p-4 rounded-xl border shadow bg-white">
 
                       <h3 className="font-semibold mb-3 text-lg">Available Slots</h3>
 
-                      {/* 🟥 If NO SLOTS → show ONLY this message */}
                       {timeSlots.length === 0 ? (
                         <p className="text-red-600 font-medium">Doctor is not available.</p>
                       ) : (
                         <>
-                          {/* 🟦 If slots exist → render calendar */}
-                          <div className="space-y-4 overflow-x-auto pb-2">
-                            {DAYS.filter(day =>
-                              timeSlots.some(s => s.day_of_week === day)
-                            ).map(day => {
-                              const slots = timeSlots.filter(s => s.day_of_week === day);
+                          {/* Calendar strip: next 14 days */}
+                          <div className="flex gap-3 overflow-x-auto py-2">
+                            {Array.from({ length: 14 }).map((_, index) => {
+
+                              // 1. Selected date
+                              const date = new Date();
+                              date.setDate(date.getDate() + index);
+
+                              const label = formatDayLabel(date, index);
+                              const dayNumber = formatDateNumber(date);
+
+                              // 2. Day name
+                              const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
+
+                              // 3. Get all slots for this day-of-week
+                              const slotsForDay = timeSlots.filter(
+                                s => s.day_of_week === dayOfWeek
+                              );
+
+                              // 4. Convert date to YYYY-MM-DD
+                              const dateISO = date.toISOString().split("T")[0];
+
+                              // 5. Find bookings for this exact date
+                              const bookingsForDay = bookings.filter(b => {
+                                const bookingISO = new Date(b.appointment_date)
+                                  .toISOString()
+                                  .split("T")[0];
+
+                                return bookingISO === dateISO;
+                              });
+
+                              // 6. Available slots = slots - bookedSlots
+                              const bookedSlotIds = new Set(
+                                bookingsForDay.map(b => b.time_slot_id)
+                              );
+
+                              const availableSlotsCount = slotsForDay.filter(
+                                slot => !bookedSlotIds.has(slot.id)
+                              ).length;
+
+                              // 7. Render date header
+                              const isActiveDay = selectedDay === index;
 
                               return (
-                                <div key={day} className="py-1">
+                                <div key={index} className="min-w-[110px]">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedDay(index);
+                                      setSelectedSlot(null);
+                                    }}
+                                    className={`w-full px-3 py-2 rounded-lg text-center transition
+                                    ${isActiveDay ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
+                                    border ${isActiveDay ? "border-blue-600" : "border-gray-200"}`}
+                                  >
+                                    <div className="text-xs font-medium">
+                                      {label}
+                                    </div>
 
-                                  {/* Day Title */}
-                                  <div className="font-medium text-sm mb-2">{day}</div>
+                                    <div className="text-lg font-bold mt-1">
+                                      {dayNumber}
+                                    </div>
 
-                                  {/* Slots Row */}
-                                  <div className="flex gap-2 overflow-x-auto">
-                                    {slots.map(slot => {
-                                      let isSelected = false;
-                                      isSelected = selectedSlot?.id === slot.id;
-
-                                      const borderColor =
-                                        slot.slot_type === "clinic"
-                                          ? "border-green-500"
-                                          : "border-blue-500";
-
-                                      const bgColor =
-                                        slot.slot_type === "clinic"
-                                          ? "bg-green-100"
-                                          : "bg-blue-100";
-
-                                      return (
-                                        <div
-                                          key={slot.id}
-                                          onClick={() => setSelectedSlot(slot)}
-                                          className={`
-                          w-16 h-12 min-w-[4rem]
-                          flex flex-col items-center justify-center
-                          text-xs rounded-md cursor-pointer 
-                          ${bgColor}
-                          ${isSelected ? `border-2 ${borderColor}` : "border border-gray-300"}
-                          hover:opacity-90 transition
-                        `}
-                                        >
-                                          <span className="font-semibold">
-                                            {slot.start_time.slice(0, 5)}
-                                          </span>
-                                          <span className="text-[10px] text-gray-600">
-                                            {slot.slot_type === "clinic" ? "C" : "T"}
-                                          </span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
+                                    <div
+                                      className={`${isActiveDay
+                                        ? "text-[11px] text-white mt-1"
+                                        : "text-[11px] text-gray-400 mt-1"
+                                        }`}
+                                    >
+                                      {availableSlotsCount} slot{availableSlotsCount !== 1 ? "s" : ""}
+                                    </div>
+                                  </button>
                                 </div>
                               );
                             })}
                           </div>
 
-                          {/* Info text */}
+
+                          {/* Slots for selected day (compact grid) */}
+                          <div className="mt-4">
+                            {/* Available Slots */}
+                            {(() => {
+                              // 1. Convert selectedDay → selected actual date
+                              const selectedDate = new Date();
+                              selectedDate.setDate(selectedDate.getDate() + selectedDay);
+                              const selectedISO = selectedDate.toISOString().split("T")[0];
+
+                              // 2. Get the weekday name
+                              const fullDayName = selectedDate.toLocaleDateString("en-US", {
+                                weekday: "long",
+                              });
+
+                              // 3. Filter slots for this weekday
+                              const slotsForDay = timeSlots.filter(s => s.day_of_week === fullDayName);
+                              console.log("Slots for Day", fullDayName, ":", slotsForDay);
+
+                              if (slotsForDay.length === 0) {
+                                return <p className="text-gray-500 text-sm">No slots available for this day.</p>;
+                              }
+
+                              // 4. Appointments for this exact selected date
+                              const todaysBookings = bookings.filter(b => {
+                                const bookingISO = new Date(b.appointment_date).toISOString().split("T")[0];
+                                console.log("Comparing booking date:", bookingISO, "with selected date:", selectedISO);
+                                return bookingISO === selectedISO;
+                              });
+
+                              // 5. Remove booked slots
+                              const availableSlots = slotsForDay.filter(slot =>
+                                !todaysBookings.some(b => b.time_slot_id === slot.id)
+                              );
+
+                              return (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+
+                                  {availableSlots.map(slot => {
+                                    const isSelected = selectedSlot?.id === slot.id;
+
+                                    return (
+                                      <div
+                                        key={slot.id}
+                                        onClick={() => setSelectedSlot(slot)}
+                                        className={`
+              p-2 rounded-md cursor-pointer text-sm transition
+              ${slot.slot_type === "clinic" ? "bg-green-50" : "bg-blue-50"}
+              ${isSelected ? "border-2 border-green-600" : "border border-gray-300"}
+            `}
+                                      >
+                                        <div className="font-medium">
+                                          {formatTimePretty(slot.start_time)} - {formatTimePretty(slot.end_time)}
+                                        </div>
+
+                                        <div className="text-[11px] text-gray-600 capitalize">
+                                          {slot.slot_type}
+                                        </div>
+
+                                        <div className="text-[11px] mt-1 font-semibold text-green-600">
+                                          Available
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+
+                                  {availableSlots.length === 0 && (
+                                    <p className="text-red-500 text-sm col-span-full text-center">
+                                      No available slots for this day.
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
+
+
+                          </div>
+
+                          {/* helper text */}
                           {!selectedSlot && (
-                            <p className="text-gray-500 text-xs mt-2">
-                              Please select a slot to book an appointment.
-                            </p>
+                            <p className="text-gray-500 text-xs mt-2">Please select a slot to book an appointment.</p>
                           )}
 
-                          {/* Book button */}
+                          {/* Book Now button */}
                           <Button
                             variant="patient"
                             size="sm"
                             className="mt-3 w-full sm:w-auto"
                             disabled={!selectedSlot}
-                            onClick={() => handleBookAppointment(doctor, selectedSlot)}
+                            onClick={() => handleBookNow(selectedSlot, selectedDay, doctor)}
                           >
-                            Book Appointment
+                            Book Appointment without Payment
                           </Button>
                         </>
-
                       )}
-
                     </div>
                   )}
-
-
 
                 </CardContent>
               </Card>
@@ -424,6 +638,75 @@ const DoctorSearch = () => {
           </Card>
         )}
       </div>
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+  <DialogContent className="rounded-xl p-6">
+    <DialogHeader>
+      <DialogTitle className="text-xl font-bold text-center">
+        Confirm Appointment
+      </DialogTitle>
+    </DialogHeader>
+
+    {bookingInfo && (
+  <div className="space-y-4 mt-2">
+
+    {/* Doctor */}
+    <div className="p-4 bg-gray-100 rounded-lg">
+      <p className="text-sm text-gray-600">Doctor</p>
+      <p className="text-lg font-medium">{bookingInfo.doctor_name}</p>
+    </div>
+
+    {/* Date & Time */}
+    <div className="grid grid-cols-2 gap-4">
+      <div className="p-4 bg-gray-100 rounded-lg">
+        <p className="text-sm text-gray-600">Date</p>
+        <p className="text-md font-medium">{bookingInfo.booking_date}</p>
+      </div>
+
+      <div className="p-4 bg-gray-100 rounded-lg">
+        <p className="text-sm text-gray-600">Time Slot</p>
+        <p className="text-md font-medium">
+          {formatTimePretty(bookingInfo.start_time)} - {formatTimePretty(bookingInfo.end_time)}
+        </p>
+      </div>
+    </div>
+
+    {/* Notes */}
+    <div className="mt-4">
+      <label className="text-sm font-medium text-gray-600">Notes (optional)</label>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Add message for doctor..."
+        className="mt-2 w-full p-3 border rounded-lg focus:ring focus:ring-blue-200"
+        rows={3}
+      />
+    </div>
+
+  </div>
+)}
+
+
+    <DialogFooter className="mt-6 flex justify-between">
+     <Button
+  variant="outline"
+  onClick={() => {
+    setConfirmOpen(false);
+    setNotes("");
+  }}
+>
+  Cancel
+</Button>
+
+      <Button
+        className="bg-blue-600 hover:bg-blue-700 text-white"
+        onClick={handleConfirmBooking}
+      >
+        Confirm
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 };

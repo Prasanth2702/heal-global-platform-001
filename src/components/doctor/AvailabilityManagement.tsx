@@ -42,9 +42,9 @@ const AvailabilityManagement: React.FC<AvailabilityManagementProps> = ({ onBack 
     const init: { [day: string]: { [slot: string]: SlotType } } = {};
     daysOfWeek.forEach(day => {
       init[day] = {};
-      timeSlots.forEach(slot => {
-        init[day][slot] = null;
-      });
+      timeSlots.forEach(slot => {  
+        init[day][slot] = null; 
+      }); 
     });
     return init;
   });

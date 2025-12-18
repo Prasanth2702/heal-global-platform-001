@@ -46,7 +46,7 @@ const DoctorSchedulePage = () => {
 
 
 const App = () => {
-  if (MAINTENANCE) {
+  if (MAINTENANCE) { 
     return  <MaintenancePage></MaintenancePage>
   }
   return (

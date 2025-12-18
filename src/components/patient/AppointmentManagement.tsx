@@ -453,13 +453,14 @@ const fetchAppointments = async () => {
   // ✅ HARD DEDUPLICATION
   const unique = Array.from(
     new Map(enriched.map(a => [a.id, a])).values()
-  );
+  );  
 
   setAppointments(unique);
 };
 
 
   // ------------ FILTERING ----------------
+  
   const filterByStatus = (list: Appointment[]) => {
     if (statusFilter === "all") return list;
     return list.filter(a => a.status === statusFilter);
@@ -473,10 +474,6 @@ const fetchAppointments = async () => {
     appointments.filter(a => a.isPast)
   );
 
-
-  // ---------------------------
-  // UI Rendering
-  // ---------------------------
   return (
 
     <div className="p-4 max-w-4xl mx-auto">

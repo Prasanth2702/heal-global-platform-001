@@ -4,6 +4,123 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
+
+
+export default function AppointmentBooking() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Prefilled data from DoctorSearch
+  const { slot_id, start_time, end_time, booking_date, doctor_id } =
+    location.state || {};
+
+  const [doctorName, setDoctorName] = useState("Loading...");
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  // Load logged-in user & doctor details
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUserId(data.user.id);
+
+      // Fetch Doctor Name
+      const { data: doc } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("user_id", doctor_id)
+        .single();
+
+      if (doc) {
+        setDoctorName(`Dr. ${doc.first_name} ${doc.last_name}`);
+      }
+    })();
+  }, [doctor_id]);
+
+  // Confirm Appointment
+  const handleConfirm = async () => {
+    if (!userId) return toast.error("Please login first");
+
+    setLoading(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      const response = await fetch(
+        "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            patient_id: userId,
+            doctor_id,
+            facility_id: null,
+            booking_date,
+            time_slot_id: slot_id,
+            notes: null,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Booking failed");
+
+      toast.success("Appointment Confirmed!");
+
+      setTimeout(() => navigate("/appointments"), 1000);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Toaster />
+      <div className="max-w-lg mx-auto p-6 mt-10">
+        <Card className="shadow-xl border border-gray-200 rounded-2xl">
+          <CardContent className="p-6 space-y-6">
+            <h2 className="text-2xl font-semibold text-center mb-4">
+              Confirm Appointment
+            </h2>
+
+            {/* Fixed Summary – Not Editable */}
+            <div className="space-y-3 text-gray-700">
+              <p>
+                <span className="font-semibold">Doctor:</span> {doctorName}
+              </p>
+              <p>
+                <span className="font-semibold">Date:</span> {booking_date}
+              </p>
+              <p>
+                <span className="font-semibold">Time:</span>{" "}
+                {start_time} – {end_time}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate(-1)}
+                className="px-5"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                onClick={handleConfirm}
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              >
+                {loading ? "Confirming..." : "Confirm Appointment"}
+              </Button>
+
 import { Loader2 } from "lucide-react"; // ✅ spinner icon
 import { flushSync } from "react-dom";
 
@@ -141,6 +258,7 @@ export default function AppointmentBooking() {
     "Confirm Appointment"
   )}
 </Button>
+
 
 
             </div>

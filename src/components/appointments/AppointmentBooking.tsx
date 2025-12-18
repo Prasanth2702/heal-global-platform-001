@@ -29,7 +29,7 @@ export default function AppointmentBooking() {
         .from("profiles")
         .select("first_name, last_name")
         .eq("user_id", doctor_id)
-        .single();
+        .single(); 
 
       if (doc) {
         setDoctorName(`Dr. ${doc.first_name} ${doc.last_name}`);

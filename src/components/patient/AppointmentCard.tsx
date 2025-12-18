@@ -6,12 +6,12 @@ import { Calendar, Clock, MapPin, Video, FileText,X } from "lucide-react";
 import { Appointment } from "./AppointmentManagement";
 
 interface Props {
-  appointment: Appointment;
+  appointment: Appointment; 
 }
 
 export default function AppointmentCard({ appointment }: Props) {
   // console.log(appointment.cancelationReason);
-  return (
+  return ( 
    <div
   className={`
     relative rounded-xl p-5 space-y-4 shadow transition

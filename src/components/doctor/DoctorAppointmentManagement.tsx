@@ -32,7 +32,7 @@ export default function DoctorAppointmentManagement() {
   >("all");
 
   useEffect(() => {
-    fetchAppointments();
+    fetchAppointments(); 
   }, []);
 
   const fetchAppointments = async () => {

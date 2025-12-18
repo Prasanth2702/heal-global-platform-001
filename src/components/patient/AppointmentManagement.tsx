@@ -127,13 +127,14 @@ const fetchAppointments = async () => {
   // ✅ HARD DEDUPLICATION
   const unique = Array.from(
     new Map(enriched.map(a => [a.id, a])).values()
-  );
+  );  
 
   setAppointments(unique);
 };
 
 
   // ------------ FILTERING ----------------
+  
   const filterByStatus = (list: Appointment[]) => {
     if (statusFilter === "all") return list;
     return list.filter(a => a.status === statusFilter);
@@ -146,7 +147,7 @@ const fetchAppointments = async () => {
   const past = filterByStatus(
     appointments.filter(a => a.isPast)
   );
-
+ 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">My Appointments</h2>

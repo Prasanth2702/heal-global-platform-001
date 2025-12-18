@@ -1,3 +1,4 @@
+
 // ========================================
 // DoctorAppointmentCard.tsx
 // ========================================
@@ -12,10 +13,10 @@ import { useState } from "react";
 interface Props {
   appointment: DoctorAppointment;
   onRefresh: () => void;
-}
-
+} 
+ 
 export default function DoctorAppointmentCard({
-  appointment,
+  appointment, 
   onRefresh,
 }: Props) {
 

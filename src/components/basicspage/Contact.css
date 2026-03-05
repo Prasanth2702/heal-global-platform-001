@@ -1,0 +1,177 @@
+:root {
+    --primary-color: #3b82f6;
+    /* Blue-500 */
+    --primary-hover: #2563eb;
+    /* Blue-600 */
+    --secondary-color: #f8fafc;
+    /* Slate-50 */
+    --text-color: #1e293b;
+    /* Slate-800 */
+    --light-text: #64748b;
+    /* Slate-500 */
+    --border-color: #e2e8f0;
+    /* Slate-200 */
+}
+
+.contact-us-page {
+    background-color: var(--secondary-color);
+}
+
+/* Main content padding to account for fixed header */
+.contact-main {
+    padding-top: 100px;
+    padding-bottom: 50px;
+    background-color: var(--secondary-color);
+}
+
+/* Card styling */
+.contact-form-card,
+.contact-info-card,
+.map-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background-color: white;
+}
+
+.contact-form-card .card-body {
+    padding: 2rem;
+}
+
+.contact-info-card .card-body,
+.map-card .card-body {
+    padding: 2rem;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 1.25rem;
+}
+
+.section-subtitle {
+    color: var(--light-text);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Form styling */
+.form-control {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+/* Submit button */
+.submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Contact info styling */
+.info-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 1.25rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.info-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+.info-content {
+    color: var(--light-text);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.info-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.info-content a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.contact-info-section:not(:last-child) {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Map styling */
+.map-card {
+    overflow: hidden;
+}
+
+.map-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.directions-btn {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.directions-btn:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .contact-main {
+        padding-top: 80px;
+        padding-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .contact-form-card .card-body,
+    .contact-info-card .card-body,
+    .map-card .card-body {
+        padding: 1.5rem;
+    }
+}

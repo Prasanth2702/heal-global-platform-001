@@ -3,19 +3,35 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings } from "lucide-react";
+import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings, Bed } from "lucide-react";
 import DoctorSearch from "@/components/patient/DoctorSearch";
 import AppointmentManagement from "@/components/patient/AppointmentManagement";
 import DocumentVault from "@/components/patient/DocumentVault";
 import RecordSharing from "@/components/patient/RecordSharing";
 import PaymentManagement from "@/components/patient/PaymentManagement";
 import PatientProfile from "@/components/patient/PatientProfile";
+import PatientDetailsPage from "@/pages/patient/PatientDetailsPage";
 
+interface Doctor {
+  id: string;
+  user_id: string;
+  name: string;
+  specialty: string;
+  rating: number;
+  experience: string;
+  location?: string;
+  distance?: string;
+  consultationFee: number;
+  availability: string;
+  hospital?: string;
+  image?: string;
+  description?: string;
+}
 const PatientDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments" | "profile">("overview");
-
+  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments" | "profile"|"bookings">("overview");
+ const [doctors, setDoctors] = useState<Doctor[]>([]);
   // Update tab based on URL
   useEffect(() => {
     const path = location.pathname;
@@ -24,6 +40,7 @@ const PatientDashboard = () => {
     else if (path.includes('/appointments')) setActiveTab('appointments');
     else if (path.includes('/records')) setActiveTab('documents');
     else if (path.includes('/sharing')) setActiveTab('sharing');
+    else if (path.includes('/my_bed_bookings')) setActiveTab('bookings');
     else if (path.includes('/payments')) setActiveTab('payments');
     else setActiveTab('overview');
   }, [location.pathname]);
@@ -39,6 +56,7 @@ const PatientDashboard = () => {
       case 'appointments': navigate(`${basePath}/appointments`); break;
       case 'documents': navigate(`${basePath}/records`); break;
       case 'sharing': navigate(`${basePath}/sharing`); break;
+      case 'bookings': navigate(`${basePath}/my_bed_bookings`); break;
       case 'payments': navigate(`${basePath}/payments`); break;
     }
   };
@@ -51,6 +69,14 @@ const PatientDashboard = () => {
       date: "2024-01-15",
       time: "10:00 AM",
       type: "In-person"
+    },
+    {
+      id: 2,
+      doctor: "Dr. Michael Chen",
+      specialty: "Dermatologist",
+      date: "2024-01-18",
+      time: "2:30 PM",
+      type: "Teleconsultation"
     },
     {
       id: 2,
@@ -121,6 +147,15 @@ const PatientDashboard = () => {
               Appointments
             </Button>
             <Button
+              variant={activeTab === "bookings" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("bookings")}
+              className={activeTab === "bookings" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
+            >
+              <Bed className="h-4 w-4 mr-1" />
+              My Bed Bookings
+            </Button>
+            <Button
               variant={activeTab === "documents" ? "default" : "ghost"}
               size="sm"
               onClick={() => handleTabChange("documents")}
@@ -150,8 +185,9 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {activeTab === "search" && <DoctorSearch />}
+        {activeTab === "search" && <DoctorSearch  view="all"/>}
         {activeTab === "appointments" && <AppointmentManagement />}
+        {activeTab === "bookings" && <PatientDetailsPage />}
         {activeTab === "documents" && <DocumentVault />}
         {activeTab === "sharing" && <RecordSharing />}
         {activeTab === "payments" && <PaymentManagement />}
@@ -177,6 +213,8 @@ const PatientDashboard = () => {
             <Settings className="h-4 w-4 mr-2" />
             My Profile
           </Button>
+        </div>
+      </div>
           <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">
             <Button
               variant="default"
@@ -207,6 +245,15 @@ const PatientDashboard = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => handleTabChange("bookings")}
+              className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
+            >
+              <Bed className="h-4 w-4 mr-1" />
+              My Bed Bookings
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleTabChange("documents")}
               className="hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"
             >
@@ -232,8 +279,6 @@ const PatientDashboard = () => {
               Payments
             </Button>
           </div>
-        </div>
-      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -289,7 +334,7 @@ const PatientDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4 mt-2">
               {upcomingAppointments.map((appointment) => (
                 <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
@@ -331,7 +376,7 @@ const PatientDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4 mt-2">
               {recentReports.slice(0, 3).map((report) => (
                 <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>

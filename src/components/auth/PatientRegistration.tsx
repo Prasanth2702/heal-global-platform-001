@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,6 +55,8 @@ const PatientRegistration = () => {
     manualMonth: '',
     manualDay: ''
   });
+  const [profileId, setProfileId] = useState<string>(''); // Add this
+
 
 
 
@@ -159,6 +161,47 @@ const PatientRegistration = () => {
     }
     return valid;
   };
+  
+  // Generate a candidate ID
+const generateCandidateId = (): string => {
+  const year = new Date().getFullYear().toString();
+  const randomDigits = Math.floor(Math.random() * 100000)
+    .toString()
+    .padStart(5, '0');
+  const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  return `${year}${randomDigits}${randomLetter}`;
+};
+
+// Async function to ensure uniqueness
+const generateUniqueId = async () => {
+  let id = '';
+  let exists = true;
+
+  while (exists) {
+    const candidate = generateCandidateId();
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('profile_id')
+      .eq('profile_id', candidate)
+      .single();
+
+    if (!data) {
+      id = candidate;
+      exists = false;
+    }
+  }
+
+  return id;
+};
+useEffect(() => {
+  (async () => {
+    const id = await generateUniqueId();
+    setProfileId(id);
+    setformData(prev => ({ ...prev, profile_id: id }));
+  })();
+}, []);
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,7 +223,8 @@ const PatientRegistration = () => {
       ...formData,
       phoneNumber: countryCode + phoneNumber,
       emergencyContactPhone: emergencyContactCountryCode + emergencyPhoneNumber,
-      dateOfBirth: formData.dateOfBirth
+      dateOfBirth: formData.dateOfBirth,
+         profile_id: profileId,
     };
 
     setformData(patientFullData);
@@ -222,7 +266,8 @@ const PatientRegistration = () => {
         last_name: patientFullData.lastName,
         phone_number: patientFullData.phoneNumber,
         role: 'patient',
-        email: patientFullData.emailAddress.toLowerCase()
+        email: patientFullData.emailAddress.toLowerCase(),
+        profile_id: profileId,
       })
       .eq('email', patientFullData.emailAddress.toLowerCase());
 

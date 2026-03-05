@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
 import OTPLogin from "./OTPLogin";
@@ -13,10 +13,12 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { userType } = useParams();
   const { toast } = useToast();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
+ const from = location.state?.from || `/dashboard/${userType}`;
 
   const userTypeConfig = {
     patient: {
@@ -96,6 +98,9 @@ const LoginForm = () => {
       });
 
       setTimeout(() => {
+        if (from) {
+          navigate(from, { replace: true });
+        } else
         navigate(config.dashboardRoute);
       }, 1500);
 

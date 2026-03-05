@@ -13,7 +13,7 @@ export default function ConfirmAppointmentMessage({
   return (
     <Card className="border border-gray-300 shadow-sm p-4">
       <CardContent>
-        <h2 className="text-lg font-semibold mb-3">Confirm Appointment</h2>
+        <h2 className="text-lg font-semibold mb-3">Confirm Appointmen</h2>
 
         {/* Fixed Values – NOT Editable */}
         <div className="space-y-2 mb-4">

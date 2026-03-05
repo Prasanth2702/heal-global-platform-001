@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, Clock, FileText, TrendingUp,Settings} from "lucide-react";
+import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
 import AvailabilityManagement from "../doctor/AvailabilityManagement";
 import DoctorAppointmentManagement from "../doctor/DoctorAppointmentManagement";
+import EarningsAnalytics from "../doctor/EarningsAnalytics";
+import DoctorSchedulePage from "../doctor/DoctorSchedulePage";
 
 const DoctorDashboard = () => {
 
   const location = useLocation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar"|"payments"|"schedule">("overview");
   
     useEffect(() => {
       const path = location.pathname;
@@ -20,7 +22,7 @@ const DoctorDashboard = () => {
       else if (path.includes('/patients')) setActiveTab('patients');
       else if (path.includes('/analytics')) setActiveTab('analytics');
       else if (path.includes('/profile')) setActiveTab('profile');
-      else if (path.includes('/calendar')) setActiveTab('calendar');
+      else if (path.includes('/schedule')) setActiveTab('schedule');
       else setActiveTab('overview');
     }, [location.pathname]);
   
@@ -33,7 +35,8 @@ const DoctorDashboard = () => {
         case 'appointments': navigate(`${basePath}/appointments`); break;
         case 'analytics': navigate(`${basePath}/analytics`); break;
         case 'profile': navigate(`${basePath}/profile`); break;
-        case 'calendar': navigate(`${basePath}/calendar`); break;
+        case 'schedule': navigate(`${basePath}/schedule`); break;
+        case 'patients': navigate(`${basePath}/patients`); break;
       }
     };
 
@@ -67,20 +70,89 @@ const DoctorDashboard = () => {
     { id: 3, name: "Lisa Garcia", lastVisit: "2024-01-10", condition: "Routine Checkup" }
   ];
 
-   if (activeTab === "profile") {
-    console.log("Rendering DoctorProfile");
-      return <DoctorProfile onBack={() => handleTabChange("overview")} />;
-    }
+  //  if (activeTab === "profile") {
+  //   console.log("Rendering DoctorProfile");
+  //     return <DoctorProfile onBack={() => handleTabChange("overview")} />;
+  //   }
 
-  if (activeTab === "calendar") {
-      console.log("Rendering AvailabilityManagement");
-      return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
-    }
+  // if (activeTab === "calendar") {
+  //     console.log("Rendering AvailabilityManagement");
+  //     return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
+  //   }
     // this added
-    if (activeTab === "appointments") {
-  console.log("Rendering DoctorAppointmentManagement");
-  return <DoctorAppointmentManagement />;
-}
+  //   if (activeTab === "appointments") {
+  // console.log("Rendering DoctorAppointmentManagement");
+  // return <DoctorAppointmentManagement />;
+// }
+if (activeTab !== "overview") {
+    return (
+      <div className="p-6">
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("overview")}
+              className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
+            >
+              Overview
+            </Button>
+            <Button
+              variant={activeTab === "appointments" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("appointments")}
+              className={activeTab === "appointments" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
+            >
+              <FileLineChart className="h-4 w-4 mr-1" />
+              Find Appointments
+            </Button>
+            <Button
+              variant={activeTab === "schedule" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("schedule")}
+              className={activeTab === "schedule" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
+            >
+              <Calendar1 className="h-4 w-4 mr-1" />
+             Schedule
+            </Button>
+            <Button
+              variant={activeTab === "analytics" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("analytics")}
+              className={activeTab === "analytics" ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white" : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Analytics
+            </Button>
+            <Button
+              variant={activeTab === "profile" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("profile")}
+              className={activeTab === "profile" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"}
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              profile
+            </Button>
+            {/* <Button
+              variant={activeTab === "payments" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleTabChange("payments")}
+              className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Payments
+            </Button> */}
+          </div>
+        </div>
+
+         {activeTab === "appointments" && <DoctorAppointmentManagement />}
+        {activeTab === "schedule" && <DoctorSchedulePage />}
+        {activeTab === "analytics" && <EarningsAnalytics />}
+        {activeTab === "profile" && <DoctorProfile />}
+        {/* {activeTab === "payments" && <PaymentManagement />} */}
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -109,6 +181,62 @@ const DoctorDashboard = () => {
           </Button>
         </div>
       </div>
+
+      <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => handleTabChange("overview")}
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+            >
+              Overview
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("appointments")}
+              className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Appointments
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("schedule")}
+              className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
+            >
+              <Bed className="h-4 w-4 mr-1" />
+              Schedule
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("analytics")}
+              className="hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              Analytics
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("profile")}
+              className="hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"
+            >
+              <File className="h-4 w-4 mr-1" />
+              Profile
+            </Button>
+            {/* <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTabChange("payments")}
+              className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Payments
+            </Button> */}
+          </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

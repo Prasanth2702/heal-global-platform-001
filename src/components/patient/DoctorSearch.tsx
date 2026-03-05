@@ -11,11 +11,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Clock, Filter } from "lucide-react";
+import { MapPin, Star, Clock, Filter, Building2, Users, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 
-
+// ------------------------
+// Types
+// ------------------------
 interface Doctor {
   id: string;
   user_id: string;
@@ -29,42 +40,111 @@ interface Doctor {
   availability: string;
   hospital?: string;
   image?: string;
+  description?: string;
 }
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
+interface BookingInfo {
+  slot_id: string;
+  start_time: string;
+  end_time: string;
+  booking_date: string;
+  doctor_id: string;
+  doctor_name: string;
+  department_id?: string;
+}
 
-const DoctorSearch = () => {
+interface TimeSlot {
+  id: string;
+  doctor_id: string;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  slot_type: string;
+  is_available: boolean;
+}
+
+interface Department {
+  id: string;
+  facility_id: string;
+  name: string;
+  description: string;
+  head_doctor_id?: string;
+  services?: any;
+  equipment?: any;
+  bed_capacity?: number;
+  available_beds?: number;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Facility {
+  id: string;
+  facility_name: string;
+  facility_type: string;
+  license_number: string;
+  city: string;
+  state: string;
+  pincode: number;
+  total_beds: number;
+  rating: number;
+  total_reviews: number;
+  is_verified: boolean;
+  established_year: number;
+  website: string;
+  insurance_partners: string;
+  about_facility: string;
+  contact_number?: string;
+  email?: string;
+}
+
+interface DoctorSearchProps {
+  view: "all" | "doctors" | "hospitals";
+}
+// ------------------------
+// Component
+// ------------------------
+const DoctorSearch = ({ view }: DoctorSearchProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  // Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState("all");
+  const [selectedViewSpecialty, setSelectedViewSpecialty] = useState(view === "hospitals" ? "doctors" : "all");
   const [locationFilter, setLocationFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [activeFilterTab, setActiveFilterTab] = useState("all"); // "all", "doctors", "hospitals"
+  
+  // Data States
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // UI States
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
-  const [timeSlots, setTimeSlots] = useState<any[]>([]);
+  const [expandedTimeSlotId, setExpandedTimeSlotId] = useState<string | null>(null);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number>(0);
+  
+  // Booking States
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const [bookingInfo, setBookingInfo] = useState(null);
+  const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
   const [notes, setNotes] = useState("");
-
-const [bookingInfo, setBookingInfo] = useState(null);
-const [notes, setNotes] = useState("");
-
-
-
-  // const [, setSelectedDate] = useState<Date | null>(null);
-
-  // calendar UI state
-  const [selectedDay, setSelectedDay] = useState<number>(0); // index 0..6, default today
+  const createSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+  // Pagination States
+  const [doctorPage, setDoctorPage] = useState(1);
+  const [hospitalPage, setHospitalPage] = useState(1);
+  const DOCTORS_PER_PAGE = 8;
+  const HOSPITALS_PER_PAGE = 8;
 
   const specialties = [
     "General Physician",
@@ -81,14 +161,12 @@ const [notes, setNotes] = useState("");
     "Ophthalmologist",
   ];
 
-
   // ------------------------
-  // Helpers
+  // Helper Functions
   // ------------------------
   const formatDayLabel = (date: Date, index: number) => {
     if (index === 0) return "Today";
     if (index === 1) return "Tomorrow";
-    // Mon, 21 Jan
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
@@ -97,7 +175,6 @@ const [notes, setNotes] = useState("");
   };
 
   const formatTimePretty = (timeStr: string) => {
-    // timeStr is "HH:MM:SS"
     const hh = parseInt(timeStr.slice(0, 2), 10);
     const mm = timeStr.slice(3, 5);
     const hour12 = hh % 12 === 0 ? 12 : hh % 12;
@@ -105,8 +182,61 @@ const [notes, setNotes] = useState("");
     return `${hour12}:${mm} ${ampm}`;
   };
 
+  useEffect(() => {
+  if (view === "doctors") {
+    setActiveFilterTab("doctors");
+  } else if (view === "hospitals") {
+    setActiveFilterTab("hospitals");
+  } else {
+    setActiveFilterTab("all");
+  }
+}, [view]);
+useEffect(() => {
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUser(session?.user || null);
+  };
+  
+  checkUser();
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user || null);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
+// const handleLogin = (doctorId?: string, departmentId?: string, facilityId?: string, type?: string) => {
+//  let redirectPath = departmentId? `/dashboard/patient/department/${departmentId}` : doctorId ? `/dashboard/patient/doctor/${doctorId}` : facilityId ? `/dashboard/patient/facility/${facilityId}` : '/dashboard/patient';
+//   if (departmentId && type === "department") {
+//     redirectPath = `/dashboard/patient/department/${departmentId}`;
+//   } else if (doctorId && type === "doctor") {
+//     redirectPath = `/dashboard/patient/doctor/${doctorId}`;
+//   } else if (facilityId && type === "hospital") {
+//     redirectPath = `/dashboard/patient/facility/${facilityId}`;
+//   }
+  
+//   navigate(`/login/patient`, { 
+//     state: { from: redirectPath } 
+//   });
+// };
+
+const handleLogin = (id: string, type: 'doctor' | 'hospital' | 'department' ) => {
+  let redirectPath = '';
+  
+  if (type === 'doctor') {
+    redirectPath = `/dashboard/patient/doctor/${createSlug(doctors.find(d => d.id === id)?.name || "")}/${id}`;
+  } else if (type === 'hospital') {
+    redirectPath = `/dashboard/patient/facility/${createSlug(facilities.find(f => f.id === id)?.facility_name || "")}/${id}`;
+  } else if (type === 'department') {
+    redirectPath = `/dashboard/patient/department/${createSlug(departments.find(d => d.id === id)?.name || "")}/${id}`;
+  }
+  
+  navigate(`/login/patient`, { 
+    state: { from: redirectPath } 
+  });
+};
   // ------------------------
-  // Data fetchers
+  // Data Fetching
   // ------------------------
   const fetchDoctors = async () => {
     setLoading(true);
@@ -148,6 +278,7 @@ const [notes, setNotes] = useState("");
         hospital: item.medical_school || "Not specified",
         location: item.about_yourself || "Location not provided",
         image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+        description: item.description || item.about_yourself || "No description provided.",
       } as Doctor;
     });
 
@@ -155,13 +286,54 @@ const [notes, setNotes] = useState("");
     setLoading(false);
   };
 
-  /**
-   * Fetch time_slots for doctor (only available ones).
-   * Also fetch bookings for the doctor (used to mark booked slots).
-   */
+  const fetchFacilityDetails = async () => {
+    const { data: facilitiesData, error: facilitiesError } = await supabase
+      .from("facilities")
+      .select(`
+        id,
+        facility_name,
+        facility_type,
+        license_number,
+        city,
+        state,
+        pincode,
+        total_beds,
+        rating,
+        total_reviews,
+        is_verified,
+        established_year,
+        insurance_partners,
+        about_facility,
+        website
+      `);
+
+    if (!facilitiesError && facilitiesData) {
+      // Add mock contact info
+      const enhancedFacilities = facilitiesData.map(facility => ({
+        ...facility,
+        contact_number: "+1 234-567-890" + Math.floor(Math.random() * 10),
+        email: `info@${facility.facility_name.toLowerCase().replace(/\s+/g, '')}.com`,
+      }));
+      
+      setFacilities(enhancedFacilities);
+      
+      const facilityIds = facilitiesData.map(f => f.id);
+      
+      if (facilityIds.length > 0) {
+        const { data: departmentsData, error: departmentsError } = await supabase
+          .from("departments")
+          .select("*")
+          .in("facility_id", facilityIds);
+
+        if (!departmentsError && departmentsData) {
+          setDepartments(departmentsData);
+        }
+      }
+    }
+  };
+
   const fetchTimeSlotsAndBookings = async (doctorId: string) => {
     try {
-      // fetch available time slots
       const { data: slotsData, error: slotsError } = await supabase
         .from("time_slots")
         .select("*")
@@ -175,21 +347,53 @@ const [notes, setNotes] = useState("");
         setTimeSlots(slotsData || []);
       }
 
-      // fetch bookings for this doctor
       const { data: bookingsData, error: bookingsError } = await supabase
         .from("appointments")
         .select("*")
         .eq("doctor_id", doctorId);
-      console.log("Fetched bookings data:", doctorId);
+
       if (bookingsError) {
         console.error("bookings fetch error", bookingsError);
         setBookings([]);
       } else {
         setBookings(bookingsData || []);
       }
-      console.log("Fetched time slots:", bookings);
     } catch (err) {
       console.error("fetchTimeSlotsAndBookings error", err);
+      setTimeSlots([]);
+      setBookings([]);
+    }
+  };
+
+  const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
+    try {
+      const { data: slotsData, error: slotsError } = await supabase
+        .from("time_slots")
+        .select("*")
+        .eq("department_id", department.id)
+        .eq("slot_type", "booking")
+        .eq("is_available", true);
+
+      if (slotsError) {
+        console.error("time_slots fetch error", slotsError);
+        setTimeSlots([]);
+      } else {
+        setTimeSlots(slotsData || []);
+      }
+
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("department_id", department.id);
+
+      if (bookingsError) {
+        console.error("bookings fetch error", bookingsError);
+        setBookings([]);
+      } else {
+        setBookings(bookingsData || []);
+      }
+    } catch (err) {
+      console.error("fetchTimeSlotsAndDepartmentBookings error", err);
       setTimeSlots([]);
       setBookings([]);
     }
@@ -200,23 +404,111 @@ const [notes, setNotes] = useState("");
   // ------------------------
   useEffect(() => {
     fetchDoctors();
+    fetchFacilityDetails();
   }, []);
+
+  // ------------------------
+  // Filter Logic
+  // ------------------------
+  const filteredDoctors = doctors.filter((doctor) => {
+    if (activeFilterTab === "hospitals") return false;
+    
+    const term = searchQuery.toLowerCase().trim();
+    if (term === "") return true;
+    
+    return (
+      doctor.name.toLowerCase().includes(term) ||
+      doctor.specialty.toLowerCase().includes(term) ||
+      doctor.hospital?.toLowerCase().includes(term) ||
+      doctor.description?.toLowerCase().includes(term)
+    );
+  }).filter((doctor) => {
+    const matchesSpecialty = selectedViewSpecialty === "all" || doctor.specialty === selectedViewSpecialty;
+    const matchesLocation = !locationFilter ||
+      doctor.location?.toLowerCase().includes(locationFilter.toLowerCase());
+    return matchesSpecialty && matchesLocation;
+  });
+
+  const filteredFacilities = facilities.filter((facility) => {
+  if (activeFilterTab === "doctors") return false;
+  
+  const term = searchQuery.toLowerCase().trim();
+  if (term === "") return true;
+  
+  const matchesFacilityName = facility.facility_name?.toLowerCase().includes(term);
+  const matchesCity = facility.city?.toLowerCase().includes(term);
+  const matchesState = facility.state?.toLowerCase().includes(term);
+  const matchesType = facility.facility_type?.toLowerCase().includes(term);
+  
+  // Update this condition to check if ANY department matches the search term
+  const matchesDepartments = departments.some(
+    (dept) =>
+      dept.facility_id === facility.id &&
+      (
+        dept.name?.toLowerCase().includes(term) ||
+        dept.description?.toLowerCase().includes(term)
+      )
+  );
+
+  // Return true if any of the conditions match
+  return matchesFacilityName || matchesCity || matchesState || 
+         matchesType || matchesDepartments;
+});
+const getFacilityDepartments = (facilityId: string) => {
+  const facilityDepts = departments.filter(dept => dept.facility_id === facilityId);
+  
+  // If there's a search query, filter departments that match
+  if (searchQuery.trim() !== "") {
+    const term = searchQuery.toLowerCase().trim();
+    return facilityDepts.filter(dept => 
+      dept.name?.toLowerCase().includes(term) || 
+      dept.description?.toLowerCase().includes(term)
+    );
+  }
+  
+  return facilityDepts;
+};
+  // const filteredFacilities = facilities.filter((facility) => {
+  //   if (activeFilterTab === "doctors") return false;
+    
+  //   const term = searchQuery.toLowerCase().trim();
+  //   if (term === "") return true;
+    
+  //   const matchesFacilityName = facility.facility_name?.toLowerCase().includes(term);
+  //   const matchesCity = facility.city?.toLowerCase().includes(term);
+  //   const matchesState = facility.state?.toLowerCase().includes(term);
+  //   const matchesType = facility.facility_type?.toLowerCase().includes(term);
+    
+  //   const matchesDepartments = departments.some(
+  //     (dept) =>
+  //       dept.facility_id === facility.id &&
+  //       (
+  //         dept.name?.toLowerCase().includes(term) ||
+  //         dept.description?.toLowerCase().includes(term)
+  //       )
+  //   );
+
+  //   return matchesFacilityName || matchesCity || matchesState || 
+  //          matchesType || matchesDepartments;
+  // });
+
+  // const getFacilityDepartments = (facilityId: string) => {
+  //   return departments.filter(dept => dept.facility_id === facilityId);
+  // };
+
+  // Pagination
+  const paginatedDoctors = filteredDoctors.slice(0, doctorPage * DOCTORS_PER_PAGE);
+  const paginatedHospitals = filteredFacilities.slice(0, hospitalPage * HOSPITALS_PER_PAGE);
+  
+  const hasMoreDoctors = paginatedDoctors.length < filteredDoctors.length;
+  const hasMoreHospitals = paginatedHospitals.length < filteredFacilities.length;
 
   // ------------------------
   // Handlers
   // ------------------------
+
+
   const toggleExpand = async (doctorId: string) => {
-    // If closing same doctor, collapse and reset selection + data
-
-    console.log(
-      "Toggling expand for doctorId:",
-      doctorId,
-      "Current expandedDoctorId:",
-      expandedDoctorId
-    );
-
-    console.log("Toggling expand for doctorId:", doctorId, "Current expandedDoctorId:", expandedDoctorId);
-
     if (expandedDoctorId === doctorId) {
       setExpandedDoctorId(null);
       setSelectedSlot(null);
@@ -226,14 +518,30 @@ const [notes, setNotes] = useState("");
       return;
     }
 
-    // Opening a new doctor: reset previous selection/data then fetch new
     setExpandedDoctorId(doctorId);
     setSelectedSlot(null);
     setTimeSlots([]);
     setBookings([]);
     setSelectedDay(0);
-
     await fetchTimeSlotsAndBookings(doctorId);
+  };
+
+  const toggleExpandDepartment = async (department: Department) => {
+    if (expandedTimeSlotId === department.id) {
+      setExpandedTimeSlotId(null);
+      setSelectedSlot(null);
+      setTimeSlots([]);
+      setBookings([]);
+      setSelectedDay(0);
+      return;
+    }
+
+    setExpandedTimeSlotId(department.id);
+    setSelectedSlot(null);
+    setTimeSlots([]);
+    setBookings([]);
+    setSelectedDay(0);
+    await fetchTimeSlotsAndDepartmentBookings(department);
   };
 
   const detectLocation = () => {
@@ -248,8 +556,7 @@ const [notes, setNotes] = useState("");
         () => {
           toast({
             title: "Location Access Denied",
-            description:
-              "Please allow location access or enter your area manually.",
+            description: "Please allow location access or enter your area manually.",
             variant: "destructive",
           });
         }
@@ -257,27 +564,11 @@ const [notes, setNotes] = useState("");
     }
   };
 
-  const handleBookNow = (slot, date, doctor) => {
+  const handleBookNow = (slot: TimeSlot, dateIndex: number, doctor: Doctor) => {
     const newDate = new Date();
-    newDate.setDate(newDate.getDate() + date);
-    console.log("Booking with doctor:", doctor);
-    console.log("Selected slot:", slot);
-    console.log("Booking date:", date, newDate);
+    newDate.setDate(newDate.getDate() + dateIndex);
 
-    toast({
-      title: "Booking Appointment",
-
-      description: `Booking ${doctor.name} at ${formatTimePretty(
-        slot.start_time
-      )}  ${
-        date === 0
-          ? "Today"
-          : date === 1
-          ? `Tomorrow ${newDate.getDate()} / ${newDate.getMonth() + 1}`
-          : `  ${newDate.getDate()}  / ${newDate.getMonth() + 1} date`
-      }`,
-    });
-    const bookingData = {
+    const bookingData: BookingInfo = {
       slot_id: slot.id,
       start_time: slot.start_time,
       end_time: slot.end_time,
@@ -285,168 +576,259 @@ const [notes, setNotes] = useState("");
       doctor_id: slot.doctor_id,
       doctor_name: doctor.name,
     };
+
     setBookingInfo(bookingData);
     setConfirmOpen(true);
-
-      description: `Booking ${doctor.name} at ${formatTimePretty(slot.start_time)}  ${date === 0 ? "Today" : date === 1 ? `Tomorrow ${newDate.getDate()} / ${newDate.getMonth() + 1}` : `  ${newDate.getDate()}  / ${newDate.getMonth() + 1} date`}`,
-    });
-   const bookingData = {
-    slot_id: slot.id,
-    start_time: slot.start_time,
-    end_time: slot.end_time,
-    booking_date: newDate.toISOString().split("T")[0],
-    doctor_id: slot.doctor_id,
-    doctor_name: doctor.name,
-  };
-  setBookingInfo(bookingData);
-  setConfirmOpen(true);
-
   };
 
-  // ------------------------
-  // Filtered doctors for search
-  // ------------------------
-  const filteredDoctors =
-    searchQuery.trim() === ""
-      ? []
-      : doctors.filter((doctor) => {
-          const term = searchQuery.toLowerCase().trim();
-          const matchesSearch =
-            doctor.name.toLowerCase().includes(term) ||
-            doctor.specialty.toLowerCase().includes(term) ||
-            doctor.hospital?.toLowerCase().includes(term);
+  const handleDepartmentBookNow = (slot: TimeSlot, dateIndex: number, department: Department) => {
+    const newDate = new Date();
+    newDate.setDate(newDate.getDate() + dateIndex);
 
-          const matchesSpecialty =
-            !selectedSpecialty || doctor.specialty === selectedSpecialty;
-          const matchesLocation =
-            !locationFilter ||
-            doctor.location
-              ?.toLowerCase()
-              .includes(locationFilter.toLowerCase());
-          return matchesSearch && matchesSpecialty && matchesLocation;
-        });
+    const bookingData: BookingInfo = {
+      slot_id: slot.id,
+      start_time: slot.start_time,
+      end_time: slot.end_time,
+      booking_date: newDate.toISOString().split("T")[0],
+      doctor_id: "",
+      doctor_name: department.name || "Department",
+      department_id: department.id,
+    };
 
-  console.log("Filtered Doctors:", filteredDoctors);
-  // ------------------------  Pass confirm booking to backend
+    setBookingInfo(bookingData);
+    setConfirmOpen(true);
+  };
+
   const handleConfirmBooking = async () => {
     if (!bookingInfo) return;
 
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to book an appointment.",
+          variant: "destructive",
+        });
+        navigate('/login');
+        return;
+      }
+
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      console.log("Booking Info:", token);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
+      let payload;
+      if (bookingInfo.department_id) {
+        const department = departments.find(d => d.id === bookingInfo.department_id);
+        const facility_id = department ? department.facility_id : null;
+        payload = {
+          patient_id: user.id,
+          facility_id,
+          doctor_id: null,
+          department_id: bookingInfo.department_id,
+          booking_date: bookingInfo.booking_date,
+          time_slot_id: bookingInfo.slot_id,
+          notes: notes || null,
+        };
+      } else {
+        payload = {
+          patient_id: user.id,
+          doctor_id: bookingInfo.doctor_id,
+          booking_date: bookingInfo.booking_date,
+          time_slot_id: bookingInfo.slot_id,
+          notes: notes || null,
+        };
+      }
+      
       const response = await fetch(
         "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            patient_id: user.id,
-            doctor_id: bookingInfo.doctor_id,
-            booking_date: bookingInfo.booking_date,
-            time_slot_id: bookingInfo.slot_id,
-            notes: notes || null,
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
+      
+      if (!response.ok) {
+        let errorMsg = result.error || "Unable to book appointment";
+        
+        if (response.status === 401) {
+          toast({
+            title: "Authentication Failed",
+            description: "Your session is invalid. Please log in again.",
+            variant: "destructive",
+          });
+          navigate('/login');
+        } else if (errorMsg.includes("No doctors available in this department") ||
+            errorMsg.includes("All doctors in this department are booked for this time slot")) {
+          toast({
+            title: "No Doctors Available",
+            description: "No doctors are available in this department for the selected time. Please try another time or department.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: errorMsg,
+            variant: "destructive",
+          });
+        }
+        return;
+      }
 
-      // toast.success("Appointment Confirmed!");
+      toast({
+        title: "Success",
+        description: "Appointment booked successfully!",
+      });
       setConfirmOpen(false);
-    } catch (err) {
-      // toast.error("Unable to book appointment");
+      setNotes("");
+      setSelectedSlot(null);
+
+      if (expandedDoctorId) {
+        await fetchTimeSlotsAndBookings(expandedDoctorId);
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err);
+      toast({
+        title: "Error",
+        description: err?.message || "Unable to book appointment. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  console.log("Filtered Doctors:", filteredDoctors);
-  // ------------------------  Pass confirm booking to backend
-  const handleConfirmBooking = async () => {
-  if (!bookingInfo) return;
+  const handleViewAllDoctors = () => {
+    setActiveFilterTab("doctors");
+    setDoctorPage(1);
+  };
 
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-    console.log("Booking Info:", token);
-    const { data: { user } } = await supabase.auth.getUser();
+  const handleViewAllHospitals = () => {
+    setActiveFilterTab("hospitals");
+    setHospitalPage(1);
+  };
 
-    const response = await fetch(
-     'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee',
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-     body: JSON.stringify({
-  patient_id: user.id,
-  doctor_id: bookingInfo.doctor_id,
-  booking_date: bookingInfo.booking_date,
-  time_slot_id: bookingInfo.slot_id,
-  notes: notes || null,
-}),
+  const handleViewDoctorProfile = (doctorId: string) => {
+    const user = supabase.auth.getUser();
+    if (!user) {
+      navigate('/login');
+    } else {
+      const doctor = doctors.find(d => d.id === doctorId);
+      navigate(`/dashboard/patient/doctor/${createSlug(doctor?.name || "")}/${doctorId}`);
+    }
+  };
 
-      }
-    );
-
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error);
-
-    // toast.success("Appointment Confirmed!");
-    setConfirmOpen(false);
-
-  } catch (err) {
-    // toast.error("Unable to book appointment");
+  // const handleViewHospitalDetails = (facilityId: string) => {
+  //   const user = supabase.auth.getUser();
+  //   if (!user) {
+  //     navigate('/login');
+  //   } else {
+  //     navigate(`/dashboard/patient/facility/${facilityId}`);
+  //   }
+  // };
+  const handleViewHospitalDetails = (facilityId: string) => {
+  const user = supabase.auth.getUser();
+  if (!user) {
+    navigate('/login');
+  } else {
+    // Navigate with state
+    const facility = facilities.find(f => f.id === facilityId);
+    navigate(`/dashboard/patient/facility/${createSlug(facility?.facility_name || "")}/${facilityId}`, {
+      state: { activeTab: 'overview', from: 'search' }
+    });
+  }
+};
+  const handleViewHospitalDepartmentDetails = (facilityId: string) => {
+  const user = supabase.auth.getUser();
+  if (!user) {
+    navigate('/login');
+  } else {
+    // Navigate with state
+    const facility = facilities.find(f => f.id === facilityId);
+    navigate(`/dashboard/patient/facility/${createSlug(facility?.facility_name || "")}/${facilityId}`, {
+      state: { activeTab: 'departments', from: 'search' }
+    });
   }
 };
 
+  const handleViewAllBookings = () => {
+    const user = supabase.auth.getUser();
+    if (!user) {
+      navigate('/login');
+    } else {
+      navigate('/dashboard/patient/book/patient-facilities');
+    }
+  };
+
+  const handleViewDepartment = (department: Department) => {
+  // Navigate to department details page
+  navigate(`/dashboard/patient/department/${createSlug(department.name || "")}/${department.id}`, {
+    state: { facility: facilities.find(f => f.id === department.facility_id) }
+  });
+};
 
   // ------------------------
-  // Render
+  // Render Functions
   // ------------------------
-  return (
-    <div className="space-y-6">
-      {/* --- Search Header --- */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <Label htmlFor="search">
-              Search Doctors, Hospitals, or Specialties
-            </Label>
-            <Input
-              id="search"
-              placeholder="Enter doctor name, specialty, or hospital..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={detectLocation} variant="outline">
-              <MapPin className="mr-2 h-4 w-4" /> Near Me
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="mr-2 h-4 w-4" /> Filters
-            </Button>
-          </div>
+  const renderSearchHeader = () => (
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <Label htmlFor="search">
+            Search Doctors, Hospitals, or Specialties
+          </Label>
+          <Input
+            id="search"
+            placeholder="Enter doctor name, specialty, or hospital..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="mt-1"
+          />
         </div>
 
-        {showFilters && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
+        <div className="flex gap-2">
+          <Button onClick={detectLocation} variant="outline">
+            <MapPin className="mr-2 h-4 w-4" /> Near Me
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="mr-2 h-4 w-4" /> Filters
+          </Button>
+        </div>
+      </div>
+
+      {showFilters && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label>Filter By</Label>
+                <Tabs 
+                  defaultValue="all" 
+                  value={activeFilterTab}
+                  onValueChange={(value) => {
+                    setActiveFilterTab(value);
+                    setDoctorPage(1);
+                    setHospitalPage(1);
+                  }}
+                  className="mt-2"
+                >
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="doctors">Doctors</TabsTrigger>
+                    <TabsTrigger value="hospitals">Hospitals</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {activeFilterTab !== "doctors" && (
                 <div>
                   <Label>Specialty</Label>
                   <Select
@@ -457,7 +839,7 @@ const [notes, setNotes] = useState("");
                       <SelectValue placeholder="Select specialty" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Specialties</SelectItem>
+                      <SelectItem value="all">All Specialties</SelectItem>
                       {specialties.map((s) => (
                         <SelectItem key={s} value={s}>
                           {s}
@@ -466,415 +848,794 @@ const [notes, setNotes] = useState("");
                     </SelectContent>
                   </Select>
                 </div>
+              )}
 
-                <div>
-                  <Label>Location/Area</Label>
-                  <Input
-                    placeholder="Enter area or hospital"
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
+              <div>
+                <Label>Location/Area</Label>
+                <Input
+                  placeholder="Enter area or hospital"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  className="mt-1"
+                />
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 
-      {/* --- Results --- */}
-      <div>
-        <div className="flex justify-between mb-4">
-          <h3 className="text-lg font-semibold">
-            {filteredDoctors.length} Doctor(s) Found
-          </h3>
+  const renderDoctorsSection = () => {
+    if (activeFilterTab === "hospitals") return null;
+    
+    return (
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-blue-600">Doctors</h2>
+          {filteredDoctors.length > DOCTORS_PER_PAGE && (
+            <Button 
+              variant="ghost" 
+              className="text-blue-600"
+              onClick={handleViewAllDoctors}
+            >
+              View All Doctors <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+           
+          
         </div>
 
         {loading ? (
           <p>Loading doctors…</p>
         ) : (
           <div className="space-y-4">
-            {filteredDoctors.map((doctor) => (
-              <Card key={doctor.id} className="hover:shadow-medium transition">
-                <CardContent className="p-6">
-                  {/* Row Top */}
-                  <div className="flex gap-4">
-                    {/* Image */}
-                    <img
-                      src={doctor.image || "https://via.placeholder.com/150"}
-                      alt={doctor.name}
-                      className="w-20 h-20 rounded-full"
-                    />
+            {paginatedDoctors.length > 0 ? (
+              paginatedDoctors.map((doctor) => (
+                <Card key={doctor.id} className="hover:shadow-medium transition">
+                  <CardContent className="p-6">
+                    <div className="flex gap-4">
+                      <img
+                        src={doctor.image || "https://via.placeholder.com/150"}
+                        alt={doctor.name}
+                        className="w-20 h-20 rounded-full object-cover"
+                      />
 
-                    {/*Doctor(s) Details*/}
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="text-lg font-semibold">
-                            {doctor.name}
-                          </h4>
-                          <p className="text-muted">{doctor.specialty}</p>
-                        </div>
-
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                          <span className="ml-1">{doctor.rating}</span>
-                        </div>
-                      </div>
-                         
-                      <div className="text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 inline mr-1" />
-                        {doctor.location || "Location not provided"}
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <Badge variant="outline">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {doctor.availability}
-                        </Badge>
-
-                        <span className="text-green-600 font-medium">
-                          ₹{doctor.consultationFee} Consultation
-                        </span>
-                      </div>
-
-                      <div className="mt-3">
-                        <Button
-                          variant="patient"
-                          size="sm"
-
-                          onClick={() => {
-                            console.log(
-                              "Toggling availability for user ID:",
-                              doctor.user_id
-                            );
-                            toggleExpand(doctor.user_id);
-                          }}
-
-                          onClick={() => { console.log("Toggling availability for user ID:", doctor.user_id); toggleExpand(doctor.user_id); }}
-
-                        >
-                          View Availability
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* -------------------------
-                      Expanded availability area
-                      ------------------------- */}
-                  {expandedDoctorId === doctor.user_id && (
-                    <div className="mt-4 p-4 rounded-xl border shadow bg-white">
-                      <h3 className="font-semibold mb-3 text-lg">
-                        Available Slots
-                      </h3>
-
-                      {timeSlots.length === 0 ? (
-                        <p className="text-red-600 font-medium">
-                          Doctor is not available.
-                        </p>
-                      ) : (
-                        <>
-                          {/* Calendar strip: next 14 days */}
-                          <div className="flex gap-3 overflow-x-auto py-2">
-                            {Array.from({ length: 14 }).map((_, index) => {
-
-                              // 1. Selected date
-                              const date = new Date();
-                              date.setDate(date.getDate() + index);
-
-                              const label = formatDayLabel(date, index);
-                              const dayNumber = formatDateNumber(date);
-
-                              // 2. Day name
-
-                              const dayOfWeek = date.toLocaleDateString(
-                                "en-US",
-                                { weekday: "long" }
-                              );
-
-                              // 3. Get all slots for this day-of-week
-                              const slotsForDay = timeSlots.filter(
-                                (s) => s.day_of_week === dayOfWeek
-
-                              const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
-
-                              // 3. Get all slots for this day-of-week
-                              const slotsForDay = timeSlots.filter(
-                                s => s.day_of_week === dayOfWeek
-
-                              );
-
-                              // 4. Convert date to YYYY-MM-DD
-                              const dateISO = date.toISOString().split("T")[0];
-
-                              // 5. Find bookings for this exact date
-
-                              const bookingsForDay = bookings.filter((b) => {
-                                const bookingISO = new Date(b.appointment_date)
-                                  .toISOString()
-                                  .split("T")[0];
-
-                                return bookingISO === dateISO;
-                              });
-
-                              // 6. Available slots = slots - bookedSlots
-                              const bookedSlotIds = new Set(
-                                bookingsForDay.map((b) => b.time_slot_id)
-                              );
-
-                              const availableSlotsCount = slotsForDay.filter(
-                                (slot) => !bookedSlotIds.has(slot.id)
-                              ).length;
-
-
-                              const bookingsForDay = bookings.filter(b => {
-                                const bookingISO = new Date(b.appointment_date)
-                                  .toISOString()
-                                  .split("T")[0];
-
-                                return bookingISO === dateISO;
-                              });
-
-                              // 6. Available slots = slots - bookedSlots
-                              const bookedSlotIds = new Set(
-                                bookingsForDay.map(b => b.time_slot_id)
-                              );
-
-                              const availableSlotsCount = slotsForDay.filter(
-                                slot => !bookedSlotIds.has(slot.id)
-                              ).length;
-
-
-                              // 7. Render date header
-                              const isActiveDay = selectedDay === index;
-
-                              return (
-                                <div key={index} className="min-w-[110px]">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedDay(index);
-                                      setSelectedSlot(null);
-                                    }}
-                                    className={`w-full px-3 py-2 rounded-lg text-center transition
-
-                                    ${
-                                      isActiveDay
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-white text-gray-700"
-                                    }
-                                    border ${
-                                      isActiveDay
-                                        ? "border-blue-600"
-                                        : "border-gray-200"
-                                    }`}
-
-                                    ${isActiveDay ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
-                                    border ${isActiveDay ? "border-blue-600" : "border-gray-200"}`}
-
-                                  >
-                                    <div className="text-xs font-medium">
-                                      {label}
-                                    </div>
-
-                                    <div className="text-lg font-bold mt-1">
-                                      {dayNumber}
-                                    </div>
-
-                                    <div
-                                      className={`${
-                                        isActiveDay
-                                          ? "text-[11px] text-white mt-1"
-                                          : "text-[11px] text-gray-400 mt-1"
-                                      }`}
-                                    >
-                                      {availableSlotsCount} slot
-                                      {availableSlotsCount !== 1 ? "s" : ""}
-
-                                      className={`${isActiveDay
-                                        ? "text-[11px] text-white mt-1"
-                                        : "text-[11px] text-gray-400 mt-1"
-                                        }`}
-                                    >
-                                      {availableSlotsCount} slot{availableSlotsCount !== 1 ? "s" : ""}
-
-                                    </div>
-                                  </button>
-                                </div>
-                              );
-                            })}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between">
+                          <div>
+                            <h4 className="text-lg font-semibold">
+                              {doctor.name}
+                            </h4>
+                            <p className="text-muted-foreground">
+                              {doctor.specialty}
+                            </p>
+                            {doctor.description && (
+                              <p className="text-gray-500 text-sm mt-1 line-clamp-2">
+                                {doctor.description}
+                              </p>
+                            )}
                           </div>
 
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                            <span className="ml-1">{doctor.rating}</span>
+                          </div>
+                        </div>
 
-                          {/* Slots for selected day (compact grid) */}
-                          <div className="mt-4">
-                            {/* Available Slots */}
-                            {(() => {
-                              // 1. Convert selectedDay → selected actual date
-                              const selectedDate = new Date();
-                              selectedDate.setDate(
-                                selectedDate.getDate() + selectedDay
-                              );
-                              const selectedISO = selectedDate
-                                .toISOString()
-                                .split("T")[0];
+                        <div className="text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 inline mr-1" />
+                          {doctor.location || "Location not provided"}
+                        </div>
 
-                              // 2. Get the weekday name
-                              const fullDayName =
-                                selectedDate.toLocaleDateString("en-US", {
-                                  weekday: "long",
+                        <div className="flex justify-between items-center">
+                          <Badge variant="outline">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {doctor.availability}
+                          </Badge>
+
+                          <span className="text-green-600 font-medium">
+                            ₹{doctor.consultationFee} Consultation
+                          </span>
+                        </div>
+
+                        <div className="flex gap-2 mt-3">
+                           {!user ? (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => handleLogin(doctor.id, 'doctor')}
+      >
+        Login
+      </Button>
+      </>
+  ) : (
+    <>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => toggleExpand(doctor.user_id)}
+                          >
+                            View Availability
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDoctorProfile(doctor.id)}
+                          >
+                            View Profile
+                          </Button>
+                          </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded Availability Area */}
+                    {expandedDoctorId === doctor.user_id && (
+                      <div className="mt-4 p-4 rounded-xl border shadow bg-white">
+                        <h3 className="font-semibold mb-3 text-lg">
+                          Available Slots
+                        </h3>
+
+                        {timeSlots.length === 0 ? (
+                          <p className="text-red-600 font-medium">
+                            Doctor is not available.
+                          </p>
+                        ) : (
+                          <>
+                            <div className="flex gap-3 overflow-x-auto py-2">
+                              {Array.from({ length: 14 }).map((_, index) => {
+                                const date = new Date();
+                                date.setDate(date.getDate() + index);
+
+                                const label = formatDayLabel(date, index);
+                                const dayNumber = formatDateNumber(date);
+                                const dayOfWeek = date.toLocaleDateString(
+                                  "en-US",
+                                  { weekday: "long" }
+                                );
+
+                                const slotsForDay = timeSlots.filter(
+                                  (s) => s.day_of_week === dayOfWeek
+                                );
+
+                                const dateISO = date.toISOString().split("T")[0];
+                                const bookingsForDay = bookings.filter((b) => {
+                                  const bookingISO = new Date(b.appointment_date)
+                                    .toISOString()
+                                    .split("T")[0];
+                                  return bookingISO === dateISO;
                                 });
 
-                              // 3. Filter slots for this weekday
-                              const slotsForDay = timeSlots.filter(
-                                (s) => s.day_of_week === fullDayName
-                              );
-                              console.log(
-                                "Slots for Day",
-                                fullDayName,
-                                ":",
-                                slotsForDay
-                              );
-
-                              if (slotsForDay.length === 0) {
-                                return (
-                                  <p className="text-gray-500 text-sm">
-                                    No slots available for this day.
-                                  </p>
+                                const bookedSlotIds = new Set(
+                                  bookingsForDay.map((b) => b.time_slot_id)
                                 );
-                              }
 
-                              // 4. Appointments for this exact selected date
-                              const todaysBookings = bookings.filter((b) => {
-                                const bookingISO = new Date(b.appointment_date)
+                                const availableSlotsCount = slotsForDay.filter(
+                                  (slot) => !bookedSlotIds.has(slot.id)
+                                ).length;
+
+                                const isActiveDay = selectedDay === index;
+
+                                return (
+                                  <div key={index} className="min-w-[110px]">
+                                    <button
+                                      onClick={() => {
+                                        setSelectedDay(index);
+                                        setSelectedSlot(null);
+                                      }}
+                                      className={`w-full px-3 py-2 rounded-lg text-center transition
+                                        ${
+                                          isActiveDay
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white text-gray-700"
+                                        }
+                                        border ${
+                                          isActiveDay
+                                            ? "border-blue-600"
+                                            : "border-gray-200"
+                                        }`}
+                                    >
+                                      <div className="text-xs font-medium">
+                                        {label}
+                                      </div>
+                                      <div className="text-lg font-bold mt-1">
+                                        {dayNumber}
+                                      </div>
+                                      <div
+                                        className={`${
+                                          isActiveDay
+                                            ? "text-[11px] text-white mt-1"
+                                            : "text-[11px] text-gray-400 mt-1"
+                                        }`}
+                                      >
+                                        {availableSlotsCount} slot
+                                        {availableSlotsCount !== 1 ? "s" : ""}
+                                      </div>
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            <div className="mt-4">
+                              {(() => {
+                                const selectedDate = new Date();
+                                selectedDate.setDate(
+                                  selectedDate.getDate() + selectedDay
+                                );
+                                const selectedISO = selectedDate
                                   .toISOString()
                                   .split("T")[0];
-                                console.log(
-                                  "Comparing booking date:",
-                                  bookingISO,
-                                  "with selected date:",
-                                  selectedISO
+                                const fullDayName =
+                                  selectedDate.toLocaleDateString("en-US", {
+                                    weekday: "long",
+                                  });
+
+                                const slotsForDay = timeSlots.filter(
+                                  (s) => s.day_of_week === fullDayName
                                 );
-                                return bookingISO === selectedISO;
-                              });
 
-                              // 5. Remove booked slots
-                              const availableSlots = slotsForDay.filter(
-                                (slot) =>
-                                  !todaysBookings.some(
-                                    (b) => b.time_slot_id === slot.id
-                                  )
-                              );
-
-                              return (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-
- 
-
-                                  {availableSlots.map(slot => {
-                                    const isSelected = selectedSlot?.id === slot.id;
-
-                                  {availableSlots.map((slot) => {
-                                    const isSelected =
-                                      selectedSlot?.id === slot.id;
-
-
-                                    return (
-                                      <div
-                                        key={slot.id}
-                                        onClick={() => setSelectedSlot(slot)}
-                                        className={`
-              p-2 rounded-md cursor-pointer text-sm transition
-              ${slot.slot_type === "clinic" ? "bg-green-50" : "bg-blue-50"}
-              ${
-                isSelected
-                  ? "border-2 border-green-600"
-                  : "border border-gray-300"
-              }
-            `}
-                                      >
-                                        <div className="font-medium">
-                                          {formatTimePretty(slot.start_time)} -{" "}
-                                          {formatTimePretty(slot.end_time)}
-                                        </div>
-
-                                        <div className="text-[11px] text-gray-600 capitalize">
-                                          {slot.slot_type}
-                                        </div>
-
-                                        <div className="text-[11px] mt-1 font-semibold text-green-600">
-                                          Available
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-
-                                  {availableSlots.length === 0 && (
-                                    <p className="text-red-500 text-sm col-span-full text-center">
-                                      No available slots for this day.
+                                if (slotsForDay.length === 0) {
+                                  return (
+                                    <p className="text-gray-500 text-sm">
+                                      No slots available for this day.
                                     </p>
-                                  )}
-                                </div>
-                              );
-                            })()}
+                                  );
+                                }
 
+                                const todaysBookings = bookings.filter((b) => {
+                                  const bookingISO = new Date(b.appointment_date)
+                                    .toISOString()
+                                    .split("T")[0];
+                                  return bookingISO === selectedISO;
+                                });
 
-                          </div>
+                                const availableSlots = slotsForDay.filter(
+                                  (slot) =>
+                                    !todaysBookings.some(
+                                      (b) => b.time_slot_id === slot.id
+                                    )
+                                );
 
-                          {/* helper text */}
-                          {!selectedSlot && (
-                            <p className="text-gray-500 text-xs mt-2">
-                              Please select a slot to book an appointment.
-                            </p>
-                          )}
+                                return (
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                    {availableSlots.map((slot) => {
+                                      const isSelected =
+                                        selectedSlot?.id === slot.id;
+                                      return (
+                                        <div
+                                          key={slot.id}
+                                          onClick={() => setSelectedSlot(slot)}
+                                          className={`
+                                            p-2 rounded-md cursor-pointer text-sm transition
+                                            ${
+                                              slot.slot_type === "clinic"
+                                                ? "bg-green-50"
+                                                : "bg-blue-50"
+                                            }
+                                            ${
+                                              isSelected
+                                                ? "border-2 border-green-600"
+                                                : "border border-gray-300"
+                                            }
+                                          `}
+                                        >
+                                          <div className="font-medium">
+                                            {formatTimePretty(slot.start_time)} -{" "}
+                                            {formatTimePretty(slot.end_time)}
+                                          </div>
+                                          <div className="text-[11px] text-gray-600 capitalize">
+                                            {slot.slot_type}
+                                          </div>
+                                          <div className="text-[11px] mt-1 font-semibold text-green-600">
+                                            Available
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
 
-                          {/* Book Now button */}
-                          <Button
-                            variant="patient"
-                            size="sm"
-                            className="mt-3 w-full sm:w-auto"
-                            disabled={!selectedSlot}
-                            onClick={() =>
-                              handleBookNow(selectedSlot, selectedDay, doctor)
-                            }
-                          >
-                            Book Appointment without Payment
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
+                                    {availableSlots.length === 0 && (
+                                      <p className="text-red-500 text-sm col-span-full text-center">
+                                        No available slots for this day.
+                                      </p>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            {!selectedSlot && (
+                              <p className="text-gray-500 text-xs mt-2">
+                                Please select a slot to book an appointment.
+                              </p>
+                            )}
+
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="mt-3 w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                              disabled={!selectedSlot}
+                              onClick={() =>
+                                handleBookNow(selectedSlot!, selectedDay, doctor)
+                              }
+                            >
+                              Book Appointment without Payment
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                  <p className="text-gray-500">No doctors found matching your criteria.</p>
                 </CardContent>
               </Card>
-            ))}
+            )}
+
+            {hasMoreDoctors && (
+              <div className="text-center mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setDoctorPage(doctorPage + 1)}
+                >
+                  Load More Doctors
+                </Button>
+              </div>
+            )}
           </div>
         )}
-
-        {!loading && filteredDoctors.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p>No doctors found. Try changing search filters.</p>
-            </CardContent>
-          </Card>
-        )}
       </div>
+    );
+  };
+
+  const renderHospitalsSection = () => {
+    if (activeFilterTab === "doctors") return null;
+    
+    return (
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-green-600">Hospitals & Facilities</h2>
+          {filteredFacilities.length > HOSPITALS_PER_PAGE && (
+            <Button 
+              variant="ghost" 
+              className="text-green-600"
+              onClick={handleViewAllHospitals}
+            >
+              View All Hospitals <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          {paginatedHospitals.length > 0 ? (
+            paginatedHospitals.map((facility) => {
+              const facilityDepts = getFacilityDepartments(facility.id);
+              
+              return (
+                <Card key={facility.id} className="mx-auto shadow-lg border-2 border-green-100">
+                  <div className="bg-green-600 rounded-t-xl px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">{facility.facility_name}</h2>
+                        <span className="text-green-100 text-sm font-medium">{facility.facility_type}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-white">
+                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                          <span className="font-semibold">{facility.rating}</span>
+                          <span className="text-xs text-green-100">({facility.total_reviews})</span>
+                        </div>
+                        {facility.is_verified && (
+                          <Badge className="bg-green-500 text-white">Verified</Badge>
+                        )}
+                      </div>
+                    </div>
+                      <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-green-100 mt-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{facility.city}, {facility.state} - {facility.pincode}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!user ? (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => handleLogin(facility.id, 'hospital')}
+      >
+        Login Hospital
+      </Button>
+      </>
+  ) : (
+    <>
+                      <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewHospitalDetails(facility.id)}
+                              >
+                                View Hospital
+                              </Button>
+                              </>)}
+                      </div>
+                      </div>
+                  </div>
+                  
+                  <CardContent className="p-6 bg-gray-50 rounded-b-xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-gray-600" />
+                        <span className="font-semibold">Hospitals Departments</span>
+                        {/* <span className="font-semibold">{facility.total_beds} Beds</span> */}
+                      </div>
+                       {!user ? (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => handleLogin(facility.id, 'hospital')}
+      >
+        Login Beds
+      </Button>
+      </>
+  ) : (
+    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewHospitalDepartmentDetails(facility.id)}
+                      >
+                        View Details
+                      </Button>
+                        </>
+                        )}
+                    </div>
+
+                    {/* Departments Section */}
+                    <div className="mt-4 space-y-4">
+                      <h3 className="text-lg font-bold text-green-700">Departments</h3>
+                      {facilityDepts.length === 0 ? (
+                        <p className="text-gray-500">No departments found for this facility.</p>
+                      ) : (
+                        facilityDepts.map((dept) => (
+                          <div key={dept.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                            <h4 className="font-semibold text-md text-green-600 mb-1">
+                              {dept.name}
+                            </h4>
+                            <p className="text-gray-700 text-sm mb-2">
+                              {dept.description || "No description provided."}
+                            </p>
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-700">
+                              <span>
+                                <strong>Bed Capacity:</strong> {dept.bed_capacity ?? "N/A"}
+                              </span>
+                              <span>
+                                <strong>Available Beds:</strong> {dept.available_beds ?? "N/A"}
+                              </span>
+                              <span>
+                                <strong>Status:</strong>{" "}
+                                {dept.is_active ? (
+                                  <span className="text-green-600 font-semibold">Active</span>
+                                ) : (
+                                  <span className="text-red-500 font-semibold">Inactive</span>
+                                )}
+                              </span>
+                            </div>
+                            
+                            <div className="flex gap-2 mt-3">
+                                {!user ? (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+          onClick={() => handleLogin(dept.id, 'department')}
+      >
+        Login Departments
+      </Button>
+      </>
+  ) : (
+    <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => toggleExpandDepartment(dept)}
+                              >
+                                View Availability
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDepartment(dept)}
+                              >
+                                View Departments
+                              </Button></>)}
+                            </div>
+
+                            {expandedTimeSlotId === dept.id && (
+                              <div className="mt-4 p-4 rounded-xl border shadow bg-white">
+                                <h3 className="font-semibold mb-3 text-lg">
+                                  Available Slots
+                                </h3>
+
+                                {timeSlots.length === 0 ? (
+                                  <p className="text-red-600 font-medium">
+                                    Department {dept.name} is not available.
+                                  </p>
+                                ) : (
+                                  <>
+                                    <div className="flex gap-3 overflow-x-auto py-2">
+                                      {Array.from({ length: 14 }).map((_, index) => {
+                                        const date = new Date();
+                                        date.setDate(date.getDate() + index);
+
+                                        const label = formatDayLabel(date, index);
+                                        const dayNumber = formatDateNumber(date);
+                                        const dayOfWeek = date.toLocaleDateString(
+                                          "en-US",
+                                          { weekday: "long" }
+                                        );
+
+                                        const slotsForDay = timeSlots.filter(
+                                          (s) => s.day_of_week === dayOfWeek
+                                        );
+
+                                        const dateISO = date.toISOString().split("T")[0];
+                                        const bookingsForDay = bookings.filter((b) => {
+                                          const bookingISO = new Date(b.appointment_date)
+                                            .toISOString()
+                                            .split("T")[0];
+                                          return bookingISO === dateISO;
+                                        });
+
+                                        const bookedSlotIds = new Set(
+                                          bookingsForDay.map((b) => b.time_slot_id)
+                                        );
+
+                                        const availableSlotsCount = slotsForDay.filter(
+                                          (slot) => !bookedSlotIds.has(slot.id)
+                                        ).length;
+
+                                        const isActiveDay = selectedDay === index;
+
+                                        return (
+                                          <div key={index} className="min-w-[110px]">
+                                            <button
+                                              onClick={() => {
+                                                setSelectedDay(index);
+                                                setSelectedSlot(null);
+                                              }}
+                                              className={`w-full px-3 py-2 rounded-lg text-center transition
+                                                ${
+                                                  isActiveDay
+                                                    ? "bg-green-600 text-white"
+                                                    : "bg-white text-gray-700"
+                                                }
+                                                border ${
+                                                  isActiveDay
+                                                    ? "border-green-600"
+                                                    : "border-gray-200"
+                                                }`}
+                                            >
+                                              <div className="text-xs font-medium">
+                                                {label}
+                                              </div>
+                                              <div className="text-lg font-bold mt-1">
+                                                {dayNumber}
+                                              </div>
+                                              <div
+                                                className={`${
+                                                  isActiveDay
+                                                    ? "text-[11px] text-white mt-1"
+                                                    : "text-[11px] text-gray-400 mt-1"
+                                                }`}
+                                              >
+                                                {availableSlotsCount} slot
+                                                {availableSlotsCount !== 1 ? "s" : ""}
+                                              </div>
+                                            </button>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    <div className="mt-4">
+                                      {(() => {
+                                        const selectedDate = new Date();
+                                        selectedDate.setDate(
+                                          selectedDate.getDate() + selectedDay
+                                        );
+                                        const selectedISO = selectedDate
+                                          .toISOString()
+                                          .split("T")[0];
+                                        const fullDayName =
+                                          selectedDate.toLocaleDateString("en-US", {
+                                            weekday: "long",
+                                          });
+
+                                        const slotsForDay = timeSlots.filter(
+                                          (s) => s.day_of_week === fullDayName
+                                        );
+
+                                        if (slotsForDay.length === 0) {
+                                          return (
+                                            <p className="text-gray-500 text-sm">
+                                              No slots available for this day.
+                                            </p>
+                                          );
+                                        }
+
+                                        const todaysBookings = bookings.filter((b) => {
+                                          const bookingISO = new Date(b.appointment_date)
+                                            .toISOString()
+                                            .split("T")[0];
+                                          return bookingISO === selectedISO;
+                                        });
+
+                                        const availableSlots = slotsForDay.filter(
+                                          (slot) =>
+                                            !todaysBookings.some(
+                                              (b) => b.time_slot_id === slot.id
+                                            )
+                                        );
+
+                                        return (
+                                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                            {availableSlots.map((slot) => {
+                                              const isSelected =
+                                                selectedSlot?.id === slot.id;
+                                              return (
+                                                <div
+                                                  key={slot.id}
+                                                  onClick={() => setSelectedSlot(slot)}
+                                                  className={`
+                                                    p-2 rounded-md cursor-pointer text-sm transition
+                                                    ${
+                                                      slot.slot_type === "clinic"
+                                                        ? "bg-green-50"
+                                                        : "bg-blue-50"
+                                                    }
+                                                    ${
+                                                      isSelected
+                                                        ? "border-2 border-green-600"
+                                                        : "border border-gray-300"
+                                                    }
+                                                  `}
+                                                >
+                                                  <div className="font-medium">
+                                                    {formatTimePretty(slot.start_time)} -{" "}
+                                                    {formatTimePretty(slot.end_time)}
+                                                  </div>
+                                                  <div className="text-[11px] text-gray-600 capitalize">
+                                                    {slot.slot_type}
+                                                  </div>
+                                                  <div className="text-[11px] mt-1 font-semibold text-green-600">
+                                                    Available
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+
+                                            {availableSlots.length === 0 && (
+                                              <p className="text-red-500 text-sm col-span-full text-center">
+                                                No available slots for this day.
+                                              </p>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+
+                                    {!selectedSlot && (
+                                      <p className="text-gray-500 text-xs mt-2">
+                                        Please select a slot to book an appointment.
+                                      </p>
+                                    )}
+
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      className="mt-3 w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                                      disabled={!selectedSlot}
+                                      onClick={() =>
+                                        handleDepartmentBookNow(selectedSlot!, selectedDay, dept)
+                                      }
+                                    >
+                                      Book Appointment without Payment
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Building2 className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                <p className="text-gray-500">No hospitals found matching your criteria.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasMoreHospitals && (
+            <div className="text-center mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setHospitalPage(hospitalPage + 1)}
+              >
+                Load More Hospitals
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ------------------------
+  // Main Render
+  // ------------------------
+  return (
+    <div className="space-y-6">
+      {renderSearchHeader()}
+
+      {/* Results Count */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">
+          {activeFilterTab === "all" && (
+            <>Found {filteredDoctors.length} doctors & {filteredFacilities.length} hospitals</>
+          )}
+          {activeFilterTab === "doctors" && (
+            <>Found {filteredDoctors.length} doctors</>
+          )}
+          {activeFilterTab === "hospitals" && (
+            <>Found {filteredFacilities.length} hospitals</>
+          )}
+        </h3>
+        
+        <Button 
+          variant="link" 
+          className="text-purple-600"
+          onClick={handleViewAllBookings}
+        >
+          View All Bed Bookings <ChevronRight className="ml-1 h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Results Sections */}
+      {activeFilterTab !== "hospitals" && renderDoctorsSection()}
+      {activeFilterTab !== "doctors" && renderHospitalsSection()}
+
+      {/* Confirmation Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="rounded-xl p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-center">
-              Confirm Appointment
+              Confirm Appointment 
             </DialogTitle>
           </DialogHeader>
 
           {bookingInfo && (
             <div className="space-y-4 mt-2">
-              {/* Doctor */}
               <div className="p-4 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-600">Doctor</p>
+                <p className="text-sm text-gray-600">Doctor/Department</p>
                 <p className="text-lg font-medium">{bookingInfo.doctor_name}</p>
               </div>
 
-              {/* Date & Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-100 rounded-lg">
                   <p className="text-sm text-gray-600">Date</p>
@@ -892,7 +1653,6 @@ const [notes, setNotes] = useState("");
                 </div>
               </div>
 
-              {/* Notes */}
               <div className="mt-4">
                 <label className="text-sm font-medium text-gray-600">
                   Notes (optional)
@@ -923,7 +1683,7 @@ const [notes, setNotes] = useState("");
               className="bg-blue-600 hover:bg-blue-700 text-white"
               onClick={handleConfirmBooking}
             >
-              Confirm
+              Confirm Booking
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -10,6 +10,7 @@ export interface MedicalFacility {
     pincode: string,
     latitude: number,
     longitude: number,
+    isVerified: boolean,
     licenseNumber: string,
     establishedYear: number,
     totalBeds: number,

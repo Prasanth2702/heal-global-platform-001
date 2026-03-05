@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings } from "lucide-react";
@@ -12,9 +12,80 @@ import InventoryManagement from "@/components/hospital/InventoryManagement";
 import FacilityCertifications from "@/components/hospital/FacilityCertifications";
 import AppointmentFlow from "@/components/hospital/AppointmentFlow";
 import FacilityProfile from "../hospital/FacilityProfile";
+import BedDepartments from "../hospital/BedDepartments";
+import { useNavigate } from "react-router";
+import FacilityAppointmentManagement from "@/components/facility/FacilityAppointmentManagementPage";
+import { Button } from "../ui/button";
 
 const HospitalDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<
+    | "overview"
+    | "departments"
+    | "staff"
+    | "timeslots"
+    | "payments"
+    | "earnings"
+    | "inventory"
+    | "facility"
+    | "profile"
+    | "appointments"
+  >("overview");
+  const location = window.location;
+
+  useEffect(() => {
+  const path = location.pathname;
+  if (path.includes('/profile')) setActiveTab('profile');
+  else if (path.includes('/departments')) setActiveTab('departments');
+  else if (path.includes('/staff')) setActiveTab('staff');
+  else if (path.includes('/timeslots')) setActiveTab('timeslots');
+  else if (path.includes('/payments')) setActiveTab('payments');
+  else if (path.includes('/analytics')) setActiveTab('earnings');
+  else if (path.includes('/inventory')) setActiveTab('inventory');
+  else if (path.includes('/facility')) setActiveTab('facility');
+  else if (path.includes('/appointments')) setActiveTab('appointments');
+  else setActiveTab('overview');
+}, [location.pathname]);
+
+    // Update URL when tab changes
+   const handleTabChange = (tab: typeof activeTab) => {
+  setActiveTab(tab);
+  const basePath = '/dashboard/facility';
+  switch (tab) {
+    case 'overview':
+      navigate(basePath);
+      break;
+    case 'departments':
+      navigate(`${basePath}/departments`);
+      break;
+    case 'staff':
+      navigate(`${basePath}/staff`);
+      break;
+    case 'timeslots':
+      navigate(`${basePath}/timeslots`);
+      break;
+    case 'payments':
+      navigate(`${basePath}/payments`);
+      break;
+    case 'earnings':
+      navigate(`${basePath}/analytics`);
+      break;
+    case 'inventory':
+      navigate(`${basePath}/inventory`);
+      break;
+    case 'facility':
+      navigate(`${basePath}/facility`);
+      break;
+    case 'profile':
+      navigate(`${basePath}/profile`);
+      break;
+    case 'appointments':
+      navigate(`${basePath}/appointments`);
+      break;
+    default:
+      navigate(basePath);
+  }
+};
 
   // Mock data for overview
   const overviewStats = {
@@ -38,8 +109,8 @@ const HospitalDashboard = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9">
+      <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -75,6 +146,10 @@ const HospitalDashboard = () => {
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="appointments" className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Appointments</span>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
@@ -152,14 +227,19 @@ const HospitalDashboard = () => {
           <div className="mt-6">
             <AppointmentFlow />
           </div>
-        </TabsContent>
-
+ </TabsContent>
         <TabsContent value="departments">
           <DepartmentManagement />
         </TabsContent>
+        {/* <TabsContent value="bed-departments">
+          <BedDepartments />
+        </TabsContent> */}
 
         <TabsContent value="staff">
           <StaffManagement />
+        </TabsContent>
+        <TabsContent value="appointments">
+          <FacilityAppointmentManagement />
         </TabsContent>
 
         <TabsContent value="timeslots">

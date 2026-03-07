@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { usePopup } from '@/contexts/popup-context';
+import mixpanelInstance from "@/utils/mixpanel";
 
 import AuthLayout from "./AuthLayout";
 import { MedicalProfessional } from "@/Models/MedicalProfessional";
@@ -15,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import DoctorsTermConditionsPolicy from "../commons/policies/DoctorsTermConditionsPolicy";
+
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -42,6 +44,7 @@ const DoctorRegistration = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [countryCode, setCountryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
+const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<MedicalProfessional>({
     firstName: "",
@@ -112,13 +115,42 @@ const DoctorRegistration = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
+setIsSubmitting(true) 
+    const fullPhoneNumber = countryCode + phoneNumber;
+
+    // Mixpanel track: Doctor Registration Attempt
+   mixpanelInstance.track('Doctor Registration Attempt', {
+      email: formData.emailAddress,
+      phone: fullPhoneNumber,
+      country_code: countryCode,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      specialty: formData.medicalSpeciality,
+      license_number: formData.licenseNumber,
+      graduation_year: formData.graduationYear,
+      medical_school: formData.medicalSchool,
+      years_experience: formData.yearsOfExperience,
+      consultation_fee: formData.consultationFees,
+      languages_known: formData.languagesKnown,
+      has_additional_qualifications: !!formData.additionalQualifications,
+      has_about_yourself: !!formData.aboutYourself,
+      terms_accepted: termsAccepted,
+      kyc_accepted: kycAccepted
+    });
 
     if (!termsAccepted || !kycAccepted) {
       toast({
         title: "Agreement Required",
         description: "Please accept all terms and KYC verification to continue.",
         variant: "destructive"
+      });
+       mixpanelInstance.track('Doctor Registration Failed', {
+        email: formData.emailAddress,
+        reason: 'Terms and KYC not accepted',
+        terms_accepted: termsAccepted,
+        kyc_accepted: kycAccepted
       });
       return;
     }
@@ -134,8 +166,17 @@ const DoctorRegistration = () => {
 
     if (!validateForm(doctorFullData)) {
       console.log(errors);
+       mixpanelInstance.track('Doctor Registration Failed', {
+        email: formData.emailAddress,
+        reason: 'Form validation failed',
+        errors: errors
+      });
       return;
     }
+
+       mixpanelInstance.track('Doctor Supabase Signup Attempt', {
+      email: doctorFullData.emailAddress
+    });
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: doctorFullData.emailAddress,
@@ -155,8 +196,19 @@ const DoctorRegistration = () => {
         variant: 'destructive',
         className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
       });
+      mixpanelInstance.track('Doctor Registration Failed', {
+        email: doctorFullData.emailAddress,
+        reason: 'Supabase signup error',
+        error_message: signUpError.message,
+        error_code: signUpError.status
+      });
       return;
     }
+
+     mixpanelInstance.track('Doctor Supabase Signup Success', {
+      email: doctorFullData.emailAddress,
+      user_id: signUpData.user?.id
+    });
 
     const { data, error } = await supabase
       .from('profiles')
@@ -171,8 +223,17 @@ const DoctorRegistration = () => {
 
     if (error) {
       console.error('Update error:', error.message);
+      mixpanelInstance.track('Doctor Profile Update Failed', {
+        email: doctorFullData.emailAddress,
+        user_id: signUpData.user?.id,
+        error_message: error.message
+      });
     } else {
       console.log('Row updated:', data);
+      mixpanelInstance.track('Doctor Profile Update Success', {
+        email: doctorFullData.emailAddress,
+        user_id: signUpData.user?.id
+      });
     }
 
     const { data: medProfData, error: medProfError } = await supabase
@@ -193,13 +254,43 @@ const DoctorRegistration = () => {
 
     if (medProfError) {
       console.error('Update error for medical_professionals:', medProfError.message);
+      mixpanelInstance.track('Doctor Medical Professional Insert Failed', {
+        email: doctorFullData.emailAddress,
+        user_id: signUpData.user?.id,
+        error_message: medProfError.message
+      });
     } else {
       console.log('Medical professionals row updated:', medProfData);
+      mixpanelInstance.track('Doctor Medical Professional Insert Success', {
+        email: doctorFullData.emailAddress,
+        user_id: signUpData.user?.id,
+        specialty: doctorFullData.medicalSpeciality,
+        years_experience: doctorFullData.yearsOfExperience,
+        consultation_fee: doctorFullData.consultationFees
+      });
     }
 
     toast({
       title: "Registration Submitted!",
       description: "Your application is under review. You'll receive verification status within 24-48 hours.",
+    });
+
+    // Mixpanel track: Doctor Registration Success
+     mixpanelInstance.track('Doctor Registration Success', {
+      email: doctorFullData.emailAddress,
+      user_id: signUpData.user?.id,
+      first_name: doctorFullData.firstName,
+      last_name: doctorFullData.lastName,
+      phone: doctorFullData.phoneNumber,
+      specialty: doctorFullData.medicalSpeciality,
+      license_number: doctorFullData.licenseNumber,
+      graduation_year: doctorFullData.graduationYear,
+      medical_school: doctorFullData.medicalSchool,
+      years_experience: doctorFullData.yearsOfExperience,
+      consultation_fee: doctorFullData.consultationFees,
+      languages_known: doctorFullData.languagesKnown,
+      has_additional_qualifications: !!doctorFullData.additionalQualifications,
+      has_about_yourself: !!doctorFullData.aboutYourself
     });
 
     setTimeout(() => {
@@ -462,9 +553,25 @@ const DoctorRegistration = () => {
           </div>
         </div>
 
-        <Button type="submit" variant="doctor" className="w-full" size="lg">
+        {/* <Button type="submit" variant="doctor" className="w-full" size="lg">
           Submit Application for Review
-        </Button>
+        </Button> */}
+        <Button 
+  type="submit" 
+  variant="doctor" 
+  className="w-full" 
+  size="lg"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <>
+      <span className="animate-spin mr-2">⟳</span>
+      Submitting...
+    </>
+  ) : (
+    "Submit Application for Review"
+  )}
+</Button>
 
         <div className="text-center text-sm text-muted-foreground">
           Already registered?{" "}

@@ -49,6 +49,7 @@ import {
   CheckCheck,
   Eye,
 } from 'lucide-react';
+import { mixpanelInstance } from '@/utils/mixpanel';
 
 // Set up the calendar localizer
 const localizer = momentLocalizer(moment);
@@ -219,6 +220,8 @@ const generateMockAppointments = (): Appointment[] => {
 
 const DoctorSchedulePage: React.FC = () => {
   // State
+  // Mixpanel import
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const [appointments, setAppointments] = useState<Appointment[]>(generateMockAppointments());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarView, setCalendarView] = useState(Views.WEEK);
@@ -290,7 +293,19 @@ const DoctorSchedulePage: React.FC = () => {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    // Mixpanel tracking
+    mixpanelInstance.track(
+      isEditMode ? 'Doctor Appointment Updated' : 'Doctor Appointment Created',
+      {
+        doctor_id: MOCK_DOCTOR.id,
+        patient_id: formData.patient_id,
+        appointment_date: formData.appointment_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        type: formData.type,
+        status: formData.status,
+      }
+    );
     // Demo: Just show success message
     alert(isEditMode ? 'Appointment updated (demo)' : 'Appointment created (demo)');
     setIsAppointmentDialogOpen(false);
@@ -898,7 +913,23 @@ const DoctorSchedulePage: React.FC = () => {
                 <Button type="button" variant="outline" onClick={() => setIsAppointmentDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button
+                  type="submit"
+                  onClick={() => {
+                    mixpanelInstance.track(
+                      isEditMode ? 'Doctor Appointment Main Button Clicked' : 'Doctor Appointment Main Button Clicked',
+                      {
+                        doctor_id: MOCK_DOCTOR.id,
+                        patient_id: formData.patient_id,
+                        appointment_date: formData.appointment_date,
+                        start_time: formData.start_time,
+                        end_time: formData.end_time,
+                        type: formData.type,
+                        status: formData.status,
+                      }
+                    );
+                  }}
+                >
                   {isEditMode ? 'Update (Demo)' : 'Create (Demo)'}
                 </Button>
               </DialogFooter>

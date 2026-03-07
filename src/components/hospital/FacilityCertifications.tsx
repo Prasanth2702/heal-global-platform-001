@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, FileText, Image, Download, Eye, Calendar, Building } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays } from "date-fns";
-
+import mixpanelInstance from "@/utils/mixpanel";
 interface Certification {
   id: string;
   name: string;
@@ -134,10 +134,39 @@ const FacilityCertifications = () => {
   const certificationTypes = ["accreditation", "license", "certificate", "permit"];
   const imageCategories = ["exterior", "interior", "equipment", "facility", "certification"];
   const departments = ["General OPD", "Radiology", "Pathology Lab", "Emergency", "Surgery", "ICU", "Pharmacy"];
+// Add tracking functions
+const trackCertificationAction = (action: string, certData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Facility Certification Action', {
+    action,
+    certificationId: certData?.id,
+    certificationName: certData?.name,
+    certificationType: certData?.type,
+    ...additionalData
+  });
+};
+
+const trackImageAction = (action: string, imageData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Facility Image Action', {
+    action,
+    imageId: imageData?.id,
+    imageTitle: imageData?.title,
+    imageCategory: imageData?.category,
+    ...additionalData
+  });
+};
+
+const handleTabChange = (tab: "certifications" | "images") => {
+  mixpanelInstance.track('Facility Tab Change', { 
+    fromTab: activeTab, 
+    toTab: tab 
+  });
+  setActiveTab(tab);
+};
 
   const handleCertSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+     trackCertificationAction(editingCertification ? 'edit_attempt' : 'add_attempt', 
+    editingCertification, certFormData);
     if (editingCertification) {
       setCertifications(prev => prev.map(cert => 
         cert.id === editingCertification.id 
@@ -155,6 +184,7 @@ const FacilityCertifications = () => {
         description: `${certFormData.name} has been updated successfully.`,
       });
       setEditingCertification(null);
+      trackCertificationAction('edit_success', { id: editingCertification.id, name: certFormData.name }, { formData: certFormData });
     } else {
       const newCertification: Certification = {
         id: Date.now().toString(),
@@ -168,6 +198,7 @@ const FacilityCertifications = () => {
         title: "Certification Added",
         description: `${certFormData.name} has been added successfully.`,
       });
+      trackCertificationAction('add_success', { id: newCertification.id, name: certFormData.name }, { formData: certFormData });
     }
     
     setCertFormData({
@@ -181,11 +212,13 @@ const FacilityCertifications = () => {
       description: ""
     });
     setIsCertDialogOpen(false);
+    trackCertificationAction('dialog_close', editingCertification || null);
   };
 
   const handleImageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    trackCertificationAction(editingImage ? 'edit_attempt' : 'add_attempt',
+    editingImage, imageFormData);
     if (editingImage) {
       setFacilityImages(prev => prev.map(img => 
         img.id === editingImage.id 
@@ -197,6 +230,7 @@ const FacilityCertifications = () => {
         description: `${imageFormData.title} has been updated successfully.`,
       });
       setEditingImage(null);
+      trackImageAction('edit_success', { id: editingImage.id, title: imageFormData.title }, { formData: imageFormData });
     } else {
       const newImage: FacilityImage = {
         id: Date.now().toString(),
@@ -209,6 +243,7 @@ const FacilityCertifications = () => {
         title: "Image Added",
         description: `${imageFormData.title} has been uploaded successfully.`,
       });
+      trackImageAction('add_success', { id: newImage.id, title: imageFormData.title }, { formData: imageFormData });
     }
     
     setImageFormData({
@@ -234,6 +269,7 @@ const FacilityCertifications = () => {
       description: cert.description
     });
     setIsCertDialogOpen(true);
+    trackCertificationAction('dialog_open', editingCertification || null);
   };
 
   const handleEditImage = (image: FacilityImage) => {
@@ -246,6 +282,7 @@ const FacilityCertifications = () => {
       imageFile: null
     });
     setIsImageDialogOpen(true);
+    trackImageAction('dialog_open', editingImage || null);
   };
 
   const handleDeleteCertification = (id: string) => {
@@ -255,6 +292,7 @@ const FacilityCertifications = () => {
       title: "Certification Deleted",
       description: `${cert?.name} has been removed.`,
     });
+    trackCertificationAction('delete', { id, name: cert?.name });
   };
 
   const handleDeleteImage = (id: string) => {
@@ -264,6 +302,7 @@ const FacilityCertifications = () => {
       title: "Image Deleted",
       description: `${image?.title} has been removed.`,
     });
+    trackImageAction('delete', { id, title: image?.title });
   };
 
   const getStatusColor = (status: string) => {
@@ -331,7 +370,11 @@ const FacilityCertifications = () => {
           <div className="flex justify-end">
             <Dialog open={isCertDialogOpen} onOpenChange={setIsCertDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditingCertification(null)}>
+                <Button   onClick={() => {
+    trackCertificationAction('add_certification_click');
+    setEditingCertification(null);
+    setIsCertDialogOpen(true);
+  }}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Certification
                 </Button>
@@ -545,7 +588,11 @@ const FacilityCertifications = () => {
           <div className="flex justify-end">
             <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditingImage(null)}>
+                <Button  onClick={() => {
+    trackImageAction('upload_image_click');
+    setEditingImage(null);
+    setIsImageDialogOpen(true);
+  }}>
                   <Plus className="mr-2 h-4 w-4" />
                   Upload Image
                 </Button>

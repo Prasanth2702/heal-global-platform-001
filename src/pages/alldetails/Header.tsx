@@ -1,6 +1,6 @@
 import { HeartPulse, LogIn, Menu, UserPlus, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -274,15 +274,16 @@ const Header = () => {
         </div>
       </nav> */}
        <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container flex h-16 items-center justify-between">
-                  <div className="flex items-center space-x-2">
+                <div className="container flex h-16 items-center justify-between" >
+                  <Link to="/" className="flex items-center space-x-2">
+                    
                     <img
                       src="/favicon.svg"
                       alt="NextGen Medical"
                       className="h-8 w-8 rounded-md object-contain mt-1"
                     />
                     <span className="text-xl font-bold">NextGen Medical</span>
-                  </div>
+                  </Link>
                   
                   <div className="flex items-center space-x-4">
                     {!user ? (

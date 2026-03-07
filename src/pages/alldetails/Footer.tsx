@@ -38,6 +38,7 @@ import {
   Pill,
   Ambulance
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -51,14 +52,14 @@ const Footer = () => {
         { name: 'Blog', path: '/blog' },
       ];
     
-      const services = [
-        { name: 'Find Doctors', path: '/doctors', icon: PersonStanding },
-        { name: 'Find Hospitals', path: '/hospitals', icon: Building2 },
-        { name: 'Book Appointment', path: '/appointment', icon: CalendarCheck },
-        { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
-        { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
-        { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
-      ];
+      // const services = [
+      //   { name: 'Find Doctors', path: '/doctors', icon: PersonStanding },
+      //   { name: 'Find Hospitals', path: '/hospitals', icon: Building2 },
+      //   { name: 'Book Appointment', path: '/appointment', icon: CalendarCheck },
+      //   { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
+      //   { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
+      //   { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
+      // ];
 
     return (
       <footer className="bg-dark text-white pt-5 pb-4 mt-5">
@@ -66,14 +67,14 @@ const Footer = () => {
           <div className="row g-4">
             {/* About Section */}
             <div className="col-lg-4 col-md-6">
-               <div className="flex items-center space-x-2">
+               <Link to="/" className="flex items-center space-x-2">
             <img
               src="/favicon.svg"
               alt="NextGen Medical"
               className="h-8 w-8 rounded-md object-contain mt-1"
             />
             <span className="text-xl font-bold">NextGen Medical</span>
-          </div>
+          </Link>
               <p className="text-white-50 mb-3">
                 Your trusted partner in healthcare. We connect you with the best doctors, 
                 hospitals, and healthcare services to ensure you receive the care you deserve.
@@ -116,7 +117,7 @@ const Footer = () => {
             </div>
 
             {/* Services */}
-            <div className="col-lg-3 col-md-6">
+            {/* <div className="col-lg-3 col-md-6">
               <h6 className="fw-bold mb-3">Our Services</h6>
               <ul className="list-unstyled">
                 {services.slice(0, 6).map((service, index) => {
@@ -134,7 +135,7 @@ const Footer = () => {
                   );
                 })}
               </ul>
-            </div>
+            </div> */}
 
             {/* Contact Info */}
             <div className="col-lg-3 col-md-6">

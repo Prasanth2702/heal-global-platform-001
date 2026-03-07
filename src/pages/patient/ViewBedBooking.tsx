@@ -1590,6 +1590,9 @@ const handleBookBed = async ( bedId: string,wardId:string ,facilityName: string)
                           Bed Availability
                         </TabsTrigger>
                         <TabsTrigger value="bookings">
+                          All Bed Bookings
+                        </TabsTrigger>
+                        <TabsTrigger value="booking">
                           Active Bookings
                         </TabsTrigger>
                         <TabsTrigger value="calendar">

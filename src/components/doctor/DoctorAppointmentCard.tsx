@@ -564,6 +564,7 @@ import { DoctorAppointment } from "./DoctorAppointmentManagement";
 import { useState, useEffect } from "react";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
+import { mixpanelInstance } from "@/utils/mixpanel";
 
 interface Props {
   appointment: DoctorAppointment;
@@ -626,6 +627,14 @@ export default function DoctorAppointmentCard({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      // Mixpanel track: Doctor Cancel Appointment
+      mixpanelInstance.track("Doctor Cancel Appointment", {
+        appointmentId: enhancedAppointment.id,
+        doctorId: user.id,
+        reason,
+        notes
+      });
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;

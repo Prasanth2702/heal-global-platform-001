@@ -23,6 +23,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { mixpanelInstance } from "@/utils/mixpanel";
 
 // Define types
 interface BedType {
@@ -193,6 +194,31 @@ const BedBookingView: React.FC<BedBookingViewProps> = ({
 
     try {
       setBookingLoading(true);
+        // Get selected bed details for tracking
+    const selectedBed = availableBeds.find(b => b.id === formData.selectedBedId);
+    
+    // Calculate stay duration
+    const start = new Date(formData.admissionDate);
+    const end = new Date(formData.expectedDischargeDate);
+    const stayDuration = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 3600 * 24)
+    );
+    const estimatedTotal = stayDuration * (selectedBed?.bed_types?.price_per_day || 0);
+
+      mixpanelInstance.track('Bed Booking Attempt', {
+        facility_id: facilityId,
+        facility_name: facilityDetails?.facility_name,
+        bed_id: formData.selectedBedId,
+        bed_number: selectedBed?.bed_number,
+        bed_type: selectedBed?.bed_types?.bed_type,
+        price_per_day: selectedBed?.bed_types?.price_per_day,
+        admission_date: formData.admissionDate,
+        expected_discharge_date: formData.expectedDischargeDate,
+        stay_duration_days: stayDuration,
+        estimated_total: estimatedTotal,
+        patient_id: patientId,
+        booking_reason_length: formData.bookingReason.length,
+      });
 
       // Create booking record
       const { data: booking, error: bookingError } = await supabase
@@ -211,6 +237,22 @@ const BedBookingView: React.FC<BedBookingViewProps> = ({
         .single();
 
       if (bookingError) throw bookingError;
+
+       mixpanelInstance.track('Bed Booking Success', {
+        booking_id: booking.id,
+        facility_id: facilityId,
+        facility_name: facilityDetails?.facility_name,
+        bed_id: formData.selectedBedId,
+        bed_number: selectedBed?.bed_number,
+        bed_type: selectedBed?.bed_types?.bed_type,
+        price_per_day: selectedBed?.bed_types?.price_per_day,
+        admission_date: formData.admissionDate,
+        expected_discharge_date: formData.expectedDischargeDate,
+        stay_duration_days: stayDuration,
+        estimated_total: estimatedTotal,
+        patient_id: patientId,
+        status: 'pending',
+      });
 
       // Update bed status to reserved
       const { error: bedUpdateError } = await supabase
@@ -242,6 +284,13 @@ const BedBookingView: React.FC<BedBookingViewProps> = ({
       await loadData();
     } catch (error: any) {
       console.error("Booking error:", error);
+      mixpanelInstance.track('Bed Booking Error', {
+        facility_id: facilityId,
+        bed_id: formData.selectedBedId,
+        patient_id: patientId,
+        error_message: error.message,
+        error_code: error.code,
+      });
       toast.error(`Failed to book bed: ${error.message}`);
     } finally {
       setBookingLoading(false);
@@ -653,7 +702,14 @@ const BedBookingView: React.FC<BedBookingViewProps> = ({
                 </div>
 
                 <Button
-                  onClick={handleSubmitBooking}
+                  onClick={e => {
+                    mixpanelInstance.track('Bed Booking Main Button Clicked', {
+                      facility_id: facilityId,
+                      patient_id: patientId,
+                      ...formData,
+                    });
+                    handleSubmitBooking();
+                  }}
                   disabled={bookingLoading}
                   className="w-full"
                   size="lg"

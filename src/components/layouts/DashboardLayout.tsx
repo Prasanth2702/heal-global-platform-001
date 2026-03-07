@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -137,11 +137,11 @@ const checkBedManagementDepartment = async () => {
           label: "Appointments",
           icon: Calendar,
         },
-        {
-          path: "/dashboard/patient/records",
-          label: "Medical Records",
-          icon: FileText,
-        },
+        // {
+        //   path: "/dashboard/patient/records",
+        //   label: "Medical Records",
+        //   icon: FileText,
+        // },
         {
           path: "/dashboard/patient/search",
           label: "Find Doctors",
@@ -184,18 +184,18 @@ const checkBedManagementDepartment = async () => {
       variant: "doctor" as const,
       routes: [
         { path: "/dashboard/doctor", label: "Dashboard", icon: TrendingUp },
-        {
-          path: "/dashboard/doctor/schedule",
-          label: "Schedule",
-          icon: Calendar,
-        },
-        { path: "/dashboard/doctor/patients", label: "Patients", icon: User },
+        // {
+        //   path: "/dashboard/doctor/schedule",
+        //   label: "Schedule",
+        //   icon: Calendar,
+        // },
+        { path: "/dashboard/doctor/patients", label: "Patients", icon: UserCogIcon },
         { path: "/dashboard/doctor/appointments", label: "Appointments", icon: Calendar },
-        {
-          path: "/dashboard/doctor/prescriptions",
-          label: "Prescriptions",
-          icon: FileText,
-        },
+        // {
+        //   path: "/dashboard/doctor/prescriptions",
+        //   label: "Prescriptions",
+        //   icon: FileText,
+        // },
         { path: "/dashboard/doctor/profile", label: "Profile", icon: User },
       ],
   //     routes1: [
@@ -234,15 +234,15 @@ const checkBedManagementDepartment = async () => {
           icon: Clock,
         },
         {
-          path: "/dashboard/facility/appointments-management",
+          path: "/dashboard/facility/appointments",
           label: "Appointments",
           icon: Calendar,
         },
-        {
-          path: "/dashboard/facility/analytics",
-          label: "Analytics",
-          icon: TrendingUp,
-        },
+        // {
+        //   path: "/dashboard/facility/analytics",
+        //   label: "Analytics",
+        //   icon: TrendingUp,
+        // },
         {
           path: "/dashboard/facility/profile",
           label: "Facility Profile",

@@ -12,6 +12,7 @@ import { MedicalFacility } from "@/Models/MedicalFacility";
 import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
+import mixpanelInstance from "@/utils/mixpanel";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -63,7 +64,7 @@ const FacilityRegistration = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [countryCode, setCountryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
-
+const [isSubmitting, setIsSubmitting] = useState(false);
 
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
@@ -172,12 +173,45 @@ const FacilityRegistration = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+setIsSubmitting(true) 
+
+     const fullPhoneNumber = countryCode + phoneNumber;
+
+    // Mixpanel track: Doctor Registration Attempt
+        mixpanelInstance.track('Facility Registration Attempt', {
+      email: formData.emailAddress,
+      phone: fullPhoneNumber,
+      country_code: countryCode,
+      facility_name: formData.facilityName,
+      facility_type: formData.facilityType,
+      license_number: formData.licenseNumber,
+      established_year: formData.establishedYear,
+      total_beds: formData.totalBeds,
+      city: formData.city,
+      state: formData.state,
+      departments_count: formData.departments.length,
+      emergency_services: formData.emergencyServices,
+      ambulance_service: formData.ambulanceService,
+      online_consultation: formData.onlineConsultation,
+      home_visit: formData.homeVisit,
+      has_website: !!formData.website,
+      has_about: !!formData.aboutFacility,
+      terms_accepted: termsAccepted,
+      kyc_accepted: kycAccepted
+    });
 
     if (!termsAccepted || !kycAccepted) {
       toast({
         title: "Agreement Required",
         description: "Please accept all terms and KYC verification to continue.",
         variant: "destructive"
+      });
+       mixpanelInstance.track('Facility Registration Failed', {
+        email: formData.emailAddress,
+        facility_name: formData.facilityName,
+        reason: 'Terms and KYC not accepted',
+        terms_accepted: termsAccepted,
+        kyc_accepted: kycAccepted
       });
       return;
     }
@@ -191,8 +225,19 @@ const FacilityRegistration = () => {
 
     if (!validateForm(facilityFullData)) {
       console.log(errors);
+       mixpanelInstance.track('Facility Registration Failed', {
+        email: formData.emailAddress,
+        facility_name: formData.facilityName,
+        reason: 'Form validation failed',
+        errors: errors
+      });
       return;
     }
+
+    mixpanelInstance.track('Facility Supabase Signup Attempt', {
+      email: facilityFullData.emailAddress,
+      facility_name: facilityFullData.facilityName
+    });
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: facilityFullData.emailAddress,
@@ -211,8 +256,21 @@ const FacilityRegistration = () => {
         variant: 'destructive',
         className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
       });
+       mixpanelInstance.track('Facility Registration Failed', {
+        email: facilityFullData.emailAddress,
+        facility_name: facilityFullData.facilityName,
+        reason: 'Supabase signup error',
+        error_message: signUpError.message,
+        error_code: signUpError.status
+      });
       return;
     }
+
+     mixpanelInstance.track('Facility Supabase Signup Success', {
+      email: facilityFullData.emailAddress,
+      facility_name: facilityFullData.facilityName,
+      user_id: signUpData.user?.id
+    });
 
     const { data, error } = await supabase
       .from('profiles')
@@ -226,8 +284,19 @@ const FacilityRegistration = () => {
 
     if (error) {
       console.error('Update error:', error.message);
+      mixpanelInstance.track('Facility Profile Update Failed', {
+        email: facilityFullData.emailAddress,
+        facility_name: facilityFullData.facilityName,
+        user_id: signUpData.user?.id,
+        error_message: error.message
+      });
     } else {
       console.log('Row updated:', data);
+      mixpanelInstance.track('Facility Profile Update Success', {
+        email: facilityFullData.emailAddress,
+        facility_name: facilityFullData.facilityName,
+        user_id: signUpData.user?.id
+      });
     }
 
     const { data: facilityProfData, error: facilityProfError } = await supabase
@@ -262,9 +331,42 @@ const FacilityRegistration = () => {
 
     if (facilityProfError) {
       console.error('Update error for medical_professionals:', facilityProfError.message);
+      mixpanelInstance.track('Facility Insert Failed', {
+        email: facilityFullData.emailAddress,
+        facility_name: facilityFullData.facilityName,
+        user_id: signUpData.user?.id,
+        error_message: facilityProfError.message
+      });
     } else {
       console.log('Medical professionals row updated:', facilityProfData);
+      mixpanelInstance.track('Facility Insert Success', {
+        email: facilityFullData.emailAddress,
+        facility_name: facilityFullData.facilityName,
+        facility_type: facilityFullData.facilityType,
+        user_id: signUpData.user?.id,
+        city: facilityFullData.city,
+        state: facilityFullData.state,
+        total_beds: facilityFullData.totalBeds,
+        departments_count: facilityFullData.departments.length
+      });
     }
+     mixpanelInstance.track('Facility Registration Success', {
+      email: facilityFullData.emailAddress,
+      facility_name: facilityFullData.facilityName,
+      facility_type: facilityFullData.facilityType,
+      user_id: signUpData.user?.id,
+      phone: facilityFullData.phoneNumber,
+      license_number: facilityFullData.licenseNumber,
+      established_year: facilityFullData.establishedYear,
+      city: facilityFullData.city,
+      state: facilityFullData.state,
+      total_beds: facilityFullData.totalBeds,
+      departments: facilityFullData.departments,
+      emergency_services: facilityFullData.emergencyServices,
+      ambulance_service: facilityFullData.ambulanceService,
+      online_consultation: facilityFullData.onlineConsultation,
+      home_visit: facilityFullData.homeVisit
+    });
 
 
     toast({
@@ -612,9 +714,25 @@ const FacilityRegistration = () => {
           </div>
         </div>
 
-        <Button type="submit" variant="facility" className="w-full" size="lg">
+        {/* <Button type="submit" variant="facility" className="w-full" size="lg">
           Submit Facility Registration
-        </Button>
+        </Button> */}
+        <Button 
+  type="submit" 
+  variant="facility" 
+  className="w-full" 
+  size="lg"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <>
+      <span className="animate-spin mr-2">⟳</span>
+      Submitting...
+    </>
+  ) : (
+    "Submit Facility Registration"
+  )}
+</Button>
 
         <div className="text-center text-sm text-muted-foreground">
           Already registered?{" "}

@@ -12,6 +12,7 @@ import { Clock, DollarSign, Video, MapPin, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import mixpanelInstance from "@/utils/mixpanel";
 import WeeklyScheduleGrid from "./WeeklyScheduleGrid";
 
 type SlotType = "clinic" | "tele" | null;
@@ -243,7 +244,13 @@ const AvailabilityManagement: React.FC<AvailabilityManagementProps> = ({ onBack 
         <div className="flex items-center space-x-4 m-2">
          <Button
             variant="outline"
-            onClick={onBack}
+            onClick={() => {
+              mixpanelInstance.track("Doctor Availability Back Clicked", {
+                action: "Back",
+                page: "AvailabilityManagement"
+              });
+              onBack();
+            }}
             className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
           >
             <X className="h-4 w-4" />

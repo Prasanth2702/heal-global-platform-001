@@ -806,6 +806,7 @@ import { Button } from "@/components/ui/button";
 import VideoMeeting from "../VideoMeeting";
 import FacilityAppointmentCard from "./FacilityAppointmentCard";
 import DashboardLayout from "../layouts/DashboardLayout";
+import { mixpanelInstance } from "@/utils/mixpanel";
 
 interface DepartmentInfo {
   id: string;
@@ -883,6 +884,19 @@ export default function FacilityAppointmentManagement() {
   useEffect(() => {
     initializeUserAndData();
   }, []);
+
+  const trackAppointmentAction = (action: string, appointmentData?: any) => {
+  mixpanelInstance.track('Facility Appointment Action', {
+    action,
+    userRole,
+    selectedDepartment,
+    appointmentId: appointmentData?.id,
+    patientName: appointmentData?.patientName,
+    appointmentType: appointmentData?.type,
+    appointmentStatus: appointmentData?.status,
+    ...appointmentData
+  });
+};
 
   const initializeUserAndData = async () => {
     setLoading(true);
@@ -1194,7 +1208,7 @@ export default function FacilityAppointmentManagement() {
 
   const handleJoinVideo = (appointmentId: string) => {
     const appointmentData = appointments.find((apt) => apt.id === appointmentId);
-    
+    trackAppointmentAction('join_video', appointmentData);
     if (!appointmentData || !apiKey) {
       alert("Unable to start video meeting");
       return;
@@ -1257,6 +1271,32 @@ export default function FacilityAppointmentManagement() {
       refreshAppointments();
     }
   }, [selectedDepartment]);
+  // Add to tab changes
+const handleTabChange = (tab: "upcoming" | "past") => {
+  trackAppointmentAction('tab_change', { tab, fromTab: activeTab });
+  setActiveTab(tab);
+};
+
+// Add to filter changes
+const handleStatusFilterChange = (filter: string) => {
+  trackAppointmentAction('status_filter_change', { filter, fromFilter: statusFilter });
+  setStatusFilter(filter as any);
+};
+
+// Add to department filter
+const handleDepartmentFilterChange = (deptId: string) => {
+  trackAppointmentAction('department_filter_change', { 
+    departmentId: deptId, 
+    fromDepartment: selectedDepartment 
+  });
+  setSelectedDepartment(deptId);
+};
+
+// Add to refresh button
+const handleRefresh = () => {
+  trackAppointmentAction('refresh_data');
+  refreshAppointments();
+};
 
   // Apply filters
   const filteredAppointments = filterByDepartment(filterByStatus(appointments));
@@ -1348,13 +1388,13 @@ export default function FacilityAppointmentManagement() {
             <div className="flex gap-3 mb-4">
               <Button
                 variant={activeTab === "upcoming" ? "facility" : "outline"}
-                onClick={() => setActiveTab("upcoming")}
+                onClick={() => {trackAppointmentAction('tab_change', { tab: "upcoming", fromTab: activeTab }); setActiveTab("upcoming")}}
               >
                 Upcoming ({upcoming.length})
               </Button>
               <Button
                 variant={activeTab === "past" ? "facility" : "outline"}
-                onClick={() => setActiveTab("past")}
+                onClick={() => {trackAppointmentAction('tab_change', { tab: "past", fromTab: activeTab }); setActiveTab("past")}}
               >
                 Past ({past.length})
               </Button>
@@ -1367,7 +1407,7 @@ export default function FacilityAppointmentManagement() {
                   key={s}
                   size="sm"
                   variant={statusFilter === s ? "doctor" : "outline"}
-                  onClick={() => setStatusFilter(s as any)}
+                  onClick={() => {trackAppointmentAction('status_filter_change', { filter: s, fromFilter: statusFilter }); setStatusFilter(s as any)}}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </Button>

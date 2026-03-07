@@ -183,6 +183,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DoctorAppointmentCard from "./DoctorAppointmentCard";
 import { Button } from "@/components/ui/button";
 import VideoMeeting from "../VideoMeeting";
+import mixpanelInstance from "@/utils/mixpanel";
 
 export interface DoctorAppointment {
   id: string;
@@ -231,6 +232,8 @@ export default function DoctorAppointmentManagement() {
 
   useEffect(() => {
     fetchAppointments();
+    // Mixpanel track: Doctor Appointments Page View
+    mixpanelInstance.track("Doctor Appointments Page View");
   }, []);
 
   const fetchAppointments = async () => {

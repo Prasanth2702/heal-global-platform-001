@@ -60,7 +60,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-
+import mixpanelInstance from "@/utils/mixpanel";
 
 
 // Define interfaces based on your database structure
@@ -714,8 +714,33 @@ const PatientBookingsPage: React.FC = () => {
       );
     }).length;
   }
+const trackPatientAction = (action: string, patientData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Patient Booking Action', {
+    action,
+    patientId: patientData?.id,
+    patientName: patientData?.name,
+    patientStatus: patientData?.status,
+    patientPriority: patientData?.priority,
+    ...additionalData
+  });
+};
 
+// Add to search
+const handleSearch = (term: string) => {
+  trackPatientAction('search', undefined, { searchTerm: term });
+  setSearchTerm(term);
+};
+
+// Add to filter
+const handleStatusFilter = (filter: string) => {
+  trackPatientAction('filter', undefined, { 
+    statusFilter: filter,
+    fromFilter: statusFilter 
+  });
+  setStatusFilter(filter);
+};
   const handleViewDetails = (patient: Patient) => {
+    trackPatientAction('view_details', patient);
     setSelectedPatient(patient);
     setSelectedBed(patient.bed);
     setSelectedBooking(patient.booking || null);
@@ -723,6 +748,7 @@ const PatientBookingsPage: React.FC = () => {
   };
 
   const handleEditPatient = (patient: Patient) => {
+    trackPatientAction('edit', patient);
     console.log("Edit patient:", patient);
     // Implement edit functionality
   };
@@ -735,6 +761,7 @@ const PatientBookingsPage: React.FC = () => {
   };
 
   const handleAdmitPatient = async (formData: any) => {
+    trackPatientAction('admit', undefined, { formData }); 
     try {
       const {
         data: { user },
@@ -795,9 +822,11 @@ const PatientBookingsPage: React.FC = () => {
       );
       setShowAddModal(false);
       fetchData();
+      trackPatientAction('admit_success', { id: formData.patientId }, { bookingId: booking?.id, bedId: formData.assignedBedId });
     } catch (error) {
       console.error("Error admitting patient:", error);
       alert("Failed to admit patient. Please try again.");
+      trackPatientAction
     }
   };
 
@@ -806,6 +835,7 @@ const PatientBookingsPage: React.FC = () => {
     bookingId: string,
     bedId: string
   ) => {
+    trackPatientAction('discharge', { id: patientId }, { bookingId, bedId });
     if (window.confirm("Are you sure you want to discharge this patient?")) {
       try {
         const {
@@ -834,12 +864,26 @@ const PatientBookingsPage: React.FC = () => {
 
         alert("Patient discharged successfully!");
         fetchData();
+        trackPatientAction('discharge_success', { id: patientId }, { bookingId, bedId });
       } catch (error) {
         console.error("Error discharging patient:", error);
         alert("Failed to discharge patient. Please try again.");
+        trackPatientAction('discharge_failure', { id: patientId }, { bookingId, bedId, error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }
   };
+  const handleExport = () => {
+  trackPatientAction('export_data', undefined, { 
+    patientCount: filteredPatients.length,
+    statusFilter,
+    searchTerm 
+  });
+};
+
+// Add to schedule
+const handleSchedule = () => {
+  trackPatientAction('schedule_click');
+};
 
   if (loading) {
     return (
@@ -971,17 +1015,18 @@ const PatientBookingsPage: React.FC = () => {
                 </Select>
               </div>
 
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm"  onClick={handleSchedule}>
                 <CalendarDays className="mr-2 h-4 w-4" />
                 Schedule
               </Button>
 
-              <Button size="sm" onClick={() => setShowAddModal(true)}>
+              <Button size="sm" onClick={() =>{trackPatientAction('add_patient'); setShowAddModal(true)}}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Admission
               </Button>
 
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleExport}>
+
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>

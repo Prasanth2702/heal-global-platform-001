@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { dataTagSymbol } from '@tanstack/react-query';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
-
+import mixpanelInstance from "@/utils/mixpanel";
 export interface MedicalFacility {
   facilityName: string;
   emailAddress: string;
@@ -193,7 +193,16 @@ const FacilityProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!validateForm(profileData)) return;
+    mixpanelInstance.track('Facility Profile Save Attempt', {
+    facilityName: profileData.facilityName,
+    facilityType: profileData.facilityType,
+    isEditing
+  });
+    if (!validateForm(profileData))  {
+    mixpanelInstance.track('Facility Profile Validation Failed', {
+      errors: Object.keys(errors)
+    });
+    return;}
 
     const profilesUpdate = {
       user_id: user.id,
@@ -238,17 +247,24 @@ const FacilityProfile: React.FC = () => {
         description: profilesUpdateError?.message || facilitiesUpdateError?.message,
         variant: 'destructive'
       });
+          mixpanelInstance.track('Facility Profile Save Success', {
+      facilityName: profileData.facilityName
+    });
     } else {
       toast({
         title: 'Profile saved',
         description: 'Facility profile has been updated successfully',
         variant: 'default'
       });
+        mixpanelInstance.track('Facility Profile Save Failed', {
+      error: profilesUpdateError?.message || facilitiesUpdateError?.message
+    });
       setIsEditing(false);
     }
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    mixpanelInstance.track('Facility Profile Image Upload Attempt');
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -263,6 +279,9 @@ const FacilityProfile: React.FC = () => {
         description: 'Failed to upload image. Please try again.',
         variant: 'destructive'
       });
+        mixpanelInstance.track('Facility Image Upload Failed', {
+      error: uploadError.message
+    });
       return;
     }
 
@@ -275,6 +294,10 @@ const FacilityProfile: React.FC = () => {
     toast({
       title: 'Image Uploaded',
       description: 'Facility image updated successfully'
+    });
+        mixpanelInstance.track('Facility Image Upload Success', {
+      fileName: file.name,
+      fileSize: file.size
     });
   };
 
@@ -291,7 +314,12 @@ const FacilityProfile: React.FC = () => {
           </div>
         </div>
         <Button
-          onClick={isEditing ? handleSave : () => setIsEditing(true)}
+          onClick={() => {
+    mixpanelInstance.track('Facility Profile Edit Click', {
+      currentState: isEditing ? 'saving' : 'editing'
+    });
+    isEditing ? handleSave() : setIsEditing(true);
+  }}
           className={`${isEditing
             ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
             : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'

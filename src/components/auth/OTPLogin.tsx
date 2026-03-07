@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { mixpanelInstance } from "@/utils/mixpanel";
 
 interface OTPLoginProps {
   userType: "patient" | "doctor" | "facility" | "admin";
@@ -25,11 +26,20 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
         description: "Please enter a valid 10-digit phone number.",
         variant: "destructive"
       });
+      mixpanelInstance.track('OTP Send Failed', {
+        userType,
+        reason: 'invalid_phone_number',
+        phoneLength: phoneNumber.length
+      });
       return;
     }
 
     setIsLoading(true);
-    
+      mixpanelInstance.track('OTP Send Attempt', {
+      userType,
+      phoneNumber,
+      step: 'send_otp'
+    });
     // Mock OTP sending - will integrate with SMS service later
     setTimeout(() => {
       setIsLoading(false);
@@ -37,6 +47,11 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
       toast({
         title: "OTP Sent!",
         description: `Verification code sent to ${phoneNumber}. Use 123456 for demo.`,
+      });
+        mixpanelInstance.track('OTP Sent Success', {
+        userType,
+        phoneNumber,
+        step: 'otp_sent'
       });
     }, 2000);
   };
@@ -48,10 +63,22 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
         description: "Please enter the 6-digit verification code.",
         variant: "destructive"
       });
+       mixpanelInstance.track('OTP Verification Failed', {
+        userType,
+        phoneNumber,
+        reason: 'invalid_otp_format',
+        otpLength: otp.length
+      });
       return;
     }
 
     setIsLoading(true);
+
+      mixpanelInstance.track('OTP Verification Attempt', {
+      userType,
+      phoneNumber,
+      step: 'verify_otp'
+    });
 
     // Mock OTP verification - use 123456 for demo
     setTimeout(() => {
@@ -61,12 +88,22 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
           title: "Login Successful!",
           description: "Phone number verified successfully.",
         });
+         mixpanelInstance.track('OTP Login Success', {
+          userType,
+          phoneNumber,
+          step: 'login_success'
+        });
         onSuccess();
       } else {
         toast({
           title: "Invalid OTP",
           description: "The verification code you entered is incorrect.",
           variant: "destructive"
+        });
+           mixpanelInstance.track('OTP Verification Failed', {
+          userType,
+          phoneNumber,
+          reason: 'incorrect_otp'
         });
       }
     }, 1500);
@@ -76,6 +113,26 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
     toast({
       title: "OTP Resent",
       description: "A new verification code has been sent to your phone.",
+    });
+     mixpanelInstance.track('OTP Resend', {
+      userType,
+      phoneNumber
+    });
+  };
+    const handleSendOTPClick = () => {
+    mixpanelInstance.track('Send OTP Button Clicked', {
+      userType,
+      step: 'phone_entry',
+      phoneEntered: !!phoneNumber
+    });
+  };
+
+  const handleVerifyOTPClick = () => {
+    mixpanelInstance.track('Verify OTP Button Clicked', {
+      userType,
+      phoneNumber,
+      step: 'otp_entry',
+      otpEntered: !!otp
     });
   };
 
@@ -98,6 +155,7 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
           disabled={isLoading}
           className="w-full"
           variant={userType}
+          onMouseDown={handleSendOTPClick}
         >
           {isLoading ? "Sending OTP..." : "Send OTP"}
         </Button>
@@ -128,6 +186,7 @@ const OTPLogin = ({ userType, onSuccess }: OTPLoginProps) => {
         disabled={isLoading}
         className="w-full"
         variant={userType}
+        onMouseDown={handleVerifyOTPClick}
       >
         {isLoading ? "Verifying..." : "Verify & Login"}
       </Button>

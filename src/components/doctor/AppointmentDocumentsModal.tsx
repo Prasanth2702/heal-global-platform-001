@@ -2,6 +2,7 @@ import { FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import mixpanelInstance from "@/utils/mixpanel";
 
 interface Props {
   open: boolean;
@@ -156,6 +157,20 @@ const doctorDocs = documents.filter(
         <div className="px-6 py-4 border-t flex justify-end">
           <Button variant="outline" onClick={onClose}>
             Close
+          </Button>
+          {/* Mixpanel tracking for Close button */}
+          <Button
+            variant="outline"
+            onClick={() => {
+              mixpanelInstance.track("Appointment Documents Modal Closed", {
+                appointmentId,
+                role,
+                documentCount: documents.length
+              });
+              onClose();
+            }}
+          >
+            Close (Track)
           </Button>
         </div>
       </div>

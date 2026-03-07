@@ -1,28 +1,28 @@
-
-// src/hooks/useMixpanel.js
-import mixpanelInstance from "./mixpanel.js";
+// /useMixpanel.ts
+import mixpanelInstance from "./mixpanel";
 
 export const useMixpanel = () => {
+
   // Identify user
-  const identify = (userId) => {
+  const identify = (userId: string) => {
     console.log("🔍 Mixpanel Identify Called:", userId);
     mixpanelInstance.identify(userId);
   };
 
   // Track events
-  const track = (eventName, properties = {}) => {
+  const track = (eventName: string, properties: Record<string, any> = {}) => {
     console.log("🎯 Mixpanel Event:", eventName, properties);
     mixpanelInstance.track(eventName, properties);
   };
 
   // Set user properties
-  const setUserProps = (props = {}) => {
+  const setUserProps = (props: Record<string, any> = {}) => {
     console.log("👤 Mixpanel User Properties:", props);
     mixpanelInstance.people.set(props);
   };
 
   // Track page view
-  const trackPageView = (pageName) => {
+  const trackPageView = (pageName: string) => {
     console.log("📄 Page View:", pageName);
     track("Page View", { page: pageName });
   };

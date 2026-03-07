@@ -359,7 +359,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
+import mixpanelInstance from "@/utils/mixpanel";
 
 interface Profile {
   id: string;
@@ -473,6 +473,16 @@ const departmentTypes = [
     is_active: true,
   });
 
+  const trackDepartmentAction = (action: string, departmentData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Department Management Action', {
+    action,
+    departmentId: departmentData?.id,
+    departmentName: departmentData?.name,
+    facilityId: userFacility?.id,
+    facilityName: userFacility?.facility_name,
+    ...additionalData
+  });
+};
   
   // Get user's facility on component mount
   useEffect(() => {
@@ -771,7 +781,9 @@ const formatTime = (time: string): string => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
+  trackDepartmentAction(editingDepartment ? 'edit_attempt' : 'add_attempt', 
+    editingDepartment, { formData: { name: formData.name } });
     if (!userFacility?.id) {
       toast({
         title: "Error",
@@ -818,6 +830,7 @@ const formatTime = (time: string): string => {
           description: `${formData.name} has been updated successfully.`,
         });
         setEditingDepartment(null);
+          trackDepartmentAction('edit_success', { id: editingDepartment.id, name: formData.name });
       } else {
         // Add new department
         const {data, error } = await supabase.from("departments").insert([
@@ -834,11 +847,13 @@ const formatTime = (time: string): string => {
           title: "Department Added",
           description: `${formData.name} has been added successfully.`,
         });
+        trackDepartmentAction('add_success', { name: formData.name });
       }
 
       // Reset form and refresh data
       resetForm();
       fetchData();
+      trackDepartmentAction('fetch_data');
     } catch (error: any) {
       console.error("Error saving department:", error);
       toast({
@@ -846,6 +861,7 @@ const formatTime = (time: string): string => {
         description: error.message || "Failed to save department data",
         variant: "destructive",
       });
+      trackDepartmentAction(editingDepartment ? 'edit_failure' : 'add_failure', { name: formData.name }, { error: error.message });
     }
   };
   
@@ -871,6 +887,7 @@ const handleEdit = (department: Department) => {
       is_active: department.is_active,
     });
     setIsAddDialogOpen(true);
+    trackDepartmentAction('edit_open', department, { name: department.name });
   };
 
   const handleDelete = async (id: string) => {
@@ -882,6 +899,7 @@ const handleEdit = (department: Department) => {
       });
       return;
     }
+    trackDepartmentAction('delete_attempt', { id });
 
     try {
       const department = departments.find((d) => d.id === id);
@@ -899,6 +917,7 @@ const handleEdit = (department: Department) => {
         title: "Department Deleted",
         description: `${department?.name} has been removed.`,
       });
+      trackDepartmentAction('delete_success', { id, name: department?.name });
     } catch (error) {
       console.error("Error deleting department:", error);
       toast({
@@ -906,6 +925,7 @@ const handleEdit = (department: Department) => {
         description: "Failed to delete department",
         variant: "destructive",
       });
+      trackDepartmentAction('delete_failure', { id }, { error: (error as any).message });
     }
   };
 
@@ -925,6 +945,7 @@ const handleEdit = (department: Department) => {
     });
     setEditingDepartment(null);
     setIsAddDialogOpen(false);
+    trackDepartmentAction('form_reset');
   };
 
   const getStatusColor = (isActive: boolean) => {
@@ -1017,7 +1038,11 @@ const formatDetailedHours = (timeSlots: TimeSlot[]): string[] => {
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button   onClick={() => {
+    trackDepartmentAction('add_department_click');
+    resetForm();
+    setIsAddDialogOpen(true);
+  }}>
               <Plus className="mr-2 h-4 w-4" />
               Add Department
             </Button>
@@ -1479,14 +1504,20 @@ const formatDetailedHours = (timeSlots: TimeSlot[]): string[] => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleEdit(department)}
+                     onClick={() => {
+    trackDepartmentAction('edit_click', department);
+    handleEdit(department);
+  }}
                         >
                           <Edit className="h-3 w-3" />
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDelete(department.id)}
+                     onClick={() => {
+    trackDepartmentAction('delete_click', department);
+    handleDelete(department.id);
+  }}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>

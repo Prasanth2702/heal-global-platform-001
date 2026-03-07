@@ -42,7 +42,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import DoctorHospitals from "./components/patient/DoctorHospitals";
 import HomeLogin from "./components/patient/HomeLogin";
 import DepartmentDetails from "./components/patient/DepartmentDetails";
-// import FacilityAppointmentManagement from "./components/facility/FacilityAppointmentManagementPage";
 import Departments from "./components/facility/Departments";
 import DashboardLayoutPatient from "./pages/patient/DashboardLayoutPatient"
 import DoctorSchedulePage from "./components/doctor/DoctorSchedulePage";
@@ -55,6 +54,11 @@ import TermsOfService from "./components/basicspage/TermsOfService";
 import ArticlesAndGuides from "./components/basicspage/ArticlesAndGuides";
 import CookiePolicy from "./components/basicspage/CookiePolicy";
 import Blog from "./components/basicspage/Blog";
+import DoctorPage from "./components/basicspage/DoctorPage";
+import HospitalsPage from "./components/basicspage/HospitalsPage";
+import BookAppointment from "./components/basicspage/BookAppointment";
+import FacilityAppointmentManagementPage from "./components/facility/FacilityAppointmentManagement";
+import FacilityAppointmentManagement from "./components/facility/FacilityAppointmentManagement";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -205,7 +209,7 @@ const App = () => {
                     element={< FacilityAppointmentManagement/>}
                   /> */}
                   {/* <Route
-                    path="/dashboard/facility/appointment-management"
+                    path="/dashboard/facility/appointments"
                     element={< FacilityAppointmentManagement/>}
                   /> */}
                   <Route
@@ -276,6 +280,9 @@ const App = () => {
 <Route path="/faqs" element={<ArticlesAndGuides />} />
 <Route path="/cookies" element={<CookiePolicy />} />
 <Route path="/blog" element={<Blog />} />
+<Route path="/doctors" element={<DoctorPage />} />
+<Route path="/hospitals" element={<HospitalsPage />} />
+<Route path="/appointment" element={<BookAppointment />} />
 
 
 

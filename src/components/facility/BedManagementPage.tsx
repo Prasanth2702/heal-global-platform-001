@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/table";
 
 const BedManagementPage: React.FC = () => {
+ 
   const [beds, setBeds] = useState<Bed[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -185,7 +186,9 @@ const BedManagementPage: React.FC = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleDateSelect(new Date())}
+                onClick={() => {
+                  handleDateSelect(new Date());
+                }}
               >
                 View Today's Beds
               </Button>
@@ -237,7 +240,9 @@ const BedManagementPage: React.FC = () => {
                     </p>
                     <Button
                       variant="default"
-                      onClick={() => handleDateSelect(new Date())}
+                      onClick={() => {
+                        handleDateSelect(new Date());
+                      }}
                     >
                       View Today's Beds
                     </Button>

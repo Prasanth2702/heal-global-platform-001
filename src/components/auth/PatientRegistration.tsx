@@ -19,6 +19,7 @@ import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import { usePopup } from '@/contexts/popup-context';
 import TermsConditionsPolicyContent from '../commons/policies/TermsConditionsPolicyContent';
 import PrivacyPolicyContent from '../commons/policies/PrivacyPolicyContent';
+import mixpanelInstance from "@/utils/mixpanel";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -214,9 +215,24 @@ useEffect(() => {
         variant: 'destructive',
         className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0'
       });
+        mixpanelInstance.track('Patient Registration Blocked', {
+        reason: 'terms_not_accepted',
+        termsAccepted: isTermsAccepted,
+        privacyAccepted: isPrivacyAccepted
+      });
       return;
     }
 
+   mixpanelInstance.track('Patient Registration Attempt', {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.emailAddress,
+      phone: countryCode + phoneNumber,
+      hasAllergies: !!formData.knownAllergies,
+      hasMedications: !!formData.currentMedications,
+      gender: formData.gender,
+      bloodGroup: formData.bloodGroup
+    });
 
 
     const patientFullData = {
@@ -234,6 +250,10 @@ useEffect(() => {
     if (!validateForm(patientFullData)) {
       console.log(errors);
       console.log("validated with errors");
+        mixpanelInstance.track('Patient Registration Validation Failed', {
+        email: formData.emailAddress,
+        errors: Object.keys(errors)
+      });
       return;
     }
 
@@ -254,6 +274,10 @@ useEffect(() => {
         description: signUpError.message,
         variant: 'destructive',
         className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
+      });
+        mixpanelInstance.track('Patient Registration Failed', {
+        email: patientFullData.emailAddress,
+        error: signUpError.message
       });
       return;
     }
@@ -296,9 +320,30 @@ useEffect(() => {
 
     if (patientError) {
       console.error('Update error for patients:', patientError.message);
+        mixpanelInstance.track('Patient Registration Failed', {
+        email: patientFullData.emailAddress,
+        error: patientError.message,
+        stage: 'patients_table_insert'
+      });
     } else {
       console.log('Patients row updated:', patientData);
+       mixpanelInstance.track('Patient Registration Success', {
+        firstName: patientFullData.firstName,
+        lastName: patientFullData.lastName,
+        email: patientFullData.emailAddress,
+        phone: countryCode + phoneNumber,
+        userId: signUpData.user?.id,
+        profileId: profileId,
+        gender: patientFullData.gender,
+        bloodGroup: patientFullData.bloodGroup
+      });
     }
+  mixpanelInstance.track('Patient Registration Success', {
+     firstName: patientFullData.firstName,
+    lastName:patientFullData.lastName,
+          email: patientFullData.emailAddress,
+          phone: patientFullData + phoneNumber
+        });
 
     toast({
       title: '🎉 Registration Successful!',
@@ -356,7 +401,16 @@ useEffect(() => {
     </>
   );
 
-
+  const handleRegisterButtonClick = () => {
+    mixpanelInstance.track('Patient Registration Button Clicked', {
+      firstName: formData.firstName ? 'filled' : 'empty',
+      lastName: formData.lastName ? 'filled' : 'empty',
+      email: formData.emailAddress ? 'filled' : 'empty',
+      phone: phoneNumber ? 'filled' : 'empty',
+      hasEmergencyContact: !!formData.emergencyContactName,
+      page_location: 'patient_registration_form'
+    });
+  };
 
   return (
     <AuthLayout
@@ -756,7 +810,8 @@ useEffect(() => {
           <Button
             type="submit"
             className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-          >
+         onClick={handleRegisterButtonClick}
+         >
             <Heart className="mr-2 h-5 w-5" />
             Join NextGen Medical 🚀
           </Button>

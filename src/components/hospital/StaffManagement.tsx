@@ -510,7 +510,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
+import mixpanelInstance from "@/utils/mixpanel";
 // Types based on your Supabase schema
 interface Profile {
   id: string;
@@ -608,6 +608,18 @@ const StaffManagement = () => {
   // Track if current user already has a staff record
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userHasStaff, setUserHasStaff] = useState<boolean>(false);
+// Add tracking functions
+const trackStaffAction = (action: string, staffData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Staff Management Action', {
+    action,
+    staffId: staffData?.id,
+    staffName: staffData?.profile ? 
+      `${staffData.profile.first_name} ${staffData.profile.last_name}` : undefined,
+    departmentId: staffData?.department_id,
+    facilityId: staffData?.facility_id,
+    ...additionalData
+  });
+};
 
   useEffect(() => {
     // Get current user id
@@ -792,7 +804,8 @@ const fetchData = async () => {
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-
+  trackStaffAction(editingStaff ? 'edit_attempt' : 'add_attempt', 
+    editingStaff, { employee_id: formData.employee_id, position: formData.position });
   // Validate required UUID fields are not empty
   if (!formData.facility_id || formData.facility_id.trim() === "") {
     toast({
@@ -800,6 +813,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       description: "Please select a facility.",
       variant: "destructive",
     });
+
     return;
   }
   if (!formData.department_id || formData.department_id.trim() === "") {
@@ -889,7 +903,8 @@ const handleSubmit = async (e: React.FormEvent) => {
         description: `New staff member has been added successfully.`,
       });
     }
-
+ trackStaffAction(editingStaff ? 'edit_success' : 'add_success', 
+      { employee_id: formData.employee_id });
     // Reset form and refresh data
     resetForm();
     fetchData();
@@ -900,6 +915,8 @@ const handleSubmit = async (e: React.FormEvent) => {
       description: "Failed to save staff data",
       variant: "destructive",
     });
+    trackStaffAction(editingStaff ? 'edit_failed' : 'add_failed', 
+      undefined, { error: error.message });
   }
 };
 
@@ -922,9 +939,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       is_active: staffMember.is_active,
     });
     setIsAddDialogOpen(true);
+    trackStaffAction('edit_opened', staffMember, { employee_id: staffMember.employee_id });
   };
 
   const handleDelete = async (id: string) => {
+    trackStaffAction('delete_attempt', { id }); 
     try {
       const staffMember = staff.find((s) => s.id === id);
 
@@ -937,6 +956,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         title: "Staff Removed",
         description: `${staffMember?.profile?.first_name} ${staffMember?.profile?.last_name} has been removed.`,
       });
+      trackStaffAction('delete_success', staffMember, { employee_id: staffMember?.employee_id });
     } catch (error) {
       console.error("Error deleting staff:", error);
       toast({
@@ -944,6 +964,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         description: "Failed to delete staff member",
         variant: "destructive",
       });
+      trackStaffAction('delete_failed', undefined, { error: error.message });
     }
   };
 
@@ -996,6 +1017,23 @@ const handleSubmit = async (e: React.FormEvent) => {
     });
   };
 
+  // Add to filter changes
+const handleFacilityFilter = (value: string) => {
+  trackStaffAction('filter_by_facility', undefined, { 
+    fromFilter: selectedFacility, 
+    toFilter: value 
+  });
+  setSelectedFacility(value);
+};
+
+const handleDepartmentFilter = (value: string) => {
+  trackStaffAction('filter_by_department', undefined, { 
+    fromFilter: selectedDepartment, 
+    toFilter: value 
+  });
+  setSelectedDepartment(value);
+};
+
   const calculateExperience = (hireDate: string) => {
     const hire = new Date(hireDate);
     const today = new Date();
@@ -1041,7 +1079,11 @@ const handleSubmit = async (e: React.FormEvent) => {
           </DialogTrigger> */}
             <DialogTrigger asChild>
     {(isMaintenance || !userHasStaff || editingStaff) ? (
-      <Button onClick={() => setEditingStaff(null)}>
+      <Button   onClick={() => {
+    trackStaffAction('add_staff_click');
+    setEditingStaff(null);
+    setIsAddDialogOpen(true);
+  }}>
         <Plus className="mr-2 h-4 w-4" />
         Add Staff Member
       </Button>

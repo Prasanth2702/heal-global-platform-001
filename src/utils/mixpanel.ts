@@ -1,10 +1,9 @@
-
-// src/utils/mixpanel.js
+// src/utils/mixpanel.ts
 import mixpanel from "mixpanel-browser";
 
 // Environment variables
-const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_ID;
-const MIXPANEL_API = import.meta.env.VITE_MIXPANEL_API_ID;
+const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_ID as string;
+const MIXPANEL_API = import.meta.env.VITE_MIXPANEL_API_ID as string;
 
 console.log("🔑 Mixpanel Token Loaded:", MIXPANEL_TOKEN);
 console.log("🌍 Mixpanel API Host:", MIXPANEL_API);
@@ -26,13 +25,13 @@ console.log("🚀 Mixpanel Initialized");
 // -------------------------
 
 // Set session ID
-export const setMixpanelSessionId = (sessionId) => {
+export const setMixpanelSessionId = (sessionId: string) => {
   console.log("🆔 Setting Session ID:", sessionId);
   mixpanel.register({ session_id: sessionId });
 };
 
 // Track login success
-export const trackLoginSuccess = (userId, userData) => {
+export const trackLoginSuccess = (userId: string, userData: any) => {
   console.log("✅ Login Success:", userId, userData);
 
   mixpanel.identify(userId);
@@ -53,7 +52,7 @@ export const trackLoginSuccess = (userId, userData) => {
 };
 
 // Track login failure
-export const trackLoginFailure = (error) => {
+export const trackLoginFailure = (error: any) => {
   console.log("❌ Login Failed:", error.message);
 
   mixpanel.track("Unsuccessful login", {
@@ -63,7 +62,7 @@ export const trackLoginFailure = (error) => {
 };
 
 // Track sign-up
-export const trackSignup = (userId, userData) => {
+export const trackSignup = (userId: string, userData: any) => {
   console.log("📝 Signup:", userId, userData);
 
   mixpanel.identify(userId);

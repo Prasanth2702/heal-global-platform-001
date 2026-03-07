@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Button } from '../ui/button';
+import { mixpanelInstance } from '@/utils/mixpanel';
 
 const Departments = () => {
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -45,7 +46,23 @@ const Departments = () => {
 
   const handleViewDepartment = (department) => {
     setSelectedDepartment(department);
+      mixpanelInstance.track('View Department Details', {
+    departmentName: department.name,
+    departmentId: department.id,
+    page: 'Departments',
+  });
   };
+  const handleAddDepartment = () => {
+  mixpanelInstance.track('Add Department Clicked', {
+    page: 'Departments',
+  });
+};
+const handleExportDepartments = () => {
+  mixpanelInstance.track('Export Departments', {
+    page: 'Departments',
+    totalDepartments: departments.length,
+  });
+};
 
   const handleBack = () => {
     setSelectedDepartment(null);
@@ -74,11 +91,11 @@ const Departments = () => {
                 </nav>
               </div>
               <div>
-                <button className="btn btn-outline-primary me-2">
+                <button className="btn btn-outline-primary me-2" onClick={handleExportDepartments}>
                   <i className="fas fa-download me-2"></i>
                   Export
                 </button>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={handleAddDepartment}>
                   <i className="fas fa-plus me-2"></i>
                   Add Department
                 </button>

@@ -1364,6 +1364,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Edit, Trash2, Clock, Calendar, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import mixpanelInstance from "@/utils/mixpanel";
 
 interface TimeSlot {
   id: string;
@@ -1441,7 +1442,18 @@ const TimeSlotManagement = () => {
     "booking",
   ];
 
-  
+  const trackTimeSlotAction = (action: string, slotData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Time Slot Management Action', {
+    action,
+    slotId: slotData?.id,
+    departmentId: slotData?.department_id,
+    departmentName: slotData?.department,
+    dayOfWeek: slotData?.dayOfWeek,
+    appointmentType: slotData?.appointmentType,
+    ...additionalData
+  });
+};
+
   // Facility state and loading
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilityLoading, setFacilityLoading] = useState(true);
@@ -1538,7 +1550,13 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+trackTimeSlotAction(editingSlot ? 'edit_attempt' : 'add_attempt', 
+    editingSlot, { 
+      selectedDays: formData.selectedDays.length,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      appointmentType: formData.appointmentType
+    });
     const {
       data: { user },
       error: userError,
@@ -1622,6 +1640,8 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
       });
       setIsAddDialogOpen(false);
       fetchSlots();
+      trackTimeSlotAction(editingSlot ? 'edit_success' : 'add_success', 
+      editingSlot || { department: formData.department, appointmentType: formData.appointmentType });
     } catch (error: any) {
       console.error("Error saving time slot:", error);
       toast({
@@ -1629,11 +1649,14 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
         description: error.message || "Failed to save time slot",
         variant: "destructive",
       });
+      trackTimeSlotAction(editingSlot ? 'edit_failed' : 'add_failed', 
+      undefined, { error: error.message });
     }
   };
 
   const handleEdit = (slot: TimeSlot) => {
     setEditingSlot(slot);
+    trackTimeSlotAction
     const selectedDept = departments.find(dept => dept.id === slot.department_id);
     setFormData({
       department: selectedDept ? selectedDept.name : slot.department,
@@ -1651,8 +1674,10 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
   };
 
   const handleDelete = async (id: string) => {
+   
     try {
       const slot = timeSlots.find((s) => s.id === id);
+      trackTimeSlotAction('delete_attempt', slot);
       const { error } = await supabase.from("time_slots").delete().eq("id", id);
 
       if (error) throw error;
@@ -1662,18 +1687,24 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
         description: `Time slot for ${slot?.department} on ${slot?.dayOfWeek} has been removed.`,
       });
       fetchSlots();
+      trackTimeSlotAction('delete_success', slot);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete time slot",
         variant: "destructive",
       });
+      trackTimeSlotAction('delete_failed', undefined, { error: error.message });
     }
   };
 
   const toggleSlotStatus = async (id: string) => {
     try {
       const slot = timeSlots.find((s) => s.id === id);
+      trackTimeSlotAction('toggle_status', slot, { 
+    fromStatus: slot?.isActive, 
+    toStatus: !slot?.isActive 
+  });
       if (!slot) return;
 
       // Toggle the value: if currently active, set to false; if inactive, set to true
@@ -1732,6 +1763,23 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
 
   const filteredSlotsByType = selectedDepartmentType === "all" ? filteredSlots : filteredSlots.filter(slot => slot.appointmentType === selectedDepartmentType);
 
+// Add to filter changes
+const handleDepartmentFilter = (value: string) => {
+  trackTimeSlotAction('filter_by_department', undefined, { 
+    fromFilter: selectedDepartment, 
+    toFilter: value 
+  });
+  setSelectedDepartment(value);
+};
+
+const handleTypeFilter = (value: string) => {
+  trackTimeSlotAction('filter_by_type', undefined, { 
+    fromFilter: selectedDepartmentType, 
+    toFilter: value 
+  });
+  setSelectedDepartmentType(value);
+};
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1743,7 +1791,12 @@ const [selectedDepartmentType, setSelectedDepartmentType] = useState<string>("al
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingSlot(null); fetchSlots(); }}>
+            <Button  onClick={() => {
+    trackTimeSlotAction('add_time_slots_click');
+    setEditingSlot(null);
+    fetchSlots();
+    setIsAddDialogOpen(true);
+  }}>
               <Plus className="mr-2 h-4 w-4" />
               Add Time Slots
             </Button>

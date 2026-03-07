@@ -9,7 +9,7 @@ import { format, addDays, isSameDay } from "date-fns";
 import { CalendarIcon, Clock, User, Video, MapPin, Phone, MessageSquare, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
+import { mixpanelInstance } from "@/utils/mixpanel";
 interface Appointment {
   id: string;
   patientName: string;
@@ -85,6 +85,29 @@ const AppointmentCalendar = () => {
       patientPhone: "+91-9876543213"
     }
   ];
+    const trackAppointmentAction = (action: string, appointment: Appointment, additionalData = {}) => {
+    mixpanelInstance.track('Appointment Calendar Action', {
+      action,
+      appointmentId: appointment.id,
+      patientName: appointment.patientName,
+      patientId: appointment.patientId,
+      appointmentType: appointment.type,
+      appointmentStatus: appointment.status,
+      appointmentTime: appointment.time,
+      appointmentDate: format(appointment.date, 'yyyy-MM-dd'),
+      consultationFee: appointment.consultationFee,
+      ...additionalData
+    });
+  };
+
+  const trackButtonClick = (buttonName: string, additionalData = {}) => {
+    mixpanelInstance.track('Appointment Calendar Button Click', {
+      buttonName,
+      selectedDate: format(selectedDate, 'yyyy-MM-dd'),
+      viewType,
+      ...additionalData
+    });
+  };
 
   const selectedDateAppointments = appointments.filter(apt => 
     isSameDay(apt.date, selectedDate)
@@ -132,7 +155,12 @@ const AppointmentCalendar = () => {
         break;
     }
   };
-
+const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      trackButtonClick('calendar_date_select', { selectedDate: format(date, 'yyyy-MM-dd') });
+      setSelectedDate(date);
+    }
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -174,7 +202,7 @@ const AppointmentCalendar = () => {
         <div className="flex items-center space-x-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
+              <Button variant="outline" className="w-[240px] justify-start text-left font-normal" onClick={() => trackButtonClick('date_picker_open')}>
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {format(selectedDate, "PPP")}
               </Button>
@@ -258,7 +286,10 @@ const AppointmentCalendar = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleAppointmentAction(appointment.id, "accept")}
+                            onClick={() => {
+                              trackButtonClick('accept_appointment', { appointmentId: appointment.id });
+                              handleAppointmentAction(appointment.id, "accept");
+                            }}
                           >
                             <CheckCircle className="mr-1 h-3 w-3" />
                             Accept
@@ -266,7 +297,10 @@ const AppointmentCalendar = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleAppointmentAction(appointment.id, "reject")}
+                              onClick={() => {
+                              trackButtonClick('reject_appointment', { appointmentId: appointment.id });
+                              handleAppointmentAction(appointment.id, "reject");
+                            }}
                           >
                             <XCircle className="mr-1 h-3 w-3" />
                             Reject
@@ -277,7 +311,11 @@ const AppointmentCalendar = () => {
                         <Button
                           size="sm"
                           variant="doctor"
-                          onClick={() => handleAppointmentAction(appointment.id, "start")}
+                          onClick={() => {
+                            trackButtonClick('start_appointment', { 
+                              appointmentId: appointment.id,
+                              appointmentType: appointment.type 
+                            });handleAppointmentAction(appointment.id, "start")}}
                         >
                           {appointment.type === "teleconsultation" ? (
                             <>
@@ -292,11 +330,18 @@ const AppointmentCalendar = () => {
                           )}
                         </Button>
                       )}
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline"  onClick={() => trackButtonClick('chat_with_patient', { 
+                          appointmentId: appointment.id,
+                          patientName: appointment.patientName 
+                        })}>
                         <MessageSquare className="mr-1 h-3 w-3" />
                         Chat
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline"  onClick={() => trackButtonClick('call_patient', { 
+                          appointmentId: appointment.id,
+                          patientName: appointment.patientName,
+                          patientPhone: appointment.patientPhone 
+                        })}>
                         <Phone className="mr-1 h-3 w-3" />
                         Call
                       </Button>
@@ -328,7 +373,13 @@ const AppointmentCalendar = () => {
         <CardContent>
           <div className="space-y-3">
             {upcomingAppointments.slice(0, 5).map((appointment) => (
-              <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg"  onClick={() => {
+                  trackButtonClick('upcoming_appointment_click', { 
+                    appointmentId: appointment.id,
+                    patientName: appointment.patientName 
+                  });
+                  setSelectedDate(appointment.date);
+                }}>
                 <div className="flex items-center space-x-3">
                   {getTypeIcon(appointment.type)}
                   <div>

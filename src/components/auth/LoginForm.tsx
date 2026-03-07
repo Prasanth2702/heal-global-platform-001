@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "./AuthLayout";
 import OTPLogin from "./OTPLogin";
 import { supabase } from "@/integrations/supabase/client";
+import mixpanelInstance from "@/utils/mixpanel";
+
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -74,6 +76,12 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+mixpanelInstance.track('Login Attempt', {
+      email: formData.email,
+      userType: userType,
+      loginMethod: 'email_password'
+    });
+
     const { email, password } = formData;
 
     const emailExists = await checkEmailInProfiles(email);
@@ -89,8 +97,21 @@ const LoginForm = () => {
           description: "Invalid email or password. Please try again",
           variant: "destructive"
         });
+         mixpanelInstance.track('Login Failed', {
+          email: formData.email,
+          userType: userType,
+          loginMethod: 'email_password',
+          reason: 'invalid_credentials'
+        });
         return;
       }
+
+        mixpanelInstance.track('Login Success', {
+        email: formData.email,
+        userType: userType,
+        loginMethod: 'email_password',
+        userId: data.user?.id
+      });
 
       toast({
         title: "Login Successful!",
@@ -111,6 +132,12 @@ const LoginForm = () => {
         description: "Email is not registered. Please sign up first",
         variant: "destructive"
       });
+       mixpanelInstance.track('Login Failed', {
+        email: formData.email,
+        userType: userType,
+        loginMethod: 'email_password',
+        reason: 'email_not_registered'
+      });
     }
   };
 
@@ -126,7 +153,19 @@ const LoginForm = () => {
       title: "Login Successful!",
       description: `Welcome back! Redirecting to your ${userType} dashboard...`,
     });
+     mixpanelInstance.track('Login Success', {
+      email: formData.email,
+      userType: userType,
+      loginMethod: 'otp'
+    });
     handleLoginSuccess();
+  };
+
+   const handleSignInClick = () => {
+    mixpanelInstance.track('Sign In Button Clicked', {
+      userType: userType,
+      location: 'login_form'
+    });
   };
 
   return (
@@ -173,7 +212,7 @@ const LoginForm = () => {
               </Button>
             </div>
 
-            <Button type="submit" variant={config.variant} className="w-full" size="lg">
+            <Button type="submit" variant={config.variant} className="w-full" size="lg" onClick={handleSignInClick}>
               Sign In
             </Button>
           </form>

@@ -47,6 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { mixpanelInstance } from "@/utils/mixpanel";
 
 // Define types (these should be in a separate types file or at the top)
 type BedStatus = "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" | "RESERVED";
@@ -257,6 +258,15 @@ const BedBookingManagementPage: React.FC = () => {
   const handleExecuteAction = async () => {
     if (!currentAction || !currentBed || !currentBooking) {
       showNotification("Missing required information for action", "error");
+      mixpanelInstance.track('Bed Action Confirmed', {
+  action: currentAction,
+  bedId: currentBed.id,
+  bookingId: currentBooking.id,
+  facilityId: currentBed.facility_id,
+  user: currentBooking.patient?.name || 'Unknown',
+  page: 'BedBookingManagementPage',
+  actionData,
+});
       return;
     }
 
@@ -671,7 +681,13 @@ const BedBookingManagementPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => handleDateSelect(new Date())}
+                onClick={() => {
+  handleDateSelect(new Date());
+  mixpanelInstance.track('View Todays Booking Updates', {
+    selectedDate: new Date(),
+    page: 'BedBookingManagementPage',
+  });
+}}
               >
                 View Today's Updates
               </Button>
@@ -725,7 +741,13 @@ const BedBookingManagementPage: React.FC = () => {
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => handleDateSelect(new Date())}
+                      onClick={() => {
+  handleDateSelect(new Date());
+  mixpanelInstance.track('View Todays Booking Updates', {
+    selectedDate: new Date(),
+    page: 'BedBookingManagementPage',
+  });
+}}
                     >
                       View Today's Updates
                     </Button>
@@ -862,24 +884,32 @@ const BedBookingManagementPage: React.FC = () => {
                                               <Button
                                                 size="sm"
                                                 variant="default"
-                                                onClick={() =>
-                                                  handleActionConfirmation(
-                                                    "admit",
-                                                    bed
-                                                  )
-                                                }
+                                                onClick={() => {
+                                                  mixpanelInstance.track('Bed Booking Main Button Clicked', {
+                                                    action: 'Admit',
+                                                    bed_id: bed.id,
+                                                    booking_id: bedBooking.id,
+                                                    ward_id: bed.ward_id,
+                                                    status: bedBooking.status,
+                                                  });
+                                                  handleActionConfirmation("admit", bed);
+                                                }}
                                               >
                                                 Admit
                                               </Button>
                                               <Button
                                                 size="sm"
                                                 variant="destructive"
-                                                onClick={() =>
-                                                  handleActionConfirmation(
-                                                    "cancelled",
-                                                    bed
-                                                  )
-                                                }
+                                                onClick={() => {
+                                                  mixpanelInstance.track('Bed Booking Main Button Clicked', {
+                                                    action: 'Cancel',
+                                                    bed_id: bed.id,
+                                                    booking_id: bedBooking.id,
+                                                    ward_id: bed.ward_id,
+                                                    status: bedBooking.status,
+                                                  });
+                                                  handleActionConfirmation("cancelled", bed);
+                                                }}
                                               >
                                                 Cancel
                                               </Button>
@@ -894,24 +924,32 @@ const BedBookingManagementPage: React.FC = () => {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              onClick={() =>
-                                                handleActionConfirmation(
-                                                  "transfer",
-                                                  bed
-                                                )
-                                              }
+                                              onClick={() => {
+                                                mixpanelInstance.track('Bed Booking Main Button Clicked', {
+                                                  action: 'Transfer',
+                                                  bed_id: bed.id,
+                                                  booking_id: bedBooking.id,
+                                                  ward_id: bed.ward_id,
+                                                  status: bedBooking.status,
+                                                });
+                                                handleActionConfirmation("transfer", bed);
+                                              }}
                                             >
                                               Transfer
                                             </Button>
                                             <Button
                                               size="sm"
-                                              variant="destructive"
-                                              onClick={() =>
-                                                handleActionConfirmation(
-                                                  "discharge",
-                                                  bed
-                                                )
-                                              }
+                                              variant="default"
+                                              onClick={() => {
+                                                mixpanelInstance.track('Bed Booking Main Button Clicked', {
+                                                  action: 'Discharge',
+                                                  bed_id: bed.id,
+                                                  booking_id: bedBooking.id,
+                                                  ward_id: bed.ward_id,
+                                                  status: bedBooking.status,
+                                                });
+                                                handleActionConfirmation("discharge", bed);
+                                              }}
                                             >
                                               Discharge
                                             </Button>

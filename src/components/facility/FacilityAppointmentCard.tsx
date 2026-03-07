@@ -1138,11 +1138,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Calendar, Clock, Video, FileText, MapPin, Shield, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { FacilityAppointment } from "./FacilityAppointmentManagementPage";
+import { FacilityAppointment } from "./FacilityAppointmentManagement";
 import { useState, useEffect } from "react";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
-
+import mixpanelInstance from "@/utils/mixpanel";
 interface DepartmentInfo {
   id: string;
   name: string;
@@ -1209,6 +1209,8 @@ export default function FacilityAppointmentCard({
   const canUploadPrescription = isAdmin || isDepartmentHead || isAssignedDoctor;
   const canStartVideo = isAssignedDoctor || hasManagementAccess;
 
+
+  
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -1232,6 +1234,13 @@ export default function FacilityAppointmentCard({
   }, [appointment.id]);
 
   const cancelAppointment = async () => {
+      mixpanelInstance.track('Facility Appointment Cancelled', {
+    appointmentId: appointment.id,
+    patientName: appointment.patientName,
+    departmentId: appointment.department_id,
+    reason,
+    userRole
+  });
     if (!reason.trim()) {
       toast({
         title: "Cancellation Required",
@@ -1295,6 +1304,13 @@ export default function FacilityAppointmentCard({
   };
 
   const completeAppointment = async (withPrescription: boolean = false) => {
+      mixpanelInstance.track('Facility Appointment Completed', {
+    appointmentId: appointment.id,
+    patientName: appointment.patientName,
+    departmentId: appointment.department_id,
+    withPrescription,
+    userRole
+  });
     try {
       setLoading(true);
 
@@ -1343,9 +1359,21 @@ export default function FacilityAppointmentCard({
       title: "Success",
       description: "Documents uploaded successfully.",
     });
+     mixpanelInstance.track('Facility Documents Uploaded', {
+    appointmentId: appointment.id,
+    patientName: appointment.patientName,
+    userRole
+  });
   };
 
   const startTeleconsultation = () => {
+      mixpanelInstance.track('Facility Teleconsultation Started', {
+    appointmentId: appointment.id,
+    patientName: appointment.patientName,
+    departmentId: appointment.department_id,
+    doctorId: appointment.doctor_id,
+    userRole
+  });
     if (!apiKey) {
       toast({
         title: "Video Error",
@@ -1384,6 +1412,18 @@ export default function FacilityAppointmentCard({
 
     onJoinVideo();
   };
+
+
+// Add to view documents
+const handleViewDocuments = () => {
+  mixpanelInstance.track('Facility Documents Viewed', {
+    appointmentId: appointment.id,
+    patientName: appointment.patientName,
+    documentCount: documents.length,
+    userRole
+  });
+  setShowDocsModal(true);
+};
 
   const isCompleted = enhancedAppointment.status === "completed";
   const isCancelled = enhancedAppointment.status === "cancelled";
@@ -1647,7 +1687,7 @@ export default function FacilityAppointmentCard({
   appointmentId={appointment.id}
   uploadedBy="department"
   defaultDocumentType="medical_record"
-  onCancel={() => setShowUploadModal(false)}
+  onCancel={() =>{ mixpanelInstance.track('Facility Upload Cancelled', { appointmentId: appointment.id, patientName: appointment.patientName, userRole });  setShowUploadModal(false)}}
 />
             </div>
           </div>
@@ -1684,7 +1724,7 @@ export default function FacilityAppointmentCard({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setOpenCancel(false)}
+                onClick={() =>{ mixpanelInstance.track('Facility Cancel Modal Closed', { appointmentId: appointment.id, patientName: appointment.patientName, userRole });  setOpenCancel(false)}}
                 disabled={loading}
               >
                 Close

@@ -12,6 +12,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { profile } from 'console';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
 import { useParams, useNavigate } from "react-router-dom";  // 🟢 ADDED
+import { mixpanelInstance } from '@/utils/mixpanel';
 
 export type UserRole = 'medicalProfessional';
 
@@ -202,6 +203,14 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
   const handleSave = async () => {
     if (!validateForm(profileData)) return;
     if (!user) return;
+
+    mixpanelInstance.track("Doctor Profile Update", {
+      userId: user.id,
+      email: profileData.emailAddress,
+      specialty: profileData.medicalSpeciality,
+      license: profileData.licenseNumber,
+      kycVerified: profileData.kycVerified
+    });
 
     const profilesUpdate = {
       user_id: user.id,

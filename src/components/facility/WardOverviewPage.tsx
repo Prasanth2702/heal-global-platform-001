@@ -29,6 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import mixpanelInstance from "@/utils/mixpanel";
 
 const WardOverviewPage: React.FC = () => {
   const [wards, setWards] = useState<Ward[]>([]);
@@ -36,6 +37,42 @@ const WardOverviewPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [wardTypeFilter, setWardTypeFilter] = useState("all");
+
+const trackWardAction = (action: string, wardData?: any, additionalData = {}) => {
+  mixpanelInstance.track('Ward Overview Action', {
+    action,
+    wardId: wardData?.id,
+    wardName: wardData?.name,
+    wardType: wardData?.ward_type,
+    ...additionalData
+  });
+};
+
+// Add to search
+const handleWardSearch = (term: string) => {
+  trackWardAction('search', undefined, { searchTerm: term });
+  setSearchTerm(term);
+};
+
+// Add to filter
+const handleWardTypeFilter = (type: string) => {
+  trackWardAction('filter', undefined, { 
+    wardTypeFilter: type,
+    fromFilter: wardTypeFilter 
+  });
+  setWardTypeFilter(type);
+};
+
+const handleWardClick = (ward: Ward) => {
+  trackWardAction('view_ward_details', ward);
+  // Navigate to ward details or open modal
+};
+
+// Add to refresh
+const handleRefreshWards = () => {
+  trackWardAction('refresh_data');
+  fetchWards();
+};
 
   const fetchWards = async () => {
     try {

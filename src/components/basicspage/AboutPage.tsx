@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -27,6 +26,15 @@ import {
   Menu,
   LogOut,
   UserIcon,
+  Calendar,
+  Bed,
+  Hospital,
+  Stethoscope,
+  Ambulance,
+  HeartPulse,
+  Syringe,
+  Pill,
+  Microscope,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -42,7 +50,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import logo from "@/image/thefuturemed_logo (1).jpg";
+import logo from "@/image/About page.png";
 import Header from "@/pages/alldetails/Header";
 import Footer from "@/pages/alldetails/Footer";
 
@@ -87,63 +95,104 @@ const AboutPage = () => {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
           {/* Left Column */}
           <div className="flex-1 bg-white p-5 md:p-6 shadow rounded-lg">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">
-              About PMHS
-              {/* About PMHS Smarthealth LLP */}
+            <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
+              <Hospital className="h-6 w-6 text-blue-600" />
+              About HealGlobe.com
             </h2>
             <p className="text-gray-700 text-sm md:text-base">
-              <strong className="bold">
-                Prestige Medical Health Sciences (PMHS)
-              </strong>
-              , founded in 2016 in Bangalore, now embraces a forward-thinking
-              ideology—revolutionizing the medical industry into the digital era
-              through <strong>THEFUTUREMED.com</strong>. to transform medical
-              education through a cutting-edge digital platform. This platform
-              is designed to empower aspiring healthcare professionals by
-              providing high-quality, accessible online courses and interactive
-              learning experiences in allied health sciences.
+              <strong className="bold">HealGlobe.com</strong> is a revolutionary digital healthcare platform 
+              founded in 2023, designed to bridge the gap between patients and healthcare providers. 
+              Our mission is to make quality healthcare accessible to everyone through seamless digital 
+              solutions for appointment booking and bed management.
             </p>
             <p className="text-gray-700 mt-4 text-sm md:text-base">
-              {" "}
-              Our mission is to create a holistic ecosystem where students can
-              gain comprehensive knowledge in fields such as Nursing, Medical
-              Imaging Technology, Medical Laboratory Technology, Optometry, and
-              Physiotherapy. Beyond traditional learning, the platform offers a
-              unique “earn while you teach” model, enabling qualified
-              professionals and educators to share their expertise, conduct live
-              sessions, and mentor students, while generating income from their
-              contributions.
+              With a network of over 500+ hospitals and 2000+ healthcare providers across India, 
+              HealGlobe.com offers a comprehensive platform where patients can easily find and book 
+              appointments with doctors, schedule diagnostic tests, and reserve hospital beds - all 
+              from the comfort of their homes.
             </p>
             <p className="text-gray-700 mt-4 text-sm md:text-base">
-              {" "}
-              By integrating modern educational tools, virtual classrooms, and
-              practical training modules, this digital initiative aims to
-              nurture the next generation of medical professionals, bridging the
-              gap between classroom learning and real-world healthcare demands.
-              PMHS envisions a community-driven platform where knowledge
-              sharing, professional growth, and earning opportunities converge,
-              creating a sustainable and impactful approach to healthcare
-              education in India and beyond.
-            </p>
-            <p className="text-gray-700 mt-4 text-sm md:text-base">
-              Further, PMHS has also ventured into its first diagnostic center
-              in Bangalore city. With a legacy spanning three generations in the
-              education sector.
+              Our platform integrates real-time availability, instant confirmation, and secure payment 
+              processing to ensure a hassle-free experience. Whether you need a routine check-up, 
+              emergency care, or planned hospitalization, HealGlobe.com connects you with the right 
+              healthcare services at the right time.
             </p>
           </div>
 
           {/* Right Column */}
           <div className="flex-1 bg-white p-5 md:p-6 shadow rounded-lg">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">Our Mission</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
+              <HeartPulse className="h-6 w-6 text-blue-600" />
+              Our Mission
+            </h2>
             <img
-              src="/image.jpeg"
-              alt="Our mission"
+              src={logo}
+              alt="Healthcare platform mission"
               className="w-full h-40 md:h-48 object-cover rounded-lg mb-4"
             />
             <p className="text-gray-700 text-sm md:text-base">
-              Our mission is to empower users by delivering high-quality,
-              accessible information...
+              Our mission is to revolutionize healthcare access by providing a unified digital platform 
+              that simplifies the process of booking appointments and reserving beds. We strive to 
+              reduce waiting times, eliminate paperwork, and ensure that every patient receives timely 
+              medical attention when they need it most.
             </p>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="max-w-6xl mx-auto mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            
+            <div className="bg-white shadow rounded-lg p-5 text-center">
+              <Calendar className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
+              <h3 className="text-lg md:text-xl font-semibold mb-3">
+                Appointment Booking
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base">
+                Book appointments with top doctors across specialties. 
+                Real-time availability, instant confirmation, and reminders.
+              </p>
+              <ul className="list-disc list-inside text-left text-gray-600 mt-3 space-y-1 text-sm">
+                <li>500+ Specialists</li>
+                <li>Same-day appointments</li>
+                <li>Video consultations</li>
+                <li>Prescription download</li>
+              </ul>
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-5 text-center">
+              <Bed className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
+              <h3 className="text-lg md:text-xl font-semibold mb-3">
+                Bed Booking
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base">
+                Reserve hospital beds in advance. Check real-time availability 
+                across ICU, general wards, and private rooms.
+              </p>
+              <ul className="list-disc list-inside text-left text-gray-600 mt-3 space-y-1 text-sm">
+                <li>ICU & Critical Care</li>
+                <li>General Wards</li>
+                <li>Private Rooms</li>
+                <li>Emergency beds</li>
+              </ul>
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-5 text-center">
+              <Microscope className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
+              <h3 className="text-lg md:text-xl font-semibold mb-3">
+                Diagnostic Tests
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base">
+                Schedule lab tests and health checkups at NABL accredited 
+                laboratories with home sample collection.
+              </p>
+              <ul className="list-disc list-inside text-left text-gray-600 mt-3 space-y-1 text-sm">
+                <li>100+ Lab tests</li>
+                <li>Home collection</li>
+                <li>Digital reports</li>
+                <li>Health packages</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -151,9 +200,9 @@ const AboutPage = () => {
         <div className="max-w-6xl mx-auto mt-8 bg-white p-5 md:p-6 shadow rounded-lg">
           <h2 className="text-xl md:text-3xl font-bold mb-4">Our Team</h2>
           <p className="text-gray-700 mb-6 text-sm md:text-base">
-            Meet the experts behind <strong>THEFUTUREMED.com</strong> – a unique
-            blend of medical professionals, AI engineers, and education
-            specialists.
+            Meet the experts behind <strong>HealGlobe.com</strong> – a unique
+            blend of medical professionals, AI engineers, and healthcare technology
+            specialists dedicated to transforming patient care.
           </p>
 
           <div className="space-y-6">
@@ -164,32 +213,21 @@ const AboutPage = () => {
                   Dr. Mohammed Ahetasham, M.B.B.S, M.D.R.D
                 </h3>
                 <p className="text-sm md:text-base font-medium text-gray-800">
-                  Founder & Chairman – Prestige Medical Health Sciences (PMHS)
+                  Founder & Chairman – HealGlobe.com
                 </p>
                 <p className="text-gray-700 mt-2 text-sm md:text-base">
                   Dr. Mohammed Ahetasham is a visionary healthcare innovator,
-                  accomplished Radiologist, and Founder & Chairman of Prestige
-                  Medical Health Sciences (PMHS). With over 12 years of
-                  experience in the medical industry, he has been instrumental
-                  in advancing the intersection of clinical excellence, academic
-                  leadership, and digital transformation.
+                  accomplished Radiologist, and Founder & Chairman of HealGlobe.com. 
+                  With over 12 years of experience in the medical industry, he has 
+                  been instrumental in advancing the intersection of clinical 
+                  excellence and digital healthcare delivery.
                 </p>
                 <p className="text-gray-700 mt-2 text-sm md:text-base">
-                  His career spans extensive clinical practice, academic
-                  research, and leadership in the adoption of emerging
-                  technologies such as medical prompting, AI, machine learning,
-                  agentic platforms, and no-code healthtech solutions.
+                  His career spans extensive clinical practice, academic research, 
+                  and leadership in the adoption of emerging technologies such as 
+                  AI-powered diagnostics, telemedicine platforms, and digital 
+                  healthcare solutions.
                 </p>
-                {/* <p className="text-gray-700 mt-2 text-sm md:text-base">
-                After earning his M.B.B.S. from Vydehi Institute of Medical
-                Sciences and Research Centre in 2009, Dr. Ahetasham served as a
-                Consultant Radiologist across leading institutions such as
-                NIMHANS, Kidwai Memorial Institute, Narayana Health, Apollo
-                Cradle, and Anand Diagnostic. He completed his M.D.R.D from Dr.
-                B.R. Ambedkar Medical College in 2016, the same year he
-                established PMHS with a mission to deliver globally relevant,
-                future-ready healthcare education.
-              </p> */}
               </div>
 
               {/* Team Member 2 */}
@@ -198,193 +236,93 @@ const AboutPage = () => {
                   Suresh Kannan
                 </h3>
                 <p className="text-sm md:text-base font-medium text-gray-800">
-                  Senior Technology Leader | AI Platforms & Product Delivery
+                  Chief Technology Officer | Healthcare Platforms & Product Delivery
                 </p>
                 <p className="text-gray-700 mt-2 text-sm md:text-base">
                   An accomplished technology leader with over 25 years of
-                  experience in driving innovation across product engineering,
+                  experience in driving innovation across healthcare platforms,
                   software architecture, and large-scale project delivery. Known
-                  for successfully leading global teams and delivering
-                  intelligent, AI-powered solutions.
+                  for successfully leading global teams and delivering intelligent,
+                  patient-centric solutions.
                 </p>
                 <p className="text-gray-700 mt-2 text-sm md:text-base">
-                  With deep expertise in cloud infrastructure, AI/ML systems,
-                  and large language models (LLMs), this executive has played a
-                  critical role in building next-generation platforms.
+                  With deep expertise in cloud infrastructure, healthcare data 
+                  security (HIPAA compliance), and real-time booking systems, 
+                  this executive has played a critical role in building 
+                  HealGlobe's robust appointment and bed management platform.
                 </p>
-                {/* <p className="text-gray-700 mt-2 text-sm md:text-base">
-                Highly proficient in integrating low-code and no-code platforms,
-                orchestrating end-to-end delivery pipelines, and managing
-                deployments across cloud-native environments like Supabase, they
-                bring a strategic, hands-on approach to transforming digital
-                ecosystems. With a focus on aligning technical capabilities to
-                business goals, they consistently drive measurable outcomes and
-                lasting value.
-              </p> */}
               </div>
             </div>
           </div>
         </div>
 
-        {/* New Section Below the Two Columns */}
+        {/* Section: How It Works */}
         <div className="max-w-6xl mx-auto mt-8 bg-white p-5 md:p-6 shadow rounded-lg">
           <h2 className="text-xl md:text-3xl font-bold mb-4">
-            Our Mission and Approach
+            How HealGlobe.com Works
           </h2>
-          <p className="text-gray-700 mb-4 text-sm md:text-base">
-            Empower Your Medical Career with <strong>THEFUTUREMED.com</strong> —
-            The Community of Medics created by a Medic, for the Medics,
-            Globally. The ultimate platform for medical professionals to learn,
-            connect, and earn digitally.
-          </p>
-
-          <h3 className="text-lg md:text-xl font-semibold mt-5 mb-2">
-            Why Choose THEFUTUREMED.com?
-          </h3>
-          <p className="text-gray-700 mb-4 text-sm md:text-base">
-            A one-stop platform designed exclusively for medical professionals
-            including Doctors, Dentists, Nurses, Physiotherapists, Allied Health
-            Workers, Ayurveda Practitioners, Homeopaths, Unani Practitioners,
-            Dieticians, and more.
-          </p>
-
-          <h3 className="text-base md:text-lg font-semibold mt-4">
-            Our Features: Learn, Connect, and Earn
-          </h3>
-
-          <ul className="list-disc list-inside text-gray-700 space-y-3 mt-2 text-sm md:text-base">
-            <li>
-              <strong>Host or Attend Medical Seminars and Conferences</strong>
-              <br />
-              Share expertise or gain insights from healthcare leaders:
-              <ul className="list-disc ml-6 mt-1">
-                <li>Host online medical conferences</li>
-                <li>Attend interactive seminars on trending topics</li>
-                <li>Earn by sharing knowledge globally</li>
-              </ul>
-            </li>
-
-            <li>
-              <strong>E-Learning Modules & Certifications</strong>
-              <br />
-              Upskill or monetize your expertise:
-              <ul className="list-disc ml-6 mt-1">
-                <li>Expert-led modules for skill development</li>
-                <li>Host and sell your own courses</li>
-                <li>Accredited programs for growth</li>
-              </ul>
-            </li>
-
-            <li>
-              <strong>Job Portal for Healthcare Professionals</strong>
-              <br />
-              Post your resume or discover jobs from hospitals and clinics for
-              full-time or part-time roles.
-            </li>
-          </ul>
-
-          <h3 className="text-base md:text-lg font-semibold mt-5">
-            Why THEFUTUREMED.com Stands Out
-          </h3>
-          <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
-            <li>Global Reach: Connect with professionals worldwide</li>
-            <li>Community-Driven: Collaborate within a thriving network</li>
-            <li>Monetization Opportunities: Seminars, e-stores, and more</li>
-          </ul>
-
-          <h3 className="text-base md:text-lg font-semibold mt-5">
-            Explore Our Key Offerings
-          </h3>
-          <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
-            <li>
-              <strong>Community for Medics:</strong> Collaborate on research,
-              share insights, and grow your network.
-            </li>
-            <li>
-              <strong>Publish Research & Journals:</strong> Upload and share
-              your medical publications.
-            </li>
-            <li>
-              <strong>E-Store for :</strong> Sell books, instruments, and more
-              via your landing page.
-            </li>
-          </ul>
-
-          <h3 className="text-base md:text-lg font-semibold mt-5">
-            How THEFUTUREMED.com Benefits You
-          </h3>
-          <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
-            <li>Boost Visibility through a global medical network</li>
-            <li>Earn More by teaching, hosting, or selling</li>
-            <li>Expand Knowledge with certified courses and events</li>
-          </ul>
-
-          <p className="text-blue-700 font-semibold mt-5 text-sm md:text-base">
-            👉 Join <strong>THEFUTUREMED.com</strong> Today!
-          </p>
-        </div>
-
-        {/* Section: Commitment to Excellence */}
-        {/* <div className="max-w-6xl mx-auto mt-8 bg-white p-5 md:p-6 shadow rounded-lg">
-          <h2 className="text-xl md:text-3xl font-bold mb-4">
-            Commitment to Excellence and Student Success
-          </h2>
-          <p className="text-gray-700 text-sm md:text-base">
-            At PMHS, we pride ourselves on our experienced faculty and
-            state-of-the-art facilities, ensuring that our students receive a
-            comprehensive education that meets global standards. Our commitment
-            to excellence is reflected in our{" "}
-            <strong>100% placement record</strong>, with many graduates securing
-            positions within our own network of specialized healthcare
-            facilities.
-          </p>
-        </div> */}
-
-        {/* Section: Highlights or Features */}
-        {/* <div className="max-w-6xl mx-auto mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            
-            <div className="bg-white shadow rounded-lg p-5 text-center">
-              <Building className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
-              <h3 className="text-lg md:text-xl font-semibold mb-3">
-                Organisations
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Appointment Booking Process */}
+            <div>
+              <h3 className="text-lg md:text-xl font-semibold mb-3 flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-600" />
+                Book an Appointment
               </h3>
-              <ol className="list-decimal list-inside text-left text-gray-600 space-y-1 text-sm md:text-base">
-                <li>Para medical AHS college</li>
-                <li>Physiotherapy college</li>
-                <li>Nursing College</li>
-                <li>Health care services and diagnostics</li>
-                <li>Physio rehab centers</li>
+              <ol className="list-decimal list-inside text-gray-700 space-y-2 text-sm md:text-base">
+                <li>Search for doctors by specialty, location, or hospital</li>
+                <li>View doctor profiles, availability, and patient reviews</li>
+                <li>Select a convenient time slot and confirm booking</li>
+                <li>Receive instant confirmation via SMS and email</li>
+                <li>Attend consultation (in-person or video)</li>
+                <li>Get digital prescription and follow-up reminders</li>
               </ol>
             </div>
 
-            <div className="bg-white shadow rounded-lg p-5 text-center">
-              <Laptop className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
-              <h3 className="text-lg md:text-xl font-semibold mb-3">
-                Our Digital Products
+            {/* Bed Booking Process */}
+            <div>
+              <h3 className="text-lg md:text-xl font-semibold mb-3 flex items-center gap-2">
+                <Bed className="h-5 w-5 text-blue-600" />
+                Reserve a Hospital Bed
               </h3>
-              <div className="text-left text-gray-600 space-y-2 text-sm md:text-base">
-                <ol className="list-decimal list-inside">
-                  <li>THEFUTUREMED – A safe haven for Health care heroes</li>
-                  <li className="mt-1">
-                    PMHS Smart Health – Platform with Tele Consultation, Tele
-                    Radiology, EMR software, Billing software
-                  </li>
-                </ol>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg p-5 text-center">
-              <Users className="mx-auto mb-3 h-8 w-8 md:h-10 md:w-10 text-blue-500" />
-              <h3 className="text-lg md:text-xl font-semibold mb-3">
-                Groups To Discuss
-              </h3>
-              <ul className="list-decimal list-inside text-left text-gray-600 space-y-1 text-sm md:text-base">
-                <li>In house Tech company</li>
-              </ul>
+              <ol className="list-decimal list-inside text-gray-700 space-y-2 text-sm md:text-base">
+                <li>Search hospitals by location and bed type required</li>
+                <li>Check real-time bed availability (ICU, General, Private)</li>
+                <li>View estimated costs and insurance acceptance</li>
+                <li>Reserve bed with partial payment</li>
+                <li>Receive bed allocation confirmation</li>
+                <li>Direct hospital admission on arrival</li>
+              </ol>
             </div>
           </div>
-        </div> */}
+
+          <h3 className="text-base md:text-lg font-semibold mt-6">
+            Why HealGlobe.com Stands Out
+          </h3>
+          <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
+            <li><strong>Real-time Availability:</strong> Live updates on doctor slots and bed availability</li>
+            <li><strong>Verified Providers:</strong> All hospitals and doctors are thoroughly verified</li>
+            <li><strong>Secure Platform:</strong> HIPAA-compliant data protection</li>
+            <li><strong>24/7 Support:</strong> Round-the-clock customer assistance</li>
+            <li><strong>Insurance Integration:</strong> Check coverage and cashless options</li>
+          </ul>
+
+          <h3 className="text-base md:text-lg font-semibold mt-5">
+            Key Benefits
+          </h3>
+          <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
+            <li><strong>Save Time:</strong> No more waiting in queues or calling multiple hospitals</li>
+            <li><strong>Emergency Ready:</strong> Quick bed booking during emergencies</li>
+            <li><strong>Compare Options:</strong> Choose based on reviews, distance, and cost</li>
+            <li><strong>Digital Records:</strong> All your health records in one place</li>
+            <li><strong>Family Account:</strong> Manage bookings for your entire family</li>
+          </ul>
+
+          <p className="text-blue-700 font-semibold mt-5 text-sm md:text-base flex items-center gap-2">
+            <HeartPulse className="h-5 w-5" />
+            👉 Experience hassle-free healthcare with <strong>HealGlobe.com</strong> Today!
+          </p>
+        </div>
       </div>
       <Footer/>
     </div>

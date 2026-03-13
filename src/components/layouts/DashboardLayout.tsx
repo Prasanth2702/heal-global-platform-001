@@ -189,7 +189,7 @@ const checkBedManagementDepartment = async () => {
         //   label: "Schedule",
         //   icon: Calendar,
         // },
-        { path: "/dashboard/doctor/patients", label: "Patients", icon: UserCogIcon },
+        // { path: "/dashboard/doctor/patients", label: "Patients", icon: UserCogIcon },
         { path: "/dashboard/doctor/appointments", label: "Appointments", icon: Calendar },
         // {
         //   path: "/dashboard/doctor/prescriptions",

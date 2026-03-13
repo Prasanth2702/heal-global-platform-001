@@ -807,6 +807,7 @@ import VideoMeeting from "../VideoMeeting";
 import FacilityAppointmentCard from "./FacilityAppointmentCard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { mixpanelInstance } from "@/utils/mixpanel";
+import { toast } from "@/hooks/use-toast";
 
 interface DepartmentInfo {
   id: string;
@@ -1210,17 +1211,17 @@ export default function FacilityAppointmentManagement() {
     const appointmentData = appointments.find((apt) => apt.id === appointmentId);
     trackAppointmentAction('join_video', appointmentData);
     if (!appointmentData || !apiKey) {
-      alert("Unable to start video meeting");
+      toast({ title: "Unable to start video meeting" });
       return;
     }
 
     if (appointmentData.type !== "teleconsultation") {
-      alert("This appointment is not a teleconsultation");
+      toast({ title: "This appointment is not a teleconsultation" });
       return;
     }
 
     if (appointmentData.status !== "confirmed") {
-      alert("Only confirmed appointments can be started");
+      toast({ title: "Only confirmed appointments can be started" });
       return;
     }
 

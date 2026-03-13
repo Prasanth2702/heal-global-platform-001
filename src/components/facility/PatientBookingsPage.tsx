@@ -61,6 +61,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import mixpanelInstance from "@/utils/mixpanel";
+import { toast } from "@/hooks/use-toast";
 
 
 // Define interfaces based on your database structure
@@ -817,15 +818,19 @@ const handleStatusFilter = (filter: string) => {
         .update({ status: "OCCUPIED" })
         .eq("id", formData.assignedBedId);
 
-      alert(
-        `Patient admitted successfully! Booking Reference: ${bookingReference}`
-      );
+      toast({
+        title: "Patient admitted successfully!",
+        description: `Booking Reference: ${bookingReference}`
+      });
       setShowAddModal(false);
       fetchData();
       trackPatientAction('admit_success', { id: formData.patientId }, { bookingId: booking?.id, bedId: formData.assignedBedId });
     } catch (error) {
       console.error("Error admitting patient:", error);
-      alert("Failed to admit patient. Please try again.");
+      toast({
+        title: "Failed to admit patient",
+        description: "Please try again."
+      });
       trackPatientAction
     }
   };
@@ -862,12 +867,18 @@ const handleStatusFilter = (filter: string) => {
 
         if (bedError) throw bedError;
 
-        alert("Patient discharged successfully!");
+        toast({
+          title: "Patient discharged successfully!",
+          description: `Booking Reference: ${bookingId}`
+        });
         fetchData();
         trackPatientAction('discharge_success', { id: patientId }, { bookingId, bedId });
       } catch (error) {
         console.error("Error discharging patient:", error);
-        alert("Failed to discharge patient. Please try again.");
+        toast({
+          title: "Failed to discharge patient",
+          description: "Please try again."
+        });
         trackPatientAction('discharge_failure', { id: patientId }, { bookingId, bedId, error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }

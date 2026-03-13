@@ -59,6 +59,9 @@ import HospitalsPage from "./components/basicspage/HospitalsPage";
 import BookAppointment from "./components/basicspage/BookAppointment";
 import FacilityAppointmentManagementPage from "./components/facility/FacilityAppointmentManagement";
 import FacilityAppointmentManagement from "./components/facility/FacilityAppointmentManagement";
+import Location from "./pages/Location/Location";
+import ForgotPassword from "./components/auth/ForgotPassword";
+import HomeLoginPage from "./pages/Location/HomeLoginPage";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -96,6 +99,7 @@ const App = () => {
               <Sonner />
               {/* <InstallPrompt /> */}
               <BrowserRouter>
+              {/* <Location/> */}
                 <Routes>
                   <Route path="/" element={<Index />} />
 
@@ -113,6 +117,7 @@ const App = () => {
                     element={<FacilityRegistration />}
                   />
                   <Route path="/login/:userType" element={<LoginForm />} />
+                  <Route path="/forgot-password/:userType" element={<ForgotPassword />} />
 
                   {/* Onboarding Routes */}
                   <Route
@@ -266,12 +271,12 @@ const App = () => {
 <Route path="/dashboard/patient/facility/:id" element={<DoctorHospitals />} />
       <Route path="/dashboard/patient/doctor/:slug/:id" element={<DoctorHospitals />} />
       <Route path="/dashboard/patient/facility/:slug/:id" element={<DoctorHospitals />} />
-<Route path="/homelogin" element={<HomeLogin />} />
+{/* <Route path="/homelogin" element={<HomeLogin />} /> */}
 
 <Route  path="/dashboard/patient/department/:id"  element={<DepartmentDetails />}/>
-<Route path="/dashboard/patient/booking/:facilityId" element={<PatientFacilities />} />
+<Route path="/dashboard/patient/booking/:facilityId" element={<PatientFacilities  view="beds" />} />
 <Route  path="/dashboard/patient/department/:slug/:id"  element={<DepartmentDetails />}/>
-<Route path="/dashboard/patient/booking/:slug/:facilityId" element={<PatientFacilities />} />
+<Route path="/dashboard/patient/booking/:slug/:facilityId" element={<PatientFacilities  view="beds" />} />
 <Route path="/about" element={<AboutPage />} />
 <Route path="/contact" element={<Contact />} />
 <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -282,8 +287,10 @@ const App = () => {
 <Route path="/blog" element={<Blog />} />
 <Route path="/doctors" element={<DoctorPage />} />
 <Route path="/hospitals" element={<HospitalsPage />} />
-<Route path="/appointment" element={<BookAppointment />} />
-
+{/* <Route path="/appointment" element={<BookAppointment />} /> */}
+{/* <Route path="/appointment" element={<HomeLogin />} /> */}
+<Route path="/appointment" element={<HomeLoginPage />} />
+<Route path="/appointment/:view" element={<HomeLoginPage />} />
 
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}

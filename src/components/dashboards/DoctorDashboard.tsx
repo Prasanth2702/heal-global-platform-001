@@ -64,13 +64,14 @@ useEffect(() => {
   const fetchAppointments = async (doctorId: string) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+      const { data: { user } } = await supabase.auth.getUser();
       // First get all appointments for today
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from("appointments")
         .select("*")
-        .eq("doctor_id", doctorId)
+        .eq("doctor_id", user.id)
         .order("appointment_date", { ascending: true });
+        
 
       if (appointmentsError) {
         console.error("Error fetching appointments:", appointmentsError);
@@ -108,7 +109,14 @@ useEffect(() => {
       const { data: patientsData, error: patientsError } = await supabase
         .from("patients")
         .select("*")
-        .in("id", patientIds);
+        .in("user_id", patientIds);
+
+
+    const { data: patients } = await supabase
+      .from("profiles")
+      .select("user_id, first_name, last_name, avatar_url")
+      .in("user_id", patientIds);
+
 
       if (patientsError) {
         console.error("Error fetching patient details:", patientsError);
@@ -377,7 +385,7 @@ if (activeTab !== "overview") {
               <Calendar className="h-4 w-4 mr-1" />
               Analytics
             </Button> */}
-            <Button
+            {/* <Button
               variant={activeTab === "patients" ? "default" : "ghost"}
               size="sm"
               onClick={() => {handleTabChange("patients"); trackButtonClick("Patients Tab")}}
@@ -385,7 +393,7 @@ if (activeTab !== "overview") {
             >
               <User className="h-4 w-4 mr-1" />
               Patients
-            </Button>
+            </Button> */}
             <Button
               variant={activeTab === "profile" ? "default" : "ghost"}
               size="sm"
@@ -463,7 +471,7 @@ if (activeTab !== "overview") {
               <Calendar className="h-4 w-4 mr-1" />
               Appointments
             </Button>
-            <Button
+            {/* <Button
               variant="ghost"
               size="sm"
               onClick={() => {handleTabChange("patients"); trackButtonClick("Patients Tab")}}
@@ -471,7 +479,7 @@ if (activeTab !== "overview") {
             >
               <User className="h-4 w-4 mr-1" />
               Patients
-            </Button>
+            </Button> */}
             {/* <Button
               variant="ghost"
               size="sm"
@@ -685,10 +693,10 @@ if (activeTab !== "overview") {
       ) : (
         <div className="text-center py-4 text-muted-foreground">No recent patients</div>
       )}
-      <Button variant="doctor" className="w-full" onClick={() => {trackButtonClick("View All Patients Button");handleTabChange("patients")}}>
+      {/* <Button variant="doctor" className="w-full" onClick={() => {trackButtonClick("View All Patients Button");handleTabChange("patients")}}>
         <User className="mr-2 h-4 w-4" />
         View All Patients
-      </Button>
+      </Button> */}
     </div>
   </CardContent>
 </Card>

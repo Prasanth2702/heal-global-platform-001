@@ -27,19 +27,16 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    <strong>:</strong> We collect information you provide
-                    directly, including name, email address, medical specialty,
-                    institution, and professional credentials.
+                    <strong>Personal Information:</strong> When you book appointments or reserve beds through HealGlobe.com, we collect personal details including your full name, date of birth, contact information (phone, email), and emergency contact information.
                   </p>
                   <p>
-                    <strong>Usage Data:</strong> We collect information about
-                    how you use our platform, including pages visited, features
-                    used, and interaction data.
+                    <strong>Medical Information:</strong> To facilitate appropriate healthcare services, we may collect relevant medical history, current symptoms, insurance details, and information about your preferred healthcare providers.
                   </p>
                   <p>
-                    <strong>Device Information:</strong> We may collect
-                    device-specific information such as IP address, browser
-                    type, and operating system.
+                    <strong>Payment Information:</strong> When you make payments for appointments or bed reservations, we collect billing information. Payment processing is handled securely by our third-party payment processors.
+                  </p>
+                  <p>
+                    <strong>Device and Usage Data:</strong> We automatically collect information about how you access and use our platform, including IP address, browser type, pages visited, and appointment booking patterns.
                   </p>
                 </div>
               </section>
@@ -51,22 +48,14 @@ const PrivacyPolicy = () => {
                 <div className="space-y-3 text-gray-700">
                   <p>We use collected information to:</p>
                   <ul className="list-disc pl-6 space-y-1">
-                    <li>Provide and maintain our medical portal services</li>
-                    <li>
-                      Verify professional credentials and maintain platform
-                      integrity
-                    </li>
-                    <li>
-                      Facilitate community interactions and seminar
-                      participation
-                    </li>
-                    <li>
-                      Send important notifications about platform updates and
-                      medical opportunities
-                    </li>
-                    <li>
-                      Improve our services through analytics and user feedback
-                    </li>
+                    <li>Process and confirm your appointment bookings with healthcare providers</li>
+                    <li>Manage bed reservations and hospital admissions</li>
+                    <li>Communicate appointment reminders and updates via SMS, email, or push notifications</li>
+                    <li>Share relevant medical information with healthcare providers (with your consent)</li>
+                    <li>Process payments and provide billing information</li>
+                    <li>Improve our booking algorithms and user experience</li>
+                    <li>Respond to customer support inquiries and resolve issues</li>
+                    <li>Comply with healthcare regulations and legal requirements</li>
                   </ul>
                 </div>
               </section>
@@ -77,19 +66,19 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    <strong>Professional Directory:</strong> Basic professional
-                    information (name, specialty, institution) may be visible to
-                    other verified medical professionals on the platform.
+                    <strong>Healthcare Providers:</strong> When you book an appointment or reserve a bed, we share necessary information with the respective hospitals, clinics, and healthcare providers to facilitate your care.
                   </p>
                   <p>
-                    <strong>Legal Requirements:</strong> We may disclose
-                    information when required by law or to protect the rights
-                    and safety of our users.
+                    <strong>Payment Processors:</strong> We share billing information with secure third-party payment processors to handle financial transactions.
                   </p>
                   <p>
-                    <strong>Service Providers:</strong> We may share data with
-                    trusted third-party service providers who assist in platform
-                    operations.
+                    <strong>Legal Requirements:</strong> We may disclose information when required by law, court order, or to protect the rights and safety of our users and the public.
+                  </p>
+                  <p>
+                    <strong>Service Providers:</strong> We may share data with trusted third-party service providers who assist in platform operations, analytics, and customer support, subject to confidentiality agreements.
+                  </p>
+                  <p className="font-medium mt-2">
+                    We never sell your personal or medical information to third parties for marketing purposes.
                   </p>
                 </div>
               </section>
@@ -100,14 +89,13 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    We implement industry-standard security measures to protect
-                    your personal information. However, no method of
-                    transmission over the internet is 100% secure.
+                    We implement industry-standard security measures including encryption, secure servers, and access controls to protect your personal and medical information. We are committed to maintaining HIPAA-compliant standards where applicable.
                   </p>
                   <p>
-                    <strong>User Responsibility:</strong> Users are responsible
-                    for maintaining the confidentiality of their account
-                    credentials and for all activities under their account.
+                    <strong>User Responsibility:</strong> Users are responsible for maintaining the confidentiality of their account credentials and for all activities under their account. Please notify us immediately of any unauthorized use.
+                  </p>
+                  <p>
+                    While we strive to protect your data, no method of transmission over the internet is 100% secure. We continuously update our security practices to address emerging threats.
                   </p>
                 </div>
               </section>
@@ -118,10 +106,10 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    We retain personal information for as long as necessary to
-                    provide services and comply with legal obligations. Users
-                    may request account deletion, subject to legal and
-                    operational requirements.
+                    We retain personal and medical information for as long as necessary to provide services, comply with legal obligations (including healthcare record retention laws), resolve disputes, and enforce our agreements.
+                  </p>
+                  <p>
+                    Appointment and bed booking history may be retained to improve future service recommendations and for medical continuity purposes. Users may request account deletion, subject to legal and operational requirements.
                   </p>
                 </div>
               </section>
@@ -132,9 +120,7 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    Your information may be transferred to and processed in
-                    countries other than your country of residence. We ensure
-                    appropriate safeguards are in place for such transfers.
+                    Your information may be transferred to and processed in countries other than your country of residence to facilitate booking services with international healthcare providers. We ensure appropriate safeguards are in place for such transfers in compliance with applicable data protection laws.
                   </p>
                 </div>
               </section>
@@ -144,22 +130,68 @@ const PrivacyPolicy = () => {
                 <div className="space-y-3 text-gray-700">
                   <p>Depending on your location, you may have rights to:</p>
                   <ul className="list-disc pl-6 space-y-1">
-                    <li>Access, update, or delete your personal information</li>
+                    <li>Access your personal and medical information</li>
+                    <li>Update or correct inaccurate information</li>
+                    <li>Request deletion of your data (subject to legal retention requirements)</li>
                     <li>Object to or restrict processing of your data</li>
-                    <li>Data portability</li>
-                    <li>Withdraw consent where applicable</li>
+                    <li>Data portability - receive your data in a structured format</li>
+                    <li>Withdraw consent for data processing where applicable</li>
+                    <li>Opt-out of marketing communications</li>
                   </ul>
+                  <p className="mt-2">
+                    To exercise these rights, please contact us using the information below.
+                  </p>
                 </div>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-3">
-                  8. Contact Information
+                  8. Children's Privacy
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    For privacy-related questions or requests, contact us at:
-                    support@thefuturemed.com
+                    HealGlobe.com services are intended for individuals 18 years and older. For minors requiring healthcare services, bookings must be made by a parent or legal guardian who accepts responsibility for all provided information.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-3">
+                  9. Changes to This Policy
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements. We will notify users of significant changes through the platform or via email. Your continued use of HealGlobe.com after changes constitutes acceptance of the updated policy.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-3">
+                  10. Contact Information
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    For privacy-related questions, concerns, or to exercise your rights, please contact us at:
+                  </p>
+                  <p className="font-medium">
+                    Email: privacy@healglobe.com
+                  </p>
+                  <p>
+                    Or write to us at:
+                    <br />
+                    HealGlobe Global LLC
+                    <br />
+                    128 City Road
+                    <br />
+                    London, EC1V 2NX
+                    <br />
+                    United Kingdom
+                  </p>
+                  <p className="mt-2">
+                    For immediate support regarding your appointments or bed bookings, contact:
+                    <br />
+                    support@healglobe.com
                   </p>
                 </div>
               </section>

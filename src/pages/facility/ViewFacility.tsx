@@ -4883,8 +4883,10 @@ import BedBookingManagementPage from "@/components/facility/BedBookingManagement
 import PatientBookingsPage from "@/components/facility/PatientBookingsPage";
 import AnalyticsReportsPage from "@/components/facility/AnalyticsReportsPage";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const ViewFacility: React.FC = () => {
+   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -4974,6 +4976,7 @@ const ViewFacility: React.FC = () => {
 
   const handleAddWard = () => {
     // Implement add ward functionality
+    navigate("/dashboard/facility/ward-management")
     console.log("Add new ward");
   };
 

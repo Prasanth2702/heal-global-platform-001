@@ -24,6 +24,7 @@ import {
   Lock
 } from "lucide-react";
 import { format, addHours, addDays } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 interface MedicalDocument {
   id: string;
@@ -80,11 +81,17 @@ const SecureShareDialog = ({ documents, onShare }: SecureShareDialogProps) => {
 
   const generateSecureAccess = () => {
     if (shareConfig.selectedDocuments.length === 0) {
-      alert("Please select at least one document to share");
+      toast({
+        title: "No Documents Selected",
+        description: "Please select at least one document to share"
+      });
       return;
     }
     if (!shareConfig.doctorEmail) {
-      alert("Please enter doctor's email address");
+      toast({
+        title: "Invalid Doctor Email",
+        description: "Please enter a valid doctor's email address"
+      });
       return;
     }
     onShare(shareConfig);

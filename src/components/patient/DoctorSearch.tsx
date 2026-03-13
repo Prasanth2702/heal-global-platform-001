@@ -76,6 +76,8 @@ interface Department {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+  price_per_day?: number; // Add this
+  has_variable_pricing?: boolean; // Add this
 }
 
 interface Facility {
@@ -98,13 +100,14 @@ interface Facility {
   email?: string;
 }
 
-interface DoctorSearchProps {
-  view: "all" | "doctors" | "hospitals";
-}
 // ------------------------
 // Component
 // ------------------------
-const DoctorSearch = ({ view }: DoctorSearchProps) => {
+interface DoctorSearchProps {
+  view: "all" | "doctors" | "hospitals";
+}
+
+const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
@@ -804,7 +807,7 @@ const getFacilityDepartments = (facilityId: string) => {
         </div>
       </div>
 
-      {showFilters && (
+      {/* {showFilters && ( */}
         <Card>
           <CardContent className="pt-6">
             <div className="grid md:grid-cols-2 gap-4">
@@ -862,7 +865,7 @@ const getFacilityDepartments = (facilityId: string) => {
             </div>
           </CardContent>
         </Card>
-      )}
+      {/* )} */}
     </div>
   );
 
@@ -872,7 +875,7 @@ const getFacilityDepartments = (facilityId: string) => {
     return (
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-blue-600">Doctors</h2>
+          <h2 className="text-2xl font-bold text-blue-600">Doctors & Professionals</h2>
           {filteredDoctors.length > DOCTORS_PER_PAGE && (
             <Button 
               variant="ghost" 
@@ -934,9 +937,17 @@ const getFacilityDepartments = (facilityId: string) => {
                             {doctor.availability}
                           </Badge>
 
+                          {/* <span className="text-green-600 font-medium">
+                            ₹{doctor.consultationFee||" consult a doctor" } Consultation
+                          </span> */}
                           <span className="text-green-600 font-medium">
-                            ₹{doctor.consultationFee} Consultation
-                          </span>
+  {doctor.consultationFee && doctor.consultationFee > 0 ? (
+    <>₹{doctor.consultationFee} / Day</>
+    // <>₹{doctor.consultationFee} Consultation</>
+  ) : (
+    <span className="text-blue-600">Consult a Doctor</span>
+  )}
+</span>
                         </div>
 
                         <div className="flex gap-2 mt-3">
@@ -1306,19 +1317,35 @@ const getFacilityDepartments = (facilityId: string) => {
                       ) : (
                         facilityDepts.map((dept) => (
                           <div key={dept.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                            <div className="flex justify-between items-start">
+        <div>
+
                             <h4 className="font-semibold text-md text-green-600 mb-1">
                               {dept.name}
                             </h4>
-                            <p className="text-gray-700 text-sm mb-2">
+                            {/* <p className="text-gray-700 text-sm mb-2">
                               {dept.description || "No description provided."}
-                            </p>
+                            </p> */}
+                            </div>
+                            <div className="text-right">
+          {dept.price_per_day && dept.price_per_day > 0 ? (
+            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+              ₹{dept.price_per_day}/day
+            </div>
+          ) : (
+            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+              Contact for Price
+            </div>
+          )}
+        </div>
+      </div>
                             <div className="flex flex-wrap gap-4 text-sm text-gray-700">
-                              <span>
+                              {/* <span>
                                 <strong>Bed Capacity:</strong> {dept.bed_capacity ?? "N/A"}
                               </span>
                               <span>
                                 <strong>Available Beds:</strong> {dept.available_beds ?? "N/A"}
-                              </span>
+                              </span> */}
                               <span>
                                 <strong>Status:</strong>{" "}
                                 {dept.is_active ? (

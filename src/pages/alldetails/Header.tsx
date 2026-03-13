@@ -1,4 +1,4 @@
-import { HeartPulse, LogIn, Menu, UserPlus, X } from 'lucide-react';
+import { HeartPulse, LogIn, Menu, UserPlus, X, Home, Info, Stethoscope, Building2, Bed, Calendar, ChevronDown, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -15,361 +15,395 @@ const Header = () => {
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-   const checkUser = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-  
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-  
-        if (currentUser) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, role, user_id, first_name, last_name, email")
-            .eq("user_id", currentUser.id)
-            .maybeSingle();
-  
-          if (profile) {
-            setUserRole(profile.role || null);
-          }
-        }
-  
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    // Check user on mount and set up auth listener
-    useEffect(() => {
-      checkUser();
-  
-      // Set up auth state listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-          // Use an async function inside the callback
-          const fetchUserRole = async () => {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("role")
-              .eq("user_id", currentUser.id)
-              .maybeSingle();
-  
-            // if (profile) {
-            //   setUserRole(profile.role);
-            // }
-            if (profile) {
-  
-    // ✅ ADD THIS CONDITION ONLY
-    if (profile.role === "hospital_admin") {
-      setUserRole("facility");
-    } else {
-      setUserRole(profile.role || null);
-    }
-  
-  }
-          };
-          fetchUserRole();
-        } else {
-          setUserRole(null);
-        }
-        setLoading(false);
-      });
-  
-      return () => subscription.unsubscribe();
-    }, []);
-  
-    useEffect(() => {
-      const checkRole = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-  
-        if (!session) {
-          // If no session, don't redirect - this should only run when user is logged in
-          return;
-        }
-  
+  const [userRole, setUserRole] = useState<"patient" | "doctor" | "facility" | null>(null);
+
+  const checkUser = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+
+      if (currentUser) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("id, role, user_id, first_name, last_name, email")
-          .eq("user_id", session.user.id)
+          .eq("user_id", currentUser.id)
           .maybeSingle();
-  
+
         if (profile) {
-          // Check based on the actual role from database
-          if (profile.role === "patient") {
-            const { data: patient } = await supabase
-              .from("patient")
-              .select("id")
-              .eq("user_id", session.user.id)
-              .maybeSingle();
-              
-            if (!patient) {
-              // Patient profile exists but no patient record
-              console.log("Patient profile incomplete");
-            } // Fixed: Navigate to patient dashboard
-          } else if (profile.role === "doctor") {
-            // Check if doctor has a medical_professionals record
-            const { data: doctor } = await supabase
-              .from("medical_professionals")
-              .select("id")
-              .eq("user_id", session.user.id)
-              .maybeSingle();
-              
-            if (!doctor) {
-              // Doctor profile exists but no medical_professionals record
-              console.log("Doctor profile incomplete");
-            } // Fixed: Navigate to doctor dashboard
-          } else if (profile.role === "facility") {
-            // Check if facility has a facilities record
-            const { data: facility } = await supabase
-              .from("facilities")
-              .select("id")
-              .eq("admin_user_id", session.user.id)
-              .maybeSingle();
-              
-            if (!facility) {
-              console.log("Facility profile incomplete");
-            }// Fixed: Navigate to facility dashboard
+          if (profile.role === "hospital_admin") {
+            setUserRole("facility");
           } else {
-            // Unknown role or no role
-            navigate("/");
+            setUserRole(profile.role || null);
           }
-        } else {
-          // No profile found
-          navigate("/");
         }
-      };
-  
-      // Only run checkRole if user exists
-      if (user) {
-        checkRole();
       }
-    }, [user, navigate]); 
- const handleLogout = async () => {
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check user on mount and set up auth listener
+  useEffect(() => {
+    checkUser();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const fetchUserRole = async () => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("user_id", currentUser.id)
+            .maybeSingle();
+
+          if (profile) {
+            if (profile.role === "hospital_admin") {
+              setUserRole("facility");
+            } else {
+              setUserRole(profile.role || null);
+            }
+          }
+        };
+        fetchUserRole();
+      } else {
+        setUserRole(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, role, user_id, first_name, last_name, email")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (profile) {
+        if (profile.role === "patient") {
+          const { data: patient } = await supabase
+            .from("patient")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+            
+          if (!patient) {
+            console.log("Patient profile incomplete");
+          }
+        } else if (profile.role === "doctor") {
+          const { data: doctor } = await supabase
+            .from("medical_professionals")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+            
+          if (!doctor) {
+            console.log("Doctor profile incomplete");
+          }
+        } else if (profile.role === "facility" || profile.role === "hospital_admin") {
+          const { data: facility } = await supabase
+            .from("facilities")
+            .select("id")
+            .eq("admin_user_id", session.user.id)
+            .maybeSingle();
+            
+          if (!facility) {
+            console.log("Facility profile incomplete");
+          }
+        }
+      }
+    };
+
+    if (user) {
+      checkRole();
+    }
+  }, [user, navigate]);
+
+  const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
       setUserRole(null);
+      setMobileMenuOpen(false);
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
     }
-  };
-  const [userRole, setUserRole] = useState<"patient" | "doctor" | "facility" | null>(null);
-  const handleLoginRedirect = (path) => {
-    navigate(path || '/login/patient');
-  };
-
-  const handleSignupRedirect = () => {
-    navigate('/signup/patient');
   };
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
 
+  const navigationLinks = [
+    { name: 'Home', path: '/', icon: <Home size={18} /> },
+    { name: 'About', path: '/about', icon: <User size={18} /> },
+    { name: 'Find Doctors', path: '/appointment/doctors', icon: <Stethoscope size={18} /> },
+    { name: 'Find Hospitals', path: '/appointment/hospitals', icon: <Building2 size={18} /> },
+    { name: 'Book Appointment', path: '/appointment/beds', icon: <Calendar size={18} /> },
+  ];
+
+  // Handle navigation with proper event prevention
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <div className="bg-white shadow-sm sticky-top">
-      {/* <nav className="navbar navbar-expand-lg navbar-light py-3">
-        <div className="container">
-          <a className="navbar-brand d-flex align-items-center" href="/">
-            <img
-              src="/favicon.svg"
-              alt="NextGen Medical"
-              className="me-2"
-              style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-            />
-            <span className="fw-bold fs-4">NextGen Medical</span>
-          </a>
+    <div className="bg-white shadow-sm sticky top-0 z-50">
+      <nav className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity" 
+              onClick={closeMobileMenu}
+            >
+              <img
+                src="/favicon.svg"
+                alt="NextGen Medical"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-md object-contain"
+              />
+              <span className="text-lg sm:text-xl font-bold truncate max-w-[150px] sm:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
+                NextGen Medical
+              </span>
+            </Link>
 
-          <button
-            className="navbar-toggler border-0"
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-expanded={mobileMenuOpen}
-            aria-label="Toggle navigation"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-
-          <div className={`collapse navbar-collapse${mobileMenuOpen ? ' show' : ''}`}> 
-            <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
-              <li className="nav-item mx-lg-2">
-                <a 
-                  className="nav-link text-dark fw-semibold" 
-                  href="#doctors"
-                  onClick={closeMobileMenu}
+            {/* Desktop Navigation Links - Hidden on mobile */}
+            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2">
+              {navigationLinks.map((link) => (
+                <Button
+                  key={link.name}
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(link.path);
+                  }}
+                  className="flex items-center gap-1 px-2 xl:px-3 text-sm xl:text-base hover:bg-blue-50 hover:text-blue-600 transition-all"
                 >
-                  Doctors
-                </a>
-              </li>
-              <li className="nav-item mx-lg-2">
-                <a 
-                  className="nav-link text-dark fw-semibold" 
-                  href="#hospitals"
-                  onClick={closeMobileMenu}
-                >
-                  Hospitals
-                </a>
-              </li>
-              <li className="nav-item mx-lg-2">
-                <a 
-                  className="nav-link text-dark fw-semibold" 
-                  href="#beds"
-                  onClick={closeMobileMenu}
-                >
-                  Bed Availability
-                </a>
-              </li>
-              <li className="nav-item mx-lg-2">
-                <a 
-                  className="nav-link text-dark fw-semibold" 
-                  href="#services"
-                  onClick={closeMobileMenu}
-                >
-                  Services
-                </a>
-              </li>
-              <li className="nav-item mx-lg-2">
-                <a 
-                  className="nav-link text-dark fw-semibold" 
-                  href="#contact"
-                  onClick={closeMobileMenu}
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
-            <div className="d-flex gap-2 mt-3 mt-lg-0">
-              <button
-                className="btn btn-outline-primary d-flex align-items-center gap-2 px-4"
-                onClick={() => {
-                  handleLoginRedirect('/login/patient');
-                  closeMobileMenu();
-                }}
-              >
-                <LogIn size={18} />
-                <span>Login</span>
-              </button>
-              <button
-                className="btn btn-primary d-flex align-items-center gap-2 px-4"
-                onClick={() => {
-                  handleSignupRedirect();
-                  closeMobileMenu();
-                }}
-              >
-                <UserPlus size={18} />
-                <span>Sign Up</span>
-              </button>
+                  <span className="text-blue-600">{link.icon}</span>
+                  <span>{link.name}</span>
+                </Button>
+              ))}
             </div>
+
+            {/* Auth Buttons - Desktop */}
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
+              {!user ? (
+                <>
+                  {/* Sign In Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="flex items-center gap-1 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        Sign In
+                        <ChevronDown size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleNavigation("/login/patient")}>
+                        Patient Login
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigation("/login/doctor")}>
+                        Doctor Login
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigation("/login/facility")}>
+                        Facility Login
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Register Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 border-0"
+                      >
+                        Get Started
+                        <ChevronDown size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleNavigation("/register/patient")}>
+                        Patient Register
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigation("/register/doctor")}>
+                        Doctor Register
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigation("/register/facility")}>
+                        Facility Register
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleNavigation(userRole ? `/dashboard/${userRole}` : "/")}
+                    disabled={!userRole}
+                    className="text-sm lg:text-base border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleNavigation(userRole ? `/dashboard/${userRole}/profile` : "/")}
+                    className="text-sm lg:text-base border-green-600 text-green-600 hover:bg-green-50"
+                  >
+                    Profile
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleLogout}
+                    className="text-sm lg:text-base bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Logout
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
-        </div>
-      </nav> */}
-       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container flex h-16 items-center justify-between" >
-                  <Link to="/" className="flex items-center space-x-2">
-                    
-                    <img
-                      src="/favicon.svg"
-                      alt="NextGen Medical"
-                      className="h-8 w-8 rounded-md object-contain mt-1"
-                    />
-                    <span className="text-xl font-bold">NextGen Medical</span>
-                  </Link>
-                  
-                  <div className="flex items-center space-x-4">
-                    {!user ? (
-                      // <>
-                      //   <Button variant="ghost" onClick={() => navigate("/login")}>
-                      //     Sign In
-                      //   </Button>
-                      //   <Button variant="hero" onClick={() => navigate("/register")}>
-                      //     Get Started
-                      //   </Button>
-                      // </>
-      
-      <>
-        {/* Sign In Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost">
-              Sign In
-            </Button>
-          </DropdownMenuTrigger>
-      
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/login/patient")}>
-              Patient Login
-            </DropdownMenuItem>
-      
-            <DropdownMenuItem onClick={() => navigate("/login/doctor")}>
-              Doctor Login
-            </DropdownMenuItem>
-      
-            <DropdownMenuItem onClick={() => navigate("/login/facility")}>
-              Facility Login
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      
-      
-        {/* Register Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="hero">
-              Get Started
-            </Button>
-          </DropdownMenuTrigger>
-      
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/register/patient")}>
-              Patient Register
-            </DropdownMenuItem>
-      
-            <DropdownMenuItem onClick={() => navigate("/register/doctor")}>
-              Doctor Register
-            </DropdownMenuItem>
-      
-            <DropdownMenuItem onClick={() => navigate("/register/facility")}>
-              Facility Register
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </>
-                    ) : (
-                      <>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t py-4 animate-in slide-in-from-top duration-300">
+              <div className="flex flex-col space-y-3">
+                {/* Navigation Links */}
+                {navigationLinks.map((link) => (
+                  <Button
+                    key={link.name}
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigation(link.path);
+                    }}
+                    className="flex items-center justify-start gap-3 w-full px-4 py-2 text-base hover:bg-blue-50"
+                  >
+                    <span className="text-blue-600">{link.icon}</span>
+                    <span>{link.name}</span>
+                  </Button>
+                ))}
+
+                <div className="border-t my-2"></div>
+
+                {/* Auth Buttons - Mobile */}
+                {!user ? (
+                  <>
+                    <div className="px-4 py-2">
+                      <p className="text-sm font-semibold text-gray-500 mb-2">Sign In As</p>
+                      <div className="space-y-2">
                         <Button
-                          variant="ghost"
-                          onClick={() => navigate(userRole ? `/dashboard/${userRole}` : "/")}
-                          disabled={!userRole}
+                          variant="outline"
+                          onClick={() => handleNavigation("/login/patient")}
+                          className="w-full justify-start border-blue-600 text-blue-600 hover:bg-blue-50"
                         >
-                          Dashboard
+                          Patient Login
                         </Button>
                         <Button
-                          variant="ghost"
-                          onClick={() => navigate(userRole ? `/dashboard/${userRole}/profile` : "/")}
+                          variant="outline"
+                          onClick={() => handleNavigation("/login/doctor")}
+                          className="w-full justify-start border-green-600 text-green-600 hover:bg-green-50"
                         >
-                          Profile
+                          Doctor Login
                         </Button>
                         <Button
-                          variant="destructive"
-                          onClick={handleLogout}
+                          variant="outline"
+                          onClick={() => handleNavigation("/login/facility")}
+                          className="w-full justify-start border-purple-600 text-purple-600 hover:bg-purple-50"
                         >
-                          Logout
+                          Facility Login
                         </Button>
-                      </>
-                    )}
+                      </div>
+                    </div>
+
+                    <div className="px-4 py-2">
+                      <p className="text-sm font-semibold text-gray-500 mb-2">Register As</p>
+                      <div className="space-y-2">
+                        <Button
+                          className="w-full justify-start bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 border-0"
+                          onClick={() => handleNavigation("/register/patient")}
+                        >
+                          Patient Register
+                        </Button>
+                        <Button
+                          className="w-full justify-start bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 border-0"
+                          onClick={() => handleNavigation("/register/doctor")}
+                        >
+                          Doctor Register
+                        </Button>
+                        <Button
+                          className="w-full justify-start bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 border-0"
+                          onClick={() => handleNavigation("/register/facility")}
+                        >
+                          Facility Register
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-4 space-y-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleNavigation(userRole ? `/dashboard/${userRole}` : "/")}
+                      className="w-full justify-start border-blue-600 text-blue-600 hover:bg-blue-50"
+                      disabled={!userRole}
+                    >
+                      Dashboard
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleNavigation(userRole ? `/dashboard/${userRole}/profile` : "/")}
+                      className="w-full justify-start border-green-600 text-green-600 hover:bg-green-50"
+                    >
+                      Profile
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleLogout}
+                      className="w-full justify-start bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Logout
+                    </Button>
                   </div>
-                </div>
-              </nav>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
     </div>
   );
 };

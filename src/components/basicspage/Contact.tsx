@@ -109,8 +109,9 @@ const Contact = () => {
                     Have Any Questions For Us?
                   </h2>
                   <p className="section-subtitle text-gray-600 mb-6">
-                    Various versions have evolved over the years, sometimes by
-                    accident, sometimes on purpose injected humour and the like.
+                    We're here to help with any questions about appointment booking, 
+                    bed reservations, or our healthcare services. Our team typically 
+                    responds within 24 hours.
                   </p>
 
                   {submitStatus.message && (
@@ -238,11 +239,13 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">UK Office</h3>
                     <p className="info-content text-gray-600">
-                      THEFUTUREMED Global LLC
+                      HealGlobe Global LLC
                       <br />
                       128 City Road
                       <br />
                       London, EC1V 2NX
+                      <br />
+                      United Kingdom
                     </p>
                   </div>
                 </div>
@@ -250,13 +253,13 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">Dubai Office</h3>
                     <p className="info-content text-gray-600">
-                      PMHS Tech Solutions
+                      HealGlobe Tech Solutions
                       <br />
                       Al Quasis,
                       <br />
                       Rag business hub,
                       <br />
-                      Dubai.
+                      Dubai, UAE
                       <br />
                       <br />
                       <a href="tel:+971504649918" className="text-blue-600">
@@ -269,11 +272,11 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">USA Office</h3>
                     <p className="info-content text-gray-600">
-                      THEFUTUREMED Global LLC
+                      HealGlobe Global LLC
                       <br />
                       8 The Green Suite B, Dover, Delaware 19901
                       <br />
-                      Sheridan, WY 82801
+                      United States
                       <br />
                       <br />
                       <a href="tel:+13073104473" className="text-blue-600">
@@ -287,18 +290,18 @@ const Contact = () => {
                     <h3 className="info-title font-bold mb-2">Email</h3>
                     <p className="info-content text-gray-600">
                       <a
-                        href="mailto:drshan@thefuturemed.com"
+                        href="mailto:contact@healglobe.com"
                         className="text-blue-600"
                       >
-                        drshan@thefuturemed.com
+                        contact@healglobe.com
                       </a>
                     </p>
                     <p className="info-content text-gray-600">
                       <a
-                        href="mailto: support@thefuturemed.com"
+                        href="mailto:support@healglobe.com"
                         className="text-blue-600"
                       >
-                        support@thefuturemed.com
+                        support@healglobe.com
                       </a>
                     </p>
                   </div>
@@ -309,7 +312,7 @@ const Contact = () => {
                 <h3 className="info-title font-bold mb-4">Our Location</h3>
                 <div className="map-container mb-4">
                   <iframe
-                    title="PMHS Health Care Physio Rehab Services Location"
+                    title="HealGlobe Healthcare Services Location"
                     width="100%"
                     height="300"
                     frameBorder="0"

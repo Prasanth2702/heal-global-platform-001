@@ -207,7 +207,7 @@ mixpanelInstance.track('Login Attempt', {
             </div>
 
             <div className="text-right">
-              <Button variant="link" className="p-0 h-auto text-sm">
+              <Button variant="link" className="p-0 h-auto text-sm" onClick={() => navigate("/forgot-password/" + userType)}>
                 Forgot password?
               </Button>
             </div>
@@ -223,7 +223,7 @@ mixpanelInstance.track('Login Attempt', {
         </TabsContent>
       </Tabs>
 
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-center text-sm text-muted-foreground  mt-3">
         Don't have an account?{" "}
         <Button 
           variant="link" 

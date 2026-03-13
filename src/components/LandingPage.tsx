@@ -395,6 +395,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import Footer from "@/pages/alldetails/Footer";
+import Header from "@/pages/alldetails/Header";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -596,7 +597,7 @@ const LandingPage = () => {
       
       <div className="min-h-screen bg-background">
         {/* Navigation */}
-        <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        {/* <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
               <img
@@ -619,7 +620,7 @@ const LandingPage = () => {
                 // </>
 
 <>
-  {/* Sign In Dropdown */}
+  {/* Sign In Dropdown 
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost">
@@ -643,7 +644,7 @@ const LandingPage = () => {
   </DropdownMenu>
 
 
-  {/* Register Dropdown */}
+  {/* Register Dropdown
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="hero">
@@ -691,7 +692,8 @@ const LandingPage = () => {
               )}
             </div>
           </div>
-        </nav>
+        </nav> */}
+        <Header/>
 
         {/* Smart Hero Carousel */}
         <HeroCarousel />
@@ -734,7 +736,8 @@ const LandingPage = () => {
                         <Button
                           variant={userType.variant}
                           className="w-full mt-6"
-                          onClick={() => navigate(`/register/${userType.variant}`)} // Fixed: Removed role from path
+                          onClick={() => navigate(`/login/${userType.variant}`)} // Fixed: Removed role from path
+                          // onClick={() => navigate(`/register/${userType.variant}`)} // Fixed: Removed role from path
                         >
                           Access Portal
                         </Button>

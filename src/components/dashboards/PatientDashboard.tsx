@@ -302,6 +302,26 @@ useEffect(() => {
   //   { id: 2, name: "ECG Report", date: "2024-01-08", doctor: "Dr. Sarah Johnson" },
   //   { id: 3, name: "X-Ray Chest", date: "2024-01-05", doctor: "Dr. Michael Chen" }
   // ];
+const recentReports = [
+  {
+    id: 1,
+    name: "Doctor Appointment",
+    doctor:
+      "Browse qualified doctors across multiple specialties. View doctor profiles, experience, availability, and patient reviews to choose the best healthcare professional for your needs."
+  },
+  {
+    id: 2,
+    name: "Hospital Appointment",
+    doctor:
+      "Explore hospitals and healthcare facilities near you. Check available departments, doctors, services, and medical infrastructure to choose the right hospital for your treatment."
+  },
+  {
+    id: 3,
+    name: "Bed Booking",
+    doctor:
+      "Check real-time hospital bed availability and reserve beds instantly. This feature helps patients and families quickly secure ICU, general, or emergency beds when needed."
+  }
+];
 
   const carePlans = [
     {
@@ -675,7 +695,7 @@ useEffect(() => {
         </Card>
 
         {/* Recent Medical Reports */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-emerald-50">
+        {/* <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-emerald-50">
           <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-lg">
             <CardTitle className="flex items-center text-xl">
               <FileText className="mr-2 h-6 w-6" />
@@ -684,7 +704,7 @@ useEffect(() => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4 mt-2">
-              {/* {recentReports.slice(0, 3).map((report) => (
+              {recentReports.slice(0, 3).map((report) => (
                 <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{report.name}</p>
@@ -695,7 +715,7 @@ useEffect(() => {
                     View
                   </Button>
                 </div>
-              ))}  */}
+              ))} 
              <div className="text-center py-4 text-muted-foreground">
                   No Manage Documents
                 </div>
@@ -708,7 +728,53 @@ useEffect(() => {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
+     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-emerald-50">
+  
+  <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-lg">
+    <CardTitle className="flex items-center text-xl">
+      <Calendar className="mr-2 h-6 w-6" />
+      Appointments
+    </CardTitle>
+  </CardHeader>
+
+  <CardContent>
+    <div className="space-y-4 mt-2">
+
+      <p className="text-sm text-muted-foreground">
+        Easily schedule and manage your medical appointments with trusted doctors.
+        Select your preferred hospital, doctor, and time slot to book consultations quickly.
+      </p>
+
+      {recentReports.slice(0, 3).map((report) => (
+        <div
+          key={report.id}
+          className="p-3 border rounded-lg bg-white shadow-sm hover:bg-emerald-50 transition"
+        >
+          <div className="space-y-1">
+            <p className="font-medium text-sm">{report.name}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {report.doctor}
+            </p>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+        onClick={() => {
+          trackButtonClick("Appointments");
+          handleTabChange("appointments");
+        }}
+      >
+        <Calendar className="mr-2 h-4 w-4" />
+        Book Appointment
+      </Button>
+
+    </div>
+  </CardContent>
+
+</Card>
       </div>
 
       {/* Care Plans */}

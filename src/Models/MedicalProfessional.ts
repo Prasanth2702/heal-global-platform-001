@@ -14,5 +14,6 @@ export interface MedicalProfessional {
   additionalQualifications?: string;
   aboutYourself?: string;
   kycVerified: boolean; 
-  languagesKnown:string
+  languagesKnown:string;
+  isVerified:boolean;
 }

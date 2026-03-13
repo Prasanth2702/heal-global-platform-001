@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface PatientGuardProps {
   children: React.ReactNode;
@@ -25,7 +26,8 @@ const PatientGuard: React.FC<PatientGuardProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        navigate('/homelogin');
+        navigate('/appointment');
+        // navigate('/homelogin');
         return;
       }
 
@@ -38,13 +40,21 @@ const PatientGuard: React.FC<PatientGuardProps> = ({
       if (data) {
         setIsPatient(true);
       } else {
-        alert('Access Denied: This area is for patients only. Please login with a patient account.');
-        navigate('/homelogin');
+        toast({
+          title: "Access Denied",
+          description: "This area is for patients only. Please login with a patient account."
+        });
+        navigate('/appointment');
+        // navigate('/homelogin');
       }
     } catch (error) {
       console.error('Error checking patient access:', error);
-      alert('Error verifying access. Please try again.');
-      navigate('/homelogin');
+      toast({
+        title: "Error verifying access",
+        description: "Please try again."
+      });
+      navigate('/appointment');
+      // navigate('/homelogin');
     } finally {
       setLoading(false);
     }

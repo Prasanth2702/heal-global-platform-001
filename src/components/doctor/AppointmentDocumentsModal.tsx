@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
+import toast from "react-hot-toast";
 
 interface Props {
   open: boolean;
@@ -69,7 +70,7 @@ const doctorDocs = documents.filter(
         .createSignedUrl(doc.file_path, 60);
 
       if (error || !data?.signedUrl) {
-        alert("Failed to open document");
+        toast.error("Failed to open document");
         return;
       }
 

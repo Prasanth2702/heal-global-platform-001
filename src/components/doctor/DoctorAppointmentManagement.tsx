@@ -184,6 +184,7 @@ import DoctorAppointmentCard from "./DoctorAppointmentCard";
 import { Button } from "@/components/ui/button";
 import VideoMeeting from "../VideoMeeting";
 import mixpanelInstance from "@/utils/mixpanel";
+import { toast } from "@/hooks/use-toast";
 
 export interface DoctorAppointment {
   id: string;
@@ -327,17 +328,17 @@ export default function DoctorAppointmentManagement() {
     const appointmentData = appointments.find((apt) => apt.id === appointmentId);
     
     if (!appointmentData || !apiKey) {
-      alert("Unable to start video meeting");
+      toast({ title: "Unable to start video meeting" });
       return;
     }
 
     if (appointmentData.type !== "teleconsultation") {
-      alert("This appointment is not a teleconsultation");
+      toast({ title: "This appointment is not a teleconsultation" });
       return;
     }
 
     if (appointmentData.status !== "confirmed") {
-      alert("Only confirmed appointments can be started");
+      toast({ title: "Only confirmed appointments can be started" });
       return;
     }
 

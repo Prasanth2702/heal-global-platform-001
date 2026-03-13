@@ -565,6 +565,7 @@ import { useState, useEffect } from "react";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import { mixpanelInstance } from "@/utils/mixpanel";
+import { toast } from "sonner";
 
 interface Props {
   appointment: DoctorAppointment;
@@ -616,7 +617,7 @@ export default function DoctorAppointmentCard({
 
   const cancelAppointment = async () => {
     if (!reason.trim()) {
-      alert("Cancellation reason is required");
+      toast.error("Cancellation reason is required");
       return;
     }
 
@@ -667,7 +668,7 @@ export default function DoctorAppointmentCard({
       onRefresh();
     } catch (err) {
       console.error(err);
-      alert("Failed to cancel appointment");
+      toast.error("Failed to cancel appointment");
     } finally {
       setLoading(false);
     }
@@ -675,19 +676,19 @@ export default function DoctorAppointmentCard({
 
   const startTeleconsultation = () => {
     if (!apiKey) {
-      alert("Video conferencing is not configured properly");
+      toast.error("Video conferencing is not configured properly");
       return;
     }
 
     // Check if it's teleconsultation
     if (enhancedAppointment.type !== "teleconsultation") {
-      alert("This appointment is not a teleconsultation");
+      toast.error("This appointment is not a teleconsultation");
       return;
     }
 
     // Check if appointment is confirmed
     if (enhancedAppointment.status !== "confirmed") {
-      alert("Only confirmed appointments can be started");
+      toast.error("Only confirmed appointments can be started");
       return;
     }
 
@@ -876,7 +877,7 @@ export default function DoctorAppointmentCard({
                 onClick={() => {
                   setCompletedWithoutDoc(true);
                   setOpenComplete(false);
-                  alert(
+                  toast.success(
                     "Appointment marked as completed (with no prescription)"
                   );
                 }}

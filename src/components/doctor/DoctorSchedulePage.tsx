@@ -50,6 +50,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { mixpanelInstance } from '@/utils/mixpanel';
+import { toast } from '@/hooks/use-toast';
 
 // Set up the calendar localizer
 const localizer = momentLocalizer(moment);
@@ -307,7 +308,7 @@ const DoctorSchedulePage: React.FC = () => {
       }
     );
     // Demo: Just show success message
-    alert(isEditMode ? 'Appointment updated (demo)' : 'Appointment created (demo)');
+    toast({ title: isEditMode ? 'Appointment updated (demo)' : 'Appointment created (demo)' });
     setIsAppointmentDialogOpen(false);
   };
 
@@ -318,7 +319,7 @@ const DoctorSchedulePage: React.FC = () => {
         apt.id === appointmentId ? { ...apt, status: newStatus } : apt
       )
     );
-    alert(`Status changed to ${newStatus} (demo)`);
+    toast({ title: `Status changed to ${newStatus} (demo)` });
   };
 
   const handleDeleteAppointment = (appointmentId: string) => {
@@ -327,7 +328,7 @@ const DoctorSchedulePage: React.FC = () => {
     // Demo: Remove from local state
     setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
     setIsAppointmentDialogOpen(false);
-    alert('Appointment deleted (demo)');
+    toast({ title: 'Appointment deleted (demo)' });
   };
 
   // Helper functions

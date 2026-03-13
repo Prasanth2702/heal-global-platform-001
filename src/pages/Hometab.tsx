@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 interface Doctor {
   id: string;
@@ -188,13 +189,24 @@ const createSlug = (text: string) => {
   onClick: () => void;
   children: React.ReactNode;
   className?: string;
-}> = ({ onClick, children, className }) => {
+  path?:string;
+}> = ({ onClick, children, className,path }) => {
   const [isPatient, setIsPatient] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
-    if (!user) {
-      navigate('/homelogin');
+    // if (!user) {
+    //   navigate('/appointment');
+    //   // navigate('/homelogin');
+    //   return;
+    // }
+      if (!user) {
+      // If not logged in, navigate to the appropriate appointment view
+      if (path) {
+        navigate(path); // Use the provided path
+      } else {
+        navigate('/appointment'); // Default fallback
+      }
       return;
     }
 
@@ -209,11 +221,20 @@ const createSlug = (text: string) => {
       if (data) {
         onClick(); // Patient can proceed
       } else {
-        navigate('/homelogin');
+          if (path) {
+          navigate(path);
+        } else {
+          navigate('/appointment');
+        }
+        // navigate('/appointment');
+        // navigate('/homelogin');
       }
     } catch (error) {
       console.error('Error verifying patient:', error);
-      alert('Unable to verify account type. Please try again.');
+      toast({
+        title: "Unable to verify account type",
+        description: "Please try again."
+      });
     } finally {
       setLoading(false);
     }
@@ -257,16 +278,28 @@ const createSlug = (text: string) => {
   // };
 const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   if (requiresAuth) {
-    if (!user) {
-      navigate('/homelogin');
+    // if (!user) {
+    //   navigate('/appointment');
+    //   // navigate('/homelogin');
+    //   return;
+    // }
+  if (!user) {
+      // If not logged in, navigate to the appropriate appointment view
+      if (path) {
+        navigate(path); // Use the provided path
+      } else {
+        navigate('/appointment'); // Default fallback
+      }
       return;
     }
-
     // Check if user is a patient for booking-related paths
     if (path.includes('book') || path.includes('bed') || path.includes('doctor/')) {
       const isPatient = await checkIfPatient(user.id);
       if (!isPatient) {
-        alert('Only patients can book appointments and beds. Please login with a patient account.');
+        toast({
+          title: "Access Denied",
+          description: "Only patients can book appointments and beds. Please login with a patient account."
+        });
         return;
       }
     }
@@ -1202,7 +1235,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
             </div>
             <div className="d-flex gap-2">
               <div className="d-flex align-items-center gap-2">
-                <PatientProtectedButton className="btn btn-outline-primary" onClick={() => handleNavigation('/dashboard/patient/search', true)}>
+                <PatientProtectedButton className="btn btn-outline-primary" onClick={() => handleNavigation('/dashboard/patient/search', true)} path="/appointment">
                   <i className="bi bi-person-circle me-2"></i>
                   View All
                 </PatientProtectedButton>
@@ -1261,7 +1294,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
         <h1 className="t text-white">Doctors</h1>
-        <PatientProtectedButton className="btn btn-light text-primary fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)}>
+        <PatientProtectedButton className="btn btn-light text-primary fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)}  path="/appointment/doctors" >
           View All Doctors →
         </PatientProtectedButton>
       </div>
@@ -1276,7 +1309,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
         <h1 className="t text-white">Hospitals</h1>
-        <PatientProtectedButton className="btn btn-light text-success fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)}>
+        <PatientProtectedButton className="btn btn-light text-success fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)} path="/appointment/hospitals">
           View All Hospitals →
         </PatientProtectedButton>
       </div>
@@ -1291,7 +1324,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
         <h1 className="t text-white">Bed Bookings</h1>
-        <PatientProtectedButton className="btn btn-light" onClick={() => handleNavigation('/dashboard/patient/book/patient-facilities', true)}>
+        <PatientProtectedButton className="btn btn-light" onClick={() => handleNavigation('/dashboard/patient/book/patient-facilities', true)} path="/appointment/beds">
   View All Bookings →
 </PatientProtectedButton>
       </div>

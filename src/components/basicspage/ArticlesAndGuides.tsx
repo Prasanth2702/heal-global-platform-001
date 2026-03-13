@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import {
   ChevronRight,
@@ -24,12 +22,21 @@ import {
   Star,
   Users,
   MessageCircle,
+  Calendar,
+  Bed,
+  Hospital,
+  Stethoscope,
+  User,
+  Building,
+  Ambulance,
+  HeartPulse,
+  Video,
 } from "lucide-react";
 import Header from "@/pages/alldetails/Header";
 import Footer from "@/pages/alldetails/Footer";
 
 // FAQ Model Component - Reusable across all pages
-const FAQModel = ({ faqs, title = "Payment-Related FAQs" }) => {
+const FAQModel = ({ faqs, title = "Payment & Booking FAQs" }) => {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
 
   return (
@@ -71,13 +78,6 @@ const FAQModel = ({ faqs, title = "Payment-Related FAQs" }) => {
                 }`}
               />
             </button>
-            {/* {expandedFAQ === faq.id && (
-              <div className="px-6 pb-6">
-                <div className="border-t border-gray-200 pt-4">
-                  <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
-                </div>
-              </div>
-            )} */}
           </div>
         ))}
       </div>
@@ -85,168 +85,95 @@ const FAQModel = ({ faqs, title = "Payment-Related FAQs" }) => {
   );
 };
 
-// Guides Component
-const GuidesSection = () => {
+// Guides Component for Patients
+const PatientsGuideSection = () => {
   const [expandedGuide, setExpandedGuide] = useState(null);
 
   const guides = [
     {
       id: 1,
-      title: "What is TheFutureMed?",
-      category: "overview",
+      title: "How to Book an Appointment on HealGlobe.com",
+      category: "patients",
       excerpt:
-        "TheFutureMed is a global medical network and career hub for students, professionals, and healthcare organizations...",
-      icon: <BookOpen className="h-5 w-5" />,
+        "Learn how to easily book doctor appointments online, choose your preferred time slot, and manage your healthcare visits.",
+      icon: <Calendar className="h-5 w-5" />,
       readTime: "3 min read",
       content: {
         introduction:
-          "TheFutureMed is a global platform designed to connect medical professionals, students, and organizations. It helps users access medical networks, career opportunities, and knowledge-sharing tools across the healthcare ecosystem.",
+          "Booking appointments through HealGlobe.com is simple and convenient. Follow these steps to schedule your next visit:",
         steps: [
-          "Global networking for doctors, students, and healthcare experts",
-          "Career hub with jobs, internships, and resume/skill tools",
-          "Medical events including seminars, conferences, and workshops",
-          "Knowledge resources such as articles, webinars, and courses",
+          "Log in to your HealGlobe.com account",
+          "Search for doctors by specialty, location, or hospital name",
+          "View doctor profiles, patient reviews, and available time slots",
+          "Select a convenient time slot that works for you",
+          "Confirm your booking and make payment if required",
+          "Receive instant confirmation via SMS and email",
+          "Attend your appointment (in-person or video consultation)",
         ],
       },
     },
     {
       id: 2,
-      title: "Who is TheFutureMed For?",
-      category: "audience",
+      title: "How to Reserve a Hospital Bed",
+      category: "patients",
       excerpt:
-        "The platform is built for medical students, healthcare professionals, recruiters, and researchers looking for opportunities...",
-      icon: <Users className="h-5 w-5" />,
-      readTime: "3 min read",
+        "Step-by-step guide to booking hospital beds for planned admissions or emergencies through our platform.",
+      icon: <Bed className="h-5 w-5" />,
+      readTime: "4 min read",
       content: {
         introduction:
-          "TheFutureMed serves a wide audience across the medical industry, offering tools for learning, networking, and career growth.",
+          "HealGlobe.com makes bed reservations simple. Here's how to secure a bed for your hospital stay:",
         steps: [
-          "Medical students and fresh graduates seeking roles or internships",
-          "Doctors, nurses, and specialists building professional networks",
-          "Recruiters and hospitals searching for top medical talent",
-          "Researchers and innovators exploring collaborations",
+          "Search for hospitals by location and bed type (ICU, General Ward, Private Room)",
+          "Check real-time bed availability and estimated costs",
+          "Review hospital details, amenities, and insurance acceptance",
+          "Select your preferred hospital and bed type",
+          "Complete the reservation with advance payment if required",
+          "Receive bed allocation confirmation with admission instructions",
+          "Direct hospital admission upon arrival with minimal paperwork",
         ],
       },
     },
     {
       id: 3,
-      title: "What Services Does TheFutureMed Offer?",
-      category: "services",
+      title: "Booking Diagnostic Tests & Health Checkups",
+      category: "patients",
       excerpt:
-        "TheFutureMed offers networking tools, job support, education resources, and seminar/conference access...",
-      icon: <Zap className="h-5 w-5" />,
-      readTime: "4 min read",
+        "Schedule lab tests and health packages at NABL accredited laboratories with home sample collection.",
+      icon: <HeartPulse className="h-5 w-5" />,
+      readTime: "3 min read",
       content: {
         introduction:
-          "The platform includes multiple tools to help users advance their careers, collaborate with others, and stay updated on medical trends.",
+          "Get your health checkups done easily through HealGlobe.com:",
         steps: [
-          "Networking features to connect with peers and mentors",
-          "Career tools including job listings and resume support",
-          "Educational resources like webinars and articles",
-          "Seminar and conference discovery with global access",
-          "International opportunities for collaboration and remote work",
+          "Browse available diagnostic tests and health packages",
+          "Select your preferred lab or diagnostic center",
+          "Choose between lab visit or home sample collection",
+          "Pick a convenient date and time slot",
+          "Complete booking and payment",
+          "Receive sample collection confirmation or lab visit details",
+          "Get digital reports delivered to your account",
         ],
       },
     },
     {
       id: 4,
-      title: "How Does TheFutureMed Work?",
-      category: "usage",
+      title: "Managing Your Appointments & Bookings",
+      category: "patients",
       excerpt:
-        "Create your profile, explore resources, engage with the community, and grow your career...",
-      icon: <Smartphone className="h-5 w-5" />,
-      readTime: "3 min read",
-      content: {
-        introduction:
-          "TheFutureMed is designed to be simple and intuitive, guiding users through learning, connecting, and professional growth.",
-        steps: [
-          "Sign up and create your medical profile",
-          "Explore jobs, networks, and upcoming events",
-          "Engage by joining discussions or applying to opportunities",
-          "Grow through analytics, mentors, and event participation",
-        ],
-      },
-    },
-    {
-      id: 5,
-      title: "Is TheFutureMed Free?",
-      category: "pricing",
-      excerpt:
-        "Basic features are free, with optional premium upgrades for advanced tools...",
-      icon: <Shield className="h-5 w-5" />,
+        "Learn how to view, reschedule, or cancel your appointments and bed reservations.",
+      icon: <Clock className="h-5 w-5" />,
       readTime: "2 min read",
       content: {
         introduction:
-          "TheFutureMed provides free access to core features such as networking, profile creation, and browsing events.",
+          "Take control of your healthcare schedule with these management features:",
         steps: [
-          "Free access to basic networking and seminar discovery",
-          "Premium plans for advanced job alerts and visibility",
-          "Exclusive event and resource access for paid members",
-        ],
-      },
-    },
-    {
-      id: 6,
-      title: "Privacy & Security",
-      category: "security",
-      excerpt:
-        "Your data is protected with industry-standard security and global compliance...",
-      icon: <Lock className="h-5 w-5" />,
-      readTime: "3 min read",
-      content: {
-        introduction:
-          "TheFutureMed prioritizes user security and data privacy, following global standards and regulations.",
-        steps: [
-          // "GDPR-compliant data protection",
-          "Full control over profile visibility",
-          "Encrypted communication and secure authentication",
-        ],
-      },
-    },
-    {
-      id: 7,
-      title: "What Makes TheFutureMed Different?",
-      category: "features",
-      excerpt:
-        "Unlike general job boards, TheFutureMed is built exclusively for the medical ecosystem...",
-      icon: <Star className="h-5 w-5" />,
-      readTime: "3 min read",
-      content: {
-        introduction:
-          "The platform combines networking, career development, education, and medical events into a single global hub.",
-        steps: [
-          "Medical-specific networking",
-          "Career tools tailored to healthcare",
-          "Integrated seminar & conference system",
-          "Focus on long-term professional growth",
-        ],
-      },
-    },
-    {
-      id: 8,
-      title: "Getting Started / Support",
-      category: "support",
-      excerpt: "Sign up on the homepage or contact support for assistance...",
-      icon: <MessageCircle className="h-5 w-5" />,
-      readTime: "2 min read",
-      content: {
-        introduction:
-          "Starting is simple, and the support team is available for guidance whenever needed.",
-        steps: [
-          "Sign up for a free account",
-          "Set up your professional medical profile",
-          <>
-            Email{" "}
-            <a
-              href="mailto:support@thefuturemed.com"
-              className="text-blue-600 underline"
-            >
-              {" "}
-              support@thefuturemed.com
-            </a>{" "}
-            for help
-          </>,
-          "Response time within 24–48 hours",
+          "Go to 'My Bookings' section in your account dashboard",
+          "View all upcoming and past appointments",
+          "Reschedule appointments up to 24 hours before the scheduled time",
+          "Cancel bookings and check refund eligibility",
+          "Add appointments to your calendar",
+          "Set reminders for upcoming visits",
         ],
       },
     },
@@ -255,8 +182,8 @@ const GuidesSection = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-        <BookOpen className="h-6 w-6 text-green-500 mr-2" />
-        General FAQs
+        <User className="h-6 w-6 text-green-500 mr-2" />
+        For Patients - Booking Guides
       </h2>
 
       {guides.map((guide) => (
@@ -273,8 +200,6 @@ const GuidesSection = () => {
                 <span className="text-sm font-medium text-green-600 capitalize">
                   {guide.category}
                 </span>
-                {/* <span className="mx-3 text-gray-400">•</span>
-                <span className="text-sm text-gray-500">{guide.readTime}</span> */}
               </div>
             </div>
 
@@ -325,242 +250,75 @@ const GuidesSection = () => {
     </div>
   );
 };
-const Access = () => {
+
+// Guides Component for Medical Professionals (Doctors)
+const MedicalProfessionalsGuideSection = () => {
   const [expandedGuide, setExpandedGuide] = useState(null);
 
-  const access = [
+  const guides = [
     {
-      id: "faq-1",
-      category: "Account",
-      title: "How do I create an account on TheFutureMed?",
-      readTime: "2 min read",
-      icon: <BookOpen className="h-5 w-5" />,
+      id: 1,
+      title: "Setting Up Your Doctor Profile on HealGlobe.com",
+      category: "doctors",
       excerpt:
-        "Learn how to quickly create your account and get started with TheFutureMed in just a few steps.",
+        "Create a professional profile to attract patients, manage appointments, and build your online presence.",
+      icon: <Stethoscope className="h-5 w-5" />,
+      readTime: "4 min read",
       content: {
-        introduction: "Follow these steps to create your account easily:",
+        introduction:
+          "A complete doctor profile helps patients find and trust you. Follow these steps:",
         steps: [
-          <>
-            Visit the homepage and click{" "}
-            <a
-              href="https://www.thefuturemed.com/"
-              className="text-blue-600 underline"
-            >
-              "Sign Up"
-            </a>{" "}
-            or{" "}
-            <a
-              href="https://www.thefuturemed.com/register"
-              className="text-blue-600 underline"
-            >
-              "Join Now"
-            </a>
-            .
-          </>,
-          "Enter your name, email, profession, and password.",
-          // "Verify your email through the link sent instantly.",
-          "Complete optional profile details like qualifications and location.",
-          "Setup takes only 2–3 minutes and is free.",
+          "Register as a healthcare provider on HealGlobe.com",
+          "Submit your medical credentials and license for verification",
+          "Add your specialties, qualifications, and years of experience",
+          "Upload a professional photo and write a compelling bio",
+          "Set your consultation fees and available services",
+          "Define your availability and working hours",
+          "Get verified to build patient trust",
         ],
       },
     },
-
     {
-      id: "faq-2",
-      category: "Account",
-      title: "What if I forget my password?",
-      readTime: "1 min read",
-      icon: <BookOpen className="h-5 w-5" />,
-      excerpt: "Easily reset your password using your registered email.",
-      content: {
-        introduction: "You can reset your password by following these steps:",
-        steps: [
-          "Go to the login page and click “Forgot Password?”.",
-          "Enter your registered email to receive a reset link.",
-          "Open the link (valid for 24 hours) and create a new password.",
-          "Ensure your new password has uppercase, lowercase, and a number.",
-          <>
-            If issues continue, email{" "}
-            <a
-              href="mailto:support@thefuturemed.com"
-              className="text-blue-600 underline"
-            >
-              support@thefuturemed.com
-            </a>
-            .
-          </>,
-        ],
-      },
-    },
-
-    // {
-    //   id: "faq-3",
-    //   category: "Account",
-    //   title: "How do I log in to my account?",
-    //   readTime: "1 min read",
-    //   icon: <BookOpen className="h-5 w-5" />,
-    //   excerpt:
-    //     "Logging in is simple—just use your registered email and password.",
-    //   content: {
-    //     introduction: "To log in securely, follow these steps:",
-    //     steps: [
-    //       "Open the login section on the homepage.",
-    //       "Enter your email and password.",
-    //       "Enable 2FA from settings for added protection.",
-    //       "Avoid saving login details on public/shared devices.",
-    //     ],
-    //   },
-    // },
-
-    // {
-    //   id: "faq-4",
-    //   category: "Account",
-    //   title: "Can I use social login options?",
-    //   readTime: "1 min read",
-    //   icon: <BookOpen className="h-5 w-5" />,
-    //   excerpt:
-    //     "Login faster with Google or LinkedIn using social authentication.",
-    //   content: {
-    //     introduction: "TheFutureMed supports quick social login:",
-    //     steps: [
-    //       "Choose Google or LinkedIn login on the signup page.",
-    //       "Allow access to auto-fill your professional information.",
-    //       "Enjoy faster onboarding with verified profile details.",
-    //     ],
-    //   },
-    // },
-
-    // {
-    //   id: "faq-5",
-    //   category: "Account",
-    //   title: "How do I verify my account?",
-    //   readTime: "2 min read",
-    //   icon: <BookOpen className="h-5 w-5" />,
-    //   excerpt:
-    //     "Verification increases trust and unlocks premium platform features.",
-    //   content: {
-    //     introduction: "Verify your account in a few simple steps:",
-    //     steps: [
-    //       "Go to your dashboard and upload valid credentials.",
-    //       "Submit items like medical license, degree, or student ID.",
-    //       "Wait 48 hours for manual review.",
-    //       "A verified badge will appear on your profile after approval.",
-    //     ],
-    //   },
-    // },
-
-    {
-      id: "faq-6",
-      category: "Profile",
-      title: "What can I customize in my profile?",
-      readTime: "2 min read",
-      icon: <BookOpen className="h-5 w-5" />,
+      id: 2,
+      title: "Managing Your Appointment Schedule",
+      category: "doctors",
       excerpt:
-        "Make your profile stand out by customizing personal and professional details.",
+        "Learn how to set availability, block time slots, and manage patient appointments efficiently.",
+      icon: <Calendar className="h-5 w-5" />,
+      readTime: "3 min read",
       content: {
-        introduction: "You can personalize your profile with the following:",
+        introduction:
+          "Take control of your schedule with these appointment management features:",
         steps: [
-          "Upload your profile photo and add your bio.",
-          "Update education, experience, skills, and certifications.",
-          "Add publications and professional interests.",
-          // "Choose privacy settings for each section.",
-          // "Changes save automatically.",
+          "Set your weekly availability in the doctor dashboard",
+          "Define consultation durations (15 min, 30 min, 1 hour)",
+          "Block time for breaks, meetings, or personal time",
+          "View all upcoming appointments in one place",
+          "Accept or reschedule patient requests",
+          "Send reminders to patients before appointments",
+          "Access patient history before consultations",
         ],
       },
     },
-
-    // {
-    //   id: "faq-7",
-    //   category: "Account",
-    //   title: "What account settings are available?",
-    //   readTime: "2 min read",
-    //   icon: <BookOpen className="h-5 w-5" />,
-    //   excerpt:
-    //     "Manage notifications, privacy, linked accounts, security, and more.",
-    //   content: {
-    //     introduction: "Account settings include the following options:",
-    //     steps: [
-    //       "Toggle email notifications and alerts.",
-    //       "Manage privacy and data sharing preferences.",
-    //       "Enable/disable 2FA.",
-    //       "Connect or disconnect social accounts.",
-    //       "Change language or accessibility settings.",
-    //     ],
-    //   },
-    // },
-
     {
-      id: "faq-8",
-      category: "Security",
-      title: "Is my account data secure?",
-      readTime: "1 min read",
-      icon: <BookOpen className="h-5 w-5" />,
-      excerpt: "Your data is fully protected with industry-standard security.",
-      content: {
-        introduction: "TheFutureMed protects your information using:",
-        steps: [
-          "End-to-end encryption for messages.",
-          // "GDPR-compliant data storage.",
-          "Regular security audits and monitoring.",
-          "Option to disable third-party data sharing.",
-          "Instant reporting tools for suspicious activity.",
-        ],
-      },
-    },
-
-    {
-      id: "faq-9",
-      category: "Account",
-      title: "What are the free vs. premium account options?",
-      readTime: "2 min read",
-      icon: <BookOpen className="h-5 w-5" />,
+      id: 3,
+      title: "Providing Teleconsultations",
+      category: "doctors",
       excerpt:
-        "Compare free and premium features to choose what fits you best.",
+        "Guide to conducting video consultations, writing digital prescriptions, and following up with patients.",
+      icon: <Video className="h-5 w-5" />,
+      readTime: "4 min read",
       content: {
-        introduction: "Here’s the difference between free, paid and premium:",
+        introduction:
+          "HealGlobe.com makes telemedicine easy. Here's how to conduct virtual consultations:",
         steps: [
-          "Free: Networking, basic job search, community access.",
-          "Premium: AI resume review, exclusive webinars, unlimited applications.",
-          "Premium offers mentor matching and advanced insights.",
-          "Paid Seminars, Conferences to learn, network, and earn certifications.",
-          // "You can upgrade, downgrade, or cancel anytime.",
-        ],
-      },
-    },
-
-    // {
-    //   id: "faq-10",
-    //   category: "Account",
-    //   title: "How do I close or delete my account?",
-    //   readTime: "2 min read",
-    //   icon: <BookOpen className="h-5 w-5" />,
-    //   excerpt:
-    //     "Deactivate temporarily or delete permanently with a 30-day grace period.",
-    //   content: {
-    //     introduction: "To close or delete your account:",
-    //     steps: [
-    //       "Go to Settings → Account → Deactivation.",
-    //       "Download your data if needed.",
-    //       "Choose between deactivation or permanent deletion.",
-    //       "Permanent deletion occurs after 30 days and cannot be reversed.",
-    //     ],
-    //   },
-    // },
-
-    {
-      id: "faq-11",
-      category: "Support",
-      title: "What if I encounter account issues?",
-      readTime: "1 min read",
-      icon: <BookOpen className="h-5 w-5" />,
-      excerpt: "Quick fixes for common issues and how to contact support.",
-      content: {
-        introduction: "Try these fixes before contacting support:",
-        steps: [
-          "Clear browser cache or try incognito mode.",
-          "Refresh the page or switch to mobile view.",
-          "Take a screenshot and submit a support ticket.",
-          "Support replies within 24 hours (faster for premium users).",
+          "Ensure you have a stable internet connection and webcam",
+          "Join video consultations directly from your dashboard",
+          "Use the integrated tools to write digital prescriptions",
+          "Record consultation notes in the patient's secure record",
+          "Schedule follow-up appointments if needed",
+          "Set your availability for video consultations separately",
+          "Get paid securely through the platform",
         ],
       },
     },
@@ -569,59 +327,345 @@ const Access = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-        <BookOpen className="h-6 w-6 text-green-500 mr-2" />
-        Account-Related FAQ
+        <Stethoscope className="h-6 w-6 text-purple-500 mr-2" />
+        For Medical Professionals - Doctor Guides
       </h2>
 
-      {access.map((access) => (
+      {guides.map((guide) => (
         <div
-          key={access.id}
+          key={guide.id}
           className="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-md transition-all duration-300"
         >
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <div className="bg-green-50 rounded-lg p-2 mr-3 text-green-600">
-                  {access.icon}
+                <div className="bg-purple-50 rounded-lg p-2 mr-3 text-purple-600">
+                  {guide.icon}
                 </div>
-                <span className="text-sm font-medium text-green-600 capitalize">
-                  {access.category}
+                <span className="text-sm font-medium text-purple-600 capitalize">
+                  {guide.category}
                 </span>
               </div>
             </div>
 
             <h4 className="font-bold text-lg text-gray-900 mb-3">
-              {access.title}
+              {guide.title}
             </h4>
 
             <p className="text-gray-600 mb-4 leading-relaxed">
-              {access.excerpt}
+              {guide.excerpt}
             </p>
 
             <button
               onClick={() =>
-                setExpandedGuide(expandedGuide === access.id ? null : access.id)
+                setExpandedGuide(expandedGuide === guide.id ? null : guide.id)
               }
-              className="inline-flex items-center text-green-600 font-semibold text-sm hover:text-green-700 transition-colors duration-200 group/btn"
+              className="inline-flex items-center text-purple-600 font-semibold text-sm hover:text-purple-700 transition-colors duration-200 group/btn"
             >
-              {expandedGuide === access.id ? "Show Less" : "Read Full Guide"}
+              {expandedGuide === guide.id ? "Show Less" : "Read Full Guide"}
               <ChevronRight
                 className={`h-4 w-4 ml-1 transition-transform duration-200 ${
-                  expandedGuide === access.id
+                  expandedGuide === guide.id
                     ? "rotate-90"
                     : "group-hover/btn:translate-x-1"
                 }`}
               />
             </button>
 
-            {expandedGuide === access.id && (
+            {expandedGuide === guide.id && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="bg-gray-50 rounded-xl p-6">
                   <h5 className="font-semibold text-gray-900 mb-4">
-                    {access.content.introduction}
+                    {guide.content.introduction}
                   </h5>
                   <ul className="space-y-3">
-                    {access.content.steps.map((step, index) => (
+                    {guide.content.steps.map((step, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-purple-500 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Guides Component for Healthcare Facilities (Hospitals)
+const FacilitiesGuideSection = () => {
+  const [expandedGuide, setExpandedGuide] = useState(null);
+
+  const guides = [
+    {
+      id: 1,
+      title: "Listing Your Hospital on HealGlobe.com",
+      category: "hospitals",
+      excerpt:
+        "Complete guide to adding your healthcare facility, managing bed inventory, and attracting patients.",
+      icon: <Hospital className="h-5 w-5" />,
+      readTime: "5 min read",
+      content: {
+        introduction:
+          "Get your hospital or clinic listed on HealGlobe.com with these steps:",
+        steps: [
+          "Register your facility with official credentials and licenses",
+          "Complete facility profile with contact details and location",
+          "List all departments and specialties available",
+          "Upload photos of your facility and amenities",
+          "Define bed inventory by type (ICU, General, Private, etc.)",
+          "Set consultation fees and service charges",
+          "Get verified to appear in search results",
+        ],
+      },
+    },
+    {
+      id: 2,
+      title: "Managing Bed Availability in Real-Time",
+      category: "hospitals",
+      excerpt:
+        "Learn how to update bed inventory, manage admissions, and optimize occupancy rates.",
+      icon: <Bed className="h-5 w-5" />,
+      readTime: "4 min read",
+      content: {
+        introduction:
+          "Efficient bed management is crucial for hospital operations. Here's how:",
+        steps: [
+          "Access the hospital dashboard to view current bed status",
+          "Update bed availability in real-time as admissions occur",
+          "Set different bed types with separate availability tracking",
+          "Manage waiting lists for popular bed categories",
+          "Receive booking requests and confirm allocations",
+          "Track occupancy rates and generate reports",
+          "Integrate with your existing hospital management system",
+        ],
+      },
+    },
+    {
+      id: 3,
+      title: "Managing Doctor Schedules and Appointments",
+      category: "hospitals",
+      excerpt:
+        "Administrator's guide to managing multiple doctors, their schedules, and patient flow.",
+      icon: <Users className="h-5 w-5" />,
+      readTime: "4 min read",
+      content: {
+        introduction:
+          "Coordinate your medical staff efficiently with these tools:",
+        steps: [
+          "Add doctors to your facility and assign departments",
+          "Set individual doctor schedules and consultation types",
+          "Manage leave requests and temporary unavailability",
+          "View all appointments across your facility",
+          "Track patient flow and doctor performance",
+          "Generate reports on appointment volume and revenue",
+          "Optimize scheduling based on demand patterns",
+        ],
+      },
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <Building className="h-6 w-6 text-orange-500 mr-2" />
+        For Healthcare Facilities - Hospital Guides
+      </h2>
+
+      {guides.map((guide) => (
+        <div
+          key={guide.id}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-md transition-all duration-300"
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="bg-orange-50 rounded-lg p-2 mr-3 text-orange-600">
+                  {guide.icon}
+                </div>
+                <span className="text-sm font-medium text-orange-600 capitalize">
+                  {guide.category}
+                </span>
+              </div>
+            </div>
+
+            <h4 className="font-bold text-lg text-gray-900 mb-3">
+              {guide.title}
+            </h4>
+
+            <p className="text-gray-600 mb-4 leading-relaxed">
+              {guide.excerpt}
+            </p>
+
+            <button
+              onClick={() =>
+                setExpandedGuide(expandedGuide === guide.id ? null : guide.id)
+              }
+              className="inline-flex items-center text-orange-600 font-semibold text-sm hover:text-orange-700 transition-colors duration-200 group/btn"
+            >
+              {expandedGuide === guide.id ? "Show Less" : "Read Full Guide"}
+              <ChevronRight
+                className={`h-4 w-4 ml-1 transition-transform duration-200 ${
+                  expandedGuide === guide.id
+                    ? "rotate-90"
+                    : "group-hover/btn:translate-x-1"
+                }`}
+              />
+            </button>
+
+            {expandedGuide === guide.id && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 mb-4">
+                    {guide.content.introduction}
+                  </h5>
+                  <ul className="space-y-3">
+                    {guide.content.steps.map((step, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-orange-500 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Account-Related FAQs for HealGlobe
+const AccountFAQs = () => {
+  const [expandedGuide, setExpandedGuide] = useState(null);
+
+  const access = [
+    {
+      id: "faq-1",
+      category: "Account",
+      title: "How do I create a patient account on HealGlobe?",
+      readTime: "2 min read",
+      icon: <User className="h-5 w-5" />,
+      excerpt:
+        "Learn how to quickly create your patient account and start booking appointments.",
+      content: {
+        introduction: "Follow these steps to create your account easily:",
+        steps: [
+          "Visit HealGlobe.com and click 'Sign Up'",
+          "Enter your name, email, phone number, and create a password",
+          "Verify your email through the link sent to your inbox",
+          "Complete your profile with basic information",
+          "Add emergency contact details (optional but recommended)",
+          "Start searching for doctors and booking appointments",
+          "Setup takes only 2–3 minutes and is completely free",
+        ],
+      },
+    },
+    {
+      id: "faq-2",
+      category: "Account",
+      title: "How do I register as a doctor or healthcare provider?",
+      readTime: "3 min read",
+      icon: <Stethoscope className="h-5 w-5" />,
+      excerpt:
+        "Step-by-step guide to creating a professional account on HealGlobe.",
+      content: {
+        introduction: "Healthcare providers need additional verification:",
+        steps: [
+          "Click 'Join as Healthcare Provider' on the signup page",
+          "Select your profession (Doctor, Nurse, Specialist, etc.)",
+          "Enter your professional details and credentials",
+          "Upload your medical license and ID proof for verification",
+          "Add your specialties, qualifications, and experience",
+          "Submit for verification (usually takes 24-48 hours)",
+          "Once verified, you can start accepting appointments",
+        ],
+      },
+    },
+    {
+      id: "faq-3",
+      category: "Account",
+      title: "How do I reset my password?",
+      readTime: "1 min read",
+      icon: <Lock className="h-5 w-5" />,
+      excerpt: "Easily reset your password using your registered email.",
+      content: {
+        introduction: "You can reset your password by following these steps:",
+        steps: [
+          "Go to the login page and click 'Forgot Password?'",
+          "Enter your registered email address",
+          "Check your email for a password reset link (valid for 24 hours)",
+          "Click the link and create a new password",
+          "Ensure your new password has at least 8 characters with a mix of letters and numbers",
+          "Log in with your new password",
+          "If issues continue, contact support@healglobe.com",
+        ],
+      },
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <Users className="h-6 w-6 text-green-500 mr-2" />
+        Account-Related FAQs
+      </h2>
+
+      {access.map((item) => (
+        <div
+          key={item.id}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-md transition-all duration-300"
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="bg-green-50 rounded-lg p-2 mr-3 text-green-600">
+                  {item.icon}
+                </div>
+                <span className="text-sm font-medium text-green-600 capitalize">
+                  {item.category}
+                </span>
+              </div>
+            </div>
+
+            <h4 className="font-bold text-lg text-gray-900 mb-3">
+              {item.title}
+            </h4>
+
+            <p className="text-gray-600 mb-4 leading-relaxed">
+              {item.excerpt}
+            </p>
+
+            <button
+              onClick={() =>
+                setExpandedGuide(expandedGuide === item.id ? null : item.id)
+              }
+              className="inline-flex items-center text-green-600 font-semibold text-sm hover:text-green-700 transition-colors duration-200 group/btn"
+            >
+              {expandedGuide === item.id ? "Show Less" : "Read Full Guide"}
+              <ChevronRight
+                className={`h-4 w-4 ml-1 transition-transform duration-200 ${
+                  expandedGuide === item.id
+                    ? "rotate-90"
+                    : "group-hover/btn:translate-x-1"
+                }`}
+              />
+            </button>
+
+            {expandedGuide === item.id && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 mb-4">
+                    {item.content.introduction}
+                  </h5>
+                  <ul className="space-y-3">
+                    {item.content.steps.map((step, index) => (
                       <li key={index} className="flex items-start">
                         <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{step}</span>
@@ -638,145 +682,79 @@ const Access = () => {
   );
 };
 
-const ArticlesAndGuides = () => {
-  const [activeCategory, setActiveCategory] = useState("gateway");
-  const [expandedArticle, setExpandedArticle] = useState(null);
-  const [expandedFAQ, setExpandedFAQ] = useState(null);
-
-  const categories = [
-    // { id: "all", name: "All Articles" },
-    { id: "gateway", name: "General FAQs" },
-    { id: "account-related-faq", name: "Account-Related FAQ" },
-    { id: "faqs", name: "Payment FAQs" },
-    // { id: "faqs", name: "FAQs" },
-  ];
-
+// Payment FAQs for HealGlobe
+const PaymentFAQs = () => {
   const paymentFAQs = [
     {
       id: 1,
-      question: "Why did my payment fail?",
+      question: "Why did my payment for appointment booking fail?",
       answer:
-        "Payments may fail due to network issues, incorrect details, bank downtime, insufficient balance, or OTP delays. Try again or use a different payment method.",
+        "Payments may fail due to network issues, incorrect card details, bank downtime, insufficient balance, or OTP delays. Please try again or use a different payment method. If money was deducted but booking not confirmed, it will be auto-refunded within 3-5 business days.",
       icon: <AlertCircle className="h-5 w-5" />,
     },
     {
       id: 2,
-      question:
-        "The money was deducted, but my payment is not showing as successful. What should I do?",
+      question: "How do I get a refund for a cancelled appointment?",
       answer:
-        "Don't worry—this happens sometimes due to delayed bank confirmation. Your amount is usually auto-refunded within 3–5 working days. If not, contact support with your transaction ID.",
-      icon: <Clock className="h-5 w-5" />,
-    },
-    {
-      id: 3,
-      question: "Why am I not receiving the OTP for payment?",
-      answer:
-        "OTP delays can occur due to poor network, SMS congestion, or incorrect mobile number. Retry after a few minutes or switch to another payment option if available.",
-      icon: <PhoneIcon className="h-5 w-5" />,
-    },
-    {
-      id: 4,
-      question:
-        "My card/UPI details are correct, but payment is still failing. Why?",
-      answer:
-        "Even with correct details, payments can fail due to expired card, UPI handle/server downtime, or bank blocking the transaction for security. Try using a different UPI ID or another card.",
-      icon: <CreditCard className="h-5 w-5" />,
-    },
-    {
-      id: 5,
-      question: "Can I retry a failed payment?",
-      answer:
-        "Yes. You can safely retry. If the previous attempt shows 'Processing,' wait until you get a final status before retrying.",
+        "Refunds for cancelled appointments are processed automatically based on our cancellation policy. Free cancellations up to 24 hours before appointment receive full refund. Cancellations within 24 hours may incur a fee. Refunds typically reflect in 5-7 business days.",
       icon: <RefreshCw className="h-5 w-5" />,
     },
     {
+      id: 3,
+      question: "What payment methods are accepted for bed bookings?",
+      answer:
+        "We accept all major payment methods including UPI, Credit/Debit Cards (Visa, Mastercard, RuPay), Net Banking, and popular digital wallets. For international users, we accept international credit cards and PayPal.",
+      icon: <CreditCard className="h-5 w-5" />,
+    },
+    {
+      id: 4,
+      question: "Is my payment information secure on HealGlobe?",
+      answer:
+        "Yes, we use industry-standard encryption and secure payment gateways. We are PCI-DSS compliant and never store your complete card details on our servers. All transactions are processed through secure, verified payment partners.",
+      icon: <Shield className="h-5 w-5" />,
+    },
+    {
+      id: 5,
+      question: "Can I pay using health insurance for appointments?",
+      answer:
+        "Insurance coverage varies by provider and plan. During booking, you can check if your insurance is accepted. For cashless claims, you may need to verify with the hospital directly. We're working to integrate more insurance providers for seamless payments.",
+      icon: <HeartPulse className="h-5 w-5" />,
+    },
+    {
       id: 6,
-      question: "Which payment methods do you accept?",
-      answer:
-        "We support UPI, Debit & Credit Cards, Net Banking, Wallets, and various international payment methods.",
-      icon: <Globe className="h-5 w-5" />,
-    },
-    {
-      id: 7,
-      question: "How do I check if my payment went through?",
-      answer:
-        "You will receive an on-screen confirmation, email/SMS notification, and the item will appear in your dashboard. If none appear, the payment did not complete.",
-      icon: <CheckCircle className="h-5 w-5" />,
-    },
-    {
-      id: 8,
-      question: "The payment page closed while paying. What happens now?",
-      answer:
-        <>
-  If the amount was deducted accidentally, please contact{" "}
-  <a
-    href="mailto:support@thefuturemed.com"
-    className="text-blue-600 underline"
-  >
-    support@thefuturemed.com
-  </a>{" "}
-  within 24 hours for refund assistance. Please note that as per our
-  non-refund policy, payments successfully completed cannot be refunded.
-</>,
-      icon: <AlertCircle className="h-5 w-5" />,
-    },
-    // {
-    //   id: 8,
-    //   question: "The payment page closed while paying. What happens now?",
-    //   answer:
-    //     "If the bank did not confirm the transaction, the amount will not be deducted. If deducted accidentally, it will be refunded automatically.",
-    //   icon: <AlertCircle className="h-5 w-5" />,
-    // },
-    {
-      id: 9,
-      question: "I entered the wrong UPI ID. How do I fix it?",
-      answer:
-        "The payment will fail automatically. Retry with the correct UPI ID or use another method like card payment.",
-      icon: <UserX className="h-5 w-5" />,
-    },
-    // {
-    //   id: 10,
-    //   question: "How can I add a different card for payment?",
-    //   answer:
-    //     "You can add multiple cards in your payment profile. Go to Payment Methods, click 'Add New Card', enter your card details, and save. You can switch between saved cards during checkout.",
-    //   icon: <CreditCard className="h-5 w-5" />,
-    // },
-    {
-      id: 11,
       question: "Who do I contact for payment support?",
-      answer:
-        "You can raise a ticket through the Help & Support section or email us with your registered email/phone, transaction ID, and screenshot of the payment attempt for faster resolution.",
+      answer: (
+        <>
+          For payment-related issues, please email{" "}
+          <a
+            href="mailto:payments@healglobe.com"
+            className="text-blue-600 underline"
+          >
+            payments@healglobe.com
+          </a>{" "}
+          with your transaction ID, booking details, and screenshots if available.
+          Our team typically responds within 24 hours.
+        </>
+      ),
       icon: <Mail className="h-5 w-5" />,
     },
   ];
 
-  const articles = [
-    {
-      id: 1,
-      title: "Common Reasons for Payment Failure and How to Fix Them",
-      category: "gateway",
-      excerpt:
-        "For any online business, payments are the final step that turns customer intent into revenue. When a transaction doesn't go through, it breaks that moment of conversion...",
-      icon: <CreditCard className="h-5 w-5" />,
-      featured: true,
-      readTime: "4 min read",
-    },
-    {
-      id: 2,
-      title: "Optimizing Payment Gateway Integration",
-      category: "integration",
-      excerpt:
-        "Learn how to seamlessly integrate payment gateways and reduce cart abandonment with best practices...",
-      icon: <Zap className="h-5 w-5" />,
-      featured: false,
-      readTime: "5 min read",
-    },
-  ];
+  return <FAQModel faqs={paymentFAQs} title="Payment & Booking FAQs" />;
+};
 
-  const isPaymentGatewayCategory = activeCategory === "gateway";
-  const isAccessFAQsCategory = activeCategory === "account-related-faq";
-  const isFAQsCategory = activeCategory === "faqs";
-  const isAllCategory = activeCategory === "all";
+const ArticlesAndGuides = () => {
+  const [activeCategory, setActiveCategory] = useState("patients");
+  const [expandedArticle, setExpandedArticle] = useState(null);
+  const [expandedFAQ, setExpandedFAQ] = useState(null);
+
+  const categories = [
+    { id: "patients", name: "For Patients" },
+    { id: "doctors", name: "For Medical Professionals" },
+    { id: "hospitals", name: "For Healthcare Facilities" },
+    { id: "account", name: "Account FAQs" },
+    { id: "payment", name: "Payment FAQs" },
+  ];
 
   return (
     <>
@@ -789,12 +767,37 @@ const ArticlesAndGuides = () => {
               <BookOpen className="h-8 w-8 text-blue-600" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Frequently Asked Questions & General
+              Help Center & FAQs
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              FAQs (Frequently Asked Questions) are quick answers to the most
-              common questions you may have.
+              Everything you need to know about booking appointments, reserving beds,
+              and managing your healthcare on HealGlobe.com
             </p>
+          </div>
+
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-all">
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">Book Appointments</h3>
+              <p className="text-gray-600 text-sm">Find and book appointments with top doctors</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-all">
+              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bed className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">Reserve Hospital Beds</h3>
+              <p className="text-gray-600 text-sm">Check availability and book beds instantly</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-all">
+              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Stethoscope className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">Doctor Dashboard</h3>
+              <p className="text-gray-600 text-sm">Manage your practice and patient appointments</p>
+            </div>
           </div>
 
           {/* Main Content Grid */}
@@ -804,7 +807,7 @@ const ArticlesAndGuides = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 sticky top-8">
                 <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center">
                   <BookOpen className="h-5 w-5 text-blue-600 mr-2" />
-                  Categories
+                  Help Categories
                 </h3>
                 <div className="space-y-2">
                   {categories.map((category) => (
@@ -832,70 +835,47 @@ const ArticlesAndGuides = () => {
                     </button>
                   ))}
                 </div>
-
-                {/* Quick Stats */}
-                {/* <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">
-                    Quick Stats
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">FAQs</span>
-                      <span className="font-semibold text-blue-600">
-                        {paymentFAQs.length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">General</span>
-                      <span className="font-semibold text-green-600">
-                        {GuidesSection.length}
-                      </span>
-                    </div>
-                  </div>
-                </div> */}
               </div>
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {/* All Category - Shows both Guides and FAQs */}
-              {/* {isAllCategory && (
-                <div className="space-y-8">
-                  <GuidesSection />
-                  <Access />
-                  <FAQModel faqs={paymentFAQs} title="Payment FAQs" />
-                </div>
-              )} */}
-
-              {/* Guides Category */}
-              {isPaymentGatewayCategory && <GuidesSection />}
-              {isAccessFAQsCategory && <Access />}
-
-              {/* FAQs Category */}
-              {isFAQsCategory && <FAQModel faqs={paymentFAQs} />}
+              {activeCategory === "patients" && <PatientsGuideSection />}
+              {activeCategory === "doctors" && <MedicalProfessionalsGuideSection />}
+              {activeCategory === "hospitals" && <FacilitiesGuideSection />}
+              {activeCategory === "account" && <AccountFAQs />}
+              {activeCategory === "payment" && <PaymentFAQs />}
             </div>
           </div>
 
-          {/* CTA Section */}
-          {/* <div className="mt-16 bg-gradient-to-r from-gray-900 to-blue-900 rounded-2xl shadow-xl overflow-hidden">
+          {/* Contact Support CTA */}
+          <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl overflow-hidden">
             <div className="px-8 py-12 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Ready to Optimize Your Payment Processing?
+                Still Need Help?
               </h2>
-              <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
-                Get expert guidance and implement best practices to boost your
-                transaction success rates.
+              <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+                Our support team is here to assist you with any questions about bookings, payments, or account issues.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="px-8 py-3 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5">
-                  Contact Sales
-                </button>
-                <button className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-200">
-                  View Documentation
-                </button>
+                <a
+                  href="mailto:support@healglobe.com"
+                  className="px-8 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5"
+                >
+                  Email Support
+                </a>
+                <a
+                  href="#"
+                  className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-200"
+                >
+                  Visit Help Center
+                </a>
               </div>
+              <p className="text-blue-100 mt-4">
+                Response time: Typically within 24 hours
+              </p>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
       <Footer />
@@ -904,4 +884,4 @@ const ArticlesAndGuides = () => {
 };
 
 export default ArticlesAndGuides;
-export { FAQModel, GuidesSection };
+export { FAQModel, PatientsGuideSection, MedicalProfessionalsGuideSection, FacilitiesGuideSection };

@@ -49,17 +49,17 @@ const Footer = () => {
         { name: 'Privacy Policy', path: '/privacy' },
         { name: 'Terms of Service', path: '/terms' },
         { name: 'FAQs', path: '/faqs' },
-        { name: 'Blog', path: '/blog' },
+        // { name: 'Blog', path: '/blog' },
       ];
     
-      // const services = [
-      //   { name: 'Find Doctors', path: '/doctors', icon: PersonStanding },
-      //   { name: 'Find Hospitals', path: '/hospitals', icon: Building2 },
-      //   { name: 'Book Appointment', path: '/appointment', icon: CalendarCheck },
-      //   { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
-      //   { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
-      //   { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
-      // ];
+      const services = [
+        { name: 'Find Doctors', path: '/appointment/doctors', icon: PersonStanding },
+        { name: 'Find Hospitals', path: '/appointment/hospitals', icon: Building2 },
+        { name: 'Book Appointment', path: '/appointment/beds', icon: CalendarCheck },
+        // { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
+        // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
+        // { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
+      ];
 
     return (
       <footer className="bg-dark text-white pt-5 pb-4 mt-5">
@@ -117,7 +117,7 @@ const Footer = () => {
             </div>
 
             {/* Services */}
-            {/* <div className="col-lg-3 col-md-6">
+            <div className="col-lg-3 col-md-6">
               <h6 className="fw-bold mb-3">Our Services</h6>
               <ul className="list-unstyled">
                 {services.slice(0, 6).map((service, index) => {
@@ -135,7 +135,7 @@ const Footer = () => {
                   );
                 })}
               </ul>
-            </div> */}
+            </div>
 
             {/* Contact Info */}
             <div className="col-lg-3 col-md-6">

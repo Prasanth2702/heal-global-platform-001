@@ -155,6 +155,18 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       errors.departments = "Please select at least one department/service.";
       valid = false;
     }
+    const passwordError = validatePassword(password);
+
+if (passwordError) {
+  errors.password = passwordError;
+  valid = false;
+}
+
+if (password !== repeatPassword) {
+  errors.repeatPassword = "Passwords do not match";
+  valid = false;
+}
+
     setErrors(errors);
 
     const firstErrorKey = Object.keys(errors)[0];
@@ -169,6 +181,44 @@ const [isSubmitting, setIsSubmitting] = useState(false);
     }
     return valid;
   };
+
+    const validatePassword = (password: string) => {
+  const passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+  if (!password) {
+    return "Password is required";
+  }
+
+  if (password.length < 6) {
+    return "Password must be at least 6 characters";
+  }
+
+  if (!passwordRegex.test(password)) {
+    return "Password must contain letter, number and special character";
+  }
+
+  return "";
+};
+const checkLicenseNumberExists = async (licenseNumber: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from("facilities")
+      .select("license_number")
+      .eq("license_number", licenseNumber)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error checking license number:", error);
+      return false;
+    }
+
+    return !!data; // Returns true if license number exists
+  } catch (error) {
+    console.error("Error in license number check:", error);
+    return false;
+  }
+};
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -215,6 +265,25 @@ setIsSubmitting(true)
       });
       return;
     }
+      const licenseExists = await checkLicenseNumberExists(formData.licenseNumber);
+      
+      if (licenseExists) {
+        toast({
+          title: "License Number Already Registered",
+          description: "This medical license number is already registered in our system. Please verify your license number or contact support if you believe this is an error.",
+          variant: "destructive",
+          className: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
+        });
+        
+        mixpanelInstance.track('facilities Registration Failed', {
+          email: formData.emailAddress,
+          reason: 'Duplicate license number',
+          license_number: formData.licenseNumber
+        });
+        
+        setIsSubmitting(false);
+        return;
+      }
 
     const facilityFullData = {
       ...formData,
@@ -432,7 +501,7 @@ setIsSubmitting(true)
           <Label className="label-required text-sm font-semibold text-gray-700">Phone Number</Label>
           <div className="flex mt-2 space-x-2">
             <Select value={countryCode} onValueChange={(value) => setCountryCode(value)}>
-              <SelectTrigger className="label-required w-24 border-2 focus:border-blue-500 bg-white/80">
+              <SelectTrigger className="w-24 border-2 focus:border-blue-500 bg-white/80">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -449,7 +518,15 @@ setIsSubmitting(true)
             <Input
               type="tel"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              // onChange={(e) => setPhoneNumber(e.target.value)}
+               maxLength={10}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, ""); // remove non-numbers
+
+    if (value.length <= 10) {
+      setPhoneNumber(value);
+    }
+  }}
               className="flex-1 border-2 focus:border-blue-500 transition-colors bg-white/80"
               placeholder="Enter phone number"
               required
@@ -469,10 +546,36 @@ setIsSubmitting(true)
             id="password"
             value={password}
             type="password"
-            onChange={(e) => setPassword(e.target.value)}
+            // onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+      const value = e.target.value;
+      setPassword(value);
+
+      if (value.length < 6) {
+        setErrors((prev) => ({
+          ...prev,
+          password: "Password must be at least 6 characters",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          password: "",
+        }));
+      }
+    }}
             placeholder="Enter your password"
             required
           />
+           {errors.password && (
+    <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+  )}
+   <p className="text-xs text-gray-500 mt-1">
+    Password must contain:
+    <br />• Minimum 6 characters
+    <br />• At least 1 letter
+    <br />• At least 1 number
+    <br />• At least 1 special character (@$!%*?&)
+  </p>
         </div>   
         <div>
           <Label  className="label-required" htmlFor="password">Repeat Password</Label>
@@ -480,7 +583,23 @@ setIsSubmitting(true)
             id="repeatpassword"
             value={repeatPassword}
             type="password"
-            onChange={(e) => setRepeatPassword(e.target.value)}
+            // onChange={(e) => setRepeatPassword(e.target.value)}
+              onChange={(e) => {
+      const value = e.target.value;
+      setRepeatPassword(value);
+
+      if (value.length < 6) {
+        setErrors((prev) => ({
+          ...prev,
+          password: "Password must be at least 6 characters",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          password: "",
+        }));
+      }
+    }}
             placeholder="Enter your password again"
             required
           />

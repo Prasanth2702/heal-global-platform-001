@@ -3,12 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import toast, { Toaster } from "react-hot-toast";
 
 
 
 import { Loader2 } from "lucide-react"; // ✅ spinner icon
 import { flushSync } from "react-dom";
+import { Toaster } from "../ui/toaster";
+import { toast } from "@/hooks/use-toast";
 
 
 export default function AppointmentBooking() {
@@ -50,7 +51,7 @@ export default function AppointmentBooking() {
   });
 
   if (!userId) {
-    toast.error("Please login first");
+    toast({ title: "Please login first" });
     setIsSubmitting(false);
     return;
   }
@@ -82,11 +83,11 @@ export default function AppointmentBooking() {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Booking failed");
 
-    toast.success("Appointment Confirmed!");
+    toast({ title: "Appointment Confirmed!" });
     navigate("/appointments");
 
   } catch (err: any) {
-    toast.error(err.message || "Something went wrong");
+    toast({ title: "Something went wrong" });
     setIsSubmitting(false); // 🔓 unlock only on error
   }
 };

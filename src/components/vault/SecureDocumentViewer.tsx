@@ -16,6 +16,7 @@ import {
   Key
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 // Mobile screenshot prevention hook
 const useScreenshotProtection = (enabled: boolean) => {
@@ -65,7 +66,10 @@ const useScreenshotProtection = (enabled: boolean) => {
         if (window.outerHeight - window.innerHeight > threshold || 
             window.outerWidth - window.innerWidth > threshold) {
           document.body.style.display = 'none';
-          alert('Developer tools detected. Access blocked for security.');
+          toast({
+            title: "Developer Tools Detected",
+            description: "Access blocked for security."
+          });
         }
       };
       const devToolsInterval = setInterval(detectDevTools, 1000);
@@ -116,7 +120,10 @@ const SecureDocumentViewer = ({
       // Load document content
       setDocumentContent("Document content would be loaded here securely...");
     } else {
-      alert("Invalid OTP. Please try again.");
+      toast({
+        title: "Invalid OTP",
+        description: "Please try again."
+      });
     }
   };
 

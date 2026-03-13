@@ -440,42 +440,42 @@ const OnboardingWizard = () => {
           </div>
         );
 
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">{config.steps[3]?.title}</h3>
-              <p className="text-muted-foreground">{config.steps[3]?.description}</p>
-            </div>
+      // case 4:
+      //   return (
+      //     <div className="space-y-6">
+      //       <div className="text-center">
+      //         <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+      //         <h3 className="text-lg font-semibold mb-2">{config.steps[3]?.title}</h3>
+      //         <p className="text-muted-foreground">{config.steps[3]?.description}</p>
+      //       </div>
 
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Google Calendar</h4>
-                      <p className="text-sm text-muted-foreground">Sync with your existing calendar</p>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </CardContent>
-              </Card>
+      //       <div className="space-y-4">
+      //         <Card>
+      //           <CardContent className="p-4">
+      //             <div className="flex items-center justify-between">
+      //               <div>
+      //                 <h4 className="font-medium">Google Calendar</h4>
+      //                 <p className="text-sm text-muted-foreground">Sync with your existing calendar</p>
+      //               </div>
+      //               <Button variant="outline">Connect</Button>
+      //             </div>
+      //           </CardContent>
+      //         </Card>
 
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">NextGen Calendar</h4>
-                      <p className="text-sm text-muted-foreground">Use our built-in appointment system</p>
-                    </div>
-                    <Button variant="default">Use Built-in</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
+      //         <Card>
+      //           <CardContent className="p-4">
+      //             <div className="flex items-center justify-between">
+      //               <div>
+      //                 <h4 className="font-medium">NextGen Calendar</h4>
+      //                 <p className="text-sm text-muted-foreground">Use our built-in appointment system</p>
+      //               </div>
+      //               <Button variant="default">Use Built-in</Button>
+      //             </div>
+      //           </CardContent>
+      //         </Card>
+      //       </div>
+      //     </div>
+      //   );
 
       default:
         return null;

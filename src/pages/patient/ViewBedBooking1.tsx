@@ -2,7 +2,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ChevronLeft } from "lucide-react"; // You can use any icon library or text
+import { ChevronLeft } from "lucide-react"; 
+import { toast } from "@/hooks/use-toast";
 
 interface Ward {
   id: string;
@@ -134,7 +135,9 @@ const ViewBedBooking1 = () => {
   const handleBookBed = async (bedId: string) => {
     try {
       if (!selectedWard) {
-        alert("Please select a ward first");
+        toast({
+          title: "Please select a ward first"
+        });
         return;
       }
 
@@ -143,7 +146,10 @@ const ViewBedBooking1 = () => {
       );
     } catch (err) {
       console.error("Error booking bed:", err);
-      alert("Failed to book bed. Please try again.");
+      toast({
+        title: "Failed to book bed",
+        description: "Please try again."
+      });
     }
   };
 

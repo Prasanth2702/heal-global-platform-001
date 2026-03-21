@@ -247,6 +247,46 @@ const PatientBookingsPage: React.FC = () => {
 
    return statusMap[status] ?? "secondary";
  };
+ const getUserFacilityId = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  console.log("USER ID:", user.id);
+
+  // ✅ Check ADMIN
+  const { data: adminFacility, error: adminError } = await supabase
+    .from("facilities")
+    .select("id")
+    .eq("admin_user_id", user.id)
+    .maybeSingle();
+
+  if (adminError) {
+    console.error("Admin fetch error:", adminError);
+  }
+
+  if (adminFacility) {
+    console.log("ADMIN FACILITY:", adminFacility.id);
+    return adminFacility.id;
+  }
+
+  // ✅ Check STAFF
+  const { data: staff, error: staffError } = await supabase
+    .from("staff")
+    .select("facility_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (staffError) {
+    console.error("Staff fetch error:", staffError);
+  }
+
+  if (staff) {
+    console.log("STAFF FACILITY:", staff.facility_id);
+    return staff.facility_id;
+  }
+
+  return null;
+};
 
   
 
@@ -261,7 +301,8 @@ const PatientBookingsPage: React.FC = () => {
         return;
       }
 
-      const facilityId = user?.user_metadata?.facility_id;
+      // const facilityId = user?.user_metadata?.facility_id;
+      const facilityId = await getUserFacilityId();
 
       // Fetch all data with joins for better performance
       const { data: allBeds, error: allBedsError } = await supabase

@@ -19,12 +19,14 @@ import {
   Heart,
   Activity,
   Shield,
-  ConeIcon
+  ConeIcon,
+  Home
 } from 'lucide-react';
 import { Patient } from '@/Models/Patient';
 import { supabase } from '@/integrations/supabase/client';
 import { profile } from 'console'
 import {User as SupabaseUser} from '@supabase/supabase-js'
+import { Textarea } from '../ui/textarea';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -47,7 +49,12 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
     emergencyContactPhone: '',
     knownAllergies: '',
     currentMedications: '',
-    userType: 'patient'
+    userType: 'patient',
+     address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    country_code: '',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -102,7 +109,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
           emergencyContactName: patientData.emergency_contact_name || '',
           emergencyContactPhone: patientData.emergency_contact_number || '',
           knownAllergies: patientData.known_allergies || '',
-          currentMedications: patientData.current_medications || ''
+          currentMedications: patientData.current_medications || '',
+ city: patientData.city || '',
+          state: patientData.state || '',
+          pincode: patientData.pincode || '',
+          country_code: patientData.country_code || '',
+              address: patientData.address|| '',
+
         });
       }
     };
@@ -180,6 +193,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
       emergency_contact_number: profileData.emergencyContactPhone,
       known_allergies: profileData.knownAllergies,
       current_medications: profileData.currentMedications,
+      address: profileData.address,
+      city: profileData.city,
+      state: profileData.state,
+      pincode: profileData.pincode,
     }
 
     const { error: profilesUpdateError } = await supabase
@@ -454,6 +471,101 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
                 </select>
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.gender}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+          <CardTitle className="flex items-center text-xl">
+            <Home className="h-5 w-5 mr-2" />
+            Address Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <div>
+            <Label htmlFor="address" className="text-sm font-semibold text-gray-700">
+              Address
+            </Label>
+            {isEditing ? (
+              <Textarea
+                id="address"
+                value={profileData.address}
+                onChange={e => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                rows={3}
+              />
+            ) : (
+              <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.address}</p>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="country" className="text-sm font-semibold text-gray-700">
+                Country
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="country"
+                  value={profileData.country_code}
+                  onChange={e => setProfileData(prev => ({ ...prev, country_code: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.country_code}</p>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="state" className="text-sm font-semibold text-gray-700">
+                State
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="state"
+                  value={profileData.state}
+                  onChange={e => setProfileData(prev => ({ ...prev, state: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.state}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+                City
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="city"
+                  value={profileData.city}
+                  onChange={e => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.city}</p>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="pincode" className="text-sm font-semibold text-gray-700">
+                Pincode
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="pincode"
+                  value={profileData.pincode}
+                  onChange={e => setProfileData(prev => ({ ...prev, pincode: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.pincode}</p>
               )}
             </div>
           </div>

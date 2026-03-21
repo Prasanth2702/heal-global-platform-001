@@ -23,6 +23,7 @@ const buttonVariants = cva(
         doctor: "bg-gradient-doctor text-doctor-foreground shadow-medium hover:shadow-strong transition-smooth",
         facility: "bg-gradient-facility text-facility-foreground shadow-medium hover:shadow-strong transition-smooth", 
         admin: "bg-gradient-admin text-admin-foreground shadow-medium hover:shadow-strong transition-smooth",
+        hospital_staff: "bg-gradient-admin text-admin-foreground shadow-medium hover:shadow-strong transition-smooth",
         hero: "bg-gradient-hero text-white shadow-strong hover:shadow-strong hover:scale-105 transition-bounce",
         heroOutline: "bg-transparent border-2 border-white text-white hover:bg-white hover:text-black hover:scale-105 transition-bounce",
         heroSecondary: "bg-gradient-hero text-white shadow-medium hover:shadow-strong hover:scale-105 transition-bounce",

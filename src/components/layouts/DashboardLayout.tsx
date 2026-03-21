@@ -9,7 +9,7 @@ import Footer from "@/pages/alldetails/Footer";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  userType: "patient" | "doctor" | "facility" | "admin";
+  userType: "patient" | "doctor" | "facility" | "admin" |"hospital_staff"  ;
 }
 
 const DashboardLayout = ({ children, userType }: DashboardLayoutProps) => {
@@ -78,8 +78,55 @@ const DashboardLayout = ({ children, userType }: DashboardLayoutProps) => {
 
 
 
-  useEffect(() => {
-  if (userType === "facility") {
+//   useEffect(() => {
+//   if (userType === "facility") {
+//     checkBedManagementDepartment();
+//   }
+// }, [userType]);
+
+// const checkBedManagementDepartment = async () => {
+//   try {
+//     const {
+//       data: { user },
+//       error: userError,
+//     } = await supabase.auth.getUser();
+
+//     if (userError || !user) return;
+
+//     // Get staff record to find department_id
+//     const { data: staffData, error: staffError } = await supabase
+//       .from("staff")
+//       .select("department_id")
+//       .eq("user_id", user.id)
+//       .maybeSingle();
+
+//     if (staffError) throw staffError;
+//     if (!staffData || !staffData.department_id) return;
+
+//     const departmentId = staffData.department_id;
+
+//     // Check if this department is a "Bed Management" department
+//     const { data: departmentData, error: deptError } = await supabase
+//       .from("departments")
+//       .select("id, name")
+//       .eq("id", departmentId)
+//       .eq("name", "Bed Management")
+//       .eq("is_active", true)
+//       .maybeSingle();
+
+//     if (deptError) throw deptError;
+
+//     // If department exists and is named "Bed Management" → allow menu
+//     if (departmentData) {
+//       setHasBedManagement(true);
+//     }
+//   } catch (err) {
+//     console.error("Bed Management check failed:", err);
+//   }
+// };
+
+useEffect(() => {
+  if (userType === "facility" || userType === "hospital_staff") {
     checkBedManagementDepartment();
   }
 }, [userType]);
@@ -116,15 +163,17 @@ const checkBedManagementDepartment = async () => {
 
     if (deptError) throw deptError;
 
-    // If department exists and is named "Bed Management" → allow menu
+    // If department exists and is named "Bed Management" → set flag
     if (departmentData) {
       setHasBedManagement(true);
+    } else {
+      setHasBedManagement(false);
     }
   } catch (err) {
     console.error("Bed Management check failed:", err);
+    setHasBedManagement(false);
   }
 };
-
 
   const userTypeConfig = {
     patient: {
@@ -245,7 +294,7 @@ const checkBedManagementDepartment = async () => {
         // },
         {
           path: "/dashboard/facility/profile",
-          label: "Facility Profile",
+          label: "My Profile",
           icon: FileText,
         },
         // {
@@ -330,6 +379,28 @@ const checkBedManagementDepartment = async () => {
 //   }
 // ]
     },
+    hospital_staff: {
+      title: "NextGen Medical - Hospital staff",
+      variant: "hospital_staff" as const,
+      routes: [
+        { path: "/dashboard/staff", label: "Overview", icon: TrendingUp },
+           ...(!hasBedManagement ? [  {
+          path: "/dashboard/staff/appointments",
+          label: "Appointments",
+          icon: Calendar,
+        }, ] : []),
+               ...(hasBedManagement
+  ? [
+         {
+        path: "/dashboard/staff/booking_bed",
+        label: "Bed Bookings",
+        icon: Bed,
+      },
+    ]
+  : []),
+      ],
+
+    },
   };
 
   const config = userTypeConfig[userType];
@@ -385,11 +456,11 @@ const checkBedManagementDepartment = async () => {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <div className="flex items-center space-x-2">
-            <img
+            {/* <img
     src="/favicon.svg"
     alt="NextGen Medical"
     className="h-8 w-8 rounded-md object-contain"
-  />
+  /> */}
             <span className="font-bold text-lg">NextGen Medical</span>
           </div>
           <Button

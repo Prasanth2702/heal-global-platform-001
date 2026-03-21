@@ -225,7 +225,7 @@ const HeroCarousel = () => {
                       </div>
                       
                       {/* CTAs */}
-                      <div className="flex flex-col sm:flex-row gap-4">
+                      {/* <div className="flex flex-col sm:flex-row gap-4">
                         <Button 
                           size="xl"
                           className="group bg-white text-gray-900 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -243,7 +243,7 @@ const HeroCarousel = () => {
                           <Play className="mr-2 h-4 w-4" />
                           {slide.secondaryCtaText}
                         </Button>
-                      </div>
+                      </div> */}
                     </div>
                     
                     {/* Right side icons/decorations */}

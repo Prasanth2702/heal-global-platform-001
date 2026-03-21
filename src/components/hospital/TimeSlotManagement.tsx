@@ -2694,7 +2694,7 @@ const TimeSlotManagement = () => {
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="department_id">Department</Label>
+                  <Label htmlFor="department_id">Department / Services</Label>
                   <Select
                     value={formData.department_id}
                     onValueChange={(value) => {
@@ -2714,7 +2714,7 @@ const TimeSlotManagement = () => {
                     <SelectContent>
                       {departments.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
-                          {dept.type} — {dept.name}
+                          {dept.type}{dept.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -2885,7 +2885,7 @@ const TimeSlotManagement = () => {
               <SelectItem value="all">All Departments</SelectItem>
               {departments.map((dept) => (
                 <SelectItem key={dept.id} value={dept.id}>
-                  {dept.type} — {dept.name}
+                  {dept.type}{dept.name}
                 </SelectItem>
               ))}
             </SelectContent>

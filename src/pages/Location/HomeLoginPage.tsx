@@ -50,6 +50,7 @@ import Footer from '@/pages/alldetails/Footer';
 import PatientFacilities from '@/pages/patient/PatientFacilities';
 import { toast } from '@/hooks/use-toast';
 import DoctorSearch from '@/components/patient/DoctorSearch';
+import DoctorHospitals from '@/components/patient/DoctorHospitals';
 
 interface Doctor {
   id: string;
@@ -143,7 +144,7 @@ interface BedBooking {
   dischargeDate?: string;
 }
 
-type ViewType = 'all' | 'doctors' | 'hospitals' | 'beds';
+type ViewType = 'all' | 'doctors' | 'hospitals' | 'beds'|"doctorprofile";
 type DetailViewType = 'doctor' | 'hospital' | 'bed' | null;
 
 const HomeLoginPage: React.FC = () => {
@@ -200,9 +201,11 @@ const handleViewChange = (view: ViewType) => {
   } else if(view === "doctors") {
     navigate(`/appointment/doctors`);
   } else if(view === "hospitals") {
-    navigate(`/appointment/hospitals`);
+    navigate(`/appointment/facility`);
   } else if(view === "beds") {
     navigate(`/appointment/beds`);
+  } else if(view === "doctorprofile") {
+    navigate(`/appointment/doctorprofile`);
   } else {
     navigate(`/appointment/`);
   }
@@ -769,7 +772,7 @@ const handleSignupRedirect = () => {
         </button>
 
         <div className="nav flex-column nav-pills gap-2">
-          <button 
+          {/* <button 
             className={`nav-link text-start d-flex align-items-center gap-3 py-3 rounded-4 ${currentView === 'all' ? 'active' : ''}`}
             onClick={() => handleViewChange('all')}
           >
@@ -777,7 +780,7 @@ const handleSignupRedirect = () => {
               <Home size={20} />
             </div>
             {sidebarOpen && <span className="fw-medium">All</span>}
-          </button>
+          </button> */}
           
           <button 
             className={`nav-link text-start d-flex align-items-center gap-3 py-3 rounded-4 ${currentView === 'doctors' ? 'active' : ''}`}
@@ -786,7 +789,7 @@ const handleSignupRedirect = () => {
             <div className={`icon-circle ${currentView === 'doctors' ? 'bg-white bg-opacity-20' : 'bg-light'} p-2 rounded-3`}>
               <Stethoscope size={20} />
             </div>
-            {sidebarOpen && <span className="fw-medium">Doctors & Professionals</span>}
+            {sidebarOpen && <span className="fw-medium">Find Doctors / Specialists</span>}
           </button>
           
           <button 
@@ -796,7 +799,7 @@ const handleSignupRedirect = () => {
             <div className={`icon-circle ${currentView === 'hospitals' ? 'bg-white bg-opacity-20' : 'bg-light'} p-2 rounded-3`}>
               <Hotel size={20} />
             </div>
-            {sidebarOpen && <span className="fw-medium">Hospitals & Facilities</span>}
+            {sidebarOpen && <span className="fw-medium">Find Hospitals(Facilities) / Services</span>}
           </button>
           
           <button 
@@ -806,11 +809,11 @@ const handleSignupRedirect = () => {
             <div className={`icon-circle ${currentView === 'beds' ? 'bg-white bg-opacity-20' : 'bg-light'} p-2 rounded-3`}>
               <Bed size={20} />
             </div>
-            {sidebarOpen && <span className="fw-medium">Bed Booking</span>}
+            {sidebarOpen && <span className="fw-medium">Find Beds</span>}
           </button>
         </div>
 
-        {sidebarOpen && (
+        {/* {sidebarOpen && (
           <div className="mt-5">
             <h6 className="px-3 mb-3 text-muted small fw-bold">Quick Stats</h6>
             <div className="vstack gap-2">
@@ -851,7 +854,7 @@ const handleSignupRedirect = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
@@ -919,6 +922,8 @@ const handleSignupRedirect = () => {
         
         <PatientFacilities view={currentView}/>
       )}
+
+
     </>
   );
 };

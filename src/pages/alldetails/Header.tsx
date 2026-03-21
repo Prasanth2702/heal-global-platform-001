@@ -158,9 +158,9 @@ const Header = () => {
   const navigationLinks = [
     { name: 'Home', path: '/', icon: <Home size={18} /> },
     { name: 'About', path: '/about', icon: <User size={18} /> },
-    { name: 'Find Doctors', path: '/appointment/doctors', icon: <Stethoscope size={18} /> },
-    { name: 'Find Hospitals', path: '/appointment/hospitals', icon: <Building2 size={18} /> },
-    { name: 'Book Appointment', path: '/appointment/beds', icon: <Calendar size={18} /> },
+    { name: 'Find Doctors / Specialists', path: '/appointment/doctors', icon: <Stethoscope size={18} /> },
+    { name: 'Find Facility / Services ', path: '/appointment/facility', icon: <Building2 size={18} /> },
+    { name: 'Find Beds', path: '/appointment/beds', icon: <Calendar size={18} /> },
   ];
 
   // Handle navigation with proper event prevention
@@ -180,11 +180,11 @@ const Header = () => {
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity" 
               onClick={closeMobileMenu}
             >
-              <img
+              {/* <img
                 src="/favicon.svg"
                 alt="NextGen Medical"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-md object-contain"
-              />
+              /> */}
               <span className="text-lg sm:text-xl font-bold truncate max-w-[150px] sm:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
                 NextGen Medical
               </span>

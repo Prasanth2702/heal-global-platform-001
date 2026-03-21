@@ -54,7 +54,7 @@ const Footer = () => {
     
       const services = [
         { name: 'Find Doctors', path: '/appointment/doctors', icon: PersonStanding },
-        { name: 'Find Hospitals', path: '/appointment/hospitals', icon: Building2 },
+        { name: 'Find Hospitals', path: '/appointment/facility', icon: Building2 },
         { name: 'Book Appointment', path: '/appointment/beds', icon: CalendarCheck },
         // { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
         // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
@@ -68,11 +68,11 @@ const Footer = () => {
             {/* About Section */}
             <div className="col-lg-4 col-md-6">
                <Link to="/" className="flex items-center space-x-2">
-            <img
+            {/* <img
               src="/favicon.svg"
               alt="NextGen Medical"
               className="h-8 w-8 rounded-md object-contain mt-1"
-            />
+            /> */}
             <span className="text-xl font-bold">NextGen Medical</span>
           </Link>
               <p className="text-white-50 mb-3">

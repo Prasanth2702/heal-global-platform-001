@@ -460,6 +460,8 @@ const LandingPage = () => {
   // ✅ ADD THIS CONDITION ONLY
   if (profile.role === "hospital_admin") {
     setUserRole("facility");
+  } else if (profile.role === "hospital_staff") {
+    setUserRole("facility");
   } else {
     setUserRole(profile.role || null);
   }
@@ -767,7 +769,7 @@ const LandingPage = () => {
         </section>
 
         {/* Promotions Carousel */}
-        <section className="py-16 bg-muted/30">
+        {/* <section className="py-16 bg-muted/30">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Featured Healthcare Solutions</h2>
@@ -777,7 +779,7 @@ const LandingPage = () => {
             </div>
             <PromotionCarousel />
           </div>
-        </section>
+        </section> */}
         
         <div className="container">
           <Hometab />

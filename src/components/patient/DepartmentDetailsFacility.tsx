@@ -16,9 +16,9 @@ import {
   ArrowLeft,
   Calendar,
   ChevronRight,
+  Bed,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "../layouts/DashboardLayout";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -27,6 +27,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Footer from "@/pages/alldetails/Footer";
+import Header from "@/pages/alldetails/Header";
 
 interface Department {
   id: string;
@@ -72,7 +74,7 @@ interface BookingInfo {
   doctor_name: string;
   department_id?: string;
 }
-const DepartmentDetails = () => {
+const DepartmentDetailsFacility = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,13 +88,46 @@ const DepartmentDetails = () => {
 const [confirmOpen, setConfirmOpen] = useState(false);
 const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
 const [notes, setNotes] = useState("");
+
+  const [user, setUser] = useState<any>(null);
 const createSlug = (text: string) => {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
+ useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        
+        if (session) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 // Add this missing function
 const handleConfirmBooking = async () => {
   if (!bookingInfo) return;
@@ -197,8 +232,8 @@ const handleConfirmBooking = async () => {
   //           last_name,
   //           avatar_url
   //         )
-  //       `);
-  //       // .eq("department_id", id);
+  //       `)
+  //       .eq("department_id", id);
 
   //     if (doctorsError) throw doctorsError;
 
@@ -224,55 +259,7 @@ const handleConfirmBooking = async () => {
   // const handleViewDoctor = (doctorId: string) => {
   //   navigate(`/dashboard/patient/doctor/${createSlug(department?.name || "")}/${doctorId}`);
   // };
-// Replace the doctors query with staff query
-const fetchDepartmentDetails = async () => {
-  setLoading(true);
-  try {
-    // Fetch department details
-    const { data: deptData, error: deptError } = await supabase
-      .from("departments")
-      .select("*")
-      .eq("id", id)
-      .single();
 
-    if (deptError) throw deptError;
-    setDepartment(deptData);
-
-    // Fetch STAFF in this department (not medical_professionals)
-    const { data: staffData, error: staffError } = await supabase
-      .from("staff")
-      .select(`
-        *,
-        profiles!staff_user_id_fkey (
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .eq("department_id", id); // Filter by department_id
-
-    if (staffError) throw staffError;
-
-    if (staffData) {
-      const mapped = staffData.map((item: any) => ({
-        id: item.id,
-        name: `${item.profiles?.first_name || ""} ${
-          item.profiles?.last_name || ""
-        }`.trim() || "Unknown Staff",
-        specialty: item.position || item.role || "Staff", // Use position or role
-        rating: 4.5, // Default rating or from another table
-        image: item.profiles?.avatar_url || "",
-        role: item.role,
-        position: item.position
-      }));
-      setDepartmentDoctors(mapped);
-    }
-  } catch (error) {
-    console.error("Error fetching department details:", error);
-  } finally {
-    setLoading(false);
-  }
-};
   const handleBookAppointmentClick = () => {
     if (bookingSectionRef.current) {
       bookingSectionRef.current.scrollIntoView({ 
@@ -377,23 +364,74 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
     setBookingInfo(bookingData);
     setConfirmOpen(true);
   };
+  const fetchDepartmentDetails = async () => {
+    setLoading(true);
+    try {
+      // Fetch department details
+      const { data: deptData, error: deptError } = await supabase
+        .from("departments")
+        .select("*")
+        .eq("id", id)
+        .single();
+  
+      if (deptError) throw deptError;
+      setDepartment(deptData);
+  
+      // Fetch STAFF in this department (not medical_professionals)
+      const { data: staffData, error: staffError } = await supabase
+        .from("staff")
+        .select(`
+          *,
+          profiles!staff_user_id_fkey (
+            first_name,
+            last_name,
+            avatar_url
+          )
+        `)
+        .eq("department_id", id); // Filter by department_id
+  
+      if (staffError) throw staffError;
+  
+      if (staffData) {
+        const mapped = staffData.map((item: any) => ({
+          id: item.id,
+          name: `${item.profiles?.first_name || ""} ${
+            item.profiles?.last_name || ""
+          }`.trim() || "Unknown Staff",
+          specialty: item.position || item.role || "Staff", // Use position or role
+          rating: 4.5, // Default rating or from another table
+          image: item.profiles?.avatar_url || "",
+          role: item.role,
+          position: item.position
+        }));
+        setDepartmentDoctors(mapped);
+      }
+    } catch (error) {
+      console.error("Error fetching department details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
-      <DashboardLayout userType="patient">
+        <>
+        <Header/>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading department details...</p>
           </div>
         </div>
-      </DashboardLayout>
+        <Footer/>
+        </>
     );
   }
 
   if (!department) {
     return (
-      <DashboardLayout userType="patient">
+    <>
+    <Header/>
         <div className="min-h-screen flex items-center justify-center">
           <Card className="p-8 text-center">
             <Building2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -404,12 +442,14 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
             </Button>
           </Card>
         </div>
-      </DashboardLayout>
+        <Footer/>
+        </>
     );
   }
 
   return (
-    <DashboardLayout userType="patient">
+    <>
+    <Header/>
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header with navigation */}
         <div className="flex justify-between items-center mb-6">
@@ -510,14 +550,37 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
             <Card ref={bookingSectionRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Book Appointment</h2>
-                 <Button
-                                variant="default"
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                                onClick={() => toggleExpandDepartment(department)}
-                              >
-                                View Availability
-                              </Button>
+
+                {!user ? (
+  <Button
+    variant="default"
+    size="sm"
+    onClick={() => navigate("/login/patient", { 
+      state: { 
+        from: `/appointment/facilityprofile/department/${createSlug(department?.name || "")}/${id}`,
+        departmentData: {
+          departmentId: department?.id,
+          departmentName: department?.name,
+          facilityId: department?.facility_id,
+          facilityName: facility?.facility_name
+        }
+      } 
+    })}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+  >
+    <Bed size={16} className="mr-2" />
+    <span>Login to View Availability</span>
+  </Button>
+) : (
+  <Button
+    variant="default"
+    size="sm"
+    className="bg-green-600 hover:bg-green-700"
+    onClick={() => toggleExpandDepartment(department)}
+  >
+    View Availability
+  </Button>
+)}
 
                                {expandedTimeSlotId === department.id && (
                                                             <div className="mt-4 p-4 rounded-xl border shadow bg-white">
@@ -839,7 +902,7 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                       <div
                         key={doc.id}
                         className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
-                        // onClick={() => handleViewDoctor(doc.id)}
+                        onClick={() => handleViewDoctor(doc.id)}
                       >
                         <img
                           src={doc.image || "https://via.placeholder.com/150"}
@@ -866,49 +929,50 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
               </CardContent>
             </Card>
           </div> */}
-          <div className="space-y-6">
-  <Card>
-    <CardContent className="p-6">
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        <Users className="h-5 w-5 text-green-600" />
-        Department Doctors ({departmentDoctors.length})
-      </h2>
-      {departmentDoctors.length > 0 ? (
-        <div className="space-y-3">
-          {departmentDoctors.map((staff) => (
-            <div
-              key={staff.id}
-              className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
-            >
-              <img
-                src={staff.image || "https://via.placeholder.com/150"}
-                alt={staff.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div className="flex-1">
-                <p className="font-medium">{staff.name}</p>
-                {/* <p className="text-sm text-gray-600">{staff.position || staff.role}</p> */}
-                <div className="flex items-center mt-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  <span className="text-xs ml-1">{staff.rating}</span>
-                </div>
-              </div>
-              {/* <ChevronRight className="h-4 w-4 text-gray-400" /> */}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-8">
-          No staff assigned to this department
-        </p>
-      )}
-    </CardContent>
-  </Card>
-</div>
+             <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-600" />
+                  Department Doctors ({departmentDoctors.length})
+                </h2>
+                {departmentDoctors.length > 0 ? (
+                  <div className="space-y-3">
+                    {departmentDoctors.map((staff) => (
+                      <div
+                        key={staff.id}
+                        className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        <img
+                          src={staff.image || "https://via.placeholder.com/150"}
+                          alt={staff.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{staff.name}</p>
+                          {/* <p className="text-sm text-gray-600">{staff.position || staff.role}</p> */}
+                          <div className="flex items-center mt-1">
+                            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                            <span className="text-xs ml-1">{staff.rating}</span>
+                          </div>
+                        </div>
+                        {/* <ChevronRight className="h-4 w-4 text-gray-400" /> */}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">
+                    No staff assigned to this department
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+      <Footer/>
+      </>
   );
 };
 
-export default DepartmentDetails;
+export default DepartmentDetailsFacility;

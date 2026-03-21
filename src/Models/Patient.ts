@@ -14,4 +14,9 @@ export interface Patient {
   currentMedications?: string;
   userType: UserRole;        
   emailAddress: string;
+   address: string,
+    city: string,
+    state: string,
+    pincode: string,
+    country_code:string,
 }

@@ -43,17 +43,20 @@ import {
   Coffee,
   ParkingCircle,
   BookAIcon,
+  Bed,
   Facebook,
   Twitter,
   Linkedin,
+  Link2,
+  X,
   MessageCircle,
-  Send,
   Instagram,
   Copy,
+  Send,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "../layouts/DashboardLayout";
+// import DashboardLayout from "../layouts/DashboardLayout";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +64,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Header from "@/pages/alldetails/Header";
+import Footer from "@/pages/alldetails/Footer";
 
 // Types
 interface Doctor {
@@ -180,7 +185,7 @@ interface BookingInfo {
   department_id?: string;
 }
 
-const DoctorHospitals = () => {
+const DoctorHospitalsDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -190,7 +195,7 @@ const DoctorHospitals = () => {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
-  
+   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [entityType, setEntityType] = useState<"doctor" | "hospital" | null>(null);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -213,11 +218,10 @@ const DoctorHospitals = () => {
       const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
 const [departmentDialogOpen, setDepartmentDialogOpen] = useState(false);
 const [departmentDoctors, setDepartmentDoctors] = useState<Doctor[]>([]);
-   const [departmentStaff, setDepartmentStaff] = useState<any[]>([]);
-
+ const [departmentStaff, setDepartmentStaff] = useState<any[]>([]);   
 const [shareDialogOpen, setShareDialogOpen] = useState(false);
 const [copied, setCopied] = useState(false);
-   const toggleExpand = async (doctorId: string) => {
+ const toggleExpand = async (doctorId: string) => {
     if (expandedDoctorId === doctorId) {
       setExpandedDoctorId(null);
       setSelectedSlot(null);
@@ -234,6 +238,20 @@ const [copied, setCopied] = useState(false);
     setSelectedDay(0);
     await fetchTimeSlotsAndBookings(doctorId);
   };
+    useEffect(() => {
+      const checkUser = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+      };
+      
+      checkUser();
+  
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user || null);
+      });
+  
+      return () => subscription.unsubscribe();
+    }, []);
     // Add this ref for the booking section
   const bookingSectionRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -284,9 +302,15 @@ const [copied, setCopied] = useState(false);
 // };
 const handleViewDepartment = (department: Department) => {
   // Navigate to department details page
+  if(user){
   navigate(`/dashboard/patient/department/${createSlug(department.name || "")}/${department.id}`, {
     state: { facility: facility }
   });
+}else{
+     navigate(`/appointment/facilityprofile/department/${createSlug(department.name || "")}/${department.id}`, {
+    state: { facility: facility }
+  });
+}
 };
 useEffect(() => {
   // Check state from navigation
@@ -626,53 +650,9 @@ useEffect(() => {
       setSimilarDoctors(mapped);
     }
   };
-  // Add this function to fetch department staff
-const fetchDepartmentStaff = async () => {
-  try {
-    const { data: staffData, error } = await supabase
-      .from("staff")
-      .select(`
-        *,
-        profiles!staff_user_id_fkey (
-          first_name,
-          last_name,
-          avatar_url
-        ),
-        departments!staff_department_id_fkey (
-          id,
-          name
-        )
-      `)
-      .eq("facility_id", facility?.id);
-
-    if (error) {
-      console.error("Error fetching department staff:", error);
-      return;
-    }
-
-    if (staffData) {
-      const mapped = staffData.map((item: any) => ({
-        id: item.id,
-        user_id: item.user_id,
-        name: `${item.profiles?.first_name || ""} ${
-          item.profiles?.last_name || ""
-        }`.trim() || "Unknown Staff",
-        department_name: item.departments?.name || "Unknown Department",
-        position: item.position || item.role || "Staff",
-        image: item.profiles?.avatar_url || "",
-        role: item.role,
-        employee_id: item.employee_id
-      }));
-      setDepartmentStaff(mapped);
-    }
-  } catch (error) {
-    console.error("Error in fetchDepartmentStaff:", error);
-  }
-};
 
   // const fetchFacilityDetails = async (facilityData: any) => {
   //   // Fetch departments
-  //   await fetchDepartmentStaff();
   //   const { data: departmentsData } = await supabase
   //     .from("departments")
   //     .select("*")
@@ -849,10 +829,34 @@ const fetchFacilityDetails = async (facilityData: any) => {
   //     description: "Profile link copied to clipboard",
   //   });
   // };
-  const handleShare = () => {
+
+const handleShare = () => {
   setShareDialogOpen(true);
 };
 
+// Add handleCopyLink function
+// const handleCopyLink = async () => {
+//   try {
+//     await navigator.clipboard.writeText(window.location.href);
+//     setCopied(true);
+//     toast({
+//       title: "Link Copied!",
+//       description: "Profile link copied to clipboard",
+//       duration: 2000,
+//     });
+//     setTimeout(() => setCopied(false), 2000);
+//   } catch (err) {
+//     toast({
+//       title: "Failed to copy",
+//       description: "Please try again",
+//       variant: "destructive",
+//     });
+//   }
+// };
+
+// Add handleSocialShare function
+// Add handleSocialShare function
+// Add handleSocialShare function
 const handleSocialShare = async (platform: string) => {  // Make this async
   const url = encodeURIComponent(window.location.href);
   const title = encodeURIComponent(
@@ -953,6 +957,7 @@ const handleCopyLink = async () => {
   }
 };
 
+// Improved ShareDialog Component
 const ShareDialog = () => (
   <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
     <DialogContent >
@@ -1115,7 +1120,6 @@ const ShareDialog = () => (
     </DialogContent>
   </Dialog>
 );
-
   const toggleSave = () => {
     setIsSaved(!isSaved);
     toast({
@@ -1170,7 +1174,9 @@ const handleBookAppointmentClick = () => {
   // Doctor Profile View
   if (entityType === "doctor" && doctor) {
     return (
-        <DashboardLayout userType="patient">
+        <>
+        <Header/>
+        {/* // <DashboardLayout userType="patient"> */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header with navigation */}
         <div className="flex justify-between items-center mb-6">
@@ -1427,13 +1433,37 @@ const handleBookAppointmentClick = () => {
                 </h2>
               </CardContent>
               <CardContent className="p-6">
-                <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => toggleExpand(doctor.user_id)}
-                          >
-                            View Availability
-                          </Button>
+                
+               
+                          {!user ? (
+  <Button
+    variant="default"
+    size="sm"
+    onClick={() => navigate("/login/patient", { 
+      state: { 
+        from: `/dashboard/patient/doctor/${createSlug(doctor?.name || "")}/${id}`,
+        doctor: {
+          departmentId: doctor?.id,
+          departmentName: doctor?.name,
+          facilityName: facility?.facility_name
+        }
+      } 
+    })}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+  >
+    <Bed size={16} className="mr-2" />
+    <span>Login to View Availability</span>
+  </Button>
+) : (
+  <Button
+    variant="default"
+    size="sm"
+    className="bg-green-600 hover:bg-green-700"
+     onClick={() => toggleExpand(doctor.user_id)}
+  >
+    View Availability
+  </Button>
+)}
                           {expandedDoctorId === doctor.user_id && (
                                                 <div className="mt-4 p-4 rounded-xl border shadow bg-white">
                                                   <h3 className="font-semibold mb-3 text-lg">
@@ -1717,7 +1747,7 @@ const handleBookAppointmentClick = () => {
         </Tabs>
 
         {/* Similar Doctors */}
-        {similarDoctors.length > 0 && (
+        {/* {similarDoctors.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">Similar Doctors</h2>
             <div className="grid md:grid-cols-3 gap-6">
@@ -1747,17 +1777,21 @@ const handleBookAppointmentClick = () => {
               ))}
             </div>
           </div>
-        )}
+        )} */}
       </div>
-      <ShareDialog />
-      </DashboardLayout>
+       <ShareDialog />
+      <Footer/>
+      {/* // </DashboardLayout> */}
+      </>
     );
   }
 
   // Hospital Profile View
   if (entityType === "hospital" && facility) {
     return (
-        <DashboardLayout userType="patient">
+        <>
+        <Header/>
+        {/* // <DashboardLayout userType="patient"> */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header with navigation */}
         <div className="flex justify-between items-center mb-6">
@@ -2009,43 +2043,43 @@ const handleBookAppointmentClick = () => {
             </div>
           </TabsContent> */}
           <TabsContent value="doctors" className="space-y-6">
-  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {departmentStaff.map((staff) => (
-      <Card key={staff.id} className="hover:shadow-lg transition cursor-pointer">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <img
-              src={staff.image || "https://via.placeholder.com/150"}
-              alt={staff.name}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-            <div>
-              <h3 className="font-semibold">{staff.name}</h3>
-              <p className="text-sm text-gray-600">{staff.position}</p>
-              <div className="flex items-center mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {staff.department_name}
-                </Badge>
-              </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {departmentStaff.map((staff) => (
+                <Card key={staff.id} className="hover:shadow-lg transition cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={staff.image || "https://via.placeholder.com/150"}
+                        alt={staff.name}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="font-semibold">{staff.name}</h3>
+                        <p className="text-sm text-gray-600">{staff.position}</p>
+                        <div className="flex items-center mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {staff.department_name}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500">
+                      <p>Employee ID: {staff.employee_id || 'N/A'}</p>
+                    </div>
+                    {/* <Button variant="outline" size="sm" className="w-full mt-4">
+                      View Profile <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button> */}
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {departmentStaff.length === 0 && (
+                <div className="col-span-full text-center py-8 text-gray-500">
+                  No staff members found in this facility
+                </div>
+              )}
             </div>
-          </div>
-          <div className="mt-3 text-xs text-gray-500">
-            <p>Employee ID: {staff.employee_id || 'N/A'}</p>
-          </div>
-          {/* <Button variant="outline" size="sm" className="w-full mt-4">
-            View Profile <ChevronRight className="h-4 w-4 ml-2" />
-          </Button> */}
-        </CardContent>
-      </Card>
-    ))}
-    
-    {departmentStaff.length === 0 && (
-      <div className="col-span-full text-center py-8 text-gray-500">
-        No staff members found in this facility
-      </div>
-    )}
-  </div>
-</TabsContent>
+          </TabsContent>
 
           {/* Facilities Tab */}
           <TabsContent value="facilities" className="space-y-6">
@@ -2072,11 +2106,13 @@ const handleBookAppointmentClick = () => {
         </Tabs>
       </div>
       <ShareDialog />
-      </DashboardLayout>
+       <Footer/>
+      {/* // </DashboardLayout> */}
+      </>
     );
   }
 
   return null;
 };
 
-export default DoctorHospitals;
+export default DoctorHospitalsDetails;

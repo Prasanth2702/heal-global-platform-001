@@ -279,7 +279,27 @@ const BedBookingManagementPage: React.FC = () => {
         showNotification("User not authenticated", "error");
         return;
       }
+      
+ const { data: staffData } = await supabase
+      .from("staff")
+      .select("department_id,user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    // If user is staff (not admin), check if they have access to this booking
+    // if (staffData) {
+    //   // Check if the booking belongs to the staff's department
+    //   // You need to have department_id in your bookings table or fetch it
+    //   const { data: bookingDept } = await supabase
+    //     .from("bed_bookings")
+    //     .select("department_id")
+    //     .eq("id", currentBooking.id)
+    //     .single();
 
+    //   if (bookingDept && bookingDept.department_id !== staffData.department_id) {
+    //     showNotification("You don't have permission to perform this action", "error");
+    //     return;
+    //   }
+    // }
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -288,8 +308,9 @@ const BedBookingManagementPage: React.FC = () => {
         showNotification("Session expired. Please login again.", "error");
         return;
       }
-
-      const facilityId = user.user_metadata?.facility_id;
+      
+const facilityId = await getUserFacilityId();
+      // const facilityId = user.user_metadata?.facility_id;
       if (!facilityId) {
         showNotification("Facility ID not found in user metadata", "error");
         return;
@@ -467,7 +488,6 @@ const BedBookingManagementPage: React.FC = () => {
       setShowActionDialog(false);
       fetchData(selectedDate);
     } catch (error: any) {
-      console.error(`Failed to ${currentAction} patient:`, error);
       showNotification(
         `Failed to ${currentAction} patient: ${
           error.message || "Unknown error"
@@ -476,55 +496,192 @@ const BedBookingManagementPage: React.FC = () => {
       );
     }
   };
+//   const getUserFacilityId = async () => {
+//   const { data: { user } } = await supabase.auth.getUser();
+//   if (!user) return null;
 
-  const fetchData = async (date: Date) => {
-    try {
-      setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+//   console.log("USER ID:", user.id);
 
-      if (!user) return;
+//   // ✅ Check ADMIN
+//   const { data: adminFacility, error: adminError } = await supabase
+//     .from("facilities")
+//     .select("id")
+//     .eq("admin_user_id", user.id)
+//     .maybeSingle();
 
-      const facilityId = user?.user_metadata?.facility_id;
-      const startDate = startOfDay(date);
-      const endDate = endOfDay(date);
+//   if (adminError) {
+//     console.error("Admin fetch error:", adminError);
+//   }
 
-      const { data: wardsData } = await supabase
-        .from("wards")
-        .select("*")
-        .eq("facility_id", facilityId)
-        .eq("is_active", true);
+//   if (adminFacility) {
+//     console.log("ADMIN FACILITY:", adminFacility.id);
+//     return adminFacility.id;
+//   }
 
-      const { data: bedsData } = await supabase
-        .from("beds")
-        .select("*")
-        .eq("facility_id", facilityId)
-        .gte("updated_at", startDate.toISOString())
-        .lte("updated_at", endDate.toISOString())
-        .eq("is_active", true);
+//   // ✅ Check STAFF
+//   const { data: staff, error: staffError } = await supabase
+//     .from("staff")
+//     .select("facility_id")
+//     .eq("user_id", user.id)
+//     .maybeSingle();
 
-      const { data: bookingsData } = await supabase
-        .from("bed_bookings")
-        .select("*")
-        .eq("facility_id", facilityId)
-        .gte("updated_at", startDate.toISOString())
-        .lte("updated_at", endDate.toISOString())
-        .order("updated_at", { ascending: false });
+//   if (staffError) {
+//     console.error("Staff fetch error:", staffError);
+//   }
 
-      setWards(wardsData || []);
-      setBeds(bedsData || []);
-      setBookings(bookingsData || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setWards([]);
-      setBeds([]);
-      setBookings([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   if (staff) {
+//     console.log("STAFF FACILITY:", staff.facility_id);
+//     return staff.facility_id;
+//   }
 
+//   return null;
+// };
+
+  // const fetchData = async (date: Date) => {
+  //   try {
+  //     setLoading(true);
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
+
+  //     if (!user) return;
+
+  //     // const facilityId = user?.user_metadata?.facility_id;
+  //     const facilityId = await getUserFacilityId();
+  //     const startDate = startOfDay(date);
+  //     const endDate = endOfDay(date);
+
+  //     const { data: wardsData } = await supabase
+  //       .from("wards")
+  //       .select("*")
+  //       .eq("facility_id", facilityId)
+  //       .eq("is_active", true);
+
+  //     const { data: bedsData } = await supabase
+  //       .from("beds")
+  //       .select("*")
+  //       .eq("facility_id", facilityId)
+  //       .gte("updated_at", startDate.toISOString())
+  //       .lte("updated_at", endDate.toISOString())
+  //       .eq("is_active", true);
+
+  //     const { data: bookingsData } = await supabase
+  //       .from("bed_bookings")
+  //       .select("*")
+  //       .eq("facility_id", facilityId)
+  //       .gte("updated_at", startDate.toISOString())
+  //       .lte("updated_at", endDate.toISOString())
+  //       .order("updated_at", { ascending: false });
+
+  //     setWards(wardsData || []);
+  //     setBeds(bedsData || []);
+  //     setBookings(bookingsData || []);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //     setWards([]);
+  //     setBeds([]);
+  //     setBookings([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const getUserFacilityId = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  console.log("USER ID:", user.id);
+
+  // ✅ Check ADMIN
+  const { data: adminFacility, error: adminError } = await supabase
+    .from("facilities")
+    .select("id")
+    .eq("admin_user_id", user.id)
+    .maybeSingle();
+
+
+  if (adminFacility) {
+    return adminFacility.id;
+  }
+
+  // ✅ Check STAFF (includes department staff)
+  const { data: staff, error: staffError } = await supabase
+    .from("staff")
+    .select("facility_id, department_id,user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+
+  if (staff) {
+    return staff.facility_id;
+  }
+
+  return null;
+};
+
+const fetchData = async (date: Date) => {
+  try {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const facilityId = await getUserFacilityId();
+    
+    // Also get staff details if needed for department filtering
+    const { data: staffData } = await supabase
+      .from("staff")
+      .select("department_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const startDate = startOfDay(date);
+    const endDate = endOfDay(date);
+
+    // Fetch wards (optionally filter by department if needed)
+    let wardsQuery = supabase
+      .from("wards")
+      .select("*")
+      .eq("facility_id", facilityId)
+      .eq("is_active", true);
+    
+    // If staff has a specific department, you might want to filter wards
+    // if (staffData?.department_id) {
+    //   wardsQuery = wardsQuery.eq("department_id", staffData.department_id);
+    // }
+
+    const { data: wardsData } = await wardsQuery;
+
+    // Fetch beds
+    const { data: bedsData } = await supabase
+      .from("beds")
+      .select("*")
+      .eq("facility_id", facilityId)
+      .gte("updated_at", startDate.toISOString())
+      .lte("updated_at", endDate.toISOString())
+      .eq("is_active", true);
+
+    // Fetch bookings
+    const { data: bookingsData } = await supabase
+      .from("bed_bookings")
+      .select("*")
+      .eq("facility_id", facilityId)
+      .gte("updated_at", startDate.toISOString())
+      .lte("updated_at", endDate.toISOString())
+      .order("updated_at", { ascending: false });
+
+    setWards(wardsData || []);
+    setBeds(bedsData || []);
+    setBookings(bookingsData || []);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    setWards([]);
+    setBeds([]);
+    setBookings([]);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     fetchData(selectedDate);
   }, []);

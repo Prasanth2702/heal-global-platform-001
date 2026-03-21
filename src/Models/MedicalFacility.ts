@@ -22,5 +22,6 @@ export interface MedicalFacility {
     insurancePartners: string,
     operatingHours: string,
     website: string,
-    aboutFacility: string
+    aboutFacility: string,
+    country_code:string,
 }

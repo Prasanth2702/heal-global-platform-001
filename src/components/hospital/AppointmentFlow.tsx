@@ -439,24 +439,83 @@ const AppointmentFlow = () => {
   const [facilityId, setFacilityId] = useState<string | null>(null);
 
   // Fetch facility ID on mount
-  useEffect(() => {
-    const getFacilityId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  // useEffect(() => {
+  //   const getFacilityId = async () => {
+  //     const { data: { user } } = await supabase.auth.getUser();
+  //     if (!user) return;
 
-      const { data } = await supabase
+  //     const { data } = await supabase
+  //       .from("facilities")
+  //       .select("id")
+  //       .eq("admin_user_id", user.id)
+  //       .single();
+
+  //     if (data) {
+  //       setFacilityId(data.id);
+  //     }
+  //   };
+  //   getFacilityId();
+  // }, []);
+useEffect(() => {
+  const getFacilityId = async () => {
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    /* -----------------------------
+    STEP 1 : CHECK PROFILE ROLE
+    ------------------------------*/
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!profile) return;
+
+    /* -----------------------------
+    STEP 2 : ADMIN
+    ------------------------------*/
+
+    if (profile.role === "hospital_admin") {
+
+      const { data: facility } = await supabase
         .from("facilities")
         .select("id")
         .eq("admin_user_id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (data) {
-        setFacilityId(data.id);
+      if (facility) {
+        setFacilityId(facility.id);
       }
-    };
-    getFacilityId();
-  }, []);
 
+      return;
+    }
+
+    /* -----------------------------
+    STEP 3 : STAFF
+    ------------------------------*/
+
+    if (profile.role === "hospital_staff") {
+
+      const { data: staff } = await supabase
+        .from("staff")
+        .select("facility_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (staff) {
+        setFacilityId(staff.facility_id);
+      }
+
+    }
+
+  };
+
+  getFacilityId();
+
+}, []);
   // Fetch appointments
   useEffect(() => {
     if (!facilityId) return;

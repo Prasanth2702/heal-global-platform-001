@@ -4900,6 +4900,47 @@ const ViewFacility: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
+    const getUserFacilityId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+    
+      console.log("USER ID:", user.id);
+    
+      // ✅ Check ADMIN
+      const { data: adminFacility, error: adminError } = await supabase
+        .from("facilities")
+        .select("id")
+        .eq("admin_user_id", user.id)
+        .maybeSingle();
+    
+      if (adminError) {
+        console.error("Admin fetch error:", adminError);
+      }
+    
+      if (adminFacility) {
+        console.log("ADMIN FACILITY:", adminFacility.id);
+        return adminFacility.id;
+      }
+    
+      // ✅ Check STAFF
+      const { data: staff, error: staffError } = await supabase
+        .from("staff")
+        .select("facility_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+    
+      if (staffError) {
+        console.error("Staff fetch error:", staffError);
+      }
+    
+      if (staff) {
+        console.log("STAFF FACILITY:", staff.facility_id);
+        return staff.facility_id;
+      }
+    
+      return null;
+    };
+
   const fetchStats = async () => {
     setRefreshing(true);
     setError(null);
@@ -4913,7 +4954,8 @@ const ViewFacility: React.FC = () => {
         return;
       }
 
-      const facilityId = user?.user_metadata?.facility_id;
+      // const facilityId = user?.user_metadata?.facility_id;
+      const facilityId = await getUserFacilityId();
 
       // Fetch wards
       const { data: wardsData } = await supabase
@@ -4982,19 +5024,17 @@ const ViewFacility: React.FC = () => {
 
   if (loading) {
     return (
-      <DashboardLayout userType="facility">
         <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "80vh" }}>
           <div className="text-center">
             <Spinner animation="border" variant="primary" />
             <p className="mt-3">Loading facility data...</p>
           </div>
         </Container>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout userType="facility">
+    <>
       <div className="view-facility-page">
         {/* Header Section */}
         <div className="page-header bg-gradient-primary mb-4">
@@ -5015,7 +5055,7 @@ const ViewFacility: React.FC = () => {
               </Col>
               <Col xs="auto">
                 <div className="d-flex gap-3">
-                  <Button
+                  {/* <Button
                     variant="light"
                     className="d-flex align-items-center"
                     onClick={refreshData}
@@ -5037,7 +5077,7 @@ const ViewFacility: React.FC = () => {
                   >
                     <Download size={18} className="me-2" />
                     Export Report
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="light"
                     className="d-flex align-items-center"
@@ -5248,7 +5288,7 @@ const ViewFacility: React.FC = () => {
           100% { transform: rotate(360deg); }
         }
       `}</style>
-    </DashboardLayout>
+    </>
   );
 };
 

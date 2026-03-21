@@ -1545,6 +1545,7 @@ import {
   Mail,
   Calendar,
   Building,
+  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -1561,6 +1562,9 @@ interface Profile {
   first_name: string;
   last_name: string;
   avatar_url?: string;
+ profile_id?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Department {
@@ -1610,6 +1614,12 @@ interface Staff {
   profile?: Profile;
   department?: Department;
   facility?: Facility;
+    specialization?: string;
+  qualifications?: string[];
+  employment_type?: string;
+  joining_date?: string;
+  status?: string;
+  role:string;
 }
 
 interface CombinedStaffData extends Staff {
@@ -1630,8 +1640,15 @@ const StaffManagement = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
   const [selectedFacility, setSelectedFacility] = useState<string>("all");
   const [userFacility, setUserFacility] = useState<Facility | null>(null);
-
+ const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [formData, setFormData] = useState({
+     // User account fields
+    email: "",
+    password: "",
+    confirmPassword: "",
+    first_name: "",
+    last_name: "",
+    phone_number: "",
     user_id: "",
     employee_id: "",
     position: "",
@@ -1646,6 +1663,12 @@ const StaffManagement = () => {
     },
     permissions: {},
     is_active: true,
+    specialization: "",
+  qualifications: [],
+  employment_type: "full-time",
+  joining_date: "",
+  status: "active",
+  role: "hospital_staff",
   });
 
   // Track if current user already has a staff record
@@ -1687,7 +1710,7 @@ const StaffManagement = () => {
           .from("facilities")
           .select("id, facility_name, facility_type, city, state, admin_user_id")
           .eq("admin_user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (facilityError) {
           console.error("Facility error:", facilityError);
@@ -1718,47 +1741,48 @@ const StaffManagement = () => {
   const [maintenanceDeptId, setMaintenanceDeptId] = useState<string | null>(null);
   
   // Check if current user is maintenance staff
-  useEffect(() => {
-    const checkMaintenanceAccess = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (!user) return;
+//   useEffect(() => {
+//     const checkMaintenanceAccess = async () => {
+//       const { data: { user }, error } = await supabase.auth.getUser();
+//       if (!user) return;
+// const role = user?.user_metadata?.role;
+// console.log("ROLE:", role);
+//       try {
+//         // Find Maintenance department
+//         const { data: deptData } = await supabase
+//           .from("departments")
+//           .select("id")
+//           .ilike("name", "%maintenance%")
+//           .maybeSingle();
 
-      try {
-        // Find Maintenance department
-        const { data: deptData } = await supabase
-          .from("departments")
-          .select("id")
-          .ilike("name", "%maintenance%")
-          .maybeSingle();
+//         if (deptData) {
+//           setMaintenanceDeptId(deptData.id);
 
-        if (deptData) {
-          setMaintenanceDeptId(deptData.id);
+//           // Check if user is in Maintenance department
+//           const { data: staffData } = await supabase
+//             .from("staff")
+//             .select("id")
+//             .eq("user_id", user.id)
+//             .eq("department_id", deptData.id)
+//             .eq("is_active", true)
+//             .maybeSingle();
 
-          // Check if user is in Maintenance department
-          const { data: staffData } = await supabase
-            .from("staff")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("department_id", deptData.id)
-            .eq("is_active", true)
-            .maybeSingle();
+//           setIsMaintenance(!!staffData);
+//         }
+//       } catch (error) {
+//         console.error("Error checking maintenance access:", error);
+//       }
+//     };
 
-          setIsMaintenance(!!staffData);
-        }
-      } catch (error) {
-        console.error("Error checking maintenance access:", error);
-      }
-    };
+//     checkMaintenanceAccess();
+//   }, []);
 
-    checkMaintenanceAccess();
-  }, []);
-
-  useEffect(() => {
-    // Check if current user has a staff record
-    if (currentUserId && staff.length > 0) {
-      setUserHasStaff(staff.some(s => s.user_id === currentUserId));
-    }
-  }, [currentUserId, staff]);
+  // useEffect(() => {
+  //   // Check if current user has a staff record
+  //   if (currentUserId && staff.length > 0) {
+  //     setUserHasStaff(staff.some(s => s.user_id === currentUserId));
+  //   }
+  // }, [currentUserId, staff]);
 
   // Fetch initial data
   useEffect(() => {
@@ -1859,135 +1883,814 @@ const StaffManagement = () => {
     return departmentMatch && facilityMatch;
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!userFacility?.id) {
-      toast({
-        title: "Error",
-        description: "Facility information not found",
-        variant: "destructive",
-      });
-      return;
-    }
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
 
-    trackStaffAction(editingStaff ? 'edit_attempt' : 'add_attempt', 
-      editingStaff, { employee_id: formData.employee_id, position: formData.position });
-    
-    // Validate required UUID fields are not empty
-    if (!formData.facility_id || formData.facility_id.trim() === "") {
-      toast({
-        title: "Facility Required",
-        description: "Please select a facility.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!formData.department_id || formData.department_id.trim() === "") {
-      toast({
-        title: "Department Required",
-        description: "Please select a department.",
-        variant: "destructive",
-      });
-      return;
-    }
+//   if (!userFacility?.id) {
+//     toast({
+//       title: "Error",
+//       description: "Facility not found",
+//       variant: "destructive",
+//     });
+//     return;
+//   }
 
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+//   // ===============================
+//   // ✅ VALIDATION
+//   // ===============================
+//   if (!formData.first_name || !formData.last_name) {
+//     return toast({
+//       title: "Missing Fields",
+//       description: "First & Last name required",
+//       variant: "destructive",
+//     });
+//   }
 
-      if (userError || !user) {
-        toast({
-          title: "Error",
-          description: "User not authenticated. Please log in again.",
-          variant: "destructive",
-        });
-        return;
-      }
+//   if (!formData.email || !formData.phone_number) {
+//     return toast({
+//       title: "Missing Fields",
+//       description: "Email & Phone required",
+//       variant: "destructive",
+//     });
+//   }
 
-      // Check for duplicate employee_id in the same facility
-      const { data: duplicateStaff, error: dupError } = await supabase
-        .from("staff")
-        .select("id")
-        .eq("facility_id", formData.facility_id)
-        .eq("employee_id", formData.employee_id);
+//   if (!formData.department_id) {
+//     return toast({
+//       title: "Department Required",
+//       description: "Select department",
+//       variant: "destructive",
+//     });
+//   }
+
+//   // Password validation (only for new user)
+//   if (!editingStaff) {
+//     if (formData.password !== formData.confirmPassword) {
+//       return toast({
+//         title: "Password mismatch",
+//         description: "Passwords do not match",
+//         variant: "destructive",
+//       });
+//     }
+
+//     if (formData.password.length < 6) {
+//       return toast({
+//         title: "Weak password",
+//         description: "Minimum 6 characters required",
+//         variant: "destructive",
+//       });
+//     }
+//   }
+
+//   setIsCreatingUser(true);
+
+//   try {
+//     // ===============================
+//     // ✅ CHECK DUPLICATE EMPLOYEE ID
+//     // ===============================
+//     let query = supabase
+//       .from("staff")
+//       .select("id")
+//       .eq("facility_id", userFacility.id)
+//       .eq("employee_id", formData.employee_id);
+
+//     if (editingStaff) {
+//       query = query.neq("id", editingStaff.id);
+//     }
+
+//     const { data: duplicate, error: dupError } = await query;
+
+//     if (dupError) throw dupError;
+
+//     if (duplicate && duplicate.length > 0) {
+//       throw new Error("Employee ID already exists");
+//     }
+
+//     let userId = formData.user_id;
+
+//     // ===============================
+//     // ✅ CREATE AUTH USER (ONLY NEW)
+//     // ===============================
+//     if (!editingStaff) {
+//       const { data: authData, error: authError } =
+//         await supabase.auth.signUp({
+//           email: formData.email,
+//           password: formData.password,
+//           options: {
+//             data: {
+//               first_name: formData.first_name,
+//               last_name: formData.last_name,
+//               role: "hospital_staff", // ✅ stored in metadata
+//               phone_number: formData.phone_number,
+//             },
+//           },
+//         });
+
+//       if (authError) throw authError;
+
+//       if (!authData.user?.id) {
+//         throw new Error("User creation failed");
+//       }
+
+//       userId = authData.user.id;
+
+//       // ===============================
+//       // ✅ CHECK PROFILE EXISTS
+//       // ===============================
+//       const { data: existingProfile, error: profileCheckError } =
+//         await supabase
+//           .from("profiles")
+//           .select("id")
+//           .eq("user_id", userId)
+//           .maybeSingle();
+
+//       if (profileCheckError) throw profileCheckError;
+//  const { data, error } = await supabase
+//       .from('profiles')
+//       .update({
+//         phone_number: formData.phone_number,
+//         role: 'hospital_admin',
+//         email: formData.email
+//       })
+//       .eq('email', formData.email);
+//       // ===============================
+//       // ✅ CREATE PROFILE
+//       // ===============================
+//       if (!existingProfile) {
+//         const { error: profileError } = await supabase
+//           .from("profiles")
+//           .insert([
+//             {
+//               user_id: userId,
+//               email: formData.email,
+//               phone_number: formData.phone_number,
+//               first_name: formData.first_name,
+//               last_name: formData.last_name,
+//               role: "hospital_staff", // ✅ IMPORTANT
+//               created_at: new Date().toISOString(),
+//               updated_at: new Date().toISOString(),
+//             },
+//           ]);
+
+//         if (profileError) throw profileError;
+//       }
+
+//       toast({
+//         title: "User Created",
+//         description: "Hospital staff account created successfully",
+//       });
+//     }
+
+//     // ===============================
+//     // ✅ STAFF TABLE DATA
+//     // ===============================
+//     const staffPayload = {
+//       facility_id: userFacility.id,
+//       department_id: formData.department_id,
+//       employee_id: formData.employee_id,
+//       position: formData.position,
+//       hire_date: formData.hire_date,
+//       user_id: userId,
+//       updated_at: new Date().toISOString(),
+//     };
+
+//     // ===============================
+//     // ✅ UPDATE / INSERT STAFF
+//     // ===============================
+//     if (editingStaff) {
+//       const { error } = await supabase
+//         .from("staff")
+//         .update(staffPayload)
+//         .eq("id", editingStaff.id);
+
+//       if (error) throw error;
+
+//       toast({
+//         title: "Updated",
+//         description: "Staff updated successfully",
+//       });
+//     } else {
+//       const { error } = await supabase
+//         .from("staff")
+//         .insert([
+//           {
+//             ...staffPayload,
+//             created_at: new Date().toISOString(),
+//           },
+//         ]);
+
+//       if (error) throw error;
+
+//       toast({
+//         title: "Success",
+//         description: "Hospital staff added successfully",
+//       });
+//     }
+
+//     // ===============================
+//     // ✅ RESET + REFRESH
+//     // ===============================
+//     resetForm();
+//     fetchData();
+//     setIsAddDialogOpen(false);
+
+//   } catch (err: any) {
+//     console.error("ERROR:", err);
+
+//     toast({
+//       title: "Error",
+//       description: err.message || "Something went wrong",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setIsCreatingUser(false);
+//   }
+// };
+
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (!userFacility?.id) {
+//     toast({
+//       title: "Error",
+//       description: "Facility not found",
+//       variant: "destructive",
+//     });
+//     return;
+//   }
+
+//   // ===============================
+//   // ✅ GET CURRENT USER ROLE
+//   // ===============================
+//   const { data: { user: currentUser } } = await supabase.auth.getUser();
+//   const currentUserRole = currentUser?.user_metadata?.role;
+  
+//   // Get role from profiles table for more reliable permissions
+//   const { data: currentProfile } = await supabase
+//     .from('profiles')
+//     .select('role')
+//     .eq('user_id', currentUser?.id)
+//     .single();
+  
+//   const userRole = currentProfile?.role || currentUserRole;
+
+//   // ===============================
+//   // ✅ ROLE-BASED ACCESS CONTROL
+//   // ===============================
+  
+//   // Only admin and maintenance can create new staff
+//   if (!editingStaff && !['admin', 'maintenance', 'hospital_admin'].includes(userRole || '')) {
+//     return toast({
+//       title: "Access Denied",
+//       description: "You don't have permission to add new staff members",
+//       variant: "destructive",
+//     });
+//   }
+
+//   // Only admin and maintenance can edit other staff members
+//   if (editingStaff && editingStaff.user_id !== currentUser?.id) {
+//     if (!['admin', 'maintenance', 'hospital_admin'].includes(userRole || '')) {
+//       return toast({
+//         title: "Access Denied",
+//         description: "You can only edit your own profile",
+//         variant: "destructive",
+//       });
+//     }
+//   }
+
+//   // Only admin and maintenance can set admin roles
+//   const isSettingAdminRole = formData.role === 'admin' || formData.role === 'hospital_admin';
+//   if (isSettingAdminRole && !['admin', 'maintenance'].includes(userRole || '')) {
+//     return toast({
+//       title: "Access Denied",
+//       description: "You don't have permission to create admin accounts",
+//       variant: "destructive",
+//     });
+//   }
+
+//   // ===============================
+//   // ✅ VALIDATION
+//   // ===============================
+//   if (!formData.first_name || !formData.last_name) {
+//     return toast({
+//       title: "Missing Fields",
+//       description: "First & Last name required",
+//       variant: "destructive",
+//     });
+//   }
+
+//   if (!formData.email || !formData.phone_number) {
+//     return toast({
+//       title: "Missing Fields",
+//       description: "Email & Phone required",
+//       variant: "destructive",
+//     });
+//   }
+
+//   if (!formData.department_id) {
+//     return toast({
+//       title: "Department Required",
+//       description: "Select department",
+//       variant: "destructive",
+//     });
+//   }
+
+//   // Password validation (only for new user)
+//   if (!editingStaff) {
+//     if (formData.password !== formData.confirmPassword) {
+//       return toast({
+//         title: "Password mismatch",
+//         description: "Passwords do not match",
+//         variant: "destructive",
+//       });
+//     }
+
+//     if (formData.password.length < 6) {
+//       return toast({
+//         title: "Weak password",
+//         description: "Minimum 6 characters required",
+//         variant: "destructive",
+//       });
+//     }
+//   }
+
+//   setIsCreatingUser(true);
+
+//   try {
+//     // ===============================
+//     // ✅ CHECK DUPLICATE EMPLOYEE ID
+//     // ===============================
+//     let query = supabase
+//       .from("staff")
+//       .select("id")
+//       .eq("facility_id", userFacility.id)
+//       .eq("employee_id", formData.employee_id);
+
+//     if (editingStaff) {
+//       query = query.neq("id", editingStaff.id);
+//     }
+
+//     const { data: duplicate, error: dupError } = await query;
+
+//     if (dupError) throw dupError;
+
+//     if (duplicate && duplicate.length > 0) {
+//       throw new Error("Employee ID already exists");
+//     }
+
+//     let userId = formData.user_id;
+
+//     // ===============================
+//     // ✅ CREATE AUTH USER (ONLY NEW)
+//     // ===============================
+//     if (!editingStaff) {
+//       // Determine the role for the new user
+//       const newUserRole = formData.role || "hospital_staff";
       
-      if (dupError) {
-        toast({
-          title: "Error",
-          description: "Failed to check for duplicate Employee ID.",
-          variant: "destructive",
+//       const { data: authData, error: authError } =
+//         await supabase.auth.signUp({
+//           email: formData.email,
+//           password: formData.password,
+//           options: {
+//             data: {
+//               first_name: formData.first_name,
+//               last_name: formData.last_name,
+//               role: newUserRole, // ✅ Use the determined role
+//               phone_number: formData.phone_number,
+//               created_by: currentUser?.id, // Track who created this user
+//               created_by_role: userRole, // Track the creator's role
+//             },
+//           },
+//         });
+
+//       if (authError) throw authError;
+
+//       if (!authData.user?.id) {
+//         throw new Error("User creation failed");
+//       }
+
+//       userId = authData.user.id;
+
+//       // ===============================
+//       // ✅ CHECK PROFILE EXISTS
+//       // ===============================
+//       const { data: existingProfile, error: profileCheckError } =
+//         await supabase
+//           .from("profiles")
+//           .select("id")
+//           .eq("user_id", userId)
+//           .maybeSingle();
+
+//       if (profileCheckError) throw profileCheckError;
+//  const { data, error } = await supabase
+//       .from('profiles')
+//       .update({
+//         phone_number: formData.phone_number,
+//         role: 'hospital_admin',
+//         email: formData.email
+//       })
+//       .eq('email', formData.email);
+//       // ===============================
+//       // ✅ CREATE PROFILE
+//       // ===============================
+//       if (!existingProfile) {
+//         const { error: profileError } = await supabase
+//           .from("profiles")
+//           .insert([
+//             {
+//               user_id: userId,
+//               email: formData.email,
+//               phone_number: formData.phone_number,
+//               first_name: formData.first_name,
+//               last_name: formData.last_name,
+//               role: newUserRole, // ✅ IMPORTANT - use the determined role
+//               created_at: new Date().toISOString(),
+//               updated_at: new Date().toISOString(),
+//             },
+//           ]);
+
+//         if (profileError) throw profileError;
+//       }
+
+//       toast({
+//         title: "User Created",
+//         description: `Hospital staff account created successfully with role: ${newUserRole}`,
+//       });
+//     }
+
+//     // ===============================
+//     // ✅ STAFF TABLE DATA
+//     // ===============================
+//     const staffPayload = {
+//       facility_id: userFacility.id,
+//       department_id: formData.department_id,
+//       employee_id: formData.employee_id,
+//       position: formData.position,
+//       hire_date: formData.hire_date,
+//       user_id: userId,
+//       updated_at: new Date().toISOString(),
+//     };
+
+//     // ===============================
+//     // ✅ UPDATE / INSERT STAFF
+//     // ===============================
+//     if (editingStaff) {
+//       const { error } = await supabase
+//         .from("staff")
+//         .update(staffPayload)
+//         .eq("id", editingStaff.id);
+
+//       if (error) throw error;
+
+//       toast({
+//         title: "Updated",
+//         description: "Staff updated successfully",
+//       });
+//     } else {
+//       const { error } = await supabase
+//         .from("staff")
+//         .insert([
+//           {
+//             ...staffPayload,
+//             created_at: new Date().toISOString(),
+//           },
+//         ]);
+
+//       if (error) throw error;
+
+//       toast({
+//         title: "Success",
+//         description: "Hospital staff added successfully",
+//       });
+//     }
+
+//     // ===============================
+//     // ✅ RESET + REFRESH
+//     // ===============================
+//     resetForm();
+//     fetchData();
+//     setIsAddDialogOpen(false);
+
+//   } catch (err: any) {
+//     console.error("ERROR:", err);
+
+//     toast({
+//       title: "Error",
+//       description: err.message || "Something went wrong",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setIsCreatingUser(false);
+//   }
+// };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!userFacility?.id) {
+    toast({
+      title: "Error",
+      description: "Facility not found",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // ===============================
+  // ✅ VALIDATION
+  // ===============================
+// ===============================
+// ✅ VALIDATION
+// ===============================
+
+// Staff details validation (always required)
+if (!formData.department_id) {
+  return toast({
+    title: "Department Required",
+    description: "Select department",
+    variant: "destructive",
+  });
+}
+
+if (!formData.employee_id) {
+  return toast({
+    title: "Missing Fields",
+    description: "Employee ID required",
+    variant: "destructive",
+  });
+}
+
+if (!formData.position) {
+  return toast({
+    title: "Missing Fields",
+    description: "Position required",
+    variant: "destructive",
+  });
+}
+
+if (!formData.hire_date) {
+  return toast({
+    title: "Missing Fields",
+    description: "Hire date required",
+    variant: "destructive",
+  });
+}
+
+// User/profile fields validation (only for new user)
+if (!editingStaff) {
+  if (!formData.first_name || !formData.last_name) {
+    return toast({
+      title: "Missing Fields",
+      description: "First & Last name required",
+      variant: "destructive",
+    });
+  }
+
+  if (!formData.email || !formData.phone_number) {
+    return toast({
+      title: "Missing Fields",
+      description: "Email & Phone required",
+      variant: "destructive",
+    });
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    return toast({
+      title: "Password mismatch",
+      description: "Passwords do not match",
+      variant: "destructive",
+    });
+  }
+
+  if (formData.password.length < 6) {
+    return toast({
+      title: "Weak password",
+      description: "Minimum 6 characters required",
+      variant: "destructive",
+    });
+  }
+}
+
+  setIsCreatingUser(true);
+
+  try {
+    // ===============================
+    // ✅ CHECK DUPLICATE EMPLOYEE ID
+    // ===============================
+    let query = supabase
+      .from("staff")
+      .select("id")
+      .eq("facility_id", userFacility.id)
+      .eq("employee_id", formData.employee_id);
+
+    if (editingStaff) {
+      query = query.neq("id", editingStaff.id);
+    }
+
+    const { data: duplicate, error: dupError } = await query;
+
+    if (dupError) throw dupError;
+
+    if (duplicate && duplicate.length > 0) {
+      throw new Error("Employee ID already exists");
+    }
+
+    let userId = formData.user_id;
+
+    // ===============================
+    // ✅ CREATE AUTH USER (ONLY NEW)
+    // ===============================
+    if (!editingStaff) {
+      const { data: authData, error: authError } =
+        await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              role: "hospital_staff",
+              phone_number: formData.phone_number,
+            },
+          },
         });
-        return;
+
+      if (authError) throw authError;
+
+      if (!authData.user?.id) {
+        throw new Error("User creation failed");
       }
 
-      // Prepare the data with the current user's ID
-      const staffData = {
-        ...formData,
-        facility_id: userFacility.id, // Always use user's facility ID
-        user_id: formData.user_id && formData.user_id.trim() !== "" ? formData.user_id : user.id,
-        updated_at: new Date().toISOString(),
-      };
+      userId = authData.user.id;
 
-      if (editingStaff) {
-        // Update existing staff
-        const { error } = await supabase
-          .from("staff")
-          .update(staffData)
-          .eq("id", editingStaff.id)
-          .eq("facility_id", userFacility.id); // Ensure user can only update their own facility staff
+      // ===============================
+      // ✅ GET IDENTITY DATA FROM AUTH RESPONSE
+      // ===============================
+      const identityData = authData.user.identities?.[0]?.identity_data || {};
+      
+      // ===============================
+      // ✅ CHECK IF PROFILE EXISTS BY USER_ID
+      // ===============================
+      const { data: existingProfile, error: profileCheckError } =
+        await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-        if (error) throw error;
+      if (profileCheckError) throw profileCheckError;
 
+      // ===============================
+      // ✅ CREATE OR UPDATE PROFILE BASED ON USER_ID
+      // ===============================
+      if (!existingProfile) {
+        // Create new profile if it doesn't exist
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              user_id: userId,
+              email: formData.email || identityData.email,
+              phone_number: formData.phone_number || identityData.phone_number,
+              first_name: formData.first_name || identityData.first_name,
+              last_name: formData.last_name || identityData.last_name,
+              role: "hospital_staff",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+
+        if (profileError) throw profileError;
+        
         toast({
-          title: "Staff Updated",
-          description: `Staff member has been updated successfully.`,
+          title: "Profile Created",
+          description: "User profile created successfully from signup data",
         });
       } else {
-        // Add new staff
-        const finalData = {
-          ...staffData,
-          user_id: user.id,
-          facility_id: userFacility.id, // Always use user's facility ID
-          created_at: new Date().toISOString(),
-        };
+        // Update existing profile if it exists
+        const { error: profileUpdateError } = await supabase
+          .from("profiles")
+          .update({
+            email: formData.email || identityData.email,
+            phone_number: formData.phone_number || identityData.phone_number,
+            first_name: formData.first_name || identityData.first_name,
+            last_name: formData.last_name || identityData.last_name,
+            role: "hospital_staff",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
 
-        const { error } = await supabase
-          .from("staff")
-          .insert([finalData]);
-
-        if (error) throw error;
-
+        if (profileUpdateError) throw profileUpdateError;
+        
         toast({
-          title: "Staff Added",
-          description: `New staff member has been added successfully.`,
+          title: "Profile Updated",
+          description: "Existing profile updated with signup data",
         });
       }
-      
-      trackStaffAction(editingStaff ? 'edit_success' : 'add_success', 
-        { employee_id: formData.employee_id });
-      
-      // Reset form and refresh data
-      resetForm();
-      fetchData();
-    } catch (error: any) {
-      console.error("Error saving staff:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save staff data",
-        variant: "destructive",
-      });
-      trackStaffAction(editingStaff ? 'edit_failed' : 'add_failed', 
-        undefined, { error: error.message });
-    }
-  };
 
+      toast({
+        title: "User Created",
+        description: "Hospital staff account created successfully",
+      });
+    }
+
+    // ===============================
+    // ✅ STAFF TABLE DATA
+    // ===============================
+    const staffPayload = {
+      facility_id: userFacility.id,
+      department_id: formData.department_id,
+      employee_id: formData.employee_id,
+      position: formData.position,
+      hire_date: formData.hire_date,
+      user_id: userId,
+       shift_schedule: {
+        shift: formData.shift_schedule.shift,
+        start_time: formData.shift_schedule.start_time,
+        end_time: formData.shift_schedule.end_time,
+      },
+      is_active: formData.is_active,
+      updated_at: new Date().toISOString(),
+    };
+
+    // ===============================
+    // ✅ UPDATE / INSERT STAFF
+    // ===============================
+    if (editingStaff) {
+      const { error } = await supabase
+        .from("staff")
+        .update(staffPayload)
+        .eq("id", editingStaff.id);
+
+      if (error) throw error;
+
+      // ===============================
+      // ✅ UPDATE PROFILE FOR EXISTING USER
+      // ===============================
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone_number: formData.phone_number,
+          email: formData.email,
+          role: "hospital_staff",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
+
+      if (profileError) throw profileError;
+
+      toast({
+        title: "Updated",
+        description: "Staff updated successfully",
+      });
+    } else {
+      const { error } = await supabase
+        .from("staff")
+        .insert([
+          {
+            ...staffPayload,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Hospital staff added successfully",
+      });
+    }
+
+    // ===============================
+    // ✅ RESET + REFRESH
+    // ===============================
+    resetForm();
+    fetchData();
+    setIsAddDialogOpen(false);
+
+  } catch (err: any) {
+    console.error("ERROR:", err);
+
+    toast({
+      title: "Error",
+      description: err.message || "Something went wrong",
+      variant: "destructive",
+    });
+  } finally {
+    setIsCreatingUser(false);
+  }
+};
   const handleEdit = (staffMember: CombinedStaffData) => {
     setEditingStaff(staffMember);
     setFormData({
+      // // User account fields
+      // email: staffMember.profile?.email || "",
+      // password: "",
+      // confirmPassword: "",
+      // first_name: staffMember.profile?.first_name || "",
+      // last_name: staffMember.profile?.last_name || "",
+      // phone_number: staffMember.profile?.phone_number || "",
+      
       user_id: staffMember.user_id,
       employee_id: staffMember.employee_id,
       position: staffMember.position,
@@ -2002,6 +2705,24 @@ const StaffManagement = () => {
       },
       permissions: staffMember.permissions,
       is_active: staffMember.is_active,
+       email: "",
+    password: "",
+    confirmPassword: "",
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    specialization: "",
+    qualifications: [],
+    employment_type: "full-time",
+    joining_date: "",
+    status: "active",
+    role: "hospital_staff",
+// specialization: staffMember.specialization || "",
+//     qualifications: staffMember.qualifications || [],
+//     employment_type: staffMember.employment_type || "full-time",
+//     joining_date: staffMember.joining_date || "",
+//     status: staffMember.status || "active",
+//     role: staffMember.profile?.role || "hospital_staff",
     });
     setIsAddDialogOpen(true);
     trackStaffAction('edit_opened', staffMember, { employee_id: staffMember.employee_id });
@@ -2049,6 +2770,12 @@ const StaffManagement = () => {
 
   const resetForm = () => {
     setFormData({
+         email: "",
+      password: "",
+      confirmPassword: "",
+      first_name: "",
+      last_name: "",
+      phone_number: "",
       user_id: "",
       employee_id: "",
       position: "",
@@ -2063,6 +2790,12 @@ const StaffManagement = () => {
       },
       permissions: {},
       is_active: true,
+      specialization: "",
+    qualifications: [],
+    employment_type: "full-time",
+    joining_date: "",
+    status: "active",
+    role: "hospital_staff",
     });
     setEditingStaff(null);
     setIsAddDialogOpen(false);
@@ -2160,7 +2893,7 @@ const StaffManagement = () => {
             Manage staff for {userFacility?.facility_name || "your facility"}
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             {(isMaintenance || !userHasStaff || editingStaff) ? (
               <Button onClick={() => {
@@ -2348,7 +3081,334 @@ const StaffManagement = () => {
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
+         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    {(isMaintenance || !userHasStaff || editingStaff) ? (
+                      <Button onClick={() => {
+                        trackStaffAction('add_staff_click');
+                        resetForm();
+                        setIsAddDialogOpen(true);
+                      }}>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add Staff Member
+                      </Button>
+                    ) : (
+                      <Button 
+                        disabled 
+                        variant="outline"
+                        title="Only maintenance staff can add multiple staff members"
+                      >
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add Staff Member
+                      </Button>
+                    )}
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {editingStaff
+                          ? "Update staff member information"
+                          : `Create a new user account and add them as staff to ${userFacility?.facility_name || "your facility"}`}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit}>
+                      <div className="grid gap-4 py-4">
+                         <div className="border-b pb-4">
+                        <h3 className="text-lg font-semibold mb-4">Department / Services </h3>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="department_id">Department *</Label>
+                              <Select
+                                value={formData.department_id}
+                                onValueChange={(value) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    department_id: value,
+                                  }))
+                                }
+                                required
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {departments.map((dept) => (
+                                    <SelectItem key={dept.id} value={dept.id}>
+                                      {dept.type}{dept.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          </div>
+                        {!editingStaff && (
+                          <>
+                            <div className="border-b pb-4">
+                              <h3 className="text-lg font-semibold mb-4">User / Services</h3>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                  <Label htmlFor="first_name">First Name *</Label>
+                                  <Input
+                                    id="first_name"
+                                    value={formData.first_name}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        first_name: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="John"
+                                    required
+                                  />
+                                </div>
+                                <div className="grid gap-2">
+                                  <Label htmlFor="last_name">Last Name *</Label>
+                                  <Input
+                                    id="last_name"
+                                    value={formData.last_name}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        last_name: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="Doe"
+                                    required
+                                  />
+                                </div>
+                              </div>
+        
+                              <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div className="grid gap-2">
+                                  <Label htmlFor="email">Email *</Label>
+                                  <Input
+                                    id="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        email: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="john.doe@hospital.com"
+                                    required
+                                  />
+                                </div>
+                                <div className="grid gap-2">
+                                  <Label htmlFor="phone_number">Phone Number</Label>
+                                  <Input
+                                    id="phone_number"
+                                    value={formData.phone_number}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        phone_number: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="+1234567890"
+                                  />
+                                </div>
+                              </div>
+        
+                              <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div className="grid gap-2">
+                                  <Label htmlFor="password">Password *</Label>
+                                  <Input
+                                    id="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        password: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="••••••••"
+                                    required={!editingStaff}
+                                    minLength={6}
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Minimum 6 characters
+                                  </p>
+                                </div>
+                                <div className="grid gap-2">
+                                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                                  <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        confirmPassword: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="••••••••"
+                                    required={!editingStaff}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+        
+                        <div className={!editingStaff ? "pt-4" : ""}>
+                          <h3 className="text-lg font-semibold mb-4">Staff Details</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="employee_id">Employee ID *</Label>
+                              <Input
+                                id="employee_id"
+                                value={formData.employee_id}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    employee_id: e.target.value,
+                                  }))
+                                }
+                                placeholder="EMP-001"
+                                required
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="position">Position *</Label>
+                              <Input
+                                id="position"
+                                value={formData.position}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    position: e.target.value,
+                                  }))
+                                }
+                                placeholder="e.g., Senior Doctor, Head Nurse"
+                                required
+                              />
+                            </div>
+                          </div>
+        
+                          
+        
+                          <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="hire_date">Hire Date *</Label>
+                              <Input
+                                id="hire_date"
+                                type="date"
+                                value={formData.hire_date}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    hire_date: e.target.value,
+                                  }))
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="salary">Salary</Label>
+                              <Input
+                                id="salary"
+                                type="number"
+                                value={formData.salary}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    salary: parseFloat(e.target.value) || 0,
+                                  }))
+                                }
+                                placeholder="50000"
+                                min="0"
+                                step="0.01"
+                              />
+                            </div>
+                          </div>
+        
+                          <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="shift">Shift</Label>
+                              <Select
+                                value={formData.shift_schedule.shift}
+                                onValueChange={(value) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    shift_schedule: {
+                                      ...prev.shift_schedule,
+                                      shift: value as any,
+                                    },
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="morning">Morning</SelectItem>
+                                  <SelectItem value="evening">Evening</SelectItem>
+                                  <SelectItem value="night">Night</SelectItem>
+                                  <SelectItem value="rotating">Rotating</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="is_active">Status</Label>
+                              <Select
+                                value={formData.is_active.toString()}
+                                onValueChange={(value) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    is_active: value === "true",
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="true">Active</SelectItem>
+                                  <SelectItem value="false">Inactive</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+        
+                          {editingStaff && (
+                            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                              <p className="text-sm text-yellow-800">
+                                <strong>Note:</strong> Editing staff member details only. 
+                                To change user account information (email, password, name), 
+                                please use the user management section.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={resetForm}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={isCreatingUser}>
+                          {isCreatingUser ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Creating...
+                            </>
+                          ) : (
+                            editingStaff ? "Update Staff Member" : "Create Staff Member"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2492,7 +3552,7 @@ const StaffManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        {(isMaintenance || staffMember.user_id === currentUserId) ? (
+                        {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -2501,7 +3561,7 @@ const StaffManagement = () => {
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
-                        ) : (
+                        {/* ) : (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -2510,8 +3570,8 @@ const StaffManagement = () => {
                           >
                             <Edit className="h-3 w-3 opacity-50" />
                           </Button>
-                        )}
-                        {(isMaintenance || staffMember.user_id === currentUserId) ? (
+                        )} */}
+                        {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -2525,7 +3585,7 @@ const StaffManagement = () => {
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
-                        ) : (
+                        {/* ) : (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -2534,8 +3594,8 @@ const StaffManagement = () => {
                             title="You can only delete your own staff record"
                           >
                             <Trash2 className="h-3 w-3 opacity-50" />
-                          </Button>
-                        )}
+                          </Button> */}
+                        {/* )} */}
                       </div>
                     </TableCell>
                   </TableRow>

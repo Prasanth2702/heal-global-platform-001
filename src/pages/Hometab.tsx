@@ -613,7 +613,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
       </div> */}
 
       {/* Stats Cards */}
-      <div className="row mb-4">
+      {/* <div className="row mb-4">
         <div className="col-md-3 col-6 mb-3">
           <div className="card border-0 shadow-sm bg-gradient-primary">
             <div className="card-body">
@@ -674,7 +674,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {loading ? (
         <div className="text-center py-5">
@@ -709,7 +709,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                     <h5 className="card-title text-center mb-1">{doctor.name}</h5>
                     <p className="text-primary text-center mb-2">{doctor.specialty}</p>
                     
-                    <div className="d-flex justify-content-center mb-3">
+                    {/* <div className="d-flex justify-content-center mb-3">
                       <span className="badge bg-light text-dark px-3 py-2">
                         <Clock size={14} className="me-1" />
                         {doctor.experience}
@@ -734,7 +734,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                         <CalendarCheck size={16} />
                         <span>{doctor.availability}</span>
                       </span>
-                    </div>
+                    </div> */}
                     
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div>
@@ -756,6 +756,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                       <PatientProtectedButton 
   className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" 
   onClick={() => handleNavigation(`/dashboard/patient/doctor/${createSlug(doctor.name)}/${doctor.id}`, true)}
+ path="/appointment/doctors"
 >
                         <PersonStanding size={18} />
                         <span>View Profile</span>
@@ -911,7 +912,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                         </div>
 
                         {/* Bed Availability */}
-                        <div className="mb-3">
+                        {/* <div className="mb-3">
                           <div className="d-flex justify-content-between align-items-center mb-1">
                             <span className="small fw-bold">Bed Availability</span>
                             <span className="small">
@@ -924,7 +925,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                               style={{ width: `${bedPercentage}%` }}
                             ></div>
                           </div>
-                        </div>
+                        </div> */}
 
                         {/* Departments Preview */}
                         {facilityDepts.length > 0 && (
@@ -947,7 +948,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
 
                         {/* Quick Actions */}
                         <div className="d-flex gap-2 mt-3">
-                          <PatientProtectedButton className="btn btn-primary flex-grow-1 btn-sm"   onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)}>
+                          <PatientProtectedButton className="btn btn-primary flex-grow-1 btn-sm"   onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)} path="/appointment/facility">
+                            
                             View Details
                           </PatientProtectedButton>
                           <button className="btn btn-outline-primary btn-sm">
@@ -1022,7 +1024,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
               </div>
             </div>
           </div>
-          <div className="col-md-3 col-6 mb-3">
+          {/* <div className="col-md-3 col-6 mb-3">
             <div className="card border-0 shadow-sm bg-warning text-white">
               <div className="card-body">
                 <div className="d-flex align-items-center">
@@ -1036,7 +1038,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* <div className="col-md-3 col-6 mb-3">
             <div className="card border-0 shadow-sm bg-info text-white">
               <div className="card-body">
@@ -1191,7 +1193,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                               )}
                             </td>
                             <td>
-                              <PatientProtectedButton className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}>
+                              <PatientProtectedButton className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+                                 path="/appointment/beds">
                         <Bed size={18} />
                         <span>View Bed</span>
                       </PatientProtectedButton>
@@ -1221,7 +1224,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
       {/* Header */}
-      <div className="bg-white border-bottom shadow-sm mb-4">
+      {/* <div className="bg-white border-bottom shadow-sm mb-4">
         <div className="container py-4">
           <div className="d-flex justify-content-between align-items-center">
             <div>
@@ -1243,7 +1246,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="container pb-5">
         {/* <div className="card border-0 shadow-sm mb-4">
@@ -1293,7 +1296,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   <div className="bg-primary bg-gradient text-white border-bottom shadow-sm mb-4">
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white">Doctors</h1>
+        <h1 className="t text-white"> Find Doctors / Specialists</h1>
         <PatientProtectedButton className="btn btn-light text-primary fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)}  path="/appointment/doctors" >
           View All Doctors →
         </PatientProtectedButton>
@@ -1308,8 +1311,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   <div className="bg-success bg-gradient text-white border-bottom shadow-sm mb-4">
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white">Hospitals</h1>
-        <PatientProtectedButton className="btn btn-light text-success fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)} path="/appointment/hospitals">
+        <h1 className="t text-white">Find Hospitals(Facitlity) / Services </h1>
+        <PatientProtectedButton className="btn btn-light text-success fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)} path="/appointment/facility">
           View All Hospitals →
         </PatientProtectedButton>
       </div>
@@ -1323,7 +1326,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   <div className="bg-purple bg-gradient text-white border-bottom shadow-sm mb-4" style={{ backgroundColor: '#6f42c1' }}>
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white">Bed Bookings</h1>
+        <h1 className="t text-white">Find Bed </h1>
         <PatientProtectedButton className="btn btn-light" onClick={() => handleNavigation('/dashboard/patient/book/patient-facilities', true)} path="/appointment/beds">
   View All Bookings →
 </PatientProtectedButton>

@@ -16,4 +16,10 @@ export interface MedicalProfessional {
   kycVerified: boolean; 
   languagesKnown:string;
   isVerified:boolean;
+   address: string,
+    city: string,
+    state: string,
+    pincode: string,
+    country_code:string,
+
 }

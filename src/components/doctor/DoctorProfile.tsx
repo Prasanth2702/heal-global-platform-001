@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Phone, Edit, Save, X, Camera, Shield } from 'lucide-react';
+import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { profile } from 'console';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
 import { useParams, useNavigate } from "react-router-dom";  // 🟢 ADDED
 import { mixpanelInstance } from '@/utils/mixpanel';
+import { Textarea } from '../ui/textarea';
 
 export type UserRole = 'medicalProfessional';
 
@@ -33,6 +34,11 @@ export interface MedicalProfessional {
   languagesKnown: string;
   avatarUrl?: string;
   userType: UserRole;
+  country_code: string;
+  address: string;
+    city: string;
+    state: string;
+    pincode: string;
 }
 
 interface DoctorProfileProps {
@@ -65,6 +71,11 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     languagesKnown: '',
     avatarUrl: '',
     userType: 'medicalProfessional',
+      address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    country_code: '',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -124,6 +135,12 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
           aboutYourself: medicalData.about_yourself || '',
           kycVerified: medicalData.kyc_verified || false,
           languagesKnown: medicalData.languages_known || '',
+          city: medicalData.city || '',
+          state: medicalData.state || '',
+          pincode: medicalData.pincode || '',
+          country_code: medicalData.country_code || '',
+              address: medicalData.address|| '',
+
         });
       }
     };
@@ -232,6 +249,10 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
       about_yourself: profileData.aboutYourself,
       is_verified: profileData.kycVerified,
       languages_known: profileData.languagesKnown,
+      address: profileData.address,
+      city: profileData.city,
+      state: profileData.state,
+      pincode: profileData.pincode,
     };
 
     console.log("before upating row: " + profileData);
@@ -455,6 +476,101 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
           </div>
         </CardContent>
       </Card>
+
+      <Card className="border-0 shadow-lg">
+  <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+    <CardTitle className="flex items-center text-xl">
+      <Home className="h-5 w-5 mr-2" />
+      Address Details
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="p-6 space-y-6">
+    <div>
+      <Label htmlFor="address" className="text-sm font-semibold text-gray-700">
+        Address
+      </Label>
+      {isEditing ? (
+        <Textarea
+          id="address"
+          value={profileData.address}
+          onChange={e => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+          className="mt-2 border-2 focus:border-blue-500 transition-colors"
+          rows={3}
+        />
+      ) : (
+        <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.address}</p>
+      )}
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <Label htmlFor="country" className="text-sm font-semibold text-gray-700">
+          Country
+        </Label>
+        {isEditing ? (
+          <Input
+            id="country"
+            value={profileData.country_code}
+            onChange={e => setProfileData(prev => ({ ...prev, country_code: e.target.value }))}
+            className="mt-2 border-2 focus:border-blue-500 transition-colors"
+          />
+        ) : (
+          <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.country_code}</p>
+        )}
+      </div>
+      
+      <div>
+        <Label htmlFor="state" className="text-sm font-semibold text-gray-700">
+          State
+        </Label>
+        {isEditing ? (
+          <Input
+            id="state"
+            value={profileData.state}
+            onChange={e => setProfileData(prev => ({ ...prev, state: e.target.value }))}
+            className="mt-2 border-2 focus:border-blue-500 transition-colors"
+          />
+        ) : (
+          <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.state}</p>
+        )}
+      </div>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+          City
+        </Label>
+        {isEditing ? (
+          <Input
+            id="city"
+            value={profileData.city}
+            onChange={e => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+            className="mt-2 border-2 focus:border-blue-500 transition-colors"
+          />
+        ) : (
+          <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.city}</p>
+        )}
+      </div>
+      
+      <div>
+        <Label htmlFor="pincode" className="text-sm font-semibold text-gray-700">
+          Pincode
+        </Label>
+        {isEditing ? (
+          <Input
+            id="pincode"
+            value={profileData.pincode}
+            onChange={e => setProfileData(prev => ({ ...prev, pincode: e.target.value }))}
+            className="mt-2 border-2 focus:border-blue-500 transition-colors"
+          />
+        ) : (
+          <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.pincode}</p>
+        )}
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
       {/* Professional Information */}
       <Card className="border-0 shadow-lg">

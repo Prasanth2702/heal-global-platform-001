@@ -1383,130 +1383,130 @@ const handleSignupRedirect = () => {
   );
 
   // Card Components for Main View - Redesigned
-  const DoctorCard = ({ doctor }: { doctor: Doctor }) => (
-    <div 
-      className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
-      onClick={() => handleItemClick(doctor, 'doctor')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div className="d-flex align-items-center gap-3">
-        <div className="position-relative">
-          <img 
-            src={doctor.image} 
-            alt={doctor.name}
-            className="rounded-3"
-            style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-          />
-          <div className="position-absolute bottom-0 end-0">
-            <span className="badge bg-success rounded-circle p-1">
-              <CheckCircle size={12} />
-            </span>
-          </div>
-        </div>
+  // const DoctorCard = ({ doctor }: { doctor: Doctor }) => (
+  //   <div 
+  //     className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
+  //     onClick={() => handleItemClick(doctor, 'doctor')}
+  //     style={{ cursor: 'pointer' }}
+  //   >
+  //     <div className="d-flex align-items-center gap-3">
+  //       <div className="position-relative">
+  //         <img 
+  //           src={doctor.image} 
+  //           alt={doctor.name}
+  //           className="rounded-3"
+  //           style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+  //         />
+  //         <div className="position-absolute bottom-0 end-0">
+  //           <span className="badge bg-success rounded-circle p-1">
+  //             <CheckCircle size={12} />
+  //           </span>
+  //         </div>
+  //       </div>
         
-        <div className="flex-grow-1">
-          <h6 className="fw-bold mb-1">{doctor.name}</h6>
-          <p className="text-primary small mb-2">{doctor.specialty}</p>
+  //       <div className="flex-grow-1">
+  //         <h6 className="fw-bold mb-1">{doctor.name}</h6>
+  //         <p className="text-primary small mb-2">{doctor.specialty}</p>
           
-          <div className="d-flex align-items-center gap-2 flex-wrap">
-            <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
-              <Clock size={12} className="me-1" />
-              {doctor.experience}
-            </span>
+  //         <div className="d-flex align-items-center gap-2 flex-wrap">
+  //           <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
+  //             <Clock size={12} className="me-1" />
+  //             {doctor.experience}
+  //           </span>
             
-            <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill small">
-              <Star size={12} fill="currentColor" className="me-1" />
-              {doctor.rating}
-            </span>
+  //           <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill small">
+  //             <Star size={12} fill="currentColor" className="me-1" />
+  //             {doctor.rating}
+  //           </span>
             
-            <span className="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded-pill small">
-              <Users size={12} className="me-1" />
-              {doctor.patients}+
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  //           <span className="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded-pill small">
+  //             <Users size={12} className="me-1" />
+  //             {doctor.patients}+
+  //           </span>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
 
-  const HospitalCard = ({ hospital }: { hospital: Facility }) => (
-    <div 
-      className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
-      onClick={() => handleItemClick(hospital, 'hospital')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div className="d-flex justify-content-between align-items-start mb-2">
-        <div>
-          <h6 className="fw-bold mb-1">{hospital.facility_name}</h6>
-          <p className="text-muted small mb-2">
-            <MapPin size={12} className="me-1" />
-            {hospital.city}
-          </p>
-        </div>
-        {hospital.is_verified && (
-          <Shield size={16} className="text-success" />
-        )}
-      </div>
+  // const HospitalCard = ({ hospital }: { hospital: Facility }) => (
+  //   <div 
+  //     className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
+  //     onClick={() => handleItemClick(hospital, 'hospital')}
+  //     style={{ cursor: 'pointer' }}
+  //   >
+  //     <div className="d-flex justify-content-between align-items-start mb-2">
+  //       <div>
+  //         <h6 className="fw-bold mb-1">{hospital.facility_name}</h6>
+  //         <p className="text-muted small mb-2">
+  //           <MapPin size={12} className="me-1" />
+  //           {hospital.city}
+  //         </p>
+  //       </div>
+  //       {hospital.is_verified && (
+  //         <Shield size={16} className="text-success" />
+  //       )}
+  //     </div>
       
-      <div className="d-flex align-items-center gap-2 mb-2">
-        <span className="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill small">
-          {hospital.facility_type}
-        </span>
-        <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill small">
-          <Star size={12} fill="currentColor" className="me-1" />
-          {hospital.rating}
-        </span>
-      </div>
+  //     <div className="d-flex align-items-center gap-2 mb-2">
+  //       <span className="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill small">
+  //         {hospital.facility_type}
+  //       </span>
+  //       <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill small">
+  //         <Star size={12} fill="currentColor" className="me-1" />
+  //         {hospital.rating}
+  //       </span>
+  //     </div>
       
-      <div className="d-flex justify-content-between align-items-center">
-        <small className="text-muted">
-          <Building2 size={12} className="me-1" />
-          {hospital.departments?.length || 0} Depts
-        </small>
-        <small className="text-muted">
-          <Bed size={12} className="me-1" />
-          {hospital.total_beds} Beds
-        </small>
-      </div>
-    </div>
-  );
+  //     <div className="d-flex justify-content-between align-items-center">
+  //       <small className="text-muted">
+  //         <Building2 size={12} className="me-1" />
+  //         {hospital.departments?.length || 0} Depts
+  //       </small>
+  //       <small className="text-muted">
+  //         <Bed size={12} className="me-1" />
+  //         {hospital.total_beds} Beds
+  //       </small>
+  //     </div>
+  //   </div>
+  // );
 
-  const BedCard = ({ bed }: { bed: BedBooking }) => (
-    <div 
-      className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
-      onClick={() => handleItemClick(bed, 'bed')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div className="d-flex justify-content-between align-items-start mb-2">
-        <div>
-          <h6 className="fw-bold mb-1">{bed.facilityName}</h6>
-          <p className="text-muted small mb-1">
-            <MapPin size={12} className="me-1" />
-            {bed.city}
-          </p>
-        </div>
-        <span className={`badge ${bed.availability === 'Available' ? 'bg-success' : 'bg-warning'} px-2 py-1 rounded-pill`}>
-          {bed.availability}
-        </span>
-      </div>
+  // const BedCard = ({ bed }: { bed: BedBooking }) => (
+  //   <div 
+  //     className="glass-card p-3 rounded-4 hover-lift cursor-pointer"
+  //     onClick={() => handleItemClick(bed, 'bed')}
+  //     style={{ cursor: 'pointer' }}
+  //   >
+  //     <div className="d-flex justify-content-between align-items-start mb-2">
+  //       <div>
+  //         <h6 className="fw-bold mb-1">{bed.facilityName}</h6>
+  //         <p className="text-muted small mb-1">
+  //           <MapPin size={12} className="me-1" />
+  //           {bed.city}
+  //         </p>
+  //       </div>
+  //       <span className={`badge ${bed.availability === 'Available' ? 'bg-success' : 'bg-warning'} px-2 py-1 rounded-pill`}>
+  //         {bed.availability}
+  //       </span>
+  //     </div>
       
-      <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
-        <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
-          {bed.bedType}
-        </span>
-        <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
-          Ward: {bed.wardName}
-        </span>
-      </div>
+  //     <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+  //       <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
+  //         {bed.bedType}
+  //       </span>
+  //       <span className="badge bg-light text-dark px-2 py-1 rounded-pill small">
+  //         Ward: {bed.wardName}
+  //       </span>
+  //     </div>
       
-      <div className="d-flex justify-content-between align-items-center">
-        <small className="text-muted">Bed #{bed.bedNumber}</small>
-        {bed.pricePerDay && (
-          <small className="text-primary fw-bold">${bed.pricePerDay}/day</small>
-        )}
-      </div>
-    </div>
-  );
+  //     <div className="d-flex justify-content-between align-items-center">
+  //       <small className="text-muted">Bed #{bed.bedNumber}</small>
+  //       {bed.pricePerDay && (
+  //         <small className="text-primary fw-bold">${bed.pricePerDay}/day</small>
+  //       )}
+  //     </div>
+  //   </div>
+  // );
 
   const renderMainContent = () => {
   if (detailView === "doctor" && selectedItem) {

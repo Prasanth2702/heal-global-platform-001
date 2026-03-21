@@ -568,12 +568,27 @@ const ForgotPassword = () => {
 
   const checkEmailInProfiles = async (email: string) => {
     const lowerCaseEmail = email.toLowerCase();
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('email', lowerCaseEmail)
-      .eq('role', userRole)
-      .maybeSingle();
+    // const { data, error } = await supabase
+    //   .from('profiles')
+    //   .select('email')
+    //   .eq('email', lowerCaseEmail)
+    //   .eq('role', userRole)
+    //   .maybeSingle();
+    
+    let query = supabase
+    .from('profiles')
+    .select('email')
+    .eq('email', lowerCaseEmail);
+  
+  if (userType === 'facility') {
+    // Check for either role
+    query = query.in('role', ['hospital_admin', 'hospital_staff']);
+  } else {
+    // Check for specific role
+    query = query.eq('role', userRole);
+  }
+  
+  const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error('Error checking email:', error);

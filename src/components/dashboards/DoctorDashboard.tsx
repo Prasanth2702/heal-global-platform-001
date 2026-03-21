@@ -336,10 +336,10 @@ useEffect(() => {
   //     return <DoctorProfile onBack={() => handleTabChange("overview")} />;
   //   }
 
-  // if (activeTab === "calendar") {
-  //     console.log("Rendering AvailabilityManagement");
-  //     return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
-  //   }
+  if (activeTab === "calendar") {
+      console.log("Rendering AvailabilityManagement");
+      return <AvailabilityManagement onBack={() => handleTabChange("overview")} />;
+    }
     // this added
   //   if (activeTab === "appointments") {
   // console.log("Rendering DoctorAppointmentManagement");
@@ -434,23 +434,23 @@ if (activeTab !== "overview") {
           <p className="text-muted-foreground">Manage your practice and patients</p>
         </div>
         <div>
+        </div>
+        <div className="flex gap-2">
            <Button
             onClick={() => {handleTabChange("profile"); trackButtonClick("My Profile Button")}}
             className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <Settings className="h-4 w-4 mr-2" />
             My Profile
           </Button>
-        </div>
-        {/* <div className="flex gap-2">
           <Button variant="doctor" size="lg" onClick={() => {handleTabChange("calendar"); trackButtonClick("View Calendar Button")}}>
             <Calendar className="mr-2 h-4 w-4" />
             View Calendar
           </Button>
-          <Button variant="outline" size="lg" onClick={() => {trackButtonClick("Add Patient Button")}}>
+          {/* <Button variant="outline" size="lg" onClick={() => {trackButtonClick("Add Patient Button")}}>
             <User className="mr-2 h-4 w-4" />
             Add Patient
-          </Button>
-        </div> */}
+          </Button> */}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-100">

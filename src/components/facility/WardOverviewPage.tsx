@@ -74,160 +74,312 @@ const handleRefreshWards = () => {
   fetchWards();
 };
 
-  const fetchWards = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+const getUserFacilityId = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
 
-      if (!user) {
-        setError("User not authenticated");
-        return;
-      }
+  console.log("USER ID:", user.id);
 
-      const facilityId = user?.user_metadata?.facility_id;
+  // ✅ Check ADMIN
+  const { data: adminFacility, error: adminError } = await supabase
+    .from("facilities")
+    .select("id")
+    .eq("admin_user_id", user.id)
+    .maybeSingle();
 
-      // Fetch wards
-      const { data: wardsData, error: wardsError } = await supabase
-        .from("wards")
-        .select("*")
-        .eq("facility_id", facilityId)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+  if (adminError) {
+    console.error("Admin fetch error:", adminError);
+  }
 
-      if (wardsError) throw wardsError;
+  if (adminFacility) {
+    console.log("ADMIN FACILITY:", adminFacility.id);
+    return adminFacility.id;
+  }
 
-      // Get today's date for filtering
-      const today = new Date().toISOString().split("T")[0];
+  // ✅ Check STAFF
+  const { data: staff, error: staffError } = await supabase
+    .from("staff")
+    .select("facility_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-      // For each ward, fetch bed statistics and upcoming schedules
-      const wardsWithStats = await Promise.all(
-        (wardsData || []).map(async (ward) => {
-          // Fetch beds for this ward
-          const { data: wardBeds, error: bedsError } = await supabase
-            .from("beds")
-            .select("id, current_status")
-            .eq("ward_id", ward.id)
-            .eq("is_active", true);
+  if (staffError) {
+    console.error("Staff fetch error:", staffError);
+  }
 
-          if (bedsError) {
-            console.error(
-              `Error fetching beds for ward ${ward.id}:`,
-              bedsError
-            );
-            return {
-              ...ward,
-              bedStats: {
-                totalBeds: 0,
-                occupiedBeds: 0,
-                freeBeds: 0,
-                maintenanceBeds: 0,
-                occupancyRate: 0,
-                upcomingAdmissions: 0,
-                upcomingDischarges: 0,
-              },
-            };
-          }
+  if (staff) {
+    console.log("STAFF FACILITY:", staff.facility_id);
+    return staff.facility_id;
+  }
 
-          // Fetch active bed bookings for this ward
-          const { data: activeBookings, error: bookingsError } = await supabase
-            .from("bed_bookings")
-            .select(
-              "assigned_bed_id, status, expected_admission_date, expected_discharge_date"
-            )
-            .eq("assigned_ward_id", ward.id)
-            .in("status", ["OCCUPIED", "RESERVED"]);
+  return null;
+};
 
-          if (bookingsError) {
-            console.error(
-              `Error fetching bookings for ward ${ward.id}:`,
-              bookingsError
-            );
-          }
+const fetchWards = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-          // Fetch today's admissions and discharges
-          const { data: todayAdmissions, error: admissionsError } =
-            await supabase
-              .from("bed_bookings")
-              .select("id")
-              .eq("assigned_ward_id", ward.id)
-              .eq("expected_admission_date", today)
-              .in("status", ["RESERVED", "AVAILABLE"]);
+    // ✅ Step 1: Get facilityId
+    const facilityId = await getUserFacilityId();
 
-          const { data: todayDischarges, error: dischargesError } =
-            await supabase
-              .from("bed_bookings")
-              .select("id")
-              .eq("assigned_ward_id", ward.id)
-              .eq("expected_discharge_date", today)
-              .eq("status", "OCCUPIED");
-
-          // Calculate statistics
-          const totalBeds = wardBeds?.length || 0;
-
-          // Count beds by status
-          const bedStatusCounts = {
-            OCCUPIED: 0,
-            AVAILABLE: 0,
-            MAINTENANCE: 0,
-            CLEANING: 0,
-            RESERVED: 0,
-            OUT_OF_SERVICE: 0,
-          };
-
-          wardBeds?.forEach((bed) => {
-            if (bed.current_status in bedStatusCounts) {
-              bedStatusCounts[
-                bed.current_status as keyof typeof bedStatusCounts
-              ] += 1;
-            }
-          });
-
-          // Adjust occupied count with active bookings
-          const occupiedFromBookings =
-            activeBookings?.filter((b) => b.status === "OCCUPIED").length || 0;
-          const occupiedBeds = Math.max(
-            bedStatusCounts.OCCUPIED,
-            occupiedFromBookings
-          );
-
-          const freeBeds = bedStatusCounts.AVAILABLE;
-          const maintenanceBeds =
-            bedStatusCounts.MAINTENANCE +
-            bedStatusCounts.OUT_OF_SERVICE +
-            bedStatusCounts.CLEANING;
-
-          const occupancyRate =
-            totalBeds > 0 ? (occupiedBeds / totalBeds) * 100 : 0;
-
-          // Get upcoming admissions and discharges
-          const upcomingAdmissions = todayAdmissions?.length || 0;
-          const upcomingDischarges = todayDischarges?.length || 0;
-
-          return {
-            ...ward,
-            bedStats: {
-              totalBeds,
-              occupiedBeds,
-              freeBeds,
-              maintenanceBeds,
-              occupancyRate,
-              upcomingAdmissions,
-              upcomingDischarges,
-              bedStatusCounts,
-            },
-          };
-        })
-      );
-
-      setWards(wardsWithStats);
-    } catch (error) {
-      console.error("Error fetching wards:", error);
-      setError("Failed to load wards");
-    } finally {
-      setLoading(false);
+    if (!facilityId) {
+      setError("No facility linked to this user");
+      return;
     }
-  };
+
+    console.log("FINAL FACILITY ID:", facilityId);
+
+    // ✅ Step 2: Fetch wards
+    const { data: wardsData, error: wardsError } = await supabase
+      .from("wards")
+      .select("*")
+      .eq("facility_id", facilityId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (wardsError) throw wardsError;
+
+    // ✅ Step 3: Today date
+    const today = new Date().toISOString().split("T")[0];
+
+    // ✅ Step 4: Add stats
+    const wardsWithStats = await Promise.all(
+      (wardsData || []).map(async (ward) => {
+
+        // 🔹 Beds
+        const { data: wardBeds } = await supabase
+          .from("beds")
+          .select("id, current_status")
+          .eq("ward_id", ward.id)
+          .eq("is_active", true);
+
+        // 🔹 Active bookings
+        const { data: activeBookings } = await supabase
+          .from("bed_bookings")
+          .select("status")
+          .eq("assigned_ward_id", ward.id)
+          .in("status", ["OCCUPIED", "RESERVED"]);
+
+        // 🔹 Today admissions
+        const { data: todayAdmissions } = await supabase
+          .from("bed_bookings")
+          .select("id")
+          .eq("assigned_ward_id", ward.id)
+          .eq("expected_admission_date", today)
+          .in("status", ["RESERVED", "AVAILABLE"]);
+
+        // 🔹 Today discharges
+        const { data: todayDischarges } = await supabase
+          .from("bed_bookings")
+          .select("id")
+          .eq("assigned_ward_id", ward.id)
+          .eq("expected_discharge_date", today)
+          .eq("status", "OCCUPIED");
+
+        // ✅ Stats calculation
+        const totalBeds = wardBeds?.length || 0;
+
+        let occupiedBeds = 0;
+        let freeBeds = 0;
+        let maintenanceBeds = 0;
+
+        wardBeds?.forEach((bed) => {
+          if (bed.current_status === "OCCUPIED") occupiedBeds++;
+          else if (bed.current_status === "AVAILABLE") freeBeds++;
+          else maintenanceBeds++;
+        });
+
+        // fallback from bookings
+        const occupiedFromBookings =
+          activeBookings?.filter((b) => b.status === "OCCUPIED").length || 0;
+
+        occupiedBeds = Math.max(occupiedBeds, occupiedFromBookings);
+
+        const occupancyRate =
+          totalBeds > 0 ? (occupiedBeds / totalBeds) * 100 : 0;
+
+        return {
+          ...ward,
+          bedStats: {
+            totalBeds,
+            occupiedBeds,
+            freeBeds,
+            maintenanceBeds,
+            occupancyRate,
+            upcomingAdmissions: todayAdmissions?.length || 0,
+            upcomingDischarges: todayDischarges?.length || 0,
+          },
+        };
+      })
+    );
+
+    setWards(wardsWithStats);
+
+  } catch (error) {
+    console.error("Error fetching wards:", error);
+    setError("Failed to load wards");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // const fetchWards = async () => {
+  //   try {
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
+
+  //     if (!user) {
+  //       setError("User not authenticated");
+  //       return;
+  //     }
+
+  //     // const facilityId = user?.user_metadata?.facility_id;
+  //     const facilityId = user?.user_metadata?.facility_id;
+      
+
+  //     // Fetch wards
+  //     const { data: wardsData, error: wardsError } = await supabase
+  //       .from("wards")
+  //       .select("*")
+  //       .eq("facility_id", facilityId)
+  //       .eq("is_active", true)
+  //       .order("created_at", { ascending: false });
+
+  //     if (wardsError) throw wardsError;
+
+  //     // Get today's date for filtering
+  //     const today = new Date().toISOString().split("T")[0];
+
+  //     // For each ward, fetch bed statistics and upcoming schedules
+  //     const wardsWithStats = await Promise.all(
+  //       (wardsData || []).map(async (ward) => {
+  //         // Fetch beds for this ward
+  //         const { data: wardBeds, error: bedsError } = await supabase
+  //           .from("beds")
+  //           .select("id, current_status")
+  //           .eq("ward_id", ward.id)
+  //           .eq("is_active", true);
+
+  //         if (bedsError) {
+  //           console.error(
+  //             `Error fetching beds for ward ${ward.id}:`,
+  //             bedsError
+  //           );
+  //           return {
+  //             ...ward,
+  //             bedStats: {
+  //               totalBeds: 0,
+  //               occupiedBeds: 0,
+  //               freeBeds: 0,
+  //               maintenanceBeds: 0,
+  //               occupancyRate: 0,
+  //               upcomingAdmissions: 0,
+  //               upcomingDischarges: 0,
+  //             },
+  //           };
+  //         }
+
+  //         // Fetch active bed bookings for this ward
+  //         const { data: activeBookings, error: bookingsError } = await supabase
+  //           .from("bed_bookings")
+  //           .select(
+  //             "assigned_bed_id, status, expected_admission_date, expected_discharge_date"
+  //           )
+  //           .eq("assigned_ward_id", ward.id)
+  //           .in("status", ["OCCUPIED", "RESERVED"]);
+
+  //         if (bookingsError) {
+  //           console.error(
+  //             `Error fetching bookings for ward ${ward.id}:`,
+  //             bookingsError
+  //           );
+  //         }
+
+  //         // Fetch today's admissions and discharges
+  //         const { data: todayAdmissions, error: admissionsError } =
+  //           await supabase
+  //             .from("bed_bookings")
+  //             .select("id")
+  //             .eq("assigned_ward_id", ward.id)
+  //             .eq("expected_admission_date", today)
+  //             .in("status", ["RESERVED", "AVAILABLE"]);
+
+  //         const { data: todayDischarges, error: dischargesError } =
+  //           await supabase
+  //             .from("bed_bookings")
+  //             .select("id")
+  //             .eq("assigned_ward_id", ward.id)
+  //             .eq("expected_discharge_date", today)
+  //             .eq("status", "OCCUPIED");
+
+  //         // Calculate statistics
+  //         const totalBeds = wardBeds?.length || 0;
+
+  //         // Count beds by status
+  //         const bedStatusCounts = {
+  //           OCCUPIED: 0,
+  //           AVAILABLE: 0,
+  //           MAINTENANCE: 0,
+  //           CLEANING: 0,
+  //           RESERVED: 0,
+  //           OUT_OF_SERVICE: 0,
+  //         };
+
+  //         wardBeds?.forEach((bed) => {
+  //           if (bed.current_status in bedStatusCounts) {
+  //             bedStatusCounts[
+  //               bed.current_status as keyof typeof bedStatusCounts
+  //             ] += 1;
+  //           }
+  //         });
+
+  //         // Adjust occupied count with active bookings
+  //         const occupiedFromBookings =
+  //           activeBookings?.filter((b) => b.status === "OCCUPIED").length || 0;
+  //         const occupiedBeds = Math.max(
+  //           bedStatusCounts.OCCUPIED,
+  //           occupiedFromBookings
+  //         );
+
+  //         const freeBeds = bedStatusCounts.AVAILABLE;
+  //         const maintenanceBeds =
+  //           bedStatusCounts.MAINTENANCE +
+  //           bedStatusCounts.OUT_OF_SERVICE +
+  //           bedStatusCounts.CLEANING;
+
+  //         const occupancyRate =
+  //           totalBeds > 0 ? (occupiedBeds / totalBeds) * 100 : 0;
+
+  //         // Get upcoming admissions and discharges
+  //         const upcomingAdmissions = todayAdmissions?.length || 0;
+  //         const upcomingDischarges = todayDischarges?.length || 0;
+
+  //         return {
+  //           ...ward,
+  //           bedStats: {
+  //             totalBeds,
+  //             occupiedBeds,
+  //             freeBeds,
+  //             maintenanceBeds,
+  //             occupancyRate,
+  //             upcomingAdmissions,
+  //             upcomingDischarges,
+  //             bedStatusCounts,
+  //           },
+  //         };
+  //       })
+  //     );
+
+  //     setWards(wardsWithStats);
+  //   } catch (error) {
+  //     console.error("Error fetching wards:", error);
+  //     setError("Failed to load wards");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     fetchWards();

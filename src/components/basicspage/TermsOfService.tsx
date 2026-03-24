@@ -69,10 +69,10 @@ const TermsOfService = () => {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="space-y-3 text-gray-700">
                       <p className="font-medium text-blue-800">
-                        Welcome to HealGlobe.com – Your Trusted Healthcare Booking Platform
+                        Welcome to cloudhospitals.ai – Your Trusted Healthcare Booking Platform
                       </p>
                       <p>
-                        HealGlobe.com is a digital platform that connects patients with healthcare providers for 
+                        cloudhospitals.ai is a digital platform that connects patients with healthcare providers for 
                         appointment scheduling, bed reservations, and diagnostic test bookings. By using our services, 
                         you agree to these Terms of Service.
                       </p>
@@ -86,7 +86,7 @@ const TermsOfService = () => {
                   </h2>
                   <div className="space-y-3 text-gray-700">
                     <p>
-                      By accessing and using HealGlobe.com, you accept and agree to
+                      By accessing and using cloudhospitals.ai, you accept and agree to
                       be bound by these Terms of Service. If you do not agree to
                       these terms, you may not use our platform. These terms apply to 
                       all users, including patients, healthcare providers, and hospital administrators.
@@ -126,7 +126,7 @@ const TermsOfService = () => {
                   </h2>
                   <div className="space-y-3 text-gray-700">
                     <p>
-                      <strong>Appointment Booking:</strong> When you book an appointment through HealGlobe.com, 
+                      <strong>Appointment Booking:</strong> When you book an appointment through cloudhospitals.ai, 
                       you agree to pay any applicable consultation fees. Appointments are subject to the 
                       healthcare provider's availability and cancellation policies.
                     </p>
@@ -212,7 +212,7 @@ const TermsOfService = () => {
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <div className="space-y-3 text-gray-700">
                       <p>
-                        <strong>PLATFORM DISCLAIMER:</strong> HealGlobe.com provides a booking platform only. 
+                        <strong>PLATFORM DISCLAIMER:</strong> cloudhospitals.ai provides a booking platform only. 
                         We are not responsible for:
                       </p>
                       <ul className="list-disc pl-6 space-y-1">
@@ -242,7 +242,7 @@ const TermsOfService = () => {
                         ⚠️ IMPORTANT: NOT FOR EMERGENCIES
                       </p>
                       <p>
-                        HealGlobe.com is NOT an emergency service. If you are experiencing a medical emergency, 
+                        cloudhospitals.ai is NOT an emergency service. If you are experiencing a medical emergency, 
                         please call your local emergency services immediately (such as 911 in the US, 112 in Europe, 
                         102 or 108 in India).
                       </p>
@@ -260,7 +260,7 @@ const TermsOfService = () => {
                   <div className="space-y-3 text-gray-700">
                     <p>
                       <strong>Platform Content:</strong> All platform features, design, logos, and proprietary 
-                      content are owned by HealGlobe.com and protected by intellectual property laws.
+                      content are owned by cloudhospitals.ai and protected by intellectual property laws.
                     </p>
                     <p>
                       <strong>User Content:</strong> By submitting reviews or feedback, you grant us a 
@@ -302,7 +302,7 @@ const TermsOfService = () => {
                   <div className="space-y-3 text-gray-700">
                     <p>
                       These terms are governed by applicable laws. Any disputes arising from your use of 
-                      HealGlobe.com shall be resolved through good-faith negotiations. If a resolution cannot 
+                     cloudhospitals.ai shall be resolved through good-faith negotiations. If a resolution cannot 
                       be reached, disputes may be submitted to binding arbitration.
                     </p>
                   </div>
@@ -338,7 +338,7 @@ const TermsOfService = () => {
                      <div className="space-y-3 text-gray-700">
                     <p>
                       For questions about these terms, booking issues, or general inquiries, contact us at:
-                      <p><strong>Support:</strong> <a href="mailto:support@healglobe.com" className="text-blue-600 hover:underline">support@healglobe.com</a></p>
+                      <p><strong>Support:</strong> <a href="mailto:support@cloudhospitals.ai" className="text-blue-600 hover:underline">support@cloudhospitals.ai</a></p>
                     </p>
                   </div>
                   </div>

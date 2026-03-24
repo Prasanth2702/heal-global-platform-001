@@ -1763,7 +1763,8 @@ export default function AppointmentManagement() {
 
       {/* Status Filter */}
       <div className="flex gap-2 mb-6">
-        {["all", "confirmed", "cancelled", "completed"].map((s) => (
+        {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
+          {["all", "confirmed", "cancelled"].map((s) => (
           <Button
             key={s}
             size="sm"

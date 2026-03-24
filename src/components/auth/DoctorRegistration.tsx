@@ -2534,10 +2534,20 @@ await supabase
 
       // Save profile image (Step 4)
       if (profileImage) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ avatar_url: profileImage })
-          .eq('id', userId);
+                  const { data: existingProfile, error: checkError } = await supabase
+                                .from('profiles')
+                                .select('id')
+                                .eq('id', userId)
+                                .maybeSingle();
+                          
+                              let updateError;
+                              
+                              await supabase
+                  .from('profiles')
+                  .update({ 
+                    avatar_url: profileImage 
+                  })
+                  .eq('email', formData.emailAddress);
 
         if (updateError) {
           console.error('Error saving profile image:', updateError);
@@ -2545,19 +2555,19 @@ await supabase
       }
 
       // Save documents (Step 5)
-      if (uploadedDocs.length > 0) {
-        const documentUrls = uploadedDocs.map(doc => doc.name);
-        const { error: docError } = await supabase
-          .from('medical_professionals')
-          .update({
-            documents: documentUrls,
-          })
-          .eq('user_id', userId);
+      // if (uploadedDocs.length > 0) {
+      //   const documentUrls = uploadedDocs.map(doc => doc.name);
+      //   const { error: docError } = await supabase
+      //     .from('medical_professionals')
+      //     .update({
+      //       documents: documentUrls,
+      //     })
+      //     .eq('user_id', userId);
 
-        if (docError) {
-          console.error('Error saving documents:', docError);
-        }
-      }
+      //   if (docError) {
+      //     console.error('Error saving documents:', docError);
+      //   }
+      // }
 
       // Save time slots (Step 6)
       let rows = [];

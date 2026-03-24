@@ -257,12 +257,12 @@ const AffiliatePage = () => {
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
                     <div className="bg-white border border-gray-200 rounded-lg p-4 font-mono text-sm break-all">
-                      http://HealGlobel.com/?affid={affiliateData.id}
+                      http://cloudhospitals.ai/?affid={affiliateData.id}
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleCopy(`http://HealGlobel.com/?affid=${affiliateData.id}`)}
+                      onClick={() => handleCopy(`http://cloudhospitals.ai/?affid=${affiliateData.id}`)}
                       className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
                     >
                       {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}

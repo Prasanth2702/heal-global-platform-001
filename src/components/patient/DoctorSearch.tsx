@@ -2789,9 +2789,6 @@ export interface Doctor {
   description?: string;
   city?: string;
   state?: string;
-  address?:string;
-  pincode?:string;
-  country_code?:string;
 }
 
 export interface BookingInfo {
@@ -2866,7 +2863,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [selectedSpecialty, setSelectedSpecialty] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [activeFilterTab, setActiveFilterTab] = useState("all");
+  const [activeFilterTab, setActiveFilterTab] = useState("doctors");
   
   // Data States
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -2887,13 +2884,24 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
   const [notes, setNotes] = useState("");
-  
+  const [selectedDate, setSelectedDate] = useState(
+  new Date().toISOString().split("T")[0]
+);
   // Pagination States
   const [doctorPage, setDoctorPage] = useState(1);
   const [hospitalPage, setHospitalPage] = useState(1);
   const DOCTORS_PER_PAGE = 8;
   const HOSPITALS_PER_PAGE = 8;
+// Add this state if not already present
 
+// Add this function
+const handleDateChange = (doctorId: string, newDate: string) => {
+  setSelectedDate(newDate);
+  // Refetch slots for the new date if the doctor is expanded
+  if (expandedDoctorId === doctorId) {
+    fetchTimeSlotsAndBookings(doctorId);
+  }
+};
   // Data Arrays
   const doctorSpecialties = [
     "General Physician",
@@ -2993,165 +3001,85 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+      const currentUser = session?.user || null;
+    setUser(currentUser);
+    if (currentUser) {
+     setActiveFilterTab("doctors");   // default doctors
+   } 
     };
     
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+        const currentUser = session?.user || null;
+    setUser(currentUser);
+
+    // ✅ Update tab on login/logout
+    if (currentUser) {
+      setActiveFilterTab("doctors");
+    }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   // Data Fetching
-  // const fetchDoctors = async () => {
-  //   try {
-  //     const { data, error } = await supabase.from("medical_professionals")
-  //       .select(`
-  //         *,
-  //         medical_professionals_user_id_fkey (
-  //           first_name,
-  //           last_name,
-  //           avatar_url,
-  //           user_id,
-  //         )
-  //       `);
+  const fetchDoctors = async () => {
+    try {
+      const { data, error } = await supabase.from("medical_professionals")
+        .select(`
+          *,
+          medical_professionals_user_id_fkey (
+            first_name,
+            last_name,
+            avatar_url,
+            user_id
+          )
+        `);
 
-  //     if (error) throw error;
+      if (error) throw error;
 
-  //     const mapped = data.map((item: any) => {
-  //       const fullName = item.medical_professionals_user_id_fkey
-  //         ? `${item.medical_professionals_user_id_fkey.first_name || ""} ${
-  //             item.medical_professionals_user_id_fkey.last_name || ""
-  //           }`.trim()
-  //         : "Unknown Doctor";
+      const mapped = data.map((item: any) => {
+        const fullName = item.medical_professionals_user_id_fkey
+          ? `${item.medical_professionals_user_id_fkey.first_name || ""} ${
+              item.medical_professionals_user_id_fkey.last_name || ""
+            }`.trim()
+          : "Unknown Doctor";
 
-  //       // Extract city from location if available
-  //       let city = "";
-  //       let state = "";
-  //     let fullAddress = "";
-  //       if (item.about_yourself) {
-  //       // Try to extract location from about_yourself
-  //       const locationParts = item.about_yourself.split(',');
-  //       if (locationParts.length >= 2) {
-  //         city = locationParts[1].trim();
-  //         fullAddress = item.about_yourself;
-  //       } else {
-  //         fullAddress = item.about_yourself;
-  //       }
-  //     }
-  //      if (item.city) city = item.city;
-  //     if (item.state) state = item.state;
-      
-  //     // Build address if not already set
-  //     if (!fullAddress) {
-  //       const addressParts = [
-  //         item.address,
-  //         item.address_line1,
-  //         city,
-  //         state,
-  //         item.pincode
-  //       ].filter(part => part && part.trim() !== "");
-  //       fullAddress = addressParts.join(", ");
-  //     }
+        // Extract city from location if available
+        let city = "";
+        if (item.about_yourself) {
+          const locationParts = item.about_yourself.split(',');
+          city = locationParts.length > 1 ? locationParts[1].trim() : "";
+        }
 
-  //       return {
-  //         id: item.id,
-  //         user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-  //         name: fullName || "Unknown Doctor",
-  //         specialty: item.medical_speciality,
-  //         rating: item.rating || 0,
-  //         experience: item.years_experience ? `${item.years_experience} years` : "N/A",
-  //         consultationFee: item.consultation_fee || 0,
-  //         availability: item.availability?.status || "Not Available",
-  //         hospital: item.medical_school || "Not specified",
-  //         location: item.about_yourself || "Location not provided",
-  //          address: fullAddress || item.location || "Address not available",
-  //       city: city || item.city || "",
-  //       state: state || item.state || "",
-  //       country_code: item.country_code || "IN",
-  //       pincode: item.pincode || "",
-  //         image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-  //         description: item.description || item.about_yourself || "No description provided.",
-  //       } as Doctor;
-  //     });
+        return {
+          id: item.id,
+          user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+          name: fullName || "Unknown Doctor",
+          specialty: item.medical_speciality,
+          rating: item.rating || 0,
+          experience: item.years_experience ? `${item.years_experience} years` : "N/A",
+          consultationFee: item.consultation_fee || 0,
+          availability: item.availability?.status || "Not Available",
+          hospital: item.medical_school || "Not specified",
+          location: item.about_yourself || "Location not provided",
+          city: city,
+          image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+          description: item.description || item.about_yourself || "No description provided.",
+        } as Doctor;
+      });
 
-  //     setDoctors(mapped);
-  //   } catch (error) {
-  //     console.error("Error fetching doctors:", error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to fetch doctors",
-  //       variant: "destructive"
-  //     });
-  //   }
-  // };
- const fetchDoctors = async () => {
-  try {
-    const { data, error } = await supabase.from("medical_professionals")
-      .select(`
-        *,
-        medical_professionals_user_id_fkey (
-          first_name,
-          last_name,
-          avatar_url,
-          user_id
-        )
-      `);
-
-    if (error) throw error;
-
-    const mapped = data.map((item: any) => {
-      const fullName = item.medical_professionals_user_id_fkey
-        ? `${item.medical_professionals_user_id_fkey.first_name || ""} ${
-            item.medical_professionals_user_id_fkey.last_name || ""
-          }`.trim()
-        : "Unknown Doctor";
-
-      // Build the full address from database fields
-      const addressParts = [
-        item.address,
-        item.city,
-        item.state,
-        item.pincode,
-        item.country_code
-      ].filter(part => part && part.trim() !== "");
-      
-      const fullAddress = addressParts.join(", ");
-
-      return {
-        id: item.id,
-        user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-        name: fullName || "Unknown Doctor",
-        specialty: item.medical_speciality,
-        rating: item.rating || 0,
-        experience: item.years_experience ? `${item.years_experience} years` : "N/A",
-        consultationFee: item.consultation_fee || 0,
-        availability: item.availability?.status || "Not Available",
-        hospital: item.medical_school || "Not specified",
-        location: item.about_yourself || "Location not provided",
-        address: item.address || fullAddress || "Address not available",
-        city: item.city || "",
-        state: item.state || "",
-        country_code: item.country_code || "IN",
-        pincode: item.pincode || "",
-        image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-        description: item.description || item.about_yourself || "No description provided.",
-      } as Doctor;
-    });
-
-    setDoctors(mapped);
-  } catch (error) {
-    console.error("Error fetching doctors:", error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch doctors",
-      variant: "destructive"
-    });
-  }
-};
+      setDoctors(mapped);
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch doctors",
+        variant: "destructive"
+      });
+    }
+  };
 
   const fetchFacilityDetails = async () => {
     try {
@@ -3164,7 +3092,6 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
           license_number,
           city,
           state,
-          country_code,
           pincode,
           total_beds,
           rating,
@@ -3288,56 +3215,94 @@ const filteredFacilities = facilities.filter((facility) => {
          matchesLocation && 
          matchesFacilityType;
 });
-  const fetchTimeSlotsAndBookings = async (doctorId: string) => {
-    try {
-      const { data: slotsData, error: slotsError } = await supabase
-        .from("time_slots")
-        .select("*")
-        .eq("doctor_id", doctorId)
-        .eq("is_available", true);
+  // const fetchTimeSlotsAndBookings = async (doctorId: string) => {
+  //   try {
+  //     const { data: slotsData, error: slotsError } = await supabase
+  //       .from("time_slots")
+  //       .select("*")
+  //       .eq("doctor_id", doctorId)
+  //       .eq("is_available", true);
 
-      if (slotsError) throw slotsError;
-      setTimeSlots(slotsData || []);
+  //     if (slotsError) throw slotsError;
+  //     setTimeSlots(slotsData || []);
 
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from("appointments")
-        .select("*")
-        .eq("doctor_id", doctorId);
+  //     const { data: bookingsData, error: bookingsError } = await supabase
+  //       .from("appointments")
+  //       .select("*")
+  //       .eq("doctor_id", doctorId);
 
-      if (bookingsError) throw bookingsError;
-      setBookings(bookingsData || []);
-    } catch (err) {
-      console.error("Error fetching time slots:", err);
-      setTimeSlots([]);
-      setBookings([]);
-    }
-  };
+  //     if (bookingsError) throw bookingsError;
+  //     setBookings(bookingsData || []);
+  //   } catch (err) {
+  //     console.error("Error fetching time slots:", err);
+  //     setTimeSlots([]);
+  //     setBookings([]);
+  //   }
+  // };
 
-  const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
-    try {
-      const { data: slotsData, error: slotsError } = await supabase
-        .from("time_slots")
-        .select("*")
-        .eq("department_id", department.id)
-        .eq("slot_type", "booking")
-        .eq("is_available", true);
+  // const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
+  //   try {
+  //     const { data: slotsData, error: slotsError } = await supabase
+  //       .from("time_slots")
+  //       .select("*")
+  //       .eq("department_id", department.id)
+  //       // .eq("slot_type", "booking")
+  //       .eq("is_available", true);
 
-      if (slotsError) throw slotsError;
-      setTimeSlots(slotsData || []);
+  //     if (slotsError) throw slotsError;
+  //     setTimeSlots(slotsData || []);
 
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from("appointments")
-        .select("*")
-        .eq("department_id", department.id);
+  //     const { data: bookingsData, error: bookingsError } = await supabase
+  //       .from("appointments")
+  //       .select("*")
+  //       .eq("department_id", department.id);
 
-      if (bookingsError) throw bookingsError;
-      setBookings(bookingsData || []);
-    } catch (err) {
-      console.error("Error fetching department slots:", err);
-      setTimeSlots([]);
-      setBookings([]);
-    }
-  };
+  //     if (bookingsError) throw bookingsError;
+  //     setBookings(bookingsData || []);
+  //   } catch (err) {
+  //     console.error("Error fetching department slots:", err);
+  //     setTimeSlots([]);
+  //     setBookings([]);
+  //   }
+  // };
+  // REPLACE the existing fetchTimeSlotsAndDepartmentBookings function with this:
+const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
+  try {
+    const selectedDayName = getDayOfWeek(selectedDate);
+    
+    const { data: slotsData, error: slotsError } = await supabase
+      .from("time_slots")
+      .select("*")
+      .eq("department_id", department.id)
+      // .eq("slot_type", "booking")
+      .eq("is_available", true)
+      .eq("day_of_week", selectedDayName); // Added: filter by day
+
+    if (slotsError) throw slotsError;
+
+    const { data: bookingsData, error: bookingsError } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("department_id", department.id)
+      .eq("appointment_date", selectedDate); // Fixed: using appointment_date
+
+    if (bookingsError) throw bookingsError;
+
+    // Filter out booked slots
+    const availableSlots = (slotsData || []).filter((slot) => {
+      return !bookingsData?.some(
+        (b) => b.time_slot_id === slot.id
+      );
+    });
+
+    setTimeSlots(availableSlots);
+    setBookings(bookingsData || []);
+  } catch (err) {
+    console.error("Error fetching department slots:", err);
+    setTimeSlots([]);
+    setBookings([]);
+  }
+};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -3499,22 +3464,22 @@ const filteredFacilities = facilities.filter((facility) => {
     }
   };
 
-  const handleBookNow = (slot: TimeSlot, dateIndex: number, doctor: Doctor) => {
-    const newDate = new Date();
-    newDate.setDate(newDate.getDate() + dateIndex);
+  // const handleBookNow = (slot: TimeSlot, dateIndex: number, doctor: Doctor) => {
+  //   const newDate = new Date();
+  //   newDate.setDate(newDate.getDate() + dateIndex);
 
-    const bookingData: BookingInfo = {
-      slot_id: slot.id,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
-      booking_date: newDate.toISOString().split("T")[0],
-      doctor_id: slot.doctor_id,
-      doctor_name: doctor.name,
-    };
+  //   const bookingData: BookingInfo = {
+  //     slot_id: slot.id,
+  //     start_time: slot.start_time,
+  //     end_time: slot.end_time,
+  //     booking_date: newDate.toISOString().split("T")[0],
+  //     doctor_id: slot.doctor_id,
+  //     doctor_name: doctor.name,
+  //   };
 
-    setBookingInfo(bookingData);
-    setConfirmOpen(true);
-  };
+  //   setBookingInfo(bookingData);
+  //   setConfirmOpen(true);
+  // };
 
   const handleDepartmentBookNow = (slot: TimeSlot, dateIndex: number, department: Department) => {
     const newDate = new Date();
@@ -3675,6 +3640,105 @@ const filteredFacilities = facilities.filter((facility) => {
     setActiveFilterTab("hospitals");
     setHospitalPage(1);
   };
+  const getDayOfWeek = (dateStr: string) => {
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const d = new Date(dateStr);
+  return days[d.getDay()];
+};
+// REPLACE the existing fetchTimeSlotsAndBookings function with this:
+const fetchTimeSlotsAndBookings = async (doctorId: string) => {
+  try {
+    // Get the day name for selected date
+    const selectedDayName = getDayOfWeek(selectedDate);
+    
+    // Fetch slots for this doctor on the selected day
+    const { data: slotsData, error: slotsError } = await supabase
+      .from("time_slots")
+      .select("*")
+      .eq("doctor_id", doctorId)
+      .eq("is_available", true)
+      .eq("day_of_week", selectedDayName);
+
+    if (slotsError) throw slotsError;
+
+    // Fetch bookings for this doctor on the selected date
+    const { data: bookingsData, error: bookingsError } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("doctor_id", doctorId)
+      .eq("appointment_date", selectedDate); // Fixed: using appointment_date
+
+    if (bookingsError) throw bookingsError;
+
+    // Filter out slots that are already booked
+    const availableSlots = (slotsData || []).filter((slot) => {
+      return !bookingsData?.some(
+        (b) => b.time_slot_id === slot.id
+      );
+    });
+
+    setTimeSlots(availableSlots);
+    setBookings(bookingsData || []);
+  } catch (err) {
+    console.error("Error fetching time slots:", err);
+    setTimeSlots([]);
+    setBookings([]);
+  }
+};
+
+//     const fetchTimeSlotsAndBookings = async (doctorId: string) => {
+//   try {
+//     const selectedDayName = getDayOfWeek(selectedDate);
+
+//     const { data: slotsData, error: slotsError } = await supabase
+//       .from("time_slots")
+//       .select("*")
+//       .eq("doctor_id", doctorId)
+//       .eq("is_available", true)
+//       .eq("day_of_week", selectedDayName);
+
+//     if (slotsError) throw slotsError;
+
+//     const { data: bookingsData, error: bookingsError } = await supabase
+//       .from("appointments")
+//       .select("*")
+//       .eq("doctor_id", doctorId)
+//       .eq("appointment_date", selectedDate);
+
+//     if (bookingsError) throw bookingsError;
+
+//     // ✅ REMOVE BOOKED SLOTS
+//     const filteredSlots = (slotsData || []).filter((slot) => {
+//       return !bookingsData?.some(
+//         (b) =>
+//           b.time_slot_id === slot.id &&
+//           b.appointment_date?.split("T")[0] === selectedDate
+//       );
+//     });
+
+//     setTimeSlots(filteredSlots);
+//     setBookings(bookingsData || []);
+//   } catch (err) {
+//     console.error(err);
+//     setTimeSlots([]);
+//     setBookings([]);
+//   }
+// };
+const handleBookNow = (slot: TimeSlot, dateIndex: number, doctor: Doctor) => {
+  const newDate = new Date(selectedDate); // ✅ FIXED
+
+  const bookingData: BookingInfo = {
+    slot_id: slot.id,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    booking_date: newDate.toISOString().split("T")[0],
+    doctor_id: slot.doctor_id,
+    doctor_name: doctor.name,
+  };
+
+  setBookingInfo(bookingData);
+  setConfirmOpen(true);
+};
 
   // Render Functions
   const renderDoctorsSection = () => {
@@ -3717,8 +3781,10 @@ const filteredFacilities = facilities.filter((facility) => {
                   bookings={bookings}
                   selectedSlot={selectedSlot}
                   selectedDay={selectedDay}
+                   selectedDate={selectedDate} 
                   onToggleExpand={toggleExpand}
                   onViewProfile={handleViewDoctorProfile}
+                 onDateChange={handleDateChange}
                   onSelectDay={setSelectedDay}
                   onSelectSlot={setSelectedSlot}
                   onBookNow={handleBookNow}
@@ -3854,6 +3920,8 @@ const filteredFacilities = facilities.filter((facility) => {
         cities={cities}
          facilityType={facilityType}
   setFacilityType={setFacilityType}
+   selectedDate={selectedDate}
+  setSelectedDate={setSelectedDate}
       />
 
       {/* Results Count */}

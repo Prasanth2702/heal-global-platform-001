@@ -201,7 +201,7 @@ const handleViewChange = (view: ViewType) => {
   } else if(view === "doctors") {
     navigate(`/appointment/doctors`);
   } else if(view === "hospitals") {
-    navigate(`/appointment/facility`);
+    navigate(`/appointment/hospitals`);
   } else if(view === "beds") {
     navigate(`/appointment/beds`);
   } else if(view === "doctorprofile") {

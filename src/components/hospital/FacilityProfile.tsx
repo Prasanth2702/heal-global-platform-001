@@ -687,8 +687,8 @@ const FacilityProfile: React.FC = () => {
           emailAddress: profilesData.email || '',
           phoneNumber: profilesData.phone_number || '',
           avatarUrl: profilesData?.avatar_url || '',
-          documentUrl: profilesData?.document_url || '',
-          documentName: profilesData?.document_name || ''
+          // documentUrl: profilesData?.document_url || '',
+          // documentName: profilesData?.document_name || ''
         }));
       }
 
@@ -777,8 +777,8 @@ const FacilityProfile: React.FC = () => {
       email: profileData.emailAddress,
       phone_number: profileData.phoneNumber,
       avatar_url: profileData.avatarUrl,
-      document_url: profileData.documentUrl,
-      document_name: profileData.documentName
+      // document_url: profileData.documentUrl,
+      // document_name: profileData.documentName
     };
 
     const medicalProfessionalsUpdate = {
@@ -1077,7 +1077,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           </div>
 
           {/* Document Upload Section (when editing) */}
-          {isEditing && (
+          {/* {isEditing && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <Label className="text-sm font-semibold text-gray-700 mb-2 block">
                 Facility Document (PDF)
@@ -1143,7 +1143,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                 </p>
               </div>
             </div>
-          )}
+          )} */}
         </CardContent>
       </Card>
 

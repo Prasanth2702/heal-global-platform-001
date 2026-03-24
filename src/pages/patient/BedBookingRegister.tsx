@@ -174,6 +174,7 @@ const BedBookingRegister = () => {
         assigned_bed_id: bedId,
         assigned_ward_id: wardId,
         expected_admission_date: formData.expected_admission_date,
+        expected_discharge_date: formData.expected_discharge_date,
         priority: formData.priority.toUpperCase(),
         primary_diagnosis: formData.primary_diagnosis,
         status: "AVAILABLE",

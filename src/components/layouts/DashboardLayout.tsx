@@ -398,6 +398,11 @@ const checkBedManagementDepartment = async () => {
       },
     ]
   : []),
+    {
+          path: "/dashboard/staff/profile",
+          label: "My Profile",
+          icon: FileText,
+        },
       ],
 
     },

@@ -33,6 +33,7 @@ interface PatientProfileProps {
 }
 
 const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
+  
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [user,setUser] = useState<SupabaseUser>(null);
@@ -56,71 +57,158 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
     pincode: '',
     country_code: '',
   });
+ const [profileInfo, setProfileInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showOutdatedWarning, setShowOutdatedWarning] = useState(false);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
+useEffect(() => {
     const fetchProfile = async () => {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      if (authError || !user) {
-        console.error('Auth error:', authError?.message || 'User not found');
-        return;
-      }
+        if (authError || !user) {
+          console.error('Auth error:', authError?.message || 'User not found');
+          setLoading(false);
+          return;
+        }
 
-      setUser(user);
+        setUser(user);
 
-      const { data: profilesData, error: profilesDataError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+        // Fetch profiles data
+        const { data: profilesData, error: profilesDataError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-      if (profilesDataError) {
-        console.error('Profile fetch error:', profilesDataError.message);
-        return;
-      }
+        if (profilesDataError) {
+          console.error('Profile fetch error:', profilesDataError.message);
+        }
 
+        // Fetch patients data
+        const { data: patientData, error: patientDataError } = await supabase
+          .from('patients')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-      const { data: patientData, error: patientDataError } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (patientDataError) {
-        console.error('Profile fetch error:', patientDataError.message);
-        return;
-      }
-      if (patientData) {
+        if (patientDataError) {
+          console.error('Patient data fetch error:', patientDataError.message);
+        }
+        
+        // Set profile info from profiles table
+        if (profilesData) {
+          setProfileInfo(profilesData);
+        }
+        
+        // Set profile data from both tables
         setProfileData({
-          firstName: profilesData.first_name || '',
-          lastName: profilesData.last_name || '',
-          emailAddress: profilesData.email || '',
-          phoneNumber: profilesData.phone_number || '',
-          avatarUrl: profilesData.avatar_url || '',
-          userType: profilesData.user_type || 'patient',
-          dateOfBirth: patientData.date_of_birth || '',
-          gender: patientData.gender || '',
-          bloodGroup: patientData.blood_group || '',
-          emergencyContactName: patientData.emergency_contact_name || '',
-          emergencyContactPhone: patientData.emergency_contact_number || '',
-          knownAllergies: patientData.known_allergies || '',
-          currentMedications: patientData.current_medications || '',
- city: patientData.city || '',
-          state: patientData.state || '',
-          pincode: patientData.pincode || '',
-          country_code: patientData.country_code || '',
-              address: patientData.address|| '',
-
+          firstName: profilesData?.first_name || '',
+          lastName: profilesData?.last_name || '',
+          emailAddress: profilesData?.email || user.email || '',
+          phoneNumber: profilesData?.phone_number || '',
+          avatarUrl: profilesData?.avatar_url || '',
+          userType: profilesData?.user_type || 'patient',
+          dateOfBirth: patientData?.date_of_birth || '',
+          gender: patientData?.gender || '',
+          bloodGroup: patientData?.blood_group || '',
+          emergencyContactName: patientData?.emergency_contact_name || '',
+          emergencyContactPhone: patientData?.emergency_contact_number || '',
+          knownAllergies: patientData?.known_allergies || '',
+          currentMedications: patientData?.current_medications || '',
+          city: patientData?.city || '',
+          state: patientData?.state || '',
+          pincode: patientData?.pincode || '',
+          country_code: patientData?.country_code || '',
+          address: patientData?.address || '',
         });
+
+        // Check if profile is outdated (older than 6 months)
+        if (profilesData && profilesData.updated_at) {
+          const lastUpdated = new Date(profilesData.updated_at);
+          const sixMonthsAgo = new Date();
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+          
+          if (lastUpdated < sixMonthsAgo) {
+            setShowOutdatedWarning(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
       }
     };
+    
     fetchProfile();
   }, []);
+//   useEffect(() => {
+//     const fetchProfile = async () => {
+//       const {
+//         data: { user },
+//         error: authError,
+//       } = await supabase.auth.getUser();
+
+//       if (authError || !user) {
+//         console.error('Auth error:', authError?.message || 'User not found');
+//         return;
+//       }
+
+//       setUser(user);
+
+//       const { data: profilesData, error: profilesDataError } = await supabase
+//         .from('profiles')
+//         .select('*')
+//         .eq('user_id', user.id)
+//         .single();
+
+//       if (profilesDataError) {
+//         console.error('Profile fetch error:', profilesDataError.message);
+//         return;
+//       }
+
+
+//       const { data: patientData, error: patientDataError } = await supabase
+//         .from('patients')
+//         .select('*')
+//         .eq('user_id', user.id)
+//         .single();
+
+//       if (patientDataError) {
+//         console.error('Profile fetch error:', patientDataError.message);
+//         return;
+//       }
+//       if (patientData) {
+//         setProfileData({
+//           firstName: profilesData.first_name || '',
+//           lastName: profilesData.last_name || '',
+//           emailAddress: profilesData.email || '',
+//           phoneNumber: profilesData.phone_number || '',
+//           avatarUrl: profilesData.avatar_url || '',
+//           userType: profilesData.user_type || 'patient',
+//           dateOfBirth: patientData.date_of_birth || '',
+//           gender: patientData.gender || '',
+//           bloodGroup: patientData.blood_group || '',
+//           emergencyContactName: patientData.emergency_contact_name || '',
+//           emergencyContactPhone: patientData.emergency_contact_number || '',
+//           knownAllergies: patientData.known_allergies || '',
+//           currentMedications: patientData.current_medications || '',
+//  city: patientData.city || '',
+//           state: patientData.state || '',
+//           pincode: patientData.pincode || '',
+//           country_code: patientData.country_code || '',
+//               address: patientData.address|| '',
+
+//         });
+//       }
+//     };
+//     fetchProfile();
+//   }, []);
 
 
   // Validation function

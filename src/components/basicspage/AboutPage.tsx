@@ -97,24 +97,24 @@ const AboutPage = () => {
           <div className="flex-1 bg-white p-5 md:p-6 shadow rounded-lg">
             <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
               <Hospital className="h-6 w-6 text-blue-600" />
-              About HealGlobe.com
+              About cloudhospitals.ai
             </h2>
             <p className="text-gray-700 text-sm md:text-base">
-              <strong className="bold">HealGlobe.com</strong> is a revolutionary digital healthcare platform 
+              <strong className="bold">cloudhospitals.ai</strong> is a revolutionary digital healthcare platform 
               founded in 2023, designed to bridge the gap between patients and healthcare providers. 
               Our mission is to make quality healthcare accessible to everyone through seamless digital 
               solutions for appointment booking and bed management.
             </p>
             <p className="text-gray-700 mt-4 text-sm md:text-base">
               With a network of over 500+ hospitals and 2000+ healthcare providers across India, 
-              HealGlobe.com offers a comprehensive platform where patients can easily find and book 
+             cloudhospitals.ai offers a comprehensive platform where patients can easily find and book 
               appointments with doctors, schedule diagnostic tests, and reserve hospital beds - all 
               from the comfort of their homes.
             </p>
             <p className="text-gray-700 mt-4 text-sm md:text-base">
               Our platform integrates real-time availability, instant confirmation, and secure payment 
               processing to ensure a hassle-free experience. Whether you need a routine check-up, 
-              emergency care, or planned hospitalization, HealGlobe.com connects you with the right 
+              emergency care, or planned hospitalization, cloudhospitals.ai connects you with the right 
               healthcare services at the right time.
             </p>
           </div>
@@ -200,7 +200,7 @@ const AboutPage = () => {
         <div className="max-w-6xl mx-auto mt-8 bg-white p-5 md:p-6 shadow rounded-lg">
           <h2 className="text-xl md:text-3xl font-bold mb-4">Our Team</h2>
           <p className="text-gray-700 mb-6 text-sm md:text-base">
-            Meet the experts behind <strong>HealGlobe.com</strong> – a unique
+            Meet the experts behind <strong>cloudhospitals.ai</strong> – a unique
             blend of medical professionals, AI engineers, and healthcare technology
             specialists dedicated to transforming patient care.
           </p>
@@ -213,11 +213,11 @@ const AboutPage = () => {
                   Dr. Mohammed Ahetasham, M.B.B.S, M.D.R.D
                 </h3>
                 <p className="text-sm md:text-base font-medium text-gray-800">
-                  Founder & Chairman – HealGlobe.com
+                  Founder & Chairman – cloudhospitals.ai
                 </p>
                 <p className="text-gray-700 mt-2 text-sm md:text-base">
                   Dr. Mohammed Ahetasham is a visionary healthcare innovator,
-                  accomplished Radiologist, and Founder & Chairman of HealGlobe.com. 
+                  accomplished Radiologist, and Founder & Chairman of cloudhospitals.ai. 
                   With over 12 years of experience in the medical industry, he has 
                   been instrumental in advancing the intersection of clinical 
                   excellence and digital healthcare delivery.
@@ -249,7 +249,7 @@ const AboutPage = () => {
                   With deep expertise in cloud infrastructure, healthcare data 
                   security (HIPAA compliance), and real-time booking systems, 
                   this executive has played a critical role in building 
-                  HealGlobe's robust appointment and bed management platform.
+                  cloudhospitals's robust appointment and bed management platform.
                 </p>
               </div>
             </div>
@@ -259,7 +259,7 @@ const AboutPage = () => {
         {/* Section: How It Works */}
         <div className="max-w-6xl mx-auto mt-8 bg-white p-5 md:p-6 shadow rounded-lg">
           <h2 className="text-xl md:text-3xl font-bold mb-4">
-            How HealGlobe.com Works
+            How cloudhospitals.ai Works
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -297,7 +297,7 @@ const AboutPage = () => {
           </div>
 
           <h3 className="text-base md:text-lg font-semibold mt-6">
-            Why HealGlobe.com Stands Out
+            Why cloudhospitals.ai Stands Out
           </h3>
           <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2 text-sm md:text-base">
             <li><strong>Real-time Availability:</strong> Live updates on doctor slots and bed availability</li>
@@ -320,7 +320,7 @@ const AboutPage = () => {
 
           <p className="text-blue-700 font-semibold mt-5 text-sm md:text-base flex items-center gap-2">
             <HeartPulse className="h-5 w-5" />
-            👉 Experience hassle-free healthcare with <strong>HealGlobe.com</strong> Today!
+            👉 Experience hassle-free healthcare with <strong>cloudhospitals.ai</strong> Today!
           </p>
         </div>
       </div>

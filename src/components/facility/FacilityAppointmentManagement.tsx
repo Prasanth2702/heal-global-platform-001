@@ -2324,7 +2324,8 @@ export default function FacilityAppointmentManagement() {
         <div className="p-4 border-b bg-gray-50">
           <div className="flex flex-wrap gap-2">
             <span className="text-sm font-medium text-gray-700 mr-2 py-1">Status:</span>
-            {["all", "confirmed", "cancelled", "completed"].map((s) => (
+            {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
+            {["all", "confirmed", "cancelled"].map((s) => ( 
               <button
                 key={s}
                 onClick={() => setStatusFilter(s as any)}

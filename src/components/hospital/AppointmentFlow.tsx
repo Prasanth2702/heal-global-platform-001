@@ -591,19 +591,67 @@ const extractRelatedIds = (appointments: any[]) => {
 };
 
 // Step 3a: Fetch patients by IDs
+// const fetchPatientsByIds = async (patientIds: string[]) => {
+//   if (patientIds.length === 0) return [];
+  
+//   const { data, error } = await supabase
+//     .from("patients")
+//     .select("*")
+//     .in("user_id", patientIds);
+
+//   if (error) {
+//     console.error("Error fetching patients:", error);
+//     return [];
+//   }
+//   return data || [];
+// };
+// Step 3a: Fetch patients by IDs - FIXED to use user_id only
 const fetchPatientsByIds = async (patientIds: string[]) => {
   if (patientIds.length === 0) return [];
   
+  // Fetch patients using user_id (since patient_id in appointments is user_id)
   const { data, error } = await supabase
     .from("patients")
     .select("*")
-    .in("id", patientIds);
+    .in("user_id", patientIds);
 
   if (error) {
     console.error("Error fetching patients:", error);
     return [];
   }
-  return data || [];
+
+  if (!data || data.length === 0) return [];
+
+  // Get user IDs for profiles (these are the same user_ids)
+  const userIds = data.map(p => p.user_id).filter(id => id);
+  
+  if (userIds.length === 0) return data;
+
+  // Fetch profiles data using user_ids
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("user_id, first_name, last_name, email, phone_number")
+    .in("user_id", userIds);
+
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
+    return data;
+  }
+
+  // Create profile lookup map
+  const profileMap = new Map();
+  profiles?.forEach(profile => {
+    profileMap.set(profile.user_id, profile);
+  });
+
+  // Merge patient data with profile data
+  return data.map(patient => ({
+    ...patient,
+    first_name: profileMap.get(patient.user_id)?.first_name || "",
+    last_name: profileMap.get(patient.user_id)?.last_name || "",
+    email: profileMap.get(patient.user_id)?.email || "",
+    phone_number: profileMap.get(patient.user_id)?.phone_number || ""
+  }));
 };
 
 // Step 3b: Fetch departments by IDs
@@ -788,14 +836,21 @@ const transformAppointmentData = (
 };
 
 // Helper: Create patient lookup map
+// const createPatientMap = (patients: any[]) => {
+//   const map = new Map();
+//   patients.forEach(patient => {
+//     map.set(patient.id, patient);
+//   });
+//   return map;
+// };
+// Helper: Create patient lookup map - FIXED to use user_id
 const createPatientMap = (patients: any[]) => {
   const map = new Map();
   patients.forEach(patient => {
-    map.set(patient.id, patient);
+    map.set(patient.user_id, patient); // Map by user_id, not id
   });
   return map;
 };
-
 // Helper: Create department lookup map
 const createDepartmentMap = (departments: any[]) => {
   const map = new Map();

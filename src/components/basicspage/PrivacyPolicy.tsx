@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    <strong>Personal Information:</strong> When you book appointments or reserve beds through HealGlobe.com, we collect personal details including your full name, date of birth, contact information (phone, email), and emergency contact information.
+                    <strong>Personal Information:</strong> When you book appointments or reserve beds through cloudhospitals.ai, we collect personal details including your full name, date of birth, contact information (phone, email), and emergency contact information.
                   </p>
                   <p>
                     <strong>Medical Information:</strong> To facilitate appropriate healthcare services, we may collect relevant medical history, current symptoms, insurance details, and information about your preferred healthcare providers.
@@ -150,7 +150,7 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    HealGlobe.com services are intended for individuals 18 years and older. For minors requiring healthcare services, bookings must be made by a parent or legal guardian who accepts responsibility for all provided information.
+                    cloudhospitals.ai services are intended for individuals 18 years and older. For minors requiring healthcare services, bookings must be made by a parent or legal guardian who accepts responsibility for all provided information.
                   </p>
                 </div>
               </section>
@@ -161,7 +161,7 @@ const PrivacyPolicy = () => {
                 </h2>
                 <div className="space-y-3 text-gray-700">
                   <p>
-                    We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements. We will notify users of significant changes through the platform or via email. Your continued use of HealGlobe.com after changes constitutes acceptance of the updated policy.
+                    We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements. We will notify users of significant changes through the platform or via email. Your continued use of cloudhospitals.ai after changes constitutes acceptance of the updated policy.
                   </p>
                 </div>
               </section>
@@ -175,12 +175,12 @@ const PrivacyPolicy = () => {
                     For privacy-related questions, concerns, or to exercise your rights, please contact us at:
                   </p>
                   <p className="font-medium">
-                    Email: privacy@healglobe.com
+                    Email: privacy@cloudhospitals.ai
                   </p>
                   <p>
                     Or write to us at:
                     <br />
-                    HealGlobe Global LLC
+                   CloudHospitals LLC
                     <br />
                     128 City Road
                     <br />
@@ -191,7 +191,7 @@ const PrivacyPolicy = () => {
                   <p className="mt-2">
                     For immediate support regarding your appointments or bed bookings, contact:
                     <br />
-                    support@healglobe.com
+                    support@cloudhospitals.ai
                   </p>
                 </div>
               </section>

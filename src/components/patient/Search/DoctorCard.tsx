@@ -18,11 +18,11 @@ export interface Doctor {
   hospital?: string;
   image?: string;
   description?: string;
-  address?:string;
-  city?:string;
-  state?:string;
-  country_code?:string;
-  pincode?:string;
+    city?: string;
+  state?: string;
+  address?: string;
+  country_code?: string;
+  pincode?: number;
 }
 
 export interface BookingInfo {
@@ -90,11 +90,13 @@ interface DoctorCardProps {
   bookings: any[];
   selectedSlot: any;
   selectedDay: number;
+   selectedDate: string;
   onToggleExpand: (doctorId: string) => void;
   onViewProfile: (doctorId: string) => void;
   onSelectDay: (day: number) => void;
   onSelectSlot: (slot: any) => void;
   onBookNow: (slot: any, selectedDay: number, doctor: Doctor) => void;
+  onDateChange?: (doctorId: string, date: string) => void; // Add this optional
   formatDayLabel: (date: Date, index: number) => string;
   formatDateNumber: (date: Date) => number;
   formatTimePretty: (timeStr: string) => string;
@@ -106,6 +108,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
   expandedDoctorId,
   timeSlots,
   bookings,
+  selectedDate, 
   selectedSlot,
   selectedDay,
   onToggleExpand,
@@ -113,6 +116,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
   onSelectDay,
   onSelectSlot,
   onBookNow,
+  onDateChange,
   formatDayLabel,
   formatDateNumber,
   formatTimePretty,
@@ -134,8 +138,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
                   <h4 className="text-base font-semibold truncate">{doctor.name}</h4>
                   <p className="text-xs text-muted-foreground truncate">{doctor.specialty}</p>
                   <p className="text-xs text-muted-foreground truncate">{doctor.city}</p>
-
                 </div>
+               
 
                 <div className="flex items-center flex-shrink-0">
                   <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
@@ -143,11 +147,28 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
                 </div>
               </div>
 
-             <div className="text-xs text-muted-foreground mt-1 truncate">
-  <MapPin className="h-3 w-3 inline mr-0.5" />
-  {doctor.address || 
-    `${doctor.city || 'NA'} ${doctor.state || 'Na'} ${doctor.country_code || 'Na'}`}
-</div>
+              {/* <div className="text-xs text-muted-foreground mt-1 truncate">
+                <MapPin className="h-3 w-3 inline mr-0.5" />
+                {doctor.location || "Location not provided"}
+              </div> */}
+
+               <div className="min-w-0">
+                  {/* <h4 className="text-base font-semibold truncate">Address</h4>
+                  <p className="text-xs text-muted-foreground truncate">{doctor.address}{doctor.city}{doctor.state}{doctor.country_code}{doctor.pincode}</p> */}
+               <h4 className="text-sm font-semibold">Address</h4>
+<p className="text-xs text-muted-foreground leading-relaxed">
+  {[
+    doctor.address,
+    doctor.city,
+    doctor.state,
+    doctor.country_code,
+    doctor.pincode
+  ]
+    .filter(Boolean)
+    .join(", ")
+  }
+</p>
+                </div>
 
               <div className="flex justify-between items-center mt-2">
                 {/* <Badge variant="outline" className="text-[10px] px-1.5 py-0">
@@ -186,7 +207,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
           </div>
 
           {/* Expanded Availability Area */}
-          {expandedDoctorId === doctor.user_id && (
+          {/* {expandedDoctorId === doctor.user_id && (
             <div className="mt-4 p-3 rounded-lg border shadow-sm bg-white">
               <h4 className="font-semibold mb-2 text-sm">Available Slots</h4>
 
@@ -205,16 +226,29 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
 
                       const slotsForDay = timeSlots.filter((s) => s.day_of_week === dayOfWeek);
                       const dateISO = date.toISOString().split("T")[0];
-                      const bookingsForDay = bookings.filter((b) => {
-                        const bookingISO = new Date(b.appointment_date).toISOString().split("T")[0];
-                        return bookingISO === dateISO;
-                      });
+                      // const bookingsForDay = bookings.filter((b) => {
+                      //   const bookingISO = new Date(b.appointment_date).toISOString().split("T")[0];
+                      //   return bookingISO === dateISO;
+                      // });
+const bookingsForDay = bookings.filter((b) => {
+  const bookingDate = new Date(b.appointment_date);
+  const bookingDay = bookingDate.toLocaleDateString("en-US", { weekday: "long" });
+  const currentDay = dayOfWeek;
 
-                      const bookedSlotIds = new Set(bookingsForDay.map((b) => b.time_slot_id));
+  return bookingDay === currentDay;
+});
+                      // const bookedSlotIds = new Set(bookingsForDay.map((b) => b.time_slot_id));
                       const availableSlotsCount = slotsForDay.filter(
                         (slot) => !bookedSlotIds.has(slot.id)
                       ).length;
-
+                      const bookedSlotIds = new Set(
+  bookingsForDay.map((b) => b.time_slot_id)
+);
+const getDayOfWeek = (dateStr: string) => {
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const d = new Date(dateStr);
+  return days[d.getDay()];
+};
                       const isActiveDay = selectedDay === index;
 
                       return (
@@ -243,20 +277,37 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
                     {(() => {
                       const selectedDate = new Date();
                       selectedDate.setDate(selectedDate.getDate() + selectedDay);
-                      const fullDayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
+                      // const fullDayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
+const getDayOfWeek = (dateStr: string) => {
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const d = new Date(dateStr);
+  return days[d.getDay()];
+};
+                      // const slotsForDay = timeSlots.filter((s) => s.day_of_week === fullDayName);
+const fullDayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
 
-                      const slotsForDay = timeSlots.filter((s) => s.day_of_week === fullDayName);
-
+const slotsForDay = timeSlots.filter(
+  (s) => s.day_of_week?.toLowerCase() === fullDayName.toLowerCase()
+);
                       if (slotsForDay.length === 0) {
                         return <p className="text-gray-500 text-xs">No slots available.</p>;
                       }
 
                       const selectedDateStr = selectedDate.toISOString().split("T")[0];
-                      const todaysBookings = bookings.filter((b) => {
-                        const bookingISO = new Date(b.appointment_date).toISOString().split("T")[0];
-                        return bookingISO === selectedDateStr;
-                      });
+                      // const todaysBookings = bookings.filter((b) => {
+                      //   const bookingISO = new Date(b.appointment_date).toISOString().split("T")[0];
+                      //   return bookingISO === selectedDateStr;
+                      // });
+const todaysBookings = bookings.filter((b) => {
+  const bookingDate = new Date(b.appointment_date);
+  const bookingDay = bookingDate.toLocaleDateString("en-US", { weekday: "long" });
+  const selectedDayName = fullDayName;
 
+  return bookingDay === selectedDayName;
+});
+const formatDate = (date: Date) => {
+  return date.toISOString().split("T")[0];
+};
                       const availableSlots = slotsForDay.filter(
                         (slot) => !todaysBookings.some((b) => b.time_slot_id === slot.id)
                       );
@@ -303,7 +354,136 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
                 </>
               )}
             </div>
+          )} */}
+       {expandedDoctorId === doctor.user_id && (
+  <div className="mt-4 p-3 rounded-lg border shadow-sm bg-white">
+    <h4 className="font-semibold mb-2 text-sm">Available Slots</h4>
+    
+    {/* Show selected date */}
+    <p className="text-xs text-gray-500 mb-2">
+      Showing availability for: {new Date(selectedDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
+    </p>
+
+    {timeSlots.length === 0 ? (
+      <p className="text-orange-600 text-xs font-medium">
+        No slots available on this date.
+      </p>
+    ) : (
+      <>
+        {/* Day selector */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+          {Array.from({ length: 7 }).map((_, index) => {
+            const date = new Date();
+            date.setDate(date.getDate() + index);
+            const dateStr = date.toISOString().split("T")[0];
+            const isSelectedDate = dateStr === selectedDate;
+            
+            return (
+              <div key={index} className="min-w-[65px]">
+                {/* <button
+                  onClick={() => {
+                    onSelectDay(index);
+                    onSelectSlot(null);
+                    // Call onDateChange if provided
+                    if (onDateChange) {
+                      onDateChange(doctor.id, dateStr);
+                    }
+                  }}
+                  className={`w-full px-2 py-1.5 rounded-lg text-center transition text-xs
+                    ${isSelectedDate ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
+                    border ${isSelectedDate ? "border-blue-600" : "border-gray-200"}`}
+                >
+                  <div className="text-[10px] font-medium">
+                    {index === 0 ? "Today" : index === 1 ? "Tomorrow" : formatDayLabel(date, index)}
+                  </div>
+                  <div className="text-sm font-bold mt-0.5">{formatDateNumber(date)}</div>
+                </button> */}
+                <button
+  onClick={() => {
+    onSelectDay(index);
+    onSelectSlot(null);
+    // No onDateChange call needed
+  }}
+  className={`w-full px-2 py-1.5 rounded-lg text-center transition text-xs
+    ${isSelectedDate ? "bg-blue-600 text-white" : "bg-white text-gray-700"}
+    border ${isSelectedDate ? "border-blue-600" : "border-gray-200"}`}
+>
+  <div className="text-[10px] font-medium">
+    {index === 0 ? "Today" : index === 1 ? "Tomorrow" : formatDayLabel(date, index)}
+  </div>
+  <div className="text-sm font-bold mt-0.5">{formatDateNumber(date)}</div>
+</button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Slots display */}
+        <div className="mt-3">
+          {timeSlots.length === 0 ? (
+            <p className="text-gray-500 text-xs text-center py-2">
+              No slots available for selected date
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {timeSlots.map((slot) => {
+                const isSelected = selectedSlot?.id === slot.id;
+                // Check if this slot is already booked for this date
+                const isBooked = bookings.some(
+                  (b) => b.time_slot_id === slot.id
+                );
+                
+                if (isBooked) return null; // Don't show booked slots
+                
+                return (
+                  <div
+                    key={slot.id}
+                    onClick={() => !isBooked && onSelectSlot(slot)}
+                    className={`
+                      p-1.5 rounded-md cursor-pointer text-xs transition text-center
+                      ${slot.slot_type === "clinic" ? "bg-green-50" : "bg-blue-50"}
+                      ${isSelected ? "border-2 border-green-600" : "border border-gray-200"}
+                      ${isBooked ? "opacity-50 cursor-not-allowed bg-gray-100" : ""}
+                    `}
+                  >
+                    <div className="font-medium text-[10px]">
+                      {formatTimePretty(slot.start_time)} - {formatTimePretty(slot.end_time)}
+                    </div>
+                    <div className="text-[8px] text-green-600 mt-0.5">
+                      {isBooked ? "Booked" : "Available"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+        </div>
+
+        {!selectedSlot && timeSlots.length > 0 && (
+          <p className="text-gray-500 text-[10px] mt-2 text-center">
+            Select a time slot to book
+          </p>
+        )}
+
+        <Button
+          variant="default"
+          size="sm"
+          className="mt-2 w-full text-xs h-7 bg-blue-600 hover:bg-blue-700"
+          disabled={!selectedSlot}
+          onClick={() => onBookNow(selectedSlot!, selectedDay, doctor)}
+        >
+          Book Appointment
+        </Button>
+      </>
+    )}
+  </div>
+)}
+
         </CardContent>
       </Card>
     </div>

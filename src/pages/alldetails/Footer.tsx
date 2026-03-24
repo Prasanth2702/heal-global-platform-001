@@ -73,8 +73,14 @@ const Footer = () => {
               alt="NextGen Medical"
               className="h-8 w-8 rounded-md object-contain mt-1"
             /> */}
-            <span className="text-xl font-bold">NextGen Medical</span>
+            <img
+              src="/image.png"
+              alt="Cloud Hospitals"
+              className="h-30 w-30 rounded-md object-contain mt-1"
+            />
           </Link>
+            <span className="text-xl font-bold">Cloud Hospitals</span>
+            {/* <span className="text-xl font-bold">NextGen Medical</span> */}
               <p className="text-white-50 mb-3">
                 Your trusted partner in healthcare. We connect you with the best doctors, 
                 hospitals, and healthcare services to ensure you receive the care you deserve.
@@ -144,6 +150,25 @@ const Footer = () => {
                 <li className="mb-2 d-flex align-items-start">
                   <MapPinIcon size={18} className="text-primary me-2 mt-1 flex-shrink-0" />
                   <span className="text-white-50">
+                    98/11, Wheeler Rd Ext, Opposite Music Central, D Costa Layout, Cooke Town, Bengaluru, Karnataka 560005.
+                  </span>
+                </li>
+                <li className="mb-2 d-flex align-items-center">
+                  <PhoneIcon size={18} className="text-primary me-2 flex-shrink-0" />
+                  <span className="text-white-50">+1 (555) 123-4567</span>
+                </li>
+                <li className="mb-2 d-flex align-items-center">
+                  <MailIcon size={18} className="text-primary me-2 flex-shrink-0" />
+                  <span className="text-white-50">support@cloudhospitals.ai</span>
+                </li>
+              </ul>
+            </div>
+            {/* <div className="col-lg-3 col-md-6">
+              <h6 className="fw-bold mb-3">Contact Us</h6>
+              <ul className="list-unstyled">
+                <li className="mb-2 d-flex align-items-start">
+                  <MapPinIcon size={18} className="text-primary me-2 mt-1 flex-shrink-0" />
+                  <span className="text-white-50">
                     123 Healthcare Avenue, Medical District, NY 10001
                   </span>
                 </li>
@@ -156,14 +181,21 @@ const Footer = () => {
                   <span className="text-white-50">info@healthcare.com</span>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
 
           {/* Bottom Bar */}
           <div className="row mt-4 pt-3 border-top border-secondary">
             <div className="col-md-6 text-center text-md-start">
               <p className="text-white-50 small mb-0">
-                © {currentYear} HealthCare Management System. All rights reserved.
+                © {currentYear} Cloud Hospitals AI. All rights reserved. Site Maintained by <span>
+                {/* © {currentYear} HealthCare Management System. All rights reserved. Site Maintained by <span> */}
+    <a href="https://pmhstechsolutions.com/" 
+       className="text-blue-500" 
+       target="_blank" 
+       rel="noopener noreferrer">
+        PMHS Tech Solutions
+    </a></span>
               </p>
             </div>
             <div className="col-md-6 text-center text-md-end">

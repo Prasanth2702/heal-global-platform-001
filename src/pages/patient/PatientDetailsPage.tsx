@@ -1054,6 +1054,7 @@
 // export default PatientDetailsPage;
 
 // pages/patient/PatientDetailsPage.tsx
+
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -1264,7 +1265,48 @@ const PatientDetailsPage = () => {
       return "Address format error";
     }
   };
+const getEffectiveDates = (booking: BedBooking) => {
+  const admission =
+    booking.actual_admission_time || booking.expected_admission_date;
 
+  const discharge =
+    booking.actual_discharge_time || booking.expected_discharge_date;
+
+  return {
+    admission: admission ? new Date(admission) : null,
+    discharge: discharge ? new Date(discharge) : null,
+  };
+};
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const currentBookings = bookings.filter((booking) => {
+  const { admission, discharge } = getEffectiveDates(booking);
+
+  const status = booking.status?.toLowerCase();
+
+  // Active if admitted OR upcoming OR not discharged yet
+  return (
+    status === "pending" ||
+    status === "confirmed" ||
+    status === "admitted" ||
+    status === "reserved" ||
+    (admission && admission >= today) ||
+    (discharge && discharge >= today)
+  );
+});
+
+const pastBookings = bookings.filter((booking) => {
+  const { discharge } = getEffectiveDates(booking);
+  const status = booking.status?.toLowerCase();
+
+  return (
+    status === "checked_out" ||
+    status === "cancelled" ||
+    status === "discharged" ||
+    (discharge && discharge < today)
+  );
+});
   const getStatusIcon = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
@@ -1294,6 +1336,8 @@ const PatientDetailsPage = () => {
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "admitted":
         return "bg-green-100 text-green-700 border-green-200";
+        case "in_progress":
+  return "bg-orange-100 text-orange-700 border-orange-200";
       case "discharged":
         return "bg-gray-100 text-gray-700 border-gray-200";
       case "checked_out":
@@ -1353,25 +1397,33 @@ const PatientDetailsPage = () => {
   };
 
   // Filter bookings based on active tab
-  const currentBookings = bookings.filter(
-    (booking) => {
-      const statusLower = booking.status.toLowerCase();
-      return (
-        statusLower === "pending" ||
-        statusLower === "confirmed" ||
-        statusLower === "admitted" ||
-        statusLower === "reserved"
-      );
-    }
-  );
+  // const currentBookings = bookings.filter(
+  //   (booking) => {
+  //     const statusLower = booking.status.toLowerCase();
+  //     return (
+  //       statusLower === "pending" ||
+  //       statusLower === "confirmed" ||
+  //       statusLower === "admitted" ||
+  //       statusLower === "reserved"
+  //     );
+  //   }
+  // );
   
-  const pastBookings = bookings.filter(
-    (booking) => {
-      const statusLower = booking.status.toLowerCase();
-      return statusLower === "checked_out" || statusLower === "cancelled";
-    }
-  );
+  // const pastBookings = bookings.filter(
+  //   (booking) => {
+  //     const statusLower = booking.status.toLowerCase();
+  //     return statusLower === "checked_out" || statusLower === "cancelled";
+  //   }
+  // );
+  
+const getLiveStatus = (booking: BedBooking) => {
+  const { admission, discharge } = getEffectiveDates(booking);
+  const today = new Date();
 
+  if (discharge && discharge < today) return "completed";
+  if (admission && admission <= today) return "admitted";
+  return booking.status;
+};
   const displayedBookings = activeTab === "current" ? currentBookings : pastBookings;
 
   if (loading) {
@@ -1503,7 +1555,13 @@ const PatientDetailsPage = () => {
               </Card>
             ) : (
               displayedBookings.map((booking) => (
-                <Card key={booking.id} className="overflow-hidden">
+                // <Card key={booking.id} className="overflow-hidden">
+                <Card
+  key={booking.id}
+  className={`overflow-hidden ${
+    activeTab === "current" ? "bg-blue-50 border-blue-200" : ""
+  }`}
+>
                   <CardHeader className="bg-gradient-to-r from-gray-50 to-white pb-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
@@ -1622,13 +1680,23 @@ const PatientDetailsPage = () => {
                                 {booking.actual_admission_time && (
                                   <div>
                                     <p className="text-sm text-gray-500">Actual Admission</p>
-                                    <p className="font-medium text-green-600">{formatDate(booking.actual_admission_time)}</p>
+                                    {/* <p className="font-medium text-green-600">{formatDate(booking.actual_admission_time)}</p> */}
+                                    <p className="font-medium">
+  {formatDate(
+    booking.actual_admission_time || booking.expected_admission_date
+  )}
+</p>
                                   </div>
                                 )}
                                 {booking.actual_discharge_time && (
                                   <div>
                                     <p className="text-sm text-gray-500">Actual Discharge</p>
-                                    <p className="font-medium text-gray-600">{formatDate(booking.actual_discharge_time)}</p>
+                                    {/* <p className="font-medium text-gray-600">{formatDate(booking.actual_discharge_time)}</p> */}
+                                    <p className="font-medium">
+  {formatDate(
+    booking.actual_discharge_time || booking.expected_discharge_date
+  )}
+</p>
                                   </div>
                                 )}
                               </div>

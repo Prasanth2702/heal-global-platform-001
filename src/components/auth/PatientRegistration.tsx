@@ -2365,6 +2365,28 @@ const { data: existingProfile, error: checkError } = await supabase
         dateOfBirth = format(date, 'yyyy-MM-dd');
       }
 
+        if (profileImage) {
+          const { data: existingProfile, error: checkError } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('id', userId)
+                        .maybeSingle();
+                  
+                      let profileUpdateError;
+                      
+                      await supabase
+          .from('profiles')
+          .update({ 
+            avatar_url: profileImage 
+          })
+        .eq('email', formData.emailAddress);
+
+        if (profileUpdateError) {
+          console.error('Error updating profile avatar:', profileUpdateError);
+          // Continue with patient data save even if avatar update fails
+        }
+      }
+
       // Save Step 2, 3, 4 data together
       const { error: patientError } = await supabase
         .from('patients')

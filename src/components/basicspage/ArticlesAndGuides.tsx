@@ -92,7 +92,7 @@ const PatientsGuideSection = () => {
   const guides = [
     {
       id: 1,
-      title: "How to Book an Appointment on HealGlobe.com",
+      title: "How to Book an Appointment on cloudhospitals.ai",
       category: "patients",
       excerpt:
         "Learn how to easily book doctor appointments online, choose your preferred time slot, and manage your healthcare visits.",
@@ -100,9 +100,9 @@ const PatientsGuideSection = () => {
       readTime: "3 min read",
       content: {
         introduction:
-          "Booking appointments through HealGlobe.com is simple and convenient. Follow these steps to schedule your next visit:",
+          "Booking appointments through cloudhospitals.ai is simple and convenient. Follow these steps to schedule your next visit:",
         steps: [
-          "Log in to your HealGlobe.com account",
+          "Log in to your cloudhospitals.ai account",
           "Search for doctors by specialty, location, or hospital name",
           "View doctor profiles, patient reviews, and available time slots",
           "Select a convenient time slot that works for you",
@@ -122,7 +122,7 @@ const PatientsGuideSection = () => {
       readTime: "4 min read",
       content: {
         introduction:
-          "HealGlobe.com makes bed reservations simple. Here's how to secure a bed for your hospital stay:",
+          "cloudhospitals.ai makes bed reservations simple. Here's how to secure a bed for your hospital stay:",
         steps: [
           "Search for hospitals by location and bed type (ICU, General Ward, Private Room)",
           "Check real-time bed availability and estimated costs",
@@ -144,7 +144,7 @@ const PatientsGuideSection = () => {
       readTime: "3 min read",
       content: {
         introduction:
-          "Get your health checkups done easily through HealGlobe.com:",
+          "Get your health checkups done easily through cloudhospitals.ai:",
         steps: [
           "Browse available diagnostic tests and health packages",
           "Select your preferred lab or diagnostic center",
@@ -258,7 +258,7 @@ const MedicalProfessionalsGuideSection = () => {
   const guides = [
     {
       id: 1,
-      title: "Setting Up Your Doctor Profile on HealGlobe.com",
+      title: "Setting Up Your Doctor Profile on cloudhospitals.ai",
       category: "doctors",
       excerpt:
         "Create a professional profile to attract patients, manage appointments, and build your online presence.",
@@ -268,7 +268,7 @@ const MedicalProfessionalsGuideSection = () => {
         introduction:
           "A complete doctor profile helps patients find and trust you. Follow these steps:",
         steps: [
-          "Register as a healthcare provider on HealGlobe.com",
+          "Register as a healthcare provider on cloudhospitals.ai",
           "Submit your medical credentials and license for verification",
           "Add your specialties, qualifications, and years of experience",
           "Upload a professional photo and write a compelling bio",
@@ -310,7 +310,7 @@ const MedicalProfessionalsGuideSection = () => {
       readTime: "4 min read",
       content: {
         introduction:
-          "HealGlobe.com makes telemedicine easy. Here's how to conduct virtual consultations:",
+          "cloudhospitals.ai makes telemedicine easy. Here's how to conduct virtual consultations:",
         steps: [
           "Ensure you have a stable internet connection and webcam",
           "Join video consultations directly from your dashboard",
@@ -403,7 +403,7 @@ const FacilitiesGuideSection = () => {
   const guides = [
     {
       id: 1,
-      title: "Listing Your Hospital on HealGlobe.com",
+      title: "Listing Your Hospital on cloudhospitals.ai",
       category: "hospitals",
       excerpt:
         "Complete guide to adding your healthcare facility, managing bed inventory, and attracting patients.",
@@ -411,7 +411,7 @@ const FacilitiesGuideSection = () => {
       readTime: "5 min read",
       content: {
         introduction:
-          "Get your hospital or clinic listed on HealGlobe.com with these steps:",
+          "Get your hospital or clinic listed on cloudhospitals.ai with these steps:",
         steps: [
           "Register your facility with official credentials and licenses",
           "Complete facility profile with contact details and location",
@@ -549,7 +549,7 @@ const AccountFAQs = () => {
     {
       id: "faq-1",
       category: "Account",
-      title: "How do I create a patient account on HealGlobe?",
+      title: "How do I create a patient account on cloudhospitals.ai?",
       readTime: "2 min read",
       icon: <User className="h-5 w-5" />,
       excerpt:
@@ -557,7 +557,7 @@ const AccountFAQs = () => {
       content: {
         introduction: "Follow these steps to create your account easily:",
         steps: [
-          "Visit HealGlobe.com and click 'Sign Up'",
+          "Visit cloudhospitals.ai and click 'Sign Up'",
           "Enter your name, email, phone number, and create a password",
           "Verify your email through the link sent to your inbox",
           "Complete your profile with basic information",
@@ -574,7 +574,7 @@ const AccountFAQs = () => {
       readTime: "3 min read",
       icon: <Stethoscope className="h-5 w-5" />,
       excerpt:
-        "Step-by-step guide to creating a professional account on HealGlobe.",
+        "Step-by-step guide to creating a professional account on cloudhospitals.",
       content: {
         introduction: "Healthcare providers need additional verification:",
         steps: [
@@ -604,7 +604,7 @@ const AccountFAQs = () => {
           "Click the link and create a new password",
           "Ensure your new password has at least 8 characters with a mix of letters and numbers",
           "Log in with your new password",
-          "If issues continue, contact support@healglobe.com",
+          "If issues continue, contact support@cloudhospitals.ai",
         ],
       },
     },
@@ -708,7 +708,7 @@ const PaymentFAQs = () => {
     },
     {
       id: 4,
-      question: "Is my payment information secure on HealGlobe?",
+      question: "Is my payment information secure on cloudhospitals?",
       answer:
         "Yes, we use industry-standard encryption and secure payment gateways. We are PCI-DSS compliant and never store your complete card details on our servers. All transactions are processed through secure, verified payment partners.",
       icon: <Shield className="h-5 w-5" />,
@@ -727,10 +727,10 @@ const PaymentFAQs = () => {
         <>
           For payment-related issues, please email{" "}
           <a
-            href="mailto:payments@healglobe.com"
+            href="mailto:payments@cloudhospitals.ai"
             className="text-blue-600 underline"
           >
-            payments@healglobe.com
+            payments@cloudhospitals.ai
           </a>{" "}
           with your transaction ID, booking details, and screenshots if available.
           Our team typically responds within 24 hours.
@@ -771,7 +771,7 @@ const ArticlesAndGuides = () => {
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Everything you need to know about booking appointments, reserving beds,
-              and managing your healthcare on HealGlobe.com
+              and managing your healthcare on cloudhospitals.ai
             </p>
           </div>
 
@@ -859,7 +859,7 @@ const ArticlesAndGuides = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="mailto:support@healglobe.com"
+                  href="mailto:support@cloudhospitals.ai"
                   className="px-8 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5"
                 >
                   Email Support

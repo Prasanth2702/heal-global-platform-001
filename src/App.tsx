@@ -67,10 +67,44 @@ import DepartmentDetailsFacility from "./components/patient/DepartmentDetailsFac
 import StaffDashboardPage from "./pages/StaffDashboardPage";
 import ViewFacilityStaff from "./pages/facility/ViewFacilityStaff";
 import ViewFacilityPage from "./pages/facility/ViewFacilityPage";
+import { useEffect } from "react";
+import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
 
+const useAutoLogout = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const loginTime = localStorage.getItem("loginTime");
+
+      if (!loginTime) return;
+
+      const diff = Date.now() - Number(loginTime);
+
+      if (diff > 5 * 60 * 60 * 1000) {
+        await supabase.auth.signOut();
+
+        localStorage.clear();
+
+        alert("Session expired");
+
+        navigate("/login/patient");
+      }
+    };
+
+    checkSession();
+    const interval = setInterval(checkSession, 60000);
+
+    return () => clearInterval(interval);
+  }, [navigate]);
+};
+const AutoLogoutWrapper = () => {
+  useAutoLogout();
+  return null;
+};
 // 🔥ADDED
 const DoctorProfilePage = () => {
   const navigate = useNavigate();
@@ -104,6 +138,7 @@ const App = () => {
               <Sonner />
               {/* <InstallPrompt /> */}
               <BrowserRouter>
+              <AutoLogoutWrapper/>
               {/* <Location/> */}
                 <Routes>
                   <Route path="/" element={<Index />} />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1 } from "lucide-react";
+import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1, User } from "lucide-react";
 import DepartmentManagement from "@/components/hospital/DepartmentManagement";
 import StaffManagement from "@/components/hospital/StaffManagement";
 import TimeSlotManagement from "@/components/hospital/TimeSlotManagement";
@@ -17,6 +17,7 @@ import { useLocation, useNavigate } from "react-router";
 import FacilityAppointmentManagement from "@/components/facility/FacilityAppointmentManagement";
 import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import StaffProfile from "../hospital/StaffProfile";
 
 interface Appointment {
   id: string;
@@ -493,6 +494,7 @@ useEffect(() => {
 //   else if (path.includes('/facilitics')) setActiveTab('facilitics');
 //   else 
     if (path.includes('/appointments')) setActiveTab('appointments');
+    else  if (path.includes('/profile')) setActiveTab('profile');
   else setActiveTab('overview');
 }, [location.pathname]);
 
@@ -600,13 +602,17 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
             <span className="hidden sm:inline">Inventory</span>
           </TabsTrigger>
           <TabsTrigger value="facilitics" className="flex items-center space-x-2" onClick={() => trackButtonClick("Facility Tab")}>
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Facility</span>
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline">Facility</span>
           </TabsTrigger> */}
           {/* <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
-          </TabsTrigger> */}
+            </TabsTrigger> */}
+            <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("profile")}>
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">My Profile</span>
+            </TabsTrigger>
         </TabsList>
         {/* <TabsContent value="profile">
           <FacilityProfile />
@@ -693,6 +699,9 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
 
         <TabsContent value="staff">
           <StaffManagement />
+        </TabsContent>
+        <TabsContent value="profile">
+          <StaffProfile />
         </TabsContent>
         <TabsContent value="appointments">
           <FacilityAppointmentManagement />

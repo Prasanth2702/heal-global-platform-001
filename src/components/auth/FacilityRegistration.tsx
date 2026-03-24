@@ -2625,6 +2625,28 @@ const FacilityRegistration = () => {
         homeVisit: formData.homeVisit
       };
 
+        if (profileImage) {
+                 const { data: existingProfile, error: checkError } = await supabase
+                               .from('profiles')
+                               .select('id')
+                               .eq('id', userId)
+                               .maybeSingle();
+                         
+                             let profileUpdateError;
+                             
+                             await supabase
+                 .from('profiles')
+                 .update({ 
+                   avatar_url: profileImage 
+                 })
+                 .eq('email', formData.emailAddress);
+
+        if (profileUpdateError) {
+          console.error('Error updating profile avatar:', profileUpdateError);
+          // Continue with patient data save even if avatar update fails
+        }
+      }
+
       const { error: facilityError } = await supabase
         .from('facilities')
         .update({

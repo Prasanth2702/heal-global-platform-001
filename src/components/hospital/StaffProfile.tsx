@@ -321,7 +321,7 @@ const StaffProfile: React.FC = () => {
       newErrors.email = 'Invalid email address';
       valid = false;
     }
-    if (!data.phoneNumber || !isValidPhoneNumber(data.phoneNumber)) {
+    if (!data.phoneNumber ) {
       newErrors.phoneNumber = 'Invalid phone number';
       valid = false;
     }
@@ -703,12 +703,12 @@ const StaffProfile: React.FC = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+        {/* <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="department">Department</TabsTrigger>
           <TabsTrigger value="facility">Facility</TabsTrigger>
           <TabsTrigger value="staff">Staff Management</TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         {/* Profile Tab */}
         <TabsContent value="profile">
@@ -760,7 +760,8 @@ const StaffProfile: React.FC = () => {
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Employee ID</Label>
-                  {isEditing ? (
+                  <p className="mt-2 p-3 bg-gray-50 rounded-lg">{staffProfile.employeeId}</p>
+                  {/* {isEditing ? (
                     <Input
                       value={staffProfile.employeeId}
                       onChange={(e) => setStaffProfile(prev => ({ ...prev, employeeId: e.target.value }))}
@@ -768,7 +769,7 @@ const StaffProfile: React.FC = () => {
                     />
                   ) : (
                     <p className="mt-2 p-3 bg-gray-50 rounded-lg">{staffProfile.employeeId}</p>
-                  )}
+                  )} */}
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Position</Label>
@@ -797,7 +798,7 @@ const StaffProfile: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div>
+                {/* <div>
                   <Label className="text-sm font-semibold">Salary</Label>
                   {isEditing ? (
                     <Input
@@ -811,11 +812,11 @@ const StaffProfile: React.FC = () => {
                       ${staffProfile.salary?.toLocaleString()}
                     </p>
                   )}
-                </div>
+                </div> */}
               </div>
 
               {/* Shift Schedule */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <Label className="text-sm font-semibold">Shift Schedule</Label>
                 <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
@@ -839,18 +840,18 @@ const StaffProfile: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
-        </TabsContent>
+        {/* </TabsContent> */}
 
         {/* Department Tab */}
-        <TabsContent value="department">
-          <Card className="border-0 shadow-lg">
+        {/* <TabsContent value="department"> */}
+          <Card className="border-0 shadow-lg mt-4">
             <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-xl">Department Information</CardTitle>
-                {facility && (
+                {/* {facility && (
                   <Dialog open={isAddDepartmentOpen} onOpenChange={setIsAddDepartmentOpen}>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="sm">
@@ -911,7 +912,7 @@ const StaffProfile: React.FC = () => {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -927,7 +928,7 @@ const StaffProfile: React.FC = () => {
                 </div>
               )}
 
-              <h3 className="font-semibold text-lg mb-4">All Departments</h3>
+              {/* <h3 className="font-semibold text-lg mb-4">All Departments</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {departments.map((dept) => (
                   <Card key={dept.id} className="relative overflow-hidden">
@@ -955,14 +956,14 @@ const StaffProfile: React.FC = () => {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+              </div> */}
             </CardContent>
           </Card>
-        </TabsContent>
+        {/* </TabsContent> */}
 
         {/* Facility Tab */}
-        <TabsContent value="facility">
-          <Card className="border-0 shadow-lg">
+        {/* <TabsContent value="facility"> */}
+          <Card className="border-0 shadow-lg mt-4">
             <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
               <CardTitle className="text-xl">Facility Information</CardTitle>
             </CardHeader>
@@ -984,14 +985,14 @@ const StaffProfile: React.FC = () => {
                         {facility.address}, {facility.city}, {facility.state} - {facility.pincode}
                       </p>
                     </div>
-                    <div>
+                    {/* <div>
                       <Label className="text-sm font-semibold">Total Beds</Label>
                       <p className="mt-2 p-3 bg-gray-50 rounded-lg">{facility.totalBeds}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-semibold">Total Departments</Label>
                       <p className="mt-2 p-3 bg-gray-50 rounded-lg">{departments.length}</p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               ) : (
@@ -1002,7 +1003,7 @@ const StaffProfile: React.FC = () => {
         </TabsContent>
 
         {/* Staff Management Tab */}
-        <TabsContent value="staff">
+        {/* <TabsContent value="staff">
           <Card className="border-0 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
               <div className="flex justify-between items-center">
@@ -1118,7 +1119,7 @@ const StaffProfile: React.FC = () => {
               </Table>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

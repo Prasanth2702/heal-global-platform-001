@@ -159,7 +159,7 @@ const Header = () => {
     { name: 'Home', path: '/', icon: <Home size={18} /> },
     { name: 'About', path: '/about', icon: <User size={18} /> },
     { name: 'Find Doctors / Specialists', path: '/appointment/doctors', icon: <Stethoscope size={18} /> },
-    { name: 'Find Facility / Services ', path: '/appointment/facility', icon: <Building2 size={18} /> },
+    { name: 'Find Facility / Services ', path: '/appointment/hospitals', icon: <Building2 size={18} /> },
     { name: 'Find Beds', path: '/appointment/beds', icon: <Calendar size={18} /> },
   ];
 
@@ -173,7 +173,7 @@ const Header = () => {
     <div className="bg-white shadow-sm sticky top-0 z-50">
       <nav className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-20 items-center justify-between">
             {/* Logo */}
             <Link 
               to="/" 
@@ -185,9 +185,20 @@ const Header = () => {
                 alt="NextGen Medical"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-md object-contain"
               /> */}
-              <span className="text-lg sm:text-xl font-bold truncate max-w-[150px] sm:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
-                NextGen Medical
+              <img
+                src="/Gemini.png"
+                alt="Cloud Hospitals"
+                className="h-10 w-10 sm:h-20 sm:w-20 rounded-md object-contain"
+              />
+              <span className="text-lg sm:text-xl font-bold truncate max-w-[200px] sm:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
+                CloudHospitals.ai
               </span>
+              {/* <span className="text-lg sm:text-xl font-bold truncate max-w-[200px] sm:max-w-none 
+bg-gradient-to-r from-[#1e6fa8] via-[#2bb3c0] to-[#5ed6c5] 
+bg-clip-text text-transparent 
+drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+  Cloud Hospitals - Ai
+</span> */}
             </Link>
 
             {/* Desktop Navigation Links - Hidden on mobile */}

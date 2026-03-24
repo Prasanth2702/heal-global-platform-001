@@ -112,7 +112,7 @@ const RefundPolicy = () => {
                   To cancel an appointment or request a refund:
                 </p>
                 <ol className="list-decimal pl-6 text-gray-700 space-y-1">
-                  <li>Log in to your HealGlobe.com account</li>
+                  <li>Log in to your cloudhospitals.ai account</li>
                   <li>Go to "My Bookings" section</li>
                   <li>Select the booking you wish to cancel</li>
                   <li>Click on "Cancel Booking" and follow the instructions</li>
@@ -125,7 +125,7 @@ const RefundPolicy = () => {
                   9. Policy Acceptance
                 </h2>
                 <p className="text-gray-700">
-                  By booking appointments, beds, or diagnostic tests through HealGlobe.com, you acknowledge and agree to this Cancellation & Refund Policy. Different healthcare providers may have slightly varying cancellation policies, which will be clearly displayed at the time of booking.
+                  By booking appointments, beds, or diagnostic tests through cloudhospitals.ai, you acknowledge and agree to this Cancellation & Refund Policy. Different healthcare providers may have slightly varying cancellation policies, which will be clearly displayed at the time of booking.
                 </p>
               </div>
 
@@ -147,19 +147,19 @@ const RefundPolicy = () => {
                   <p>
                     <strong>Email:</strong>{" "}
                     <a
-                      href="mailto:refunds@healglobe.com"
+                      href="mailto:refunds@cloudhospitals.ai"
                       className="text-blue-600 hover:underline"
                     >
-                      refunds@healglobe.com
+                      refunds@cloudhospitals.ai
                     </a>
                   </p>
                   <p>
                     <strong>Support:</strong>{" "}
                     <a
-                      href="mailto:support@healglobe.com"
+                      href="mailto:support@cloudhospitals.ai"
                       className="text-blue-600 hover:underline"
                     >
-                      support@healglobe.com
+                      support@cloudhospitals.ai
                     </a>
                   </p>
                   <p>

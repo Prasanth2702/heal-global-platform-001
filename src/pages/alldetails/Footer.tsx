@@ -39,6 +39,7 @@ import {
   Ambulance
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logoFootor from "@/image/image.png";
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -74,7 +75,7 @@ const Footer = () => {
               className="h-8 w-8 rounded-md object-contain mt-1"
             /> */}
             <img
-              src="/image.png"
+              src={logoFootor}
               alt="Cloud Hospitals"
               className="h-30 w-30 rounded-md object-contain mt-1"
             />

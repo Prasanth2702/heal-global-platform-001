@@ -2155,48 +2155,85 @@ const PatientRegistration = () => {
   }, []);
 
   // Country/State/City effects
-  useEffect(() => {
-    if (formData.country_code) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      if (selectedCountry) {
-        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        setStates(countryStates);
-        if (!countryStates.find(s => s.isoCode === formData.state)) {
-          setFormData(prev => ({ ...prev, state: '', city: '' }));
-          setCities([]);
-        }
-      } else {
-        setStates([]);
-        setCities([]);
-      }
+  // useEffect(() => {
+  //   if (formData.country_code) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     if (selectedCountry) {
+  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+  //       setStates(countryStates);
+  //       if (!countryStates.find(s => s.isoCode === formData.state)) {
+  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
+  //         setCities([]);
+  //       }
+  //     } else {
+  //       setStates([]);
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setStates([]);
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, countries]);
+
+  // useEffect(() => {
+  //   if (formData.country_code && formData.state) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     const selectedState = states.find(s => s.name === formData.state);
+      
+  //     if (selectedCountry && selectedState) {
+  //       const countryCities = City.getCitiesOfState(
+  //         selectedCountry.isoCode, 
+  //         selectedState.isoCode
+  //       );
+  //       setCities(countryCities);
+  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
+  //         setFormData(prev => ({ ...prev, city: '' }));
+  //       }
+  //     } else {
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, formData.state, countries, states]);
+// Fix the first useEffect - remove the state reset that causes loops
+useEffect(() => {
+  if (formData.country_code && countries.length > 0) {
+    const selectedCountry = countries.find(c => c.name === formData.country_code);
+    if (selectedCountry) {
+      const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+      setStates(countryStates);
+      // Remove the automatic state reset - this causes infinite loops
     } else {
       setStates([]);
       setCities([]);
     }
-  }, [formData.country_code, countries]);
+  } else {
+    setStates([]);
+    setCities([]);
+  }
+}, [formData.country_code, countries]);
 
-  useEffect(() => {
-    if (formData.country_code && formData.state) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      const selectedState = states.find(s => s.name === formData.state);
-      
-      if (selectedCountry && selectedState) {
-        const countryCities = City.getCitiesOfState(
-          selectedCountry.isoCode, 
-          selectedState.isoCode
-        );
-        setCities(countryCities);
-        if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-          setFormData(prev => ({ ...prev, city: '' }));
-        }
-      } else {
-        setCities([]);
-      }
+// Fix the second useEffect - remove the automatic city reset
+useEffect(() => {
+  if (formData.country_code && formData.state && states.length > 0 && countries.length > 0) {
+    const selectedCountry = countries.find(c => c.name === formData.country_code);
+    const selectedState = states.find(s => s.name === formData.state);
+    
+    if (selectedCountry && selectedState) {
+      const countryCities = City.getCitiesOfState(
+        selectedCountry.isoCode, 
+        selectedState.isoCode
+      );
+      setCities(countryCities);
+      // Remove the automatic city reset that causes loops
     } else {
       setCities([]);
     }
-  }, [formData.country_code, formData.state, countries, states]);
-
+  } else {
+    setCities([]);
+  }
+}, [formData.country_code, formData.state, countries, states]);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 

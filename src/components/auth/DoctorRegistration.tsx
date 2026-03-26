@@ -2217,45 +2217,81 @@ const DoctorRegistration = () => {
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
-  useEffect(() => {
-    if (formData.country_code) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      if (selectedCountry) {
-        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        setStates(countryStates);
-        if (!countryStates.find(s => s.isoCode === formData.state)) {
-          setFormData(prev => ({ ...prev, state: '', city: '' }));
-          setCities([]);
-        }
-      } else {
-        setStates([]);
-        setCities([]);
-      }
+  // useEffect(() => {
+  //   if (formData.country_code) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     if (selectedCountry) {
+  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+  //       setStates(countryStates);
+  //       if (!countryStates.find(s => s.isoCode === formData.state)) {
+  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
+  //         setCities([]);
+  //       }
+  //     } else {
+  //       setStates([]);
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setStates([]);
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, countries]);
+
+  // useEffect(() => {
+  //   if (formData.country_code && formData.state) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     const selectedState = states.find(s => s.name === formData.state);
+      
+  //     if (selectedCountry && selectedState) {
+  //       const countryCities = City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode);
+  //       setCities(countryCities);
+  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
+  //         setFormData(prev => ({ ...prev, city: '' }));
+  //       }
+  //     } else {
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, formData.state, countries, states]);
+// Remove the incorrect useEffect hooks and replace with these:
+
+useEffect(() => {
+  if (formData.country_code && countries.length > 0) {
+    const selectedCountry = countries.find(c => c.name === formData.country_code);
+    if (selectedCountry) {
+      const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+      setStates(countryStates);
+      // Don't reset state automatically
     } else {
       setStates([]);
       setCities([]);
     }
-  }, [formData.country_code, countries]);
+  } else {
+    setStates([]);
+    setCities([]);
+  }
+}, [formData.country_code, countries]);
 
-  useEffect(() => {
-    if (formData.country_code && formData.state) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      const selectedState = states.find(s => s.name === formData.state);
-      
-      if (selectedCountry && selectedState) {
-        const countryCities = City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode);
-        setCities(countryCities);
-        if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-          setFormData(prev => ({ ...prev, city: '' }));
-        }
-      } else {
-        setCities([]);
-      }
+useEffect(() => {
+  if (formData.country_code && formData.state && states.length > 0 && countries.length > 0) {
+    const selectedCountry = countries.find(c => c.name === formData.country_code);
+    const selectedState = states.find(s => s.name === formData.state);
+    
+    if (selectedCountry && selectedState) {
+      const countryCities = City.getCitiesOfState(
+        selectedCountry.isoCode, 
+        selectedState.isoCode
+      );
+      setCities(countryCities);
     } else {
       setCities([]);
     }
-  }, [formData.country_code, formData.state, countries, states]);
-
+  } else {
+    setCities([]);
+  }
+}, [formData.country_code, formData.state, countries, states]);
   const validateStep1 = () => {
     const errors: { [key: string]: string } = {};
     let valid = true;
@@ -3031,7 +3067,162 @@ await supabase
       </div>
     </div>
   );
+const renderStep2 = () => {
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [filteredCities, setFilteredCities] = useState<any[]>([]);
 
+  // Filter cities based on search term
+  useEffect(() => {
+    if (citySearchTerm.trim() === '') {
+      setFilteredCities(cities);
+    } else {
+      const filtered = cities.filter((city) =>
+        city.name.toLowerCase().includes(citySearchTerm.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [citySearchTerm, cities]);
+
+  return (
+    <div className="space-y-5">
+      <div className="text-center mb-6">
+        <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+          Step 2: Address Information
+        </h3>
+        <p className="text-sm text-gray-500">Where is your practice located?</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">Address</Label>
+        <Textarea
+          id="address"
+          value={formData.address}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          className={`border-2 ${errors.address ? "border-red-500" : "border-gray-200"}`}
+          placeholder="Enter your complete address"
+          rows={3}
+        />
+        {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="country" className="label-required">Country</Label>
+          <select
+            id="country"
+            value={formData.country_code || ''}
+            onChange={(e) => {
+              const selectedCountry = e.target.value;
+              setFormData({ 
+                ...formData, 
+                country_code: selectedCountry,
+                state: '',
+                city: ''
+              });
+              setCitySearchTerm('');
+            }}
+            className={`w-full p-2 border rounded ${errors.country_code ? "border-red-500" : "border-gray-200"}`}
+          >
+            <option value="">Select Country</option>
+            {countries && countries.length > 0 ? (
+              countries.map((country) => (
+                <option key={country.isoCode} value={country.name}>
+                  {country.name}
+                </option>
+              ))
+            ) : (
+              <option disabled>Loading countries...</option>
+            )}
+          </select>
+          {errors.country_code && <p className="text-red-500 text-sm">{errors.country_code}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="state" className="label-required">State</Label>
+          <select
+            id="state"
+            value={formData.state || ''}
+            onChange={(e) => {
+              const selectedState = e.target.value;
+              setFormData({ ...formData, state: selectedState, city: '' });
+              setCitySearchTerm('');
+            }}
+            className={`w-full p-2 border rounded ${errors.state ? "border-red-500" : "border-gray-200"}`}
+            disabled={!formData.country_code}
+          >
+            <option value="">Select State</option>
+            {states && states.length > 0 ? (
+              states.map((state) => (
+                <option key={state.isoCode} value={state.name}>
+                  {state.name}
+                </option>
+              ))
+            ) : (
+              <option disabled>Select country first</option>
+            )}
+          </select>
+          {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="city" className="label-required">City</Label>
+          <div className="relative">
+            <Input
+              id="city"
+              type="text"
+              value={citySearchTerm}
+              onChange={(e) => {
+                setCitySearchTerm(e.target.value);
+                const exactMatch = cities.find(
+                  (city) => city.name.toLowerCase() === e.target.value.toLowerCase()
+                );
+                if (exactMatch) {
+                  setFormData({ ...formData, city: exactMatch.name });
+                } else if (e.target.value === '') {
+                  setFormData({ ...formData, city: '' });
+                }
+              }}
+              placeholder={!formData.state ? "Select state first" : "Search and select city"}
+              className={`border-2 ${errors.city ? "border-red-500" : "border-gray-200"}`}
+              disabled={!formData.state}
+              autoComplete="off"
+            />
+            {citySearchTerm && filteredCities.length > 0 && formData.state && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {filteredCities.map((city) => (
+                  <div
+                    key={city.name}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                    onClick={() => {
+                      setFormData({ ...formData, city: city.name });
+                      setCitySearchTerm(city.name);
+                    }}
+                  >
+                    {city.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+        </div>
+
+        <div>
+          <Label className="label-required" htmlFor="pincode">Pincode</Label>
+          <Input
+            id="pincode"
+            value={formData.pincode}
+            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+            className={errors.pincode ? "border-red-500" : ""}
+          />
+          {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
   // const renderStep2 = () => (
   //   <div className="space-y-5">
   //     <div className="text-center mb-6">
@@ -3130,165 +3321,165 @@ await supabase
   //     </div>
   //   </div>
   // );
-const renderStep2 = () => {
-  const [citySearchTerm, setCitySearchTerm] = useState('');
-  const [filteredCities, setFilteredCities] = useState([]);
+// const renderStep2 = () => {
+//   const [citySearchTerm, setCitySearchTerm] = useState('');
+//   const [filteredCities, setFilteredCities] = useState([]);
 
-  // Filter cities based on search term
-  useEffect(() => {
-    if (citySearchTerm.trim() === '') {
-      setFilteredCities(cities);
-    } else {
-      const filtered = cities.filter((city) =>
-        city.name.toLowerCase().includes(citySearchTerm.toLowerCase())
-      );
-      setFilteredCities(filtered);
-    }
-  }, [citySearchTerm, cities]);
+//   // Filter cities based on search term
+//   useEffect(() => {
+//     if (citySearchTerm.trim() === '') {
+//       setFilteredCities(cities);
+//     } else {
+//       const filtered = cities.filter((city) =>
+//         city.name.toLowerCase().includes(citySearchTerm.toLowerCase())
+//       );
+//       setFilteredCities(filtered);
+//     }
+//   }, [citySearchTerm, cities]);
 
-  return (
-    <div className="space-y-5">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-          Step 2: Address Information
-        </h3>
-        <p className="text-sm text-gray-500">Where is your practice located?</p>
-      </div>
+//   return (
+//     <div className="space-y-5">
+//       <div className="text-center mb-6">
+//         <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+//           Step 2: Address Information
+//         </h3>
+//         <p className="text-sm text-gray-500">Where is your practice located?</p>
+//       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">Address</Label>
-        <Textarea
-          id="address"
-          value={formData.address}
-          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          className={`border-2 ${errors.address ? "border-red-500" : "border-gray-200"}`}
-          placeholder="Enter your complete address"
-          rows={3}
-        />
-        {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
-      </div>
+//       <div className="space-y-2">
+//         <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">Address</Label>
+//         <Textarea
+//           id="address"
+//           value={formData.address}
+//           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+//           className={`border-2 ${errors.address ? "border-red-500" : "border-gray-200"}`}
+//           placeholder="Enter your complete address"
+//           rows={3}
+//         />
+//         {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
+//       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="country" className="label-required">Country</Label>
-          <select
-            id="country"
-            value={formData.country_code || ''}
-            onChange={(e) => {
-              const selectedCountry = e.target.value;
-              setFormData({ 
-                ...formData, 
-                country_code: selectedCountry,
-                state: '',
-                city: ''
-              });
-              // Reset search term when country changes
-              setCitySearchTerm('');
-            }}
-            className={`w-full p-2 border rounded ${errors.country_code ? "border-red-500" : "border-gray-200"}`}
-          >
-            <option value="">Select Country</option>
-            {countries && countries.length > 0 ? (
-              countries.map((country) => (
-                <option key={country.isoCode} value={country.name}>
-                  {country.name}
-                </option>
-              ))
-            ) : (
-              <option disabled>Loading countries...</option>
-            )}
-          </select>
-          {errors.country_code && <p className="text-red-500 text-sm">{errors.country_code}</p>}
-        </div>
+//       <div className="grid grid-cols-2 gap-4">
+//         <div className="space-y-2">
+//           <Label htmlFor="country" className="label-required">Country</Label>
+//           <select
+//             id="country"
+//             value={formData.country_code || ''}
+//             onChange={(e) => {
+//               const selectedCountry = e.target.value;
+//               setFormData({ 
+//                 ...formData, 
+//                 country_code: selectedCountry,
+//                 state: '',
+//                 city: ''
+//               });
+//               // Reset search term when country changes
+//               setCitySearchTerm('');
+//             }}
+//             className={`w-full p-2 border rounded ${errors.country_code ? "border-red-500" : "border-gray-200"}`}
+//           >
+//             <option value="">Select Country</option>
+//             {countries && countries.length > 0 ? (
+//               countries.map((country) => (
+//                 <option key={country.isoCode} value={country.name}>
+//                   {country.name}
+//                 </option>
+//               ))
+//             ) : (
+//               <option disabled>Loading countries...</option>
+//             )}
+//           </select>
+//           {errors.country_code && <p className="text-red-500 text-sm">{errors.country_code}</p>}
+//         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="state" className="label-required">State</Label>
-          <select
-            id="state"
-            value={formData.state || ''}
-            onChange={(e) => {
-              const selectedState = e.target.value;
-              setFormData({ ...formData, state: selectedState, city: '' });
-              // Reset search term when state changes
-              setCitySearchTerm('');
-            }}
-            className={`w-full p-2 border rounded ${errors.state ? "border-red-500" : "border-gray-200"}`}
-            disabled={!formData.country_code}
-          >
-            <option value="">Select State</option>
-            {states && states.length > 0 ? (
-              states.map((state) => (
-                <option key={state.isoCode} value={state.name}>
-                  {state.name}
-                </option>
-              ))
-            ) : (
-              <option disabled>Select country first</option>
-            )}
-          </select>
-          {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
-        </div>
-      </div>
+//         <div className="space-y-2">
+//           <Label htmlFor="state" className="label-required">State</Label>
+//           <select
+//             id="state"
+//             value={formData.state || ''}
+//             onChange={(e) => {
+//               const selectedState = e.target.value;
+//               setFormData({ ...formData, state: selectedState, city: '' });
+//               // Reset search term when state changes
+//               setCitySearchTerm('');
+//             }}
+//             className={`w-full p-2 border rounded ${errors.state ? "border-red-500" : "border-gray-200"}`}
+//             disabled={!formData.country_code}
+//           >
+//             <option value="">Select State</option>
+//             {states && states.length > 0 ? (
+//               states.map((state) => (
+//                 <option key={state.isoCode} value={state.name}>
+//                   {state.name}
+//                 </option>
+//               ))
+//             ) : (
+//               <option disabled>Select country first</option>
+//             )}
+//           </select>
+//           {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
+//         </div>
+//       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="city" className="label-required">City</Label>
-          <div className="relative">
-            <Input
-              id="city"
-              type="text"
-              value={citySearchTerm}
-              onChange={(e) => {
-                setCitySearchTerm(e.target.value);
-                // If search term matches exactly a city name, update form data
-                const exactMatch = cities.find(
-                  (city) => city.name.toLowerCase() === e.target.value.toLowerCase()
-                );
-                if (exactMatch) {
-                  setFormData({ ...formData, city: exactMatch.name });
-                } else if (e.target.value === '') {
-                  setFormData({ ...formData, city: '' });
-                }
-              }}
-              placeholder="Search and select city"
-              className={`border-2 ${errors.city ? "border-red-500" : "border-gray-200"}`}
-              disabled={!formData.state}
-              autoComplete="off"
-            />
-            {citySearchTerm && filteredCities.length > 0 && formData.state && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                {filteredCities.map((city) => (
-                  <div
-                    key={city.name}
-                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                    onClick={() => {
-                      setFormData({ ...formData, city: city.name });
-                      setCitySearchTerm(city.name);
-                    }}
-                  >
-                    {city.name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-        </div>
+//       <div className="grid grid-cols-2 gap-4">
+//         <div className="space-y-2">
+//           <Label htmlFor="city" className="label-required">City</Label>
+//           <div className="relative">
+//             <Input
+//               id="city"
+//               type="text"
+//               value={citySearchTerm}
+//               onChange={(e) => {
+//                 setCitySearchTerm(e.target.value);
+//                 // If search term matches exactly a city name, update form data
+//                 const exactMatch = cities.find(
+//                   (city) => city.name.toLowerCase() === e.target.value.toLowerCase()
+//                 );
+//                 if (exactMatch) {
+//                   setFormData({ ...formData, city: exactMatch.name });
+//                 } else if (e.target.value === '') {
+//                   setFormData({ ...formData, city: '' });
+//                 }
+//               }}
+//               placeholder="Search and select city"
+//               className={`border-2 ${errors.city ? "border-red-500" : "border-gray-200"}`}
+//               disabled={!formData.state}
+//               autoComplete="off"
+//             />
+//             {citySearchTerm && filteredCities.length > 0 && formData.state && (
+//               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+//                 {filteredCities.map((city) => (
+//                   <div
+//                     key={city.name}
+//                     className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+//                     onClick={() => {
+//                       setFormData({ ...formData, city: city.name });
+//                       setCitySearchTerm(city.name);
+//                     }}
+//                   >
+//                     {city.name}
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+//         </div>
 
-        <div>
-          <Label className="label-required" htmlFor="pincode">Pincode</Label>
-          <Input
-            id="pincode"
-            value={formData.pincode}
-            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-            className={errors.pincode ? "border-red-500" : ""}
-          />
-          {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
-        </div>
-      </div>
-    </div>
-  );
-};
+//         <div>
+//           <Label className="label-required" htmlFor="pincode">Pincode</Label>
+//           <Input
+//             id="pincode"
+//             value={formData.pincode}
+//             onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+//             className={errors.pincode ? "border-red-500" : ""}
+//           />
+//           {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
   const renderStep3 = () => (
     <div className="space-y-5">
       <div className="text-center mb-6">

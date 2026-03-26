@@ -2020,7 +2020,7 @@ import AuthLayout from "./AuthLayout";
 import { MedicalProfessional } from "@/Models/MedicalProfessional";
 import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 import { Progress } from "@/components/ui/progress";
 
 const countryCodes = [
@@ -2165,9 +2165,9 @@ const DoctorRegistration = () => {
   const [countryCode, setCountryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [countries] = useState(Country.getAllCountries());
-  const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
+  // const [countries] = useState(Country.getAllCountries());
+  // const [states, setStates] = useState([]);
+  // const [cities, setCities] = useState([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string>("");
   const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: string}>>([]);
@@ -2217,44 +2217,44 @@ const DoctorRegistration = () => {
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
-  useEffect(() => {
-    if (formData.country_code) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      if (selectedCountry) {
-        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        setStates(countryStates);
-        if (!countryStates.find(s => s.isoCode === formData.state)) {
-          setFormData(prev => ({ ...prev, state: '', city: '' }));
-          setCities([]);
-        }
-      } else {
-        setStates([]);
-        setCities([]);
-      }
-    } else {
-      setStates([]);
-      setCities([]);
-    }
-  }, [formData.country_code, countries]);
+  // useEffect(() => {
+  //   if (formData.country_code) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     if (selectedCountry) {
+  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+  //       setStates(countryStates);
+  //       if (!countryStates.find(s => s.isoCode === formData.state)) {
+  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
+  //         setCities([]);
+  //       }
+  //     } else {
+  //       setStates([]);
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setStates([]);
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, countries]);
 
-  useEffect(() => {
-    if (formData.country_code && formData.state) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      const selectedState = states.find(s => s.name === formData.state);
+  // useEffect(() => {
+  //   if (formData.country_code && formData.state) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     const selectedState = states.find(s => s.name === formData.state);
       
-      if (selectedCountry && selectedState) {
-        const countryCities = City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode);
-        setCities(countryCities);
-        if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-          setFormData(prev => ({ ...prev, city: '' }));
-        }
-      } else {
-        setCities([]);
-      }
-    } else {
-      setCities([]);
-    }
-  }, [formData.country_code, formData.state, countries, states]);
+  //     if (selectedCountry && selectedState) {
+  //       const countryCities = City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode);
+  //       setCities(countryCities);
+  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
+  //         setFormData(prev => ({ ...prev, city: '' }));
+  //       }
+  //     } else {
+  //       setCities([]);
+  //     }
+  //   } else {
+  //     setCities([]);
+  //   }
+  // }, [formData.country_code, formData.state, countries, states]);
 
   const validateStep1 = () => {
     const errors: { [key: string]: string } = {};
@@ -3040,7 +3040,7 @@ await supabase
         </h3>
         <p className="text-sm text-gray-500">Where is your practice located?</p>
       </div>
-
+{/* 
       <div className="space-y-2">
         <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">Address</Label>
         <Textarea
@@ -3095,7 +3095,7 @@ await supabase
           </select>
           {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-2 gap-4">
         {/* <div className="space-y-2">

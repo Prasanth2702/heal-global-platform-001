@@ -2016,7 +2016,7 @@ import { MedicalFacility } from "@/Models/MedicalFacility";
 import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import mixpanelInstance from "@/utils/mixpanel";
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 import { Camera, Check, Upload } from "lucide-react";
 import {
   Dialog,
@@ -2206,9 +2206,9 @@ const FacilityRegistration = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [facilityId, setFacilityId] = useState<string | null>(null);
   
-  const [countries] = useState(Country.getAllCountries());
-  const [states, setStates] = useState<any[]>([]);
-  const [cities, setCities] = useState<any[]>([]);
+  // const [countries] = useState(Country.getAllCountries());
+  // const [states, setStates] = useState<any[]>([]);
+  // const [cities, setCities] = useState<any[]>([]);
   const [availableDepartments, setAvailableDepartments] = useState<string[]>([]);
   
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
@@ -2362,42 +2362,42 @@ const FacilityRegistration = () => {
     }
   };
 
-  useEffect(() => {
-    if (formData.country_code) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      if (selectedCountry) {
-        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        setStates(countryStates);
-        if (!countryStates.find(s => s.name === formData.state)) {
-          setFormData(prev => ({ ...prev, state: '', city: '' }));
-          setCities([]);
-        }
-      } else {
-        setStates([]);
-        setCities([]);
-      }
-    }
-  }, [formData.country_code, countries]);
+  // useEffect(() => {
+  //   if (formData.country_code) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     if (selectedCountry) {
+  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+  //       setStates(countryStates);
+  //       if (!countryStates.find(s => s.name === formData.state)) {
+  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
+  //         setCities([]);
+  //       }
+  //     } else {
+  //       setStates([]);
+  //       setCities([]);
+  //     }
+  //   }
+  // }, [formData.country_code, countries]);
 
-  useEffect(() => {
-    if (formData.country_code && formData.state) {
-      const selectedCountry = countries.find(c => c.name === formData.country_code);
-      const selectedState = states.find(s => s.name === formData.state);
+  // useEffect(() => {
+  //   if (formData.country_code && formData.state) {
+  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
+  //     const selectedState = states.find(s => s.name === formData.state);
       
-      if (selectedCountry && selectedState) {
-        const countryCities = City.getCitiesOfState(
-          selectedCountry.isoCode, 
-          selectedState.isoCode
-        );
-        setCities(countryCities);
-        if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-          setFormData(prev => ({ ...prev, city: '' }));
-        }
-      } else {
-        setCities([]);
-      }
-    }
-  }, [formData.country_code, formData.state, countries, states]);
+  //     if (selectedCountry && selectedState) {
+  //       const countryCities = City.getCitiesOfState(
+  //         selectedCountry.isoCode, 
+  //         selectedState.isoCode
+  //       );
+  //       setCities(countryCities);
+  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
+  //         setFormData(prev => ({ ...prev, city: '' }));
+  //       }
+  //     } else {
+  //       setCities([]);
+  //     }
+  //   }
+  // }, [formData.country_code, formData.state, countries, states]);
 
   const handleFacilityTypeChange = (value: string) => {
     setFormData({ ...formData, facilityType: value });
@@ -3265,7 +3265,7 @@ const FacilityRegistration = () => {
         {renderFieldError('address')}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="country" className="label-required">Country</Label>
           <select
@@ -3325,7 +3325,7 @@ const FacilityRegistration = () => {
           </select>
           {renderFieldError('state')}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-2 gap-4">
         {/* <div className="space-y-2">

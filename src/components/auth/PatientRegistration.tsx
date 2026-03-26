@@ -1730,7 +1730,7 @@ import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import mixpanelInstance from "@/utils/mixpanel";
 import { Textarea } from '../ui/textarea';
 import { format } from 'date-fns';
-// import { Country, State, City } from "country-state-city";
+import { Country, State, City } from "country-state-city";
 import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
@@ -1902,9 +1902,9 @@ const PatientRegistration = () => {
   });
   const [profileId, setProfileId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [countries] = useState(Country.getAllCountries());
-  // const [states, setStates] = useState([]);
-  // const [cities, setCities] = useState([]);
+  const [countries] = useState(Country.getAllCountries());
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
   
   // Onboarding States
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -2142,47 +2142,47 @@ const PatientRegistration = () => {
   }, []);
 
   // Country/State/City effects
-  // useEffect(() => {
-  //   if (formData.country_code) {
-  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
-  //     if (selectedCountry) {
-  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-  //       setStates(countryStates);
-  //       if (!countryStates.find(s => s.isoCode === formData.state)) {
-  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
-  //         setCities([]);
-  //       }
-  //     } else {
-  //       setStates([]);
-  //       setCities([]);
-  //     }
-  //   } else {
-  //     setStates([]);
-  //     setCities([]);
-  //   }
-  // }, [formData.country_code, countries]);
+  useEffect(() => {
+    if (formData.country_code) {
+      const selectedCountry = countries.find(c => c.name === formData.country_code);
+      if (selectedCountry) {
+        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        setStates(countryStates);
+        if (!countryStates.find(s => s.isoCode === formData.state)) {
+          setFormData(prev => ({ ...prev, state: '', city: '' }));
+          setCities([]);
+        }
+      } else {
+        setStates([]);
+        setCities([]);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [formData.country_code, countries]);
 
-  // useEffect(() => {
-  //   if (formData.country_code && formData.state) {
-  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
-  //     const selectedState = states.find(s => s.name === formData.state);
+  useEffect(() => {
+    if (formData.country_code && formData.state) {
+      const selectedCountry = countries.find(c => c.name === formData.country_code);
+      const selectedState = states.find(s => s.name === formData.state);
       
-  //     if (selectedCountry && selectedState) {
-  //       const countryCities = City.getCitiesOfState(
-  //         selectedCountry.isoCode, 
-  //         selectedState.isoCode
-  //       );
-  //       setCities(countryCities);
-  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-  //         setFormData(prev => ({ ...prev, city: '' }));
-  //       }
-  //     } else {
-  //       setCities([]);
-  //     }
-  //   } else {
-  //     setCities([]);
-  //   }
-  // }, [formData.country_code, formData.state, countries, states]);
+      if (selectedCountry && selectedState) {
+        const countryCities = City.getCitiesOfState(
+          selectedCountry.isoCode, 
+          selectedState.isoCode
+        );
+        setCities(countryCities);
+        if (formData.city && !countryCities.find(c => c.name === formData.city)) {
+          setFormData(prev => ({ ...prev, city: '' }));
+        }
+      } else {
+        setCities([]);
+      }
+    } else {
+      setCities([]);
+    }
+  }, [formData.country_code, formData.state, countries, states]);
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
@@ -2985,7 +2985,7 @@ const { data: existingProfile, error: checkError } = await supabase
         {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
       </div>
 
-      {/* <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="country" className="label-required text-sm font-semibold text-gray-700">Country</Label>
           <select
@@ -3001,7 +3001,7 @@ const { data: existingProfile, error: checkError } = await supabase
           >
             <option value="">Select Country</option>
             {countries.map((country) => (
-              <option key={country.isoCode} value={country.name}>
+              <option key={country.isoCode} value={country.isoCode}>
                 {country.name}
               </option>
             ))}
@@ -3024,17 +3024,17 @@ const { data: existingProfile, error: checkError } = await supabase
           >
             <option value="">Select State</option>
             {states.map((state) => (
-              <option key={state.isoCode} value={state.name}>
+              <option key={state.isoCode} value={state.isoCode}>
                 {state.name}
               </option>
             ))}
           </select>
           {errors.state && <p className="text-red-500 text-xs">{errors.state}</p>}
         </div>
-      </div> */}
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* <div className="space-y-2">
+        <div className="space-y-2">
           <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
           <select
             id="city"
@@ -3051,20 +3051,8 @@ const { data: existingProfile, error: checkError } = await supabase
             ))}
           </select>
           {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
-        </div> */}
-
-        <div className="space-y-2">
-          <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
-          <Input
-            id="city"
-            value={formData.city}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-            className={errors.city ? "border-red-500" : "border-gray-200"}
-            // maxLength={6}
-            placeholder="city"
-          />
-          {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="pincode" className="label-required text-sm font-semibold text-gray-700">Pincode</Label>
           <Input

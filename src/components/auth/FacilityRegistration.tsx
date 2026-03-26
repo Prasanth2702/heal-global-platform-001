@@ -2016,7 +2016,7 @@ import { MedicalFacility } from "@/Models/MedicalFacility";
 import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import mixpanelInstance from "@/utils/mixpanel";
-import { Country, State, City } from "country-state-city";
+import { Country, State } from "country-state-city";
 import { Camera, Check, Upload } from "lucide-react";
 import {
   Dialog,
@@ -2362,80 +2362,32 @@ const FacilityRegistration = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (formData.country_code) {
-  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
-  //     if (selectedCountry) {
-  //       const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-  //       setStates(countryStates);
-  //       if (!countryStates.find(s => s.name === formData.state)) {
-  //         setFormData(prev => ({ ...prev, state: '', city: '' }));
-  //         setCities([]);
-  //       }
-  //     } else {
-  //       setStates([]);
-  //       setCities([]);
-  //     }
-  //   }
-  // }, [formData.country_code, countries]);
+  useEffect(() => {
+    if (formData.country_code) {
+      const selectedCountry = countries.find(c => c.name === formData.country_code);
+      if (selectedCountry) {
+        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        setStates(countryStates);
+        if (!countryStates.find(s => s.name === formData.state)) {
+          setFormData(prev => ({ ...prev, state: '', city: '' }));
+          setCities([]);
+        }
+      } else {
+        setStates([]);
+        setCities([]);
+      }
+    }
+  }, [formData.country_code, countries]);
 
-  // useEffect(() => {
-  //   if (formData.country_code && formData.state) {
-  //     const selectedCountry = countries.find(c => c.name === formData.country_code);
-  //     const selectedState = states.find(s => s.name === formData.state);
+  useEffect(() => {
+    if (formData.country_code && formData.state) {
+      const selectedCountry = countries.find(c => c.name === formData.country_code);
+      const selectedState = states.find(s => s.name === formData.state);
       
-  //     if (selectedCountry && selectedState) {
-  //       const countryCities = City.getCitiesOfState(
-  //         selectedCountry.isoCode, 
-  //         selectedState.isoCode
-  //       );
-  //       setCities(countryCities);
-  //       if (formData.city && !countryCities.find(c => c.name === formData.city)) {
-  //         setFormData(prev => ({ ...prev, city: '' }));
-  //       }
-  //     } else {
-  //       setCities([]);
-  //     }
-  //   }
-  // }, [formData.country_code, formData.state, countries, states]);
-// Fix the first useEffect - remove the state reset that causes loops
-useEffect(() => {
-  if (formData.country_code && countries.length > 0) {
-    const selectedCountry = countries.find(c => c.name === formData.country_code);
-    if (selectedCountry) {
-      const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
-      setStates(countryStates);
-      // Remove the automatic state reset - this causes infinite loops
-    } else {
-      setStates([]);
-      setCities([]);
+      
     }
-  } else {
-    setStates([]);
-    setCities([]);
-  }
-}, [formData.country_code, countries]);
+  }, [formData.country_code, formData.state, countries, states]);
 
-// Fix the second useEffect - remove the automatic city reset
-useEffect(() => {
-  if (formData.country_code && formData.state && states.length > 0 && countries.length > 0) {
-    const selectedCountry = countries.find(c => c.name === formData.country_code);
-    const selectedState = states.find(s => s.name === formData.state);
-    
-    if (selectedCountry && selectedState) {
-      const countryCities = City.getCitiesOfState(
-        selectedCountry.isoCode, 
-        selectedState.isoCode
-      );
-      setCities(countryCities);
-      // Remove the automatic city reset that causes loops
-    } else {
-      setCities([]);
-    }
-  } else {
-    setCities([]);
-  }
-}, [formData.country_code, formData.state, countries, states]);
   const handleFacilityTypeChange = (value: string) => {
     setFormData({ ...formData, facilityType: value });
     const departments = getDepartmentsByFacilityType(value);
@@ -3007,21 +2959,6 @@ useEffect(() => {
     navigate('/dashboard/facility');
   };
 
-   const [citySearchTerm, setCitySearchTerm] = useState('');
-  const [filteredCities, setFilteredCities] = useState<any[]>([]);
-
-  // Add useEffect for filtering cities
-  useEffect(() => {
-    if (citySearchTerm.trim() === '') {
-      setFilteredCities(cities);
-    } else {
-      const filtered = cities.filter((city) =>
-        city.name.toLowerCase().includes(citySearchTerm.toLowerCase())
-      );
-      setFilteredCities(filtered);
-    }
-  }, [citySearchTerm, cities]);
-
   const StepIndicator = () => (
     <div className="mb-8">
       <div className="flex items-center justify-between">
@@ -3295,161 +3232,7 @@ useEffect(() => {
     </div>
   );
 
-  // const renderStep2 = () => (
-  //   <div className="space-y-4">
-  //     <div>
-  //       <Label className="label-required" htmlFor="address">Address</Label>
-  //       <Textarea
-  //         id="address"
-  //         value={formData.address}
-  //         onChange={(e) => {
-  //           setFormData({ ...formData, address: e.target.value });
-  //           if (touchedFields.address) {
-  //             const error = validateField('address', e.target.value);
-  //             setFieldErrors(prev => ({ ...prev, address: error }));
-  //           }
-  //         }}
-  //         onBlur={() => handleBlur('address')}
-  //         placeholder="Enter complete address"
-  //         className={touchedFields.address && fieldErrors.address ? "border-red-500" : ""}
-  //         rows={3}
-  //       />
-  //       {renderFieldError('address')}
-  //     </div>
-
-  //     <div className="grid grid-cols-2 gap-4">
-  //       <div className="space-y-2">
-  //         <Label htmlFor="country" className="label-required">Country</Label>
-  //         <select
-  //           id="country"
-  //           value={formData.country_code || ''}
-  //           onChange={(e) => {
-  //             setFormData({ 
-  //               ...formData, 
-  //               country_code: e.target.value,
-  //               state: '',
-  //               city: ''
-  //             });
-  //             if (touchedFields.country_code) {
-  //               const error = validateField('country_code', e.target.value);
-  //               setFieldErrors(prev => ({ ...prev, country_code: error }));
-  //             }
-  //           }}
-  //           onBlur={() => handleBlur('country_code')}
-  //           className={`w-full p-2 border rounded ${touchedFields.country_code && fieldErrors.country_code ? "border-red-500" : "border-gray-200"}`}
-  //         >
-  //           <option value="">Select Country</option>
-  //           {countries.map((country) => (
-  //             <option key={country.isoCode} value={country.name}>
-  //               {country.name}
-  //             </option>
-  //           ))}
-  //         </select>
-  //         {renderFieldError('country_code')}
-  //       </div>
-
-  //       <div className="space-y-2">
-  //         <Label htmlFor="state" className="label-required">State</Label>
-  //         <select
-  //           id="state"
-  //           value={formData.state || ''}
-  //           onChange={(e) => {
-  //             setFormData({ 
-  //               ...formData, 
-  //               state: e.target.value,
-  //               city: ''
-  //             });
-  //             if (touchedFields.state) {
-  //               const error = validateField('state', e.target.value);
-  //               setFieldErrors(prev => ({ ...prev, state: error }));
-  //             }
-  //           }}
-  //           onBlur={() => handleBlur('state')}
-  //           className={`w-full p-2 border rounded ${touchedFields.state && fieldErrors.state ? "border-red-500" : "border-gray-200"}`}
-  //           disabled={!formData.country_code}
-  //         >
-  //           <option value="">Select State</option>
-  //           {states.map((state) => (
-  //             <option key={state.isoCode} value={state.name}>
-  //               {state.name}
-  //             </option>
-  //           ))}
-  //         </select>
-  //         {renderFieldError('state')}
-  //       </div>
-  //     </div>
-
-  //     <div className="grid grid-cols-2 gap-4">
-  //       <div className="space-y-2">
-  //         <Label htmlFor="city" className="label-required">City</Label>
-  //         <select
-  //           id="city"
-  //           value={formData.city || ''}
-  //           onChange={(e) => {
-  //             setFormData({ ...formData, city: e.target.value });
-  //             if (touchedFields.city) {
-  //               const error = validateField('city', e.target.value);
-  //               setFieldErrors(prev => ({ ...prev, city: error }));
-  //             }
-  //           }}
-  //           onBlur={() => handleBlur('city')}
-  //           className={`w-full p-2 border rounded ${touchedFields.city && fieldErrors.city ? "border-red-500" : "border-gray-200"}`}
-  //           disabled={!formData.state}
-  //         >
-  //           <option value="">Select City</option>
-  //           {cities.map((city) => (
-  //             <option key={city.name} value={city.name}>
-  //               {city.name}
-  //             </option>
-  //           ))}
-  //         </select>
-  //         {renderFieldError('city')}
-  //       </div>
-
-  //       <div>
-  //         <Label className="label-required" htmlFor="pincode">Pincode</Label>
-  //         <Input
-  //           id="pincode"
-  //           value={formData.pincode}
-  //           onChange={(e) => {
-  //             setFormData({ ...formData, pincode: e.target.value });
-  //             if (touchedFields.pincode) {
-  //               const error = validateField('pincode', e.target.value);
-  //               setFieldErrors(prev => ({ ...prev, pincode: error }));
-  //             }
-  //           }}
-  //           onBlur={() => handleBlur('pincode')}
-  //           className={touchedFields.pincode && fieldErrors.pincode ? "border-red-500" : ""}
-  //           maxLength={6}
-  //           placeholder="Enter pincode"
-  //         />
-  //         {renderFieldError('pincode')}
-  //       </div>
-  //     </div>
-
-  //     <div>
-  //       <Label className="label-required">Departments/Services Available</Label>
-  //       <div className={`grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto border rounded p-3 ${touchedFields.departments && fieldErrors.departments ? "border-red-500" : "border-gray-200"}`}>
-  //         {availableDepartments.map((department) => (
-  //           <div key={department} className="flex items-center space-x-2">
-  //             <Checkbox
-  //               id={department}
-  //               checked={formData.departments.includes(department)}
-  //               onCheckedChange={() => handleDepartmentToggle(department)}
-  //               onBlur={() => handleBlur('departments')}
-  //             />
-  //             <Label htmlFor={department} className="text-sm">{department}</Label>
-  //           </div>
-  //         ))}
-  //         {availableDepartments.length === 0 && formData.facilityType && (
-  //           <p className="text-gray-500 text-sm col-span-2">No departments available for this facility type</p>
-  //         )}
-  //       </div>
-  //       {renderFieldError('departments')}
-  //     </div>
-  //   </div>
-  // );
- const renderStep2 = () => (
+  const renderStep2 = () => (
     <div className="space-y-4">
       <div>
         <Label className="label-required" htmlFor="address">Address</Label>
@@ -3478,16 +3261,14 @@ useEffect(() => {
             id="country"
             value={formData.country_code || ''}
             onChange={(e) => {
-              const selectedCountry = e.target.value;
               setFormData({ 
                 ...formData, 
-                country_code: selectedCountry,
+                country_code: e.target.value,
                 state: '',
                 city: ''
               });
-              setCitySearchTerm('');
               if (touchedFields.country_code) {
-                const error = validateField('country_code', selectedCountry);
+                const error = validateField('country_code', e.target.value);
                 setFieldErrors(prev => ({ ...prev, country_code: error }));
               }
             }}
@@ -3495,15 +3276,11 @@ useEffect(() => {
             className={`w-full p-2 border rounded ${touchedFields.country_code && fieldErrors.country_code ? "border-red-500" : "border-gray-200"}`}
           >
             <option value="">Select Country</option>
-            {countries && countries.length > 0 ? (
-              countries.map((country) => (
-                <option key={country.isoCode} value={country.name}>
-                  {country.name}
-                </option>
-              ))
-            ) : (
-              <option disabled>Loading countries...</option>
-            )}
+            {countries.map((country) => (
+              <option key={country.isoCode} value={country.name}>
+                {country.name}
+              </option>
+            ))}
           </select>
           {renderFieldError('country_code')}
         </div>
@@ -3514,15 +3291,13 @@ useEffect(() => {
             id="state"
             value={formData.state || ''}
             onChange={(e) => {
-              const selectedState = e.target.value;
               setFormData({ 
                 ...formData, 
-                state: selectedState,
+                state: e.target.value,
                 city: ''
               });
-              setCitySearchTerm('');
               if (touchedFields.state) {
-                const error = validateField('state', selectedState);
+                const error = validateField('state', e.target.value);
                 setFieldErrors(prev => ({ ...prev, state: error }));
               }
             }}
@@ -3531,15 +3306,11 @@ useEffect(() => {
             disabled={!formData.country_code}
           >
             <option value="">Select State</option>
-            {states && states.length > 0 ? (
-              states.map((state) => (
-                <option key={state.isoCode} value={state.name}>
-                  {state.name}
-                </option>
-              ))
-            ) : (
-              <option disabled>Select country first</option>
-            )}
+            {states.map((state) => (
+              <option key={state.isoCode} value={state.name}>
+                {state.name}
+              </option>
+            ))}
           </select>
           {renderFieldError('state')}
         </div>
@@ -3548,55 +3319,41 @@ useEffect(() => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
-          <div className="relative">
-            <Input
-              id="city"
-              type="text"
-              value={citySearchTerm || formData.city}
-              onChange={(e) => {
-                const searchValue = e.target.value;
-                setCitySearchTerm(searchValue);
-                // If search term matches exactly a city name, update form data
-                const exactMatch = cities.find(
-                  (city) => city.name.toLowerCase() === searchValue.toLowerCase()
-                );
-                if (exactMatch) {
-                  setFormData({ ...formData, city: exactMatch.name });
-                } else if (searchValue === '') {
-                  setFormData({ ...formData, city: '' });
-                }
-                if (touchedFields.city) {
-                  const error = validateField('city', searchValue);
-                  setFieldErrors(prev => ({ ...prev, city: error }));
-                }
-              }}
-              onBlur={() => handleBlur('city')}
-              placeholder={!formData.state ? "Select state first" : "Search and select city"}
-              className={`w-full p-2 border rounded ${touchedFields.city && fieldErrors.city ? "border-red-500" : "border-gray-200"}`}
-              disabled={!formData.state}
-              autoComplete="off"
-            />
-            {citySearchTerm && filteredCities.length > 0 && formData.state && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                {filteredCities.map((city) => (
-                  <div
-                    key={city.name}
-                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                    onClick={() => {
-                      setFormData({ ...formData, city: city.name });
-                      setCitySearchTerm(city.name);
-                      if (touchedFields.city) {
-                        const error = validateField('city', city.name);
-                        setFieldErrors(prev => ({ ...prev, city: error }));
-                      }
-                    }}
-                  >
-                    {city.name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* <select
+            id="city"
+            value={formData.city || ''}
+            onChange={(e) => {
+              setFormData({ ...formData, city: e.target.value });
+              if (touchedFields.city) {
+                const error = validateField('city', e.target.value);
+                setFieldErrors(prev => ({ ...prev, city: error }));
+              }
+            }}
+            onBlur={() => handleBlur('city')}
+            className={`w-full p-2 border rounded ${touchedFields.city && fieldErrors.city ? "border-red-500" : "border-gray-200"}`}
+            disabled={!formData.state}
+          >
+            <option value="">Select City</option>
+            {cities.map((city) => (
+              <option key={city.name} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select> */}
+          <Input
+          id="city"
+          value={formData.city}
+          onChange={(e) => {
+            setFormData({ ...formData, city: e.target.value });
+            if (touchedFields.city) {
+              const error = validateField('city', e.target.value);
+              setFieldErrors(prev => ({ ...prev, city: error }));
+            }
+          }}
+          onBlur={() => handleBlur('city')}
+          placeholder="Enter city name"
+          className={touchedFields.city && fieldErrors.city ? "border-red-500" : ""}
+        />
           {renderFieldError('city')}
         </div>
 
@@ -3643,6 +3400,7 @@ useEffect(() => {
       </div>
     </div>
   );
+
   const renderStep3 = () => (
     <div className="space-y-4">
       <div>

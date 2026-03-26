@@ -2128,7 +2128,20 @@ const PatientRegistration = () => {
 
     return "";
   };
+ const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [filteredCities, setFilteredCities] = useState<any[]>([]);
 
+  // Add useEffect for filtering cities
+  useEffect(() => {
+    if (citySearchTerm.trim() === '') {
+      setFilteredCities(cities);
+    } else {
+      const filtered = cities.filter((city) =>
+        city.name.toLowerCase().includes(citySearchTerm.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [citySearchTerm, cities]);
   // Check user on mount
   useEffect(() => {
     const checkUser = async () => {
@@ -2961,7 +2974,114 @@ const { data: existingProfile, error: checkError } = await supabase
     </div>
   );
 
-  const renderStep3 = () => (
+  // const renderStep3 = () => (
+  //   <div className="space-y-5">
+  //     <div className="text-center mb-6">
+  //       <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+  //         Address Information
+  //       </h3>
+  //       <p className="text-sm text-gray-500">Where do you live?</p>
+  //     </div>
+
+  //     <div className="space-y-2">
+  //       <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">
+  //         Address
+  //       </Label>
+  //       <Textarea
+  //         id="address"
+  //         value={formData.address}
+  //         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+  //         className={`border-2 ${errors.address ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
+  //         placeholder="Enter your complete address"
+  //         rows={3}
+  //       />
+  //       {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
+  //     </div>
+
+  //     <div className="grid grid-cols-2 gap-4">
+  //       <div className="space-y-2">
+  //         <Label htmlFor="country" className="label-required text-sm font-semibold text-gray-700">Country</Label>
+  //         <select
+  //           id="country"
+  //           value={formData.country_code || ''}
+  //           onChange={(e) => setFormData({ 
+  //             ...formData, 
+  //             country_code: e.target.value,
+  //             state: '',
+  //             city: ''
+  //           })}
+  //           className={`w-full p-2 border rounded ${errors.country_code ? "border-red-500" : "border-gray-200"}`}
+  //         >
+  //           <option value="">Select Country</option>
+  //           {countries.map((country) => (
+  //             <option key={country.isoCode} value={country.name}>
+  //               {country.name}
+  //             </option>
+  //           ))}
+  //         </select>
+  //         {errors.country_code && <p className="text-red-500 text-xs">{errors.country_code}</p>}
+  //       </div>
+
+  //       <div className="space-y-2">
+  //         <Label htmlFor="state" className="label-required text-sm font-semibold text-gray-700">State</Label>
+  //         <select
+  //           id="state"
+  //           value={formData.state || ''}
+  //           onChange={(e) => setFormData({ 
+  //             ...formData, 
+  //             state: e.target.value,
+  //             city: ''
+  //           })}
+  //           className={`w-full p-2 border rounded ${errors.state ? "border-red-500" : "border-gray-200"}`}
+  //           disabled={!formData.country_code}
+  //         >
+  //           <option value="">Select State</option>
+  //           {states.map((state) => (
+  //             <option key={state.isoCode} value={state.name}>
+  //               {state.name}
+  //             </option>
+  //           ))}
+  //         </select>
+  //         {errors.state && <p className="text-red-500 text-xs">{errors.state}</p>}
+  //       </div>
+  //     </div>
+
+  //     <div className="grid grid-cols-2 gap-4">
+  //       <div className="space-y-2">
+  //         <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
+  //         <select
+  //           id="city"
+  //           value={formData.city || ''}
+  //           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+  //           className={`w-full p-2 border rounded ${errors.city ? "border-red-500" : "border-gray-200"}`}
+  //           disabled={!formData.state}
+  //         >
+  //           <option value="">Select City</option>
+  //           {cities.map((city) => (
+  //             <option key={city.name} value={city.name}>
+  //               {city.name}
+  //             </option>
+  //           ))}
+  //         </select>
+  //         {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+  //       </div>
+
+  //       <div className="space-y-2">
+  //         <Label htmlFor="pincode" className="label-required text-sm font-semibold text-gray-700">Pincode</Label>
+  //         <Input
+  //           id="pincode"
+  //           value={formData.pincode}
+  //           onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+  //           className={errors.pincode ? "border-red-500" : "border-gray-200"}
+  //           maxLength={6}
+  //           placeholder="400001"
+  //         />
+  //         {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+ const renderStep3 = () => (
     <div className="space-y-5">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -2985,26 +3105,34 @@ const { data: existingProfile, error: checkError } = await supabase
         {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
       </div>
 
-      {/* <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="country" className="label-required text-sm font-semibold text-gray-700">Country</Label>
           <select
             id="country"
             value={formData.country_code || ''}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              country_code: e.target.value,
-              state: '',
-              city: ''
-            })}
+            onChange={(e) => {
+              const selectedCountry = e.target.value;
+              setFormData({ 
+                ...formData, 
+                country_code: selectedCountry,
+                state: '',
+                city: ''
+              });
+              setCitySearchTerm('');
+            }}
             className={`w-full p-2 border rounded ${errors.country_code ? "border-red-500" : "border-gray-200"}`}
           >
             <option value="">Select Country</option>
-            {countries.map((country) => (
-              <option key={country.isoCode} value={country.isoCode}>
-                {country.name}
-              </option>
-            ))}
+            {countries && countries.length > 0 ? (
+              countries.map((country) => (
+                <option key={country.isoCode} value={country.name}>
+                  {country.name}
+                </option>
+              ))
+            ) : (
+              <option disabled>Loading countries...</option>
+            )}
           </select>
           {errors.country_code && <p className="text-red-500 text-xs">{errors.country_code}</p>}
         </div>
@@ -3014,42 +3142,84 @@ const { data: existingProfile, error: checkError } = await supabase
           <select
             id="state"
             value={formData.state || ''}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              state: e.target.value,
-              city: ''
-            })}
+            onChange={(e) => {
+              const selectedState = e.target.value;
+              setFormData({ 
+                ...formData, 
+                state: selectedState,
+                city: ''
+              });
+              setCitySearchTerm('');
+            }}
             className={`w-full p-2 border rounded ${errors.state ? "border-red-500" : "border-gray-200"}`}
             disabled={!formData.country_code}
           >
             <option value="">Select State</option>
-            {states.map((state) => (
-              <option key={state.isoCode} value={state.isoCode}>
-                {state.name}
-              </option>
-            ))}
+            {states && states.length > 0 ? (
+              states.map((state) => (
+                <option key={state.isoCode} value={state.name}>
+                  {state.name}
+                </option>
+              ))
+            ) : (
+              <option disabled>Select country first</option>
+            )}
           </select>
           {errors.state && <p className="text-red-500 text-xs">{errors.state}</p>}
         </div>
-      </div> */}
+      </div>
 
-      {/* <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
-          <select
-            id="city"
-            value={formData.city || ''}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-            className={`w-full p-2 border rounded ${errors.city ? "border-red-500" : "border-gray-200"}`}
-            disabled={!formData.state}
-          >
-            <option value="">Select City</option>
-            {cities.map((city) => (
-              <option key={city.name} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <Input
+              id="city"
+              type="text"
+              value={citySearchTerm || formData.city}
+              onChange={(e) => {
+                const searchValue = e.target.value;
+                setCitySearchTerm(searchValue);
+                // If search term matches exactly a city name, update form data
+                const exactMatch = cities.find(
+                  (city) => city.name.toLowerCase() === searchValue.toLowerCase()
+                );
+                if (exactMatch) {
+                  setFormData({ ...formData, city: exactMatch.name });
+                } else if (searchValue === '') {
+                  setFormData({ ...formData, city: '' });
+                }
+              }}
+              onBlur={() => {
+                // Validate city field
+                if (!formData.city && citySearchTerm) {
+                  setErrors(prev => ({ ...prev, city: "Please select a valid city from the list" }));
+                }
+              }}
+              placeholder={!formData.state ? "Select state first" : "Search and select city"}
+              className={`w-full p-2 border rounded ${errors.city ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
+              disabled={!formData.state}
+              autoComplete="off"
+            />
+            {citySearchTerm && filteredCities.length > 0 && formData.state && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {filteredCities.map((city) => (
+                  <div
+                    key={city.name}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                    onClick={() => {
+                      setFormData({ ...formData, city: city.name });
+                      setCitySearchTerm(city.name);
+                      // Clear any city error
+                      setErrors(prev => ({ ...prev, city: '' }));
+                    }}
+                  >
+                    {city.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
         </div>
 
@@ -3065,10 +3235,9 @@ const { data: existingProfile, error: checkError } = await supabase
           />
           {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
         </div>
-      </div> */}
+      </div>
     </div>
   );
-
   const renderStep4 = () => (
     <div className="space-y-5">
       <div className="text-center mb-6">

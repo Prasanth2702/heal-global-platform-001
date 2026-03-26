@@ -756,7 +756,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                       <PatientProtectedButton 
   className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" 
   onClick={() => handleNavigation(`/dashboard/patient/doctor/${createSlug(doctor.name)}/${doctor.id}`, true)}
- path="/appointment/doctors"
+//  path="/appointment/doctors"
+ path={`/appointment/doctorprofile/doctor/${createSlug(doctor.name)}/${doctor.id}`}
 >
                         <PersonStanding size={18} />
                         <span>View Profile</span>
@@ -948,13 +949,16 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
 
                         {/* Quick Actions */}
                         <div className="d-flex gap-2 mt-3">
-                          <PatientProtectedButton className="btn btn-primary flex-grow-1 btn-sm"   onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)} path="/appointment/facility">
+                          <PatientProtectedButton className="btn btn-primary flex-grow-1 btn-sm"   onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)}
+                           path={`/appointment/facilityprofile/facility/${createSlug(hospital?.facility_name || "")}/${hospital.id}`}
+                          //  path="/appointment/facility"
+                           >
                             
                             View Details
                           </PatientProtectedButton>
-                          <button className="btn btn-outline-primary btn-sm">
+                          {/* <button className="btn btn-outline-primary btn-sm">
                             <Phone size={16} />
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>

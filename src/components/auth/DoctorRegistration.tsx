@@ -3073,7 +3073,7 @@ await supabase
         {errors.address && <p className="text-red-500 text-xs">{errors.address}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="country" className="label-required">Country</Label>
           <select
@@ -3114,7 +3114,7 @@ await supabase
           </select>
           {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

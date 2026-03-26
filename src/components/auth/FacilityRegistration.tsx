@@ -3327,7 +3327,7 @@ const FacilityRegistration = () => {
         </div>
       </div> */}
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
           <select
@@ -3373,7 +3373,7 @@ const FacilityRegistration = () => {
           />
           {renderFieldError('pincode')}
         </div>
-      </div>
+      </div> */}
 
       <div>
         <Label className="label-required">Departments/Services Available</Label>

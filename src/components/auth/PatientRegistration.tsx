@@ -3033,7 +3033,7 @@ const { data: existingProfile, error: checkError } = await supabase
         </div>
       </div> */}
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
           <select
@@ -3065,7 +3065,7 @@ const { data: existingProfile, error: checkError } = await supabase
           />
           {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 

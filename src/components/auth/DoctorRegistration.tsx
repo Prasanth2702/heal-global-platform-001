@@ -3116,7 +3116,7 @@ await supabase
         </div>
       </div> */}
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
           <select
@@ -3146,7 +3146,7 @@ await supabase
           />
           {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 

@@ -1553,7 +1553,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 import {
   Command,
   CommandInput,
@@ -1667,14 +1667,14 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   };
 
   // Get Indian cities on component mount
-  useEffect(() => {
-    const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
-    if (india) {
-      const allIndianCities = City.getCitiesOfCountry('IN') || [];
-      const cityNames = allIndianCities.map(city => city.name).sort();
-      setIndianCities(cityNames);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
+  //   if (india) {
+  //     const allIndianCities = City.getCitiesOfCountry('IN') || [];
+  //     const cityNames = allIndianCities.map(city => city.name).sort();
+  //     setIndianCities(cityNames);
+  //   }
+  // }, []);
 
   // Combine static and dynamic facility types
   // const staticFacilityTypes = [

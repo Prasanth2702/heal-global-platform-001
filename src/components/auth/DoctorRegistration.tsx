@@ -3098,7 +3098,7 @@ await supabase
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
           <select
             id="city"
@@ -3115,7 +3115,17 @@ await supabase
             ))}
           </select>
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-        </div>
+        </div> */}
+          <div className="space-y-2">
+        <Label className="label-required" htmlFor="city">City</Label>
+        <Input
+          id="city"
+          value={formData.city}
+          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+          className={errors.city ? "border-red-500" : ""}
+        />
+        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+      </div>
 
         <div>
           <Label className="label-required" htmlFor="pincode">Pincode</Label>

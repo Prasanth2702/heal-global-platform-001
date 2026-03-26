@@ -3034,7 +3034,7 @@ const { data: existingProfile, error: checkError } = await supabase
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
           <select
             id="city"
@@ -3051,8 +3051,20 @@ const { data: existingProfile, error: checkError } = await supabase
             ))}
           </select>
           {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
-        </div>
+        </div> */}
 
+        <div className="space-y-2">
+          <Label htmlFor="city" className="label-required text-sm font-semibold text-gray-700">City</Label>
+          <Input
+            id="city"
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            className={errors.city ? "border-red-500" : "border-gray-200"}
+            // maxLength={6}
+            placeholder="city"
+          />
+          {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+        </div>
         <div className="space-y-2">
           <Label htmlFor="pincode" className="label-required text-sm font-semibold text-gray-700">Pincode</Label>
           <Input

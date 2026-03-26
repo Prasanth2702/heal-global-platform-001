@@ -3328,7 +3328,7 @@ const FacilityRegistration = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
           <select
             id="city"
@@ -3351,6 +3351,27 @@ const FacilityRegistration = () => {
               </option>
             ))}
           </select>
+          {renderFieldError('city')}
+        </div> */}
+        
+
+        <div className="space-y-2">
+          <Label className="label-required" htmlFor="city">City</Label>
+          <Input
+            id="city"
+            value={formData.city}
+            onChange={(e) => {
+              setFormData({ ...formData, city: e.target.value });
+              if (touchedFields.city) {
+                const error = validateField('city', e.target.value);
+                setFieldErrors(prev => ({ ...prev, city: error }));
+              }
+            }}
+            onBlur={() => handleBlur('city')}
+            className={touchedFields.city && fieldErrors.city ? "border-red-500" : ""}
+            // maxLength={6}
+            placeholder="Enter city"
+          />
           {renderFieldError('city')}
         </div>
 

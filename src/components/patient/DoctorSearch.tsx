@@ -2787,6 +2787,9 @@ export interface Doctor {
   hospital?: string;
   image?: string;
   description?: string;
+    address?: string;
+  pincode?: number;
+  country_code?: string;
   city?: string;
   state?: string;
 }
@@ -3064,7 +3067,12 @@ const handleDateChange = (doctorId: string, newDate: string) => {
           availability: item.availability?.status || "Not Available",
           hospital: item.medical_school || "Not specified",
           location: item.about_yourself || "Location not provided",
-          city: city,
+            address: item.address,
+  city: item.city,
+  state: item.state,
+  pincode: item.pincode,
+  country_code: item.country_code,
+
           image: item.medical_professionals_user_id_fkey?.avatar_url || "",
           description: item.description || item.about_yourself || "No description provided.",
         } as Doctor;

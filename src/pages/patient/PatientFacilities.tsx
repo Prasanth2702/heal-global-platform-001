@@ -53,7 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addDays, format, isBefore, startOfDay, isWithinInterval } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 
 interface Facility {
   id: string;
@@ -142,8 +142,8 @@ const PatientFacilities: React.FC<PatientFacilitiesProps> = ({ view }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
-  const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
   const [showWardDetails, setShowWardDetails] = useState(false);
+  const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
   const [showBedDetails, setShowBedDetails] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
@@ -409,14 +409,14 @@ const checkBedAvailabilityOnDate = (bookings: any[], checkDate: Date) => {
     fetchFacilities();
   }, []);
 
-  useEffect(() => {
-    const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
-    if (india) {
-      const allIndianCities = City.getCitiesOfCountry('IN') || [];
-      const cityNames = allIndianCities.map(city => city.name).sort();
-      setIndianCities(cityNames);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
+  //   if (india) {
+  //     const allIndianCities = City.getCitiesOfCountry('IN') || [];
+  //     const cityNames = allIndianCities.map(city => city.name).sort();
+  //     setIndianCities(cityNames);
+  //   }
+  // }, []);
 
   useEffect(() => {
     applyFilters();
@@ -1366,7 +1366,7 @@ const bedsAvailableOnDate = allBeds.filter((bed) => {
 
         <div className="grid grid-cols-3 gap-4 pt-4">
           {/* City Filter */}
-          <div className="w-full max-w-md">
+          {/* <div className="w-full max-w-md">
             <Label className="text-sm font-semibold">City</Label>
             <Select 
               value={filters.city || "all"} 
@@ -1387,7 +1387,72 @@ const bedsAvailableOnDate = allBeds.filter((bed) => {
             <p className="text-xs text-muted-foreground mt-1">
               Showing Indian cities
             </p>
-          </div>
+          </div> */}
+          <div className="w-full max-w-md">
+  <Label className="text-sm font-semibold">City</Label>
+  <Select 
+    value={filters.city || "all"} 
+    onValueChange={(value) => {
+      if (value === "all") {
+        handleFilterChange('city', "");
+        handleFilterChange('searchText', ""); // Clear search text when "All Cities" is selected
+      } else {
+        handleFilterChange('city', value);
+        handleFilterChange('searchText', value); // Set search text to selected city
+      }
+    }}
+  >
+    <SelectTrigger className="mt-2 w-full">
+      <SelectValue placeholder="Select city" />
+    </SelectTrigger>
+    <SelectContent className="max-h-[300px]">
+      <SelectItem value="all">All Cities</SelectItem>
+      {/* Show cities from Supabase data */}
+      {availableCities.length > 0 ? (
+        availableCities.map((city) => (
+          <SelectItem key={city} value={city}>
+            {city}
+          </SelectItem>
+        ))
+      ) : (
+        // Fallback to Indian cities if no Supabase data
+        indianCities.map((city) => (
+          <SelectItem key={city} value={city}>
+            {city}
+          </SelectItem>
+        ))
+      )}
+    </SelectContent>
+  </Select>
+  <p className="text-xs text-muted-foreground mt-1">
+    {availableCities.length > 0 
+      ? `Showing ${availableCities.length} cities from facilities` 
+      : 'Showing Indian cities'}
+  </p>
+</div>
+
+{/* <div className="w-full max-w-md">
+  <Label className="text-sm font-semibold">Search by City</Label>
+  <div className="relative mt-2">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+    <Input
+      type="text"
+      placeholder="Search city name..."
+      value={filters.searchText}
+      onChange={(e) => {
+        handleFilterChange('searchText', e.target.value);
+        // If user manually types in search, clear the city filter
+        if (filters.city !== "") {
+          handleFilterChange('city', "");
+        }
+      }}
+      className="pl-10 w-full"
+    />
+  </div>
+  <p className="text-xs text-muted-foreground mt-1">
+    Type to search across all facilities
+  </p>
+</div> */}
 
           {/* Department/Ward Type Filter */}
           <div className="w-full max-w-md">

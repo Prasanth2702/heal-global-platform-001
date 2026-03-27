@@ -23,6 +23,9 @@ export interface Doctor {
   address?: string;
   country_code?: string;
   pincode?: number;
+    about_yourself?: string;
+  medical_school?: string;
+
 }
 
 export interface BookingInfo {
@@ -137,7 +140,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
                 <div className="min-w-0">
                   <h4 className="text-base font-semibold truncate">{doctor.name}</h4>
                   <p className="text-xs text-muted-foreground truncate">{doctor.specialty}</p>
-                  <p className="text-xs text-muted-foreground truncate">{doctor.city}</p>
+                  {/* <p className="text-xs text-muted-foreground truncate">{doctor.city}</p> */}
                 </div>
                
 

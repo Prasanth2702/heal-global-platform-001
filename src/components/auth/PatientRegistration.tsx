@@ -2244,94 +2244,291 @@ const PatientRegistration = () => {
   }, []);
 
   // Save Step 1 Data Only
-  const saveStep1Data = async () => {
-    setIsSubmitting(true);
+//   const saveStep1Data = async () => {
+//     setIsSubmitting(true);
     
-    try {
-      const fullPhoneNumber = countryCode + phoneNumber;
+//     try {
+//       const fullPhoneNumber = countryCode + phoneNumber;
       
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.emailAddress.toLowerCase(),
-        password: password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone_number: fullPhoneNumber,
-            avatar_url: profileImage,
-            role: 'patient',
-          },
-        },
-      });
+//       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+//         email: formData.emailAddress.toLowerCase(),
+//         password: password,
+//         options: {
+//           data: {
+//             first_name: formData.firstName,
+//             last_name: formData.lastName,
+//             phone_number: fullPhoneNumber,
+//             avatar_url: profileImage,
+//             role: 'patient',
+//           },
+//         },
+//       });
 
-      if (signUpError) {
-        toast({
-          title: 'Registration Failed',
-          description: signUpError.message,
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return false;
-      }
+//       if (signUpError) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: signUpError.message,
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return false;
+//       }
 
-      const userId = signUpData.user?.id;
-      if (!userId) {
-        toast({
-          title: 'Registration Failed',
-          description: 'Could not retrieve user information',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return false;
-      }
+//       const userId = signUpData.user?.id;
+//       if (!userId) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: 'Could not retrieve user information',
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return false;
+//       }
 
-      setSavedUserId(userId);
-      setUser({ id: userId });
-const { data: existingProfile, error: checkError } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('id', userId)
-                        .maybeSingle();
+//       setSavedUserId(userId);
+//       setUser({ id: userId });
+// const { data: existingProfile, error: checkError } = await supabase
+//                         .from('profiles')
+//                         .select('id')
+//                         .eq('id', userId)
+//                         .maybeSingle();
                   
-                      let profileError;
+//                       let profileError;
       
-                      await supabase
-        .from('profiles')
-        .update({
+//                       await supabase
+//         .from('profiles')
+//         .update({
+//           first_name: formData.firstName,
+//           last_name: formData.lastName,
+//           phone_number: fullPhoneNumber,
+//           role: 'patient',
+//           avatar_url: profileImage,
+//           profile_id: profileId,
+//         })
+//         .eq('email', formData.emailAddress);
+
+//       if (profileError) {
+//         console.error('Error updating profile:', profileError);
+//       }
+//           try {
+//       // Get the current session to get the access token
+//       const { data: { session } } = await supabase.auth.getSession();
+//       const accessToken = session?.access_token;
+      
+//       if (!accessToken) {
+//         console.error('No access token available for email function');
+//       } else {
+//         const response = await fetch(
+//           'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/patient-welcome-email',
+//           {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${accessToken}`,
+//             },
+//             body: JSON.stringify({
+//               email: formData.emailAddress.toLowerCase(),
+//               password: password,
+//               // firstName: formData.firstName,
+//               // lastName: formData.lastName,
+//               // userId: userId,
+//             }),
+//           }
+//         );
+
+//         const responseData = await response.json();
+        
+//         if (response.ok) {
+//           console.log('Welcome email sent successfully:', responseData);
+//           toast({
+//             title: 'Welcome Email Sent',
+//             description: 'Check your email for login instructions.',
+//           });
+//         } else {
+//           console.error('Failed to send welcome email:', responseData);
+//           // Optionally show a non-blocking warning
+//           toast({
+//             title: 'Email Notification Issue',
+//             description: 'Account created but welcome email could not be sent. Please contact support.',
+            
+//           });
+//         }
+//       }
+//     } catch (emailError) {
+//       console.error('Error calling welcome email function:', emailError);
+//       // Don't block registration if email fails
+//       toast({
+//         title: 'Email Notification Issue',
+//         description: 'Account created but welcome email could not be sent. Please contact support.',
+      
+//       });
+//     }
+
+
+
+//       toast({
+//         title: 'Step 1 Completed',
+//         description: 'Personal information saved successfully!',
+//       });
+      
+//       setIsSubmitting(false);
+//       setStep1Completed(true);
+//       return true;
+      
+//     } catch (error) {
+//       console.error('Error saving step 1:', error);
+//       toast({
+//         title: 'Error',
+//         description: 'Failed to save personal information',
+//         variant: 'destructive',
+//       });
+//       setIsSubmitting(false);
+//       return false;
+//     }
+//   };
+const saveStep1Data = async () => {
+  setIsSubmitting(true);
+  
+  try {
+    const fullPhoneNumber = countryCode + phoneNumber;
+    
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.emailAddress.toLowerCase(),
+      password: password,
+      options: {
+        data: {
           first_name: formData.firstName,
           last_name: formData.lastName,
           phone_number: fullPhoneNumber,
-          role: 'patient',
           avatar_url: profileImage,
-          profile_id: profileId,
-        })
-        .eq('email', formData.emailAddress);
+          role: 'patient',
+        },
+      },
+    });
 
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-      }
-
+    if (signUpError) {
       toast({
-        title: 'Step 1 Completed',
-        description: 'Personal information saved successfully!',
-      });
-      
-      setIsSubmitting(false);
-      setStep1Completed(true);
-      return true;
-      
-    } catch (error) {
-      console.error('Error saving step 1:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save personal information',
+        title: 'Registration Failed',
+        description: signUpError.message,
         variant: 'destructive',
       });
       setIsSubmitting(false);
       return false;
     }
-  };
 
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      toast({
+        title: 'Registration Failed',
+        description: 'Could not retrieve user information',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return false;
+    }
+
+    setSavedUserId(userId);
+    setUser({ id: userId });
+
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    let profileError;
+    
+    await supabase
+      .from('profiles')
+      .update({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: fullPhoneNumber,
+        role: 'patient',
+        // avatar_url: profileImage,
+        // profile_id: profileId,
+      })
+      .eq('email', formData.emailAddress);
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+    }
+
+    // Call the welcome email edge function with better error handling
+    try {
+      // Get the current session to get the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      
+      if (!accessToken) {
+        console.error('No access token available for email function');
+      } else {
+        const response = await fetch(
+          'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/patient-welcome-email',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              email: formData.emailAddress.toLowerCase(),
+              password: password,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              userId: userId,
+            }),
+          }
+        );
+
+        const responseData = await response.json();
+        
+        if (response.ok) {
+          console.log('Welcome email sent successfully:', responseData);
+          toast({
+            title: 'Welcome Email Sent',
+            description: 'Check your email for login instructions.',
+          });
+        } else {
+          console.error('Failed to send welcome email:', responseData);
+          // Optionally show a non-blocking warning
+          toast({
+            title: 'Email Notification Issue',
+            description: 'Account created but welcome email could not be sent. Please contact support.',
+            
+          });
+        }
+      }
+    } catch (emailError) {
+      console.error('Error calling welcome email function:', emailError);
+      // Don't block registration if email fails
+      toast({
+        title: 'Email Notification Issue',
+        description: 'Account created but welcome email could not be sent. Please contact support.',
+      
+      });
+    }
+
+    toast({
+      title: 'Step 1 Completed',
+      description: 'Personal information saved successfully!',
+    });
+    
+    setIsSubmitting(false);
+    setStep1Completed(true);
+    return true;
+    
+  } catch (error) {
+    console.error('Error saving step 1:', error);
+    toast({
+      title: 'Error',
+      description: 'Failed to save personal information',
+      variant: 'destructive',
+    });
+    setIsSubmitting(false);
+    return false;
+  }
+};
   // Save All Remaining Data (Steps 2, 3, 4) at Once
   const saveAllRemainingData = async () => {
     setIsSubmitting(true);
@@ -2366,7 +2563,8 @@ const { data: existingProfile, error: checkError } = await supabase
                       await supabase
           .from('profiles')
           .update({ 
-            avatar_url: profileImage 
+            avatar_url: profileImage ,
+            profile_id: profileId
           })
         .eq('email', formData.emailAddress);
 
@@ -2531,62 +2729,143 @@ const { data: existingProfile, error: checkError } = await supabase
   };
 
   // Document Upload Handler
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+  // const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files;
+  //   if (!files) return;
     
-    setIsUploading(true);
+  //   setIsUploading(true);
     
-    for (let file of files) {
-      try {
-        if (file.type === 'application/pdf') {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
+  //   for (let file of files) {
+  //     try {
+  //       if (file.type === 'application/pdf') {
+  //         await new Promise(resolve => setTimeout(resolve, 2000));
+  //       }
         
-        const cleanFileName = file.name
-          .replace(/\s+/g, "_")
-          .replace(/[^\w.-]/g, "")
-          .toLowerCase();
+  //       const cleanFileName = file.name
+  //         .replace(/\s+/g, "_")
+  //         .replace(/[^\w.-]/g, "")
+  //         .toLowerCase();
 
-        const filePath = `medical_documents/${Date.now()}_${cleanFileName}`;
-        const { error } = await supabase
-          .storage
-          .from('heal_med_app_files_bucket')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+  //       const filePath = `medical_documents/${Date.now()}_${cleanFileName}`;
+  //       const { error } = await supabase
+  //         .storage
+  //         .from('heal_med_app_files_bucket')
+  //         .upload(filePath, file, {
+  //           cacheControl: '3600',
+  //           upsert: false
+  //         });
 
-        if (error) {
-          toast({
-            title: "Upload failed",
-            description: error.message,
-            variant: "destructive",
-          });
-          setIsUploading(false);
-          return;
-        } else {
-          setUploadedDocs(prev => [...prev, { 
-            name: file.name, 
-            type: 'patient' 
-          }]);
-          toast({
-            title: "Document Uploaded",
-            description: `${file.name} uploaded successfully.`,
-          });
-        }
-      } catch (err) {
-        console.error('Upload error:', err);
+  //       if (error) {
+  //         toast({
+  //           title: "Upload failed",
+  //           description: error.message,
+  //           variant: "destructive",
+  //         });
+  //         setIsUploading(false);
+  //         return;
+  //       } else {
+  //         setUploadedDocs(prev => [...prev, { 
+  //           name: file.name, 
+  //           type: 'patient' 
+  //         }]);
+  //         toast({
+  //           title: "Document Uploaded",
+  //           description: `${file.name} uploaded successfully.`,
+  //         });
+  //       }
+  //     } catch (err) {
+  //       console.error('Upload error:', err);
+  //       toast({
+  //         title: "Upload Failed",
+  //         description: "An unexpected error occurred.",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   }
+    
+  //   setIsUploading(false);
+  // };
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+  
+  // Check if user exists
+  if (!user) {
+    toast({
+      title: "Authentication Error",
+      description: "Please log in to upload documents.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  setIsUploading(true);
+  
+  for (let file of files) {
+    try {
+      if (file.type === 'application/pdf') {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      const cleanFileName = file.name
+        .replace(/\s+/g, "_")
+        .replace(/[^\w.-]/g, "")
+        .toLowerCase();
+
+      // Include user.id in the file path
+      const filePath = `medical_documents/${user.id}/${Date.now()}_${cleanFileName}`;
+      
+      const { error } = await supabase
+        .storage
+        .from('heal_med_app_files_bucket')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
         toast({
-          title: "Upload Failed",
-          description: "An unexpected error occurred.",
+          title: "Upload failed",
+          description: error.message,
           variant: "destructive",
         });
-      }
+        setIsUploading(false);
+        return;
+      } 
+      
+      // Get signed URL for the uploaded file
+      const { data: signedUrlData } = await supabase.storage
+        .from('heal_med_app_files_bucket')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      // Store the document with more details including userId and URL
+      setUploadedDocs(prev => [...prev, { 
+        name: file.name, 
+        type: 'patient',
+        userId: user.id,
+        url: signedUrlData?.signedUrl || '',
+        path: filePath,
+        uploadedAt: new Date()
+      }]);
+      
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} uploaded successfully.`,
+      });
+      
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast({
+        title: "Upload Failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
-    
-    setIsUploading(false);
-  };
+  }
+  
+  setIsUploading(false);
+  event.target.value = ''; // Reset input
+};
   const handleSuccessPopupClose = () => {
     setShowSuccessPopup(false);
     navigate('/dashboard/patient');

@@ -568,11 +568,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check } from 'lucide-react';
+import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check, Loader2, Trash2, File } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
 import mixpanelInstance from "@/utils/mixpanel";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 export interface MedicalFacility {
   facilityName: string;
@@ -601,6 +610,15 @@ export interface MedicalFacility {
   avatarUrl?: string;
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
+}
+
+interface UploadedDocument {
+  name: string;
+  type: 'patient' | 'doctor' | 'facility';
+  userId?: string;
+  url?: string;
+  path?: string;
+  uploadedAt?: Date;
 }
 
 const FacilityProfile: React.FC = () => {
@@ -637,6 +655,11 @@ const FacilityProfile: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [user, setUser] = useState<SupabaseUser>(null);
   const [uploading, setUploading] = useState(false);
+   const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
+  const [selectedPdf, setSelectedPdf] = useState<{ url: string; name: string } | null>(null);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchFacilityProfile() {
@@ -714,10 +737,92 @@ const FacilityProfile: React.FC = () => {
           aboutFacility: facilitiesData.about_facility
         }));
       }
+       await fetchUserDocuments(user.id);
     }
     fetchFacilityProfile();
   }, [toast]);
 
+  // const fetchUserDocuments = async (userId: string) => {
+  //   setLoadingDocs(true);
+  //   try {
+  //     const { data: files, error } = await supabase.storage
+  //       .from('heal_med_app_files_bucket')
+  //       .list(`medical_documents/${userId}`, {
+  //         limit: 100,
+  //         sortBy: { column: 'created_at', order: 'desc' }
+  //       });
+
+  //     if (error) {
+  //       console.error('Error fetching documents:', error);
+  //       return;
+  //     }
+
+  //     if (files && files.length > 0) {
+  //       const docs: UploadedDocument[] = await Promise.all(
+  //         files.map(async (file) => {
+  //           const { data: urlData } = supabase.storage
+  //             .from('heal_med_app_files_bucket')
+  //             .getPublicUrl(`medical_documents/${userId}/${file.name}`);
+            
+  //           return {
+  //             name: file.name,
+  //             type: 'facility',
+  //             userId: userId,
+  //             url: urlData.publicUrl,
+  //             path: `medical_documents/${userId}/${file.name}`,
+  //             uploadedAt: new Date(file.created_at)
+  //           };
+  //         })
+  //       );
+  //       setUploadedDocs(docs);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in fetchUserDocuments:', error);
+  //   } finally {
+  //     setLoadingDocs(false);
+  //   }
+  // };
+const fetchUserDocuments = async (userId: string) => {
+  setLoadingDocs(true);
+  try {
+    const { data: files, error } = await supabase.storage
+      .from('heal_med_app_files_bucket')
+      .list(`medical_documents/${userId}`, {
+        limit: 100,
+        sortBy: { column: 'created_at', order: 'desc' }
+      });
+
+    if (error) {
+      console.error('Error fetching documents:', error);
+      return;
+    }
+
+    if (files && files.length > 0) {
+      const docs: UploadedDocument[] = await Promise.all(
+        files.map(async (file) => {
+          // Get signed URL for each file
+          const { data: signedUrlData } = await supabase.storage
+            .from('heal_med_app_files_bucket')
+            .createSignedUrl(`medical_documents/${userId}/${file.name}`, 3600); // 1 hour expiry
+          
+          return {
+            name: file.name,
+            type: 'facility',
+            userId: userId,
+            url: signedUrlData?.signedUrl || '',
+            path: `medical_documents/${userId}/${file.name}`,
+            uploadedAt: new Date(file.created_at)
+          };
+        })
+      );
+      setUploadedDocs(docs);
+    }
+  } catch (error) {
+    console.error('Error in fetchUserDocuments:', error);
+  } finally {
+    setLoadingDocs(false);
+  }
+};
   const validateForm = (data: MedicalFacility) => {
     const newErrors: { [key: string]: string } = {};
     let valid = true;
@@ -883,85 +988,203 @@ const FacilityProfile: React.FC = () => {
     setUploading(false);
   };
 
- const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: 'patient' | 'doctor' | 'facility'}>>([]);
+//  const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: 'patient' | 'doctor' | 'facility'}>>([]);
 
 // Then update your handleFileUpload function
-const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const files = event.target.files;
-  if (!files) return;
-  setUploading(true);
+// const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+//   const files = event.target.files;
+//   if (!files) return;
+//   setUploading(true);
   
-  for (let file of files) {
-    // Show PDF loader for PDF files
-    if (file.type === 'application/pdf') {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
+//   for (let file of files) {
+//     // Show PDF loader for PDF files
+//     if (file.type === 'application/pdf') {
+//       await new Promise(resolve => setTimeout(resolve, 2000));
+//     }
     
-    const filePath = `medical_documents/${Date.now()}_${file.name}`;
-    const { data, error } = await supabase
-      .storage
-      .from('heal_med_app_files_bucket')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+//     const filePath = `medical_documents/${Date.now()}_${file.name}`;
+//     const { data, error } = await supabase
+//       .storage
+//       .from('heal_med_app_files_bucket')
+//       .upload(filePath, file, {
+//         cacheControl: '3600',
+//         upsert: false
+//       });
 
-    if (error) {
+//     if (error) {
+//       toast({
+//         title: "Uploading of the file failed",
+//         description: error.message,
+//       });
+//      setUploading(true);
+//       return;
+//     }
+//     else {
+//       // Store the document with its type based on userType
+//       setUploadedDocs(prev => [...prev, { 
+//         name: file.name, 
+//         type: 'facility' 
+//       }]);
+//       toast({
+//         title: "Files Uploaded",
+//         description: `file(s) uploaded successfully.`,
+//       });
+//     }
+//   }
+  
+//  setUploading(false);
+// };
+ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+    if (!user) {
       toast({
-        title: "Uploading of the file failed",
-        description: error.message,
+        title: "User not found",
+        description: "Please login again",
+        variant: "destructive"
       });
-     setUploading(true);
       return;
     }
-    else {
-      // Store the document with its type based on userType
-      setUploadedDocs(prev => [...prev, { 
-        name: file.name, 
-        type: 'facility' 
-      }]);
-      toast({
-        title: "Files Uploaded",
-        description: `file(s) uploaded successfully.`,
-      });
-    }
-  }
-  
- setUploading(false);
-};
 
-  const openDocument = () => {
-    if (profileData.documentUrl) {
-      window.open(profileData.documentUrl, '_blank');
+    setUploading(true);
+
+    for (let file of files) {
+      const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+
+      const { error } = await supabase
+        .storage
+        .from('heal_med_app_files_bucket')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        toast({
+          title: "Upload Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        setUploading(false);
+        return;
+      } 
+      else {
+        const { data: urlData } = supabase.storage
+          .from('heal_med_app_files_bucket')
+          .getPublicUrl(filePath);
+
+        setUploadedDocs(prev => [
+          ...prev,
+          {
+            name: file.name,
+            type: 'facility',
+            userId: user.id,
+            url: urlData.publicUrl,
+            path: filePath,
+            uploadedAt: new Date()
+          }
+        ]);
+
+        toast({
+          title: "Document Uploaded",
+          description: `${file.name} uploaded successfully.`,
+        });
+      }
+    }
+
+    setUploading(false);
+    event.target.value = '';
+  };
+
+const handleDeleteDocument = async (doc: UploadedDocument) => {
+    if (!doc.path) return;
+    
+    setDeletingDoc(doc.name);
+    try {
+      const { error } = await supabase.storage
+        .from('heal_med_app_files_bucket')
+        .remove([doc.path]);
+
+      if (error) {
+        throw error;
+      }
+
+      setUploadedDocs(prev => prev.filter(d => d.name !== doc.name));
+      toast({
+        title: "Document Deleted",
+        description: `${doc.name} has been removed successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete document",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingDoc(null);
     }
   };
-  const DocumentBadge = ({ fileName }: { fileName: string }) => {
-  const isPDF = fileName.toLowerCase().endsWith('.pdf');
-  
+
+  const viewPdf = (url: string, name: string) => {
+    setSelectedPdf({ url, name });
+  };
+
+  const DocumentBadge = ({ doc }: { doc: UploadedDocument }) => {
+    const isPDF = doc.name.toLowerCase().endsWith('.pdf');
   return (
-    <div className="group relative">
-      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border ${
-        isPDF 
-          ? 'bg-red-50 text-red-700 border-red-200' 
-          : 'bg-green-50 text-green-700 border-green-200'
-      }`}>
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          {isPDF ? (
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          ) : (
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-          )}
-          <polyline points="14 2 14 8 20 8" />
-          {!isPDF && <circle cx="9" cy="9" r="2" />}
-          {!isPDF && <path d="m21 15-5-4-3 3-4-4-5 5" />}
-        </svg>
-        <span className="truncate max-w-[150px]">{fileName}</span>
-        <Check className="h-3.5 w-3.5" />
+      <div className="group relative bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-3 flex-1">
+            <div className={`p-2 rounded-lg ${isPDF ? 'bg-red-50' : 'bg-blue-50'}`}>
+              <FileText className={`h-5 w-5 ${isPDF ? 'text-red-500' : 'text-blue-500'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">    {doc.name.length > 10 ? `${doc.name.slice(0, 10)}...` : doc.name}</p>
+              <p className="text-xs text-gray-500">
+                {doc.uploadedAt?.toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-1">
+            {isPDF && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => viewPdf(doc.url!, doc.name)}
+                className="h-8 w-8 p-0"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => window.open(doc.url, '_blank')}
+              className="h-8 w-8 p-0"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            {isEditing && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleDeleteDocument(doc)}
+                disabled={deletingDoc === doc.name}
+                className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                {deletingDoc === doc.name ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
-    </div>
-  );
-};
+    );
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -1053,7 +1276,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                   </span>
                 </div>
                 <div className="flex space-x-2">
-                  <Button
+                  {/* <Button
                     size="sm"
                     variant="outline"
                     onClick={openDocument}
@@ -1061,7 +1284,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     View PDF
-                  </Button>
+                  </Button> */}
                   <Button
                     size="sm"
                     variant="outline"
@@ -1076,76 +1299,132 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             )}
           </div>
 
-          {/* Document Upload Section (when editing) */}
-          {/* {isEditing && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <Label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Facility Document (PDF)
+           <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-sm font-semibold text-gray-700">
+                Facility Documents
               </Label>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="relative flex-1">
+              {isEditing && (
+                <div className="relative">
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple
                     onChange={handleFileUpload}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full"
                     disabled={uploading}
                   />
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto border-2 border-dashed"
-                    disabled={uploading}
-                  >
+                  <Button variant="outline" size="sm" disabled={uploading}>
                     <Upload className="h-4 w-4 mr-2" />
-                    {profileData.documentUrl ? 'Replace Document' : 'Upload PDF Document'}
+                    Upload Documents
                   </Button>
                 </div>
-                {uploadedDocs.length > 0 && (
-  <div className="mt-6">
-    <div className="flex items-center gap-2 mb-3">
-      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-      <h4 className="text-sm font-medium">Uploaded Documents</h4>
-    </div>
-    
- 
-      <div className="mb-4">
-        <h5 className="text-xs font-semibold text-gray-500 mb-2">Facility Documents</h5>
-        <div className="flex flex-wrap gap-2">
-          {uploadedDocs.filter(doc => doc.type === 'facility').map((doc, index) => (
-            <DocumentBadge key={index} fileName={doc.name} />
-          ))}
-        </div>
-      </div>
-  </div>
-)}
-                {profileData.documentUrl && (
-                  <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg">
-                    <FileText className="h-5 w-5 text-blue-500" />
-                    <span className="text-sm text-blue-700 truncate max-w-[200px]">
-                      {profileData.documentName || 'Current Document'}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setProfileData(prev => ({ 
-                        ...prev, 
-                        documentUrl: '', 
-                        documentName: '' 
-                      }))}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-                <p className="text-xs text-gray-500">
-                  Upload facility license, registration, or other official documents (PDF only, max 5MB)
-                </p>
-              </div>
+              )}
             </div>
-          )} */}
+
+            {loadingDocs ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              </div>
+            ) : uploadedDocs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {uploadedDocs.map((doc, index) => (
+                  <DocumentBadge key={index} doc={doc} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <p>No documents uploaded yet</p>
+                {isEditing && (
+                  <p className="text-sm mt-1">Upload facility license, registration, or other official documents</p>
+                )}
+              </div>
+            )}
+            </div>
         </CardContent>
       </Card>
+      {/* <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>{selectedPdf?.name}</DialogTitle>
+            <DialogDescription>
+              View your document - You can zoom, download, or print this document.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 h-full min-h-0">
+            {selectedPdf && (
+              <iframe
+                src={`${selectedPdf.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                className="w-full h-full rounded-lg border"
+                title="PDF Viewer"
+              />
+            )}
+          </div>
+          <div className="flex justify-end space-x-2 mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+            <Button
+              onClick={() => window.open(selectedPdf?.url, '_blank')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog> */}
+      <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
+  <DialogContent className={cn(
+    "p-0 overflow-hidden",
+    "sm:max-w-5xl sm:w-[90vw] sm:h-[90vh]",
+    "max-w-full w-full h-full sm:rounded-lg rounded-none"
+  )}>
+    {/* Simplified Header - removed description */}
+    <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6 pb-2 border-b">
+      <DialogTitle className="truncate text-sm sm:text-base md:text-lg font-semibold">
+        {selectedPdf?.name}
+      </DialogTitle>
+      {/* <DialogClose asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <X className="h-4 w-4" />
+        </Button>
+      </DialogClose> */}
+    </div>
+    
+    {/* PDF Viewer - Full height */}
+    <div className="flex-1 min-h-0 overflow-auto">
+      {selectedPdf && (
+        <iframe
+          src={`${selectedPdf.url}#navpanes=0&scrollbar=1&toolbar=1`}
+          className="w-full h-full"
+          title="PDF Viewer"
+          style={{ 
+            border: 'none',
+            minHeight: 'calc(100vh - 120px)'
+          }}
+        />
+      )}
+    </div>
+    
+    {/* Action Buttons - Simplified */}
+    <div className="flex justify-end gap-2 px-4 sm:px-6 pb-4 sm:pb-6 pt-3 border-t">
+      <DialogClose asChild>
+        <Button variant="outline" className="w-full sm:w-auto">
+          Close
+        </Button>
+      </DialogClose>
+      <Button
+        onClick={() => window.open(selectedPdf?.url, '_blank')}
+        className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+      >
+        <File className="h-4 w-4 mr-2" />
+        View Document
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
 
       {/* Facility Information */}
       <Card className="border-0 shadow-lg">

@@ -2385,92 +2385,213 @@ const DoctorRegistration = () => {
   };
 
   // Step 1: Create user account and profile (SAVES IMMEDIATELY)
-  const handleSignUp = async () => {
-    setIsSubmitting(true);
+//   const handleSignUp = async () => {
+//     setIsSubmitting(true);
     
-    try {
-      const fullPhoneNumber = countryCode + phoneNumber;
+//     try {
+//       const fullPhoneNumber = countryCode + phoneNumber;
       
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.emailAddress,
-        password: password,
-        options: {
-          data: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone_number: fullPhoneNumber,
-            role: 'doctor',
-          },
-        },
-      });
+//       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+//         email: formData.emailAddress,
+//         password: password,
+//         options: {
+//           data: {
+//             firstName: formData.firstName,
+//             lastName: formData.lastName,
+//             phone_number: fullPhoneNumber,
+//             role: 'doctor',
+//           },
+//         },
+//       });
 
-      if (signUpError) {
-        toast({
-          title: 'Registration Failed',
-          description: signUpError.message,
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return null;
-      }
+//       if (signUpError) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: signUpError.message,
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return null;
+//       }
 
-      const userId = signUpData.user?.id;
+//       const userId = signUpData.user?.id;
       
-      if (!userId) {
-        toast({
-          title: 'Registration Failed',
-          description: 'Could not retrieve user information',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return null;
-      }
-      const { data: existingProfile, error: checkError } = await supabase
-                              .from('profiles')
-                              .select('id')
-                              .eq('id', userId)
-                              .maybeSingle();
+//       if (!userId) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: 'Could not retrieve user information',
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return null;
+//       }
+//       const { data: existingProfile, error: checkError } = await supabase
+//                               .from('profiles')
+//                               .select('id')
+//                               .eq('id', userId)
+//                               .maybeSingle();
                         
-                            let profileError;
-await supabase
-        .from('profiles')
-        .update({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
+//                             let profileError;
+// await supabase
+//         .from('profiles')
+//         .update({
+//           first_name: formData.firstName,
+//           last_name: formData.lastName,
+//           phone_number: fullPhoneNumber,
+//           role: 'doctor',
+//         })
+//         .eq('email', formData.emailAddress);
+
+//       if (profileError) {
+//         console.error('Error updating profile:', profileError);
+//         toast({
+//           title: 'Profile Update Issue',
+//           description: 'Your account was created but profile update had issues',
+//           variant: 'destructive',
+//         });
+//       } else {
+//         toast({
+//           title: 'Account Created!',
+//           description: 'Your basic account has been created. Please continue with the registration.',
+//         });
+//       }
+
+//       setIsSubmitting(false);
+//       return signUpData.user;
+      
+//     } catch (error) {
+//       console.error('Error saving step 1:', error);
+//       toast({
+//         title: 'Error',
+//         description: 'Failed to save personal information',
+//         variant: 'destructive',
+//       });
+//       setIsSubmitting(false);
+//       return null;
+//     }
+//   };
+const handleSignUp = async () => {
+  setIsSubmitting(true);
+  
+  try {
+    const fullPhoneNumber = countryCode + phoneNumber;
+    
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.emailAddress,
+      password: password,
+      options: {
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           phone_number: fullPhoneNumber,
           role: 'doctor',
-        })
-        .eq('email', formData.emailAddress);
+        },
+      },
+    });
 
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-        toast({
-          title: 'Profile Update Issue',
-          description: 'Your account was created but profile update had issues',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Account Created!',
-          description: 'Your basic account has been created. Please continue with the registration.',
-        });
-      }
-
-      setIsSubmitting(false);
-      return signUpData.user;
-      
-    } catch (error) {
-      console.error('Error saving step 1:', error);
+    if (signUpError) {
       toast({
-        title: 'Error',
-        description: 'Failed to save personal information',
+        title: 'Registration Failed',
+        description: signUpError.message,
         variant: 'destructive',
       });
       setIsSubmitting(false);
       return null;
     }
-  };
 
+    const userId = signUpData.user?.id;
+    
+    if (!userId) {
+      toast({
+        title: 'Registration Failed',
+        description: 'Could not retrieve user information',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return null;
+    }
+    
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    let profileError;
+    await supabase
+      .from('profiles')
+      .update({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: fullPhoneNumber,
+        role: 'doctor',
+      })
+      .eq('email', formData.emailAddress);
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+      toast({
+        title: 'Profile Update Issue',
+        description: 'Your account was created but profile update had issues',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Account Created!',
+        description: 'Your basic account has been created. Please continue with the registration.',
+      });
+    }
+
+    // Call the professional welcome email edge function
+    try {
+      // Get the current session to get the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      
+      if (accessToken) {
+        const response = await fetch(
+          'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/professional-welcome-email',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              email: formData.emailAddress,
+              password: password,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              userId: userId,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          console.log('Professional welcome email sent successfully');
+        } else {
+          console.error('Failed to send welcome email:', await response.text());
+        }
+      }
+    } catch (emailError) {
+      console.error('Error calling welcome email function:', emailError);
+      // Don't block registration if email fails
+    }
+
+    setIsSubmitting(false);
+    return signUpData.user;
+    
+  } catch (error) {
+    console.error('Error saving step 1:', error);
+    toast({
+      title: 'Error',
+      description: 'Failed to save personal information',
+      variant: 'destructive',
+    });
+    setIsSubmitting(false);
+    return null;
+  }
+};
   // Final Submit - Saves all remaining data (Steps 2, 3, 4, 5, 6)
   const handleFinalSubmit = async () => {
     if (!userId) {
@@ -2662,62 +2783,62 @@ await supabase
       setIsUploading(false);
     }
   };
-  const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const files = event.target.files;
-      if (!files) return;
+//   const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+//   const files = event.target.files;
+//       if (!files) return;
       
-      setIsUploading(true);
+//       setIsUploading(true);
       
-      for (let file of files) {
-        try {
-          if (file.type === 'application/pdf') {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
+//       for (let file of files) {
+//         try {
+//           if (file.type === 'application/pdf') {
+//             await new Promise(resolve => setTimeout(resolve, 2000));
+//           }
           
-          const cleanFileName = file.name
-            .replace(/\s+/g, "_")
-            .replace(/[^\w.-]/g, "")
-            .toLowerCase();
+//           const cleanFileName = file.name
+//             .replace(/\s+/g, "_")
+//             .replace(/[^\w.-]/g, "")
+//             .toLowerCase();
   
-          const filePath = `medical_documents/${Date.now()}_${cleanFileName}`;
-          const { error } = await supabase
-            .storage
-            .from('heal_med_app_files_bucket')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: false
-            });
+//           const filePath = `medical_documents/${Date.now()}_${cleanFileName}`;
+//           const { error } = await supabase
+//             .storage
+//             .from('heal_med_app_files_bucket')
+//             .upload(filePath, file, {
+//               cacheControl: '3600',
+//               upsert: false
+//             });
   
-          if (error) {
-            toast({
-              title: "Upload failed",
-              description: error.message,
-              variant: "destructive",
-            });
-            setIsUploading(false);
-            return;
-          } else {
-            setUploadedDocs(prev => [...prev, { 
-              name: file.name, 
-              type: 'doctor' 
-            }]);
-            toast({
-              title: "Document Uploaded",
-              description: `${file.name} uploaded successfully.`,
-            });
-          }
-        } catch (err) {
-          console.error('Upload error:', err);
-          toast({
-            title: "Upload Failed",
-            description: "An unexpected error occurred.",
-            variant: "destructive",
-          });
-        }
-      }
+//           if (error) {
+//             toast({
+//               title: "Upload failed",
+//               description: error.message,
+//               variant: "destructive",
+//             });
+//             setIsUploading(false);
+//             return;
+//           } else {
+//             setUploadedDocs(prev => [...prev, { 
+//               name: file.name, 
+//               type: 'doctor' 
+//             }]);
+//             toast({
+//               title: "Document Uploaded",
+//               description: `${file.name} uploaded successfully.`,
+//             });
+//           }
+//         } catch (err) {
+//           console.error('Upload error:', err);
+//           toast({
+//             title: "Upload Failed",
+//             description: "An unexpected error occurred.",
+//             variant: "destructive",
+//           });
+//         }
+//       }
       
-      setIsUploading(false);
-};
+//       setIsUploading(false);
+// };
 
   // const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   const files = event.target.files;
@@ -2771,7 +2892,85 @@ await supabase
     
   //   setIsUploading(false);
   // };
+const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+  
+  // Check if userId exists
+  if (!userId) {
+    toast({
+      title: "User ID Missing",
+      description: "Please complete Step 1 (Account Creation) before uploading documents.",
+      variant: "destructive",
+    });
+    setIsUploading(false);
+    return;
+  }
+  
+  setIsUploading(true);
+  
+  for (let file of files) {
+    try {
+      if (file.type === 'application/pdf') {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      const cleanFileName = file.name
+        .replace(/\s+/g, "_")
+        .replace(/[^\w.-]/g, "")
+        .toLowerCase();
 
+      // Include user_id in the file path
+      const filePath = `medical_documents/${userId}/${Date.now()}_${cleanFileName}`;
+      
+      const { error } = await supabase
+        .storage
+        .from('heal_med_app_files_bucket')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        toast({
+          title: "Upload failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsUploading(false);
+        return;
+      } else {
+        // Get signed URL for immediate display
+        const { data: signedUrlData } = await supabase.storage
+          .from('heal_med_app_files_bucket')
+          .createSignedUrl(filePath, 3600);
+        
+        setUploadedDocs(prev => [...prev, { 
+          name: file.name, 
+          type: 'doctor',
+          userId: userId,
+          url: signedUrlData?.signedUrl || '',
+          path: filePath,
+          uploadedAt: new Date()
+        }]);
+        
+        toast({
+          title: "Document Uploaded",
+          description: `${file.name} uploaded successfully.`,
+        });
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast({
+        title: "Upload Failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
+  }
+  
+  setIsUploading(false);
+};
   const handleStep1Submit = async () => {
     if (!validateStep1()) return false;
     

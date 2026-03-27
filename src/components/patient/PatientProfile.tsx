@@ -20,16 +20,40 @@ import {
   Activity,
   Shield,
   ConeIcon,
-  Home
+  Home,
+  FileText,
+  Eye,
+  Download,
+  Loader2,
+  Trash2,
+  Upload,
+  File
 } from 'lucide-react';
 import { Patient } from '@/Models/Patient';
 import { supabase } from '@/integrations/supabase/client';
 import { profile } from 'console'
 import {User as SupabaseUser} from '@supabase/supabase-js'
 import { Textarea } from '../ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 interface PatientProfileProps {
   onBack: () => void;
+}
+interface UploadedDocument {
+  name: string;
+  type: 'patient' | 'doctor' | 'facility';
+  userId?: string;
+  url?: string;
+  path?: string;
+  uploadedAt?: Date;
 }
 
 const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
@@ -60,6 +84,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack }) => {
  const [profileInfo, setProfileInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showOutdatedWarning, setShowOutdatedWarning] = useState(false);
+const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
+  const [selectedPdf, setSelectedPdf] = useState<{ url: string; name: string } | null>(null);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
+ const [uploading, setUploading] = useState(false);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 useEffect(() => {
@@ -138,6 +167,7 @@ useEffect(() => {
             setShowOutdatedWarning(true);
           }
         }
+        await fetchUserDocuments(user.id);
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -147,6 +177,47 @@ useEffect(() => {
     
     fetchProfile();
   }, []);
+  const fetchUserDocuments = async (userId: string) => {
+      setLoadingDocs(true);
+      try {
+        const { data: files, error } = await supabase.storage
+          .from('heal_med_app_files_bucket')
+          .list(`medical_documents/${userId}`, {
+            limit: 100,
+            sortBy: { column: 'created_at', order: 'desc' }
+          });
+    
+        if (error) {
+          console.error('Error fetching documents:', error);
+          return;
+        }
+    
+        if (files && files.length > 0) {
+          const docs: UploadedDocument[] = await Promise.all(
+            files.map(async (file) => {
+              // Get signed URL for each file
+              const { data: signedUrlData } = await supabase.storage
+                .from('heal_med_app_files_bucket')
+                .createSignedUrl(`medical_documents/${userId}/${file.name}`, 3600); // 1 hour expiry
+              
+              return {
+                name: file.name,
+                type: 'patient',
+                userId: userId,
+                url: signedUrlData?.signedUrl || '',
+                path: `medical_documents/${userId}/${file.name}`,
+                uploadedAt: new Date(file.created_at)
+              };
+            })
+          );
+          setUploadedDocs(docs);
+        }
+      } catch (error) {
+        console.error('Error in fetchUserDocuments:', error);
+      } finally {
+        setLoadingDocs(false);
+      }
+    };
 //   useEffect(() => {
 //     const fetchProfile = async () => {
 //       const {
@@ -361,6 +432,159 @@ useEffect(() => {
     });
   };
 
+   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files) return;
+      if (!user) {
+        toast({
+          title: "User not found",
+          description: "Please login again",
+          variant: "destructive"
+        });
+        return;
+      }
+  
+      setUploading(true);
+  
+      for (let file of files) {
+        const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+  
+        const { error } = await supabase
+          .storage
+          .from('heal_med_app_files_bucket')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+  
+        if (error) {
+          toast({
+            title: "Upload Failed",
+            description: error.message,
+            variant: "destructive"
+          });
+          setUploading(false);
+          return;
+        } 
+        else {
+          const { data: urlData } = supabase.storage
+            .from('heal_med_app_files_bucket')
+            .getPublicUrl(filePath);
+  
+          setUploadedDocs(prev => [
+            ...prev,
+            {
+              name: file.name,
+              type: 'facility',
+              userId: user.id,
+              url: urlData.publicUrl,
+              path: filePath,
+              uploadedAt: new Date()
+            }
+          ]);
+  
+          toast({
+            title: "Document Uploaded",
+            description: `${file.name} uploaded successfully.`,
+          });
+        }
+      }
+  
+      setUploading(false);
+      event.target.value = '';
+    };
+  
+  const handleDeleteDocument = async (doc: UploadedDocument) => {
+      if (!doc.path) return;
+      
+      setDeletingDoc(doc.name);
+      try {
+        const { error } = await supabase.storage
+          .from('heal_med_app_files_bucket')
+          .remove([doc.path]);
+  
+        if (error) {
+          throw error;
+        }
+  
+        setUploadedDocs(prev => prev.filter(d => d.name !== doc.name));
+        toast({
+          title: "Document Deleted",
+          description: `${doc.name} has been removed successfully.`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Delete Failed",
+          description: error.message || "Failed to delete document",
+          variant: "destructive"
+        });
+      } finally {
+        setDeletingDoc(null);
+      }
+    };
+  
+    const viewPdf = (url: string, name: string) => {
+      setSelectedPdf({ url, name });
+    };
+  
+    const DocumentBadge = ({ doc }: { doc: UploadedDocument }) => {
+      const isPDF = doc.name.toLowerCase().endsWith('.pdf');
+    return (
+        <div className="group relative bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3 flex-1">
+              <div className={`p-2 rounded-lg ${isPDF ? 'bg-red-50' : 'bg-blue-50'}`}>
+                <FileText className={`h-5 w-5 ${isPDF ? 'text-red-500' : 'text-blue-500'}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">    {doc.name.length > 10 ? `${doc.name.slice(0, 10)}...` : doc.name}</p>
+                <p className="text-xs text-gray-500">
+                  {doc.uploadedAt?.toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1">
+              {isPDF && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => viewPdf(doc.url!, doc.name)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => window.open(doc.url, '_blank')}
+                className="h-8 w-8 p-0"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              {isEditing && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDeleteDocument(doc)}
+                  disabled={deletingDoc === doc.name}
+                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  {deletingDoc === doc.name ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      );
+    };
+
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -449,8 +673,101 @@ useEffect(() => {
               </div>
             </div>
           </div>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold text-gray-700">
+                          Patient Documents
+                        </Label>
+                        {isEditing && (
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              multiple
+                              onChange={handleFileUpload}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                              disabled={uploading}
+                            />
+                            <Button variant="outline" size="sm" disabled={uploading}>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload Documents
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+          
+                      {loadingDocs ? (
+                        <div className="flex justify-center py-8">
+                          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                        </div>
+                      ) : uploadedDocs.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {uploadedDocs.map((doc, index) => (
+                            <DocumentBadge key={index} doc={doc} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                          <p>No documents uploaded yet</p>
+                          {isEditing && (
+                            <p className="text-sm mt-1">Upload facility license, registration, or other official documents</p>
+                          )}
+                        </div>
+                      )}
+                      </div>
         </CardContent>
       </Card>
+      <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
+              <DialogContent className={cn(
+                "p-0 overflow-hidden",
+                "sm:max-w-5xl sm:w-[90vw] sm:h-[90vh]",
+                "max-w-full w-full h-full sm:rounded-lg rounded-none"
+              )}>
+                {/* Simplified Header - removed description */}
+                <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6 pb-2 border-b">
+                  <DialogTitle className="truncate text-sm sm:text-base md:text-lg font-semibold">
+                    {selectedPdf?.name}
+                  </DialogTitle>
+                  {/* <DialogClose asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DialogClose> */}
+                </div>
+                
+                {/* PDF Viewer - Full height */}
+                <div className="flex-1 min-h-0 overflow-auto">
+                  {selectedPdf && (
+                    <iframe
+                      src={`${selectedPdf.url}#navpanes=0&scrollbar=1&toolbar=1`}
+                      className="w-full h-full"
+                      title="PDF Viewer"
+                      style={{ 
+                        border: 'none',
+                        minHeight: 'calc(100vh - 120px)'
+                      }}
+                    />
+                  )}
+                </div>
+                
+                {/* Action Buttons - Simplified */}
+                <div className="flex justify-end gap-2 px-4 sm:px-6 pb-4 sm:pb-6 pt-3 border-t">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      Close
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    onClick={() => window.open(selectedPdf?.url, '_blank')}
+                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                  >
+                    <File className="h-4 w-4 mr-2" />
+                    View Document
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
       {/* Personal Information */}
       <Card className="border-0 shadow-lg">

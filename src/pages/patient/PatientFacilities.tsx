@@ -53,7 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addDays, format, isBefore, startOfDay, isWithinInterval } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-// import { Country, State, City } from "country-state-city";
+import { Country, State, City } from "country-state-city";
 
 interface Facility {
   id: string;
@@ -409,14 +409,14 @@ const checkBedAvailabilityOnDate = (bookings: any[], checkDate: Date) => {
     fetchFacilities();
   }, []);
 
-  // useEffect(() => {
-  //   const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
-  //   if (india) {
-  //     const allIndianCities = City.getCitiesOfCountry('IN') || [];
-  //     const cityNames = allIndianCities.map(city => city.name).sort();
-  //     setIndianCities(cityNames);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const india = Country.getAllCountries().find(country => country.isoCode === 'IN');
+    if (india) {
+      const allIndianCities = City.getCitiesOfCountry('IN') || [];
+      const cityNames = allIndianCities.map(city => city.name).sort();
+      setIndianCities(cityNames);
+    }
+  }, []);
 
   useEffect(() => {
     applyFilters();

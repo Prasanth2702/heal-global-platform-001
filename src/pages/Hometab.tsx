@@ -701,9 +701,9 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                           }}
                         />
                       </div>
-                      <span className="position-absolute top-0 start-50 translate-middle badge bg-success rounded-pill px-3 py-2">
+                      {/* <span className="position-absolute top-0 start-50 translate-middle badge bg-success rounded-pill px-3 py-2">
                         {doctor.rating} ★
-                      </span>
+                      </span> */}
                     </div>
                     
                     <h5 className="card-title text-center mb-1">{doctor.name}</h5>
@@ -883,18 +883,18 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                               <span className="badge bg-light text-dark">
                                 {hospital.facility_type}
                               </span>
-                              {hospital.is_verified && (
+                              {/* {hospital.is_verified && (
                                 <span className="badge bg-success">
                                   <Shield size={12} className="me-1" />
                                   Verified
                                 </span>
-                              )}
+                              )} */}
                             </div>
                           </div>
-                          <div className="text-warning d-flex align-items-center">
+                          {/* <div className="text-warning d-flex align-items-center">
                             <Star size={16} fill="currentColor" />
                             <span className="ms-1 text-dark">{hospital.rating}</span>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                       

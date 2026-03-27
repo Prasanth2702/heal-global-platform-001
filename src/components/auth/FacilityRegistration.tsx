@@ -2436,155 +2436,359 @@ const FacilityRegistration = () => {
   };
   
   // Step 1: Create user account and profile (SAVES IMMEDIATELY)
-  const saveStep1Data = async (): Promise<boolean> => {
-    setIsSubmitting(true);
-    const fullPhoneNumber = countryCode + phoneNumber;
+  // const saveStep1Data = async (): Promise<boolean> => {
+  //   setIsSubmitting(true);
+  //   const fullPhoneNumber = countryCode + phoneNumber;
     
-    try {
-      // Check if license exists BEFORE creating user
-      const licenseExists = await checkLicenseNumberExists(formData.licenseNumber);
-      if (licenseExists) {
-        toast({
-          title: "License Number Already Registered",
-          description: "This medical license number is already registered in our system.",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return false;
-      }
+  //   try {
+  //     // Check if license exists BEFORE creating user
+  //     const licenseExists = await checkLicenseNumberExists(formData.licenseNumber);
+  //     if (licenseExists) {
+  //       toast({
+  //         title: "License Number Already Registered",
+  //         description: "This medical license number is already registered in our system.",
+  //         variant: "destructive",
+  //       });
+  //       setIsSubmitting(false);
+  //       return false;
+  //     }
 
-      // Create user account
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.emailAddress.toLowerCase(),
-        password: password,
-        options: {
-          data: {
-            first_name: formData.facilityName,
-            phone_number: fullPhoneNumber,
-            avatar_url: profileImage,
-            role: 'hospital_admin',
-          },
-        },
-      });
+  //     // Create user account
+  //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  //       email: formData.emailAddress.toLowerCase(),
+  //       password: password,
+  //       options: {
+  //         data: {
+  //           first_name: formData.facilityName,
+  //           phone_number: fullPhoneNumber,
+  //           avatar_url: profileImage,
+  //           role: 'hospital_admin',
+  //         },
+  //       },
+  //     });
   
-      if (signUpError) {
-        toast({
-          title: 'Registration Failed',
-          description: signUpError.message,
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return false;
-      }
+  //     if (signUpError) {
+  //       toast({
+  //         title: 'Registration Failed',
+  //         description: signUpError.message,
+  //         variant: 'destructive',
+  //       });
+  //       setIsSubmitting(false);
+  //       return false;
+  //     }
   
-      const userId = signUpData.user?.id;
-      if (!userId) {
-        toast({
-          title: 'Registration Failed',
-          description: 'Could not retrieve user information',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return false;
-      }
+  //     const userId = signUpData.user?.id;
+  //     if (!userId) {
+  //       toast({
+  //         title: 'Registration Failed',
+  //         description: 'Could not retrieve user information',
+  //         variant: 'destructive',
+  //       });
+  //       setIsSubmitting(false);
+  //       return false;
+  //     }
   
-      setUserId(userId);
-      setUser(signUpData.user);
+  //     setUserId(userId);
+  //     setUser(signUpData.user);
       
-      const { data: existingProfile, error: checkError } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('id', userId)
-                        .maybeSingle();
+  //     const { data: existingProfile, error: checkError } = await supabase
+  //                       .from('profiles')
+  //                       .select('id')
+  //                       .eq('id', userId)
+  //                       .maybeSingle();
                   
-                      let profileError;
+  //                     let profileError;
       
-                      await supabase
-        .from('profiles')
-        .update({
+  //                     await supabase
+  //       .from('profiles')
+  //       .update({
+  //         first_name: formData.facilityName,
+  //         phone_number: fullPhoneNumber,
+  //         role: 'hospital_admin',
+  //         email: formData.emailAddress.toLowerCase(),
+  //         updated_at: new Date().toISOString(),
+  //       })
+  //       .eq('email',formData.emailAddress);
+        
+  //     if (profileError) {
+  //       console.error('Error creating profile:', profileError);
+  //       toast({
+  //         title: 'Profile Creation Issue',
+  //         description: 'Your account was created but we had trouble saving profile details.',
+  //       });
+  //     }
+
+  //     // Create facility record with minimal data (only step 1 data)
+  //     const operatingHoursObj = {
+  //       schedule: formData.operatingHours || "Mon-Sat: 9AM-9PM",
+  //       timezone: "UTC"
+  //     };
+
+  //     const additionalServicesObj = {
+  //       emergencyServices: formData.emergencyServices,
+  //       ambulanceService: formData.ambulanceService,
+  //       onlineConsultation: formData.onlineConsultation,
+  //       homeVisit: formData.homeVisit
+  //     };
+
+  //     const { data: facilityData, error: facilityError } = await supabase
+  //       .from('facilities')
+  //       .insert({
+  //         admin_user_id: userId,
+  //         address: formData.address || "",
+  //         city: formData.city || "",
+  //         state: formData.state|| "",
+  //         pincode: formData.pincode ? Number(formData.pincode) : null,
+  //         country_code: formData.country_code|| "India",
+  //         total_beds: Number(formData.totalBeds) || 0,
+  //         departments: formData.departments,
+  //         facility_name: formData.facilityName,
+  //         facility_type: formData.facilityType,
+  //         license_number: formData.licenseNumber,
+  //         established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
+  //         is_verified: false,
+  //         created_at: new Date().toISOString(),
+  //         updated_at: new Date().toISOString()
+  //       })
+  //       .select()
+  //       .single();
+
+  //     if (facilityError) {
+  //       console.error('Error creating facility:', facilityError);
+  //       toast({
+  //         title: 'Facility Creation Issue',
+  //         description: 'Your account was created but we had trouble saving facility details.',
+  //         variant: 'destructive',
+  //       });
+  //       setIsSubmitting(false);
+  //       return false;
+  //     }
+      
+  //     setFacilityId(facilityData.id);
+
+  //     toast({
+  //       title: 'Step 1 Completed',
+  //       description: 'Facility information saved successfully!',
+  //     });
+      
+  //     setIsSubmitting(false);
+  //     return true;
+      
+  //   } catch (error) {
+  //     console.error('Error saving step 1:', error);
+  //     toast({
+  //       title: 'Error',
+  //       description: 'Failed to save facility information',
+  //       variant: 'destructive',
+  //     });
+  //     setIsSubmitting(false);
+  //     return false;
+  //   }
+  // };
+  const saveStep1Data = async (): Promise<boolean> => {
+  setIsSubmitting(true);
+  const fullPhoneNumber = countryCode + phoneNumber;
+  
+  try {
+    // Check if license exists BEFORE creating user
+    const licenseExists = await checkLicenseNumberExists(formData.licenseNumber);
+    if (licenseExists) {
+      toast({
+        title: "License Number Already Registered",
+        description: "This medical license number is already registered in our system.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return false;
+    }
+
+    // Create user account
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.emailAddress.toLowerCase(),
+      password: password,
+      options: {
+        data: {
           first_name: formData.facilityName,
           phone_number: fullPhoneNumber,
+          avatar_url: profileImage,
           role: 'hospital_admin',
-          email: formData.emailAddress.toLowerCase(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('email',formData.emailAddress);
-        
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        toast({
-          title: 'Profile Creation Issue',
-          description: 'Your account was created but we had trouble saving profile details.',
-        });
-      }
+        },
+      },
+    });
 
-      // Create facility record with minimal data (only step 1 data)
-      const operatingHoursObj = {
-        schedule: formData.operatingHours || "Mon-Sat: 9AM-9PM",
-        timezone: "UTC"
-      };
-
-      const additionalServicesObj = {
-        emergencyServices: formData.emergencyServices,
-        ambulanceService: formData.ambulanceService,
-        onlineConsultation: formData.onlineConsultation,
-        homeVisit: formData.homeVisit
-      };
-
-      const { data: facilityData, error: facilityError } = await supabase
-        .from('facilities')
-        .insert({
-          admin_user_id: userId,
-          address: formData.address || "",
-          city: formData.city || "",
-          state: formData.state|| "",
-          pincode: formData.pincode ? Number(formData.pincode) : null,
-          country_code: formData.country_code|| "India",
-          total_beds: Number(formData.totalBeds) || 0,
-          departments: formData.departments,
-          facility_name: formData.facilityName,
-          facility_type: formData.facilityType,
-          license_number: formData.licenseNumber,
-          established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
-          is_verified: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (facilityError) {
-        console.error('Error creating facility:', facilityError);
-        toast({
-          title: 'Facility Creation Issue',
-          description: 'Your account was created but we had trouble saving facility details.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return false;
-      }
-      
-      setFacilityId(facilityData.id);
-
+    if (signUpError) {
       toast({
-        title: 'Step 1 Completed',
-        description: 'Facility information saved successfully!',
-      });
-      
-      setIsSubmitting(false);
-      return true;
-      
-    } catch (error) {
-      console.error('Error saving step 1:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save facility information',
+        title: 'Registration Failed',
+        description: signUpError.message,
         variant: 'destructive',
       });
       setIsSubmitting(false);
       return false;
     }
-  };
+
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      toast({
+        title: 'Registration Failed',
+        description: 'Could not retrieve user information',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return false;
+    }
+
+    setUserId(userId);
+    setUser(signUpData.user);
+    
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    let profileError;
+    
+    await supabase
+      .from('profiles')
+      .update({
+        first_name: formData.facilityName,
+        phone_number: fullPhoneNumber,
+        role: 'hospital_admin',
+        email: formData.emailAddress.toLowerCase(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('email', formData.emailAddress);
+      
+    if (profileError) {
+      console.error('Error creating profile:', profileError);
+      toast({
+        title: 'Profile Creation Issue',
+        description: 'Your account was created but we had trouble saving profile details.',
+      });
+    }
+
+    // Create facility record with minimal data (only step 1 data)
+    const operatingHoursObj = {
+      schedule: formData.operatingHours || "Mon-Sat: 9AM-9PM",
+      timezone: "UTC"
+    };
+
+    const additionalServicesObj = {
+      emergencyServices: formData.emergencyServices,
+      ambulanceService: formData.ambulanceService,
+      onlineConsultation: formData.onlineConsultation,
+      homeVisit: formData.homeVisit
+    };
+
+    const { data: facilityData, error: facilityError } = await supabase
+      .from('facilities')
+      .insert({
+        admin_user_id: userId,
+        address: formData.address || "",
+        city: formData.city || "",
+        state: formData.state|| "",
+        pincode: formData.pincode ? Number(formData.pincode) : null,
+        country_code: formData.country_code|| "India",
+        total_beds: Number(formData.totalBeds) || 0,
+        departments: formData.departments,
+        facility_name: formData.facilityName,
+        facility_type: formData.facilityType,
+        license_number: formData.licenseNumber,
+        established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
+        is_verified: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (facilityError) {
+      console.error('Error creating facility:', facilityError);
+      toast({
+        title: 'Facility Creation Issue',
+        description: 'Your account was created but we had trouble saving facility details.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return false;
+    }
+    
+    setFacilityId(facilityData.id);
+
+    // Call the facility welcome email edge function
+    try {
+      // Get the current session to get the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      
+      if (!accessToken) {
+        console.error('No access token available for email function');
+      } else {
+        const response = await fetch(
+          'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/facility-welcome-email',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              email: formData.emailAddress.toLowerCase(),
+              password: password,
+              facilityName: formData.facilityName,
+              facilityType: formData.facilityType,
+              licenseNumber: formData.licenseNumber,
+              userId: userId,
+            }),
+          }
+        );
+
+        const responseData = await response.json();
+        
+        if (response.ok) {
+          console.log('Facility welcome email sent successfully:', responseData);
+          toast({
+            title: 'Welcome Email Sent',
+            description: 'Check your email for login instructions and next steps.',
+          });
+        } else {
+          console.error('Failed to send welcome email:', responseData);
+          // Show non-blocking warning
+          toast({
+            title: 'Email Notification Issue',
+            description: 'Facility registered but welcome email could not be sent. Please contact support.',
+            
+          });
+        }
+      }
+    } catch (emailError) {
+      console.error('Error calling facility welcome email function:', emailError);
+      // Don't block registration if email fails
+      toast({
+        title: 'Email Notification Issue',
+        description: 'Facility registered but welcome email could not be sent. Please contact support.',
+              });
+    }
+
+    toast({
+      title: 'Step 1 Completed',
+      description: 'Facility information saved successfully!',
+    });
+    
+    setIsSubmitting(false);
+    return true;
+    
+  } catch (error) {
+    console.error('Error saving step 1:', error);
+    toast({
+      title: 'Error',
+      description: 'Failed to save facility information',
+      variant: 'destructive',
+    });
+    setIsSubmitting(false);
+    return false;
+  }
+};
 
   // Final Submit - Saves all remaining data (Steps 2, 3, 4)
   const handleFinalSubmit = async () => {
@@ -2705,21 +2909,21 @@ const FacilityRegistration = () => {
       }
 
       // Save documents if uploaded
-      if (uploadedDocs.length > 0) {
-        const documentUrls = uploadedDocs.map(doc => doc.name);
+      // if (uploadedDocs.length > 0) {
+      //   const documentUrls = uploadedDocs.map(doc => doc.name);
         
-        const { error: docError } = await supabase
-          .from('facilities')
-          .update({
-            documents: documentUrls,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', facilityId);
+      //   const { error: docError } = await supabase
+      //     .from('facilities')
+      //     .update({
+      //       documents: documentUrls,
+      //       updated_at: new Date().toISOString()
+      //     })
+      //     .eq('id', facilityId);
 
-        if (docError) {
-          console.error('Error saving document references:', docError);
-        }
-      }
+      //   if (docError) {
+      //     console.error('Error saving document references:', docError);
+      //   }
+      // }
 
       // Track successful registration
       mixpanelInstance.track("Facility Registration Success", {
@@ -2847,50 +3051,133 @@ const FacilityRegistration = () => {
     
   //   setIsUploading(false);
   // };
- const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+//  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+//     const files = event.target.files;
+//     if (!files) return;
     
-    setIsUploading(true);
+//     setIsUploading(true);
     
-    for (let file of files) {
+//     for (let file of files) {
+//       // Show PDF loader for PDF files
+//       if (file.type === 'application/pdf') {
+//         await new Promise(resolve => setTimeout(resolve, 2000));
+//       }
+      
+//       const filePath = `medical_documents/${Date.now()}_${file.name}`;
+//       const { data, error } = await supabase
+//         .storage
+//         .from('heal_med_app_files_bucket')
+//         .upload(filePath, file, {
+//           cacheControl: '3600',
+//           upsert: false
+//         });
+  
+//       if (error) {
+//         toast({
+//           title: "Uploading of the file failed",
+//           description: error.message,
+//         });
+//         setIsUploading(false);
+//         return;
+//       }
+//       else {
+//         // Store the document with its type based on userType
+//         setUploadedDocs(prev => [...prev, { 
+//           name: file.name, 
+//           type: 'facility' 
+//         }]);
+//         toast({
+//           title: "Files Uploaded",
+//           description: `file(s) uploaded successfully.`,
+//         });
+//       }
+//     }
+    
+//     setIsUploading(false);
+//   };
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+  
+  // Check if user exists
+  if (!user) {
+    toast({
+      title: "Authentication Error",
+      description: "Please log in to upload documents.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  setIsUploading(true);
+  
+  for (let file of files) {
+    try {
       // Show PDF loader for PDF files
       if (file.type === 'application/pdf') {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
       
-      const filePath = `medical_documents/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase
+      // Clean the filename
+      const cleanFileName = file.name
+        .replace(/\s+/g, "_")
+        .replace(/[^\w.-]/g, "")
+        .toLowerCase();
+      
+      // Include user_id in the file path
+      const filePath = `medical_documents/${user.id}/${Date.now()}_${cleanFileName}`;
+      
+      const { error } = await supabase
         .storage
         .from('heal_med_app_files_bucket')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
         });
-  
+
       if (error) {
         toast({
-          title: "Uploading of the file failed",
+          title: "Upload failed",
           description: error.message,
+          variant: "destructive"
         });
         setIsUploading(false);
         return;
       }
-      else {
-        // Store the document with its type based on userType
-        setUploadedDocs(prev => [...prev, { 
-          name: file.name, 
-          type: 'facility' 
-        }]);
-        toast({
-          title: "Files Uploaded",
-          description: `file(s) uploaded successfully.`,
-        });
-      }
+      
+      // Get signed URL for the uploaded file
+      const { data: signedUrlData } = await supabase.storage
+        .from('heal_med_app_files_bucket')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      // Store the document with more details
+      setUploadedDocs(prev => [...prev, { 
+        name: file.name, 
+        type: 'facility',
+        userId: user.id,
+        url: signedUrlData?.signedUrl || '',
+        path: filePath,
+        uploadedAt: new Date()
+      }]);
+      
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} uploaded successfully.`,
+      });
+      
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast({
+        title: "Upload Failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
     }
-    
-    setIsUploading(false);
-  };
+  }
+  
+  setIsUploading(false);
+  event.target.value = ''; // Reset input
+};
   const handleNext = async () => {
     if (isSubmitting) return;
     

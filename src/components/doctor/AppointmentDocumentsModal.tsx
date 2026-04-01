@@ -9,7 +9,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   appointmentId: string;
-  role: "patient" | "doctor";
+  role: "patient" | "doctor"|"hospital_admin";
 }
 
 export default function AppointmentDocumentsModal({
@@ -18,7 +18,7 @@ export default function AppointmentDocumentsModal({
   appointmentId,
   role,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<"patient" | "doctor">("patient");
+  const [activeTab, setActiveTab] = useState<"patient" | "doctor" |"hospital_admin">("patient");
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -67,7 +67,7 @@ const doctorDocs = documents.filter(
     const handleView = async () => {
       const { data, error } = await supabase.storage
         .from("patient_files")
-        .createSignedUrl(doc.file_path, 60);
+.createSignedUrl(doc.file_path, 60);
 
       if (error || !data?.signedUrl) {
         toast.error("Failed to open document");

@@ -69,6 +69,15 @@ import ViewFacilityStaff from "./pages/facility/ViewFacilityStaff";
 import ViewFacilityPage from "./pages/facility/ViewFacilityPage";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
+import PatientFacilitiesId from "./pages/patient/PatientFacilitiesId";
+import DoctorHospitalsPage from "./components/patient/DoctorHospitalspage";
+import DepartmentDetailsFacilitypage from "./components/patient/DepartmentDetailsFacilitypage";
+import DoctorPages from "./components/patient/DoctorPages";
+import HospitalsPages from "./components/patient/Hospitalspages";
+import DoctorHospitalsPages from "./components/patient/DoctorHospitalsPages";
+import DoctorHospitalsPagess from "./components/patient/DoctorHospitalsPagess";
+import PatientFacilitiesPages from "./components/patient/PatientFacilitiesPages";
+import PatientFacilitiesPagess from "./components/patient/PatientFacilitiesPagess";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -322,18 +331,21 @@ const App = () => {
       <Route path="/dashboard/patient/facility/:slug/:id" element={<DoctorHospitals />} />
 {/* <Route path="/homelogin" element={<HomeLogin />} /> */}
 
-<Route path="/appointment/doctorprofile/doctor/:id" element={<DoctorHospitalsDetails />} />
-<Route path="/appointment/facilityprofile/facility/:id" element={<DoctorHospitalsDetails  />} />
-      <Route path="/appointment/doctorprofile/doctor/:slug/:id" element={<DoctorHospitalsDetails />} />
-      <Route path="/appointment/facilityprofile/facility/:slug/:id" element={<DoctorHospitalsDetails  />} />
+<Route path="/appointment/doctorprofile/doctor/:id" element={<DoctorHospitalsPages />} />
+<Route path="/appointment/facilityprofile/facility/:id" element={<DoctorHospitalsPagess  />} />
+      <Route path="/appointment/doctorprofile/doctor/:slug/:id" element={<DoctorHospitalsPages />} />
+      <Route path="/appointment/facilityprofile/facility/:slug/:id" element={<DoctorHospitalsPagess  />} />
 
 <Route  path="/dashboard/patient/department/:id"  element={<DepartmentDetails />}/>
 <Route  path="/dashboard/patient/department/:slug/:id"  element={<DepartmentDetails />}/>
-<Route  path="/appointment/facilityprofile/department/:id"  element={<DepartmentDetailsFacility />}/>
-<Route  path="/appointment/facilityprofile/department/:slug/:id"  element={<DepartmentDetailsFacility />}/>
+<Route  path="/appointment/facilityprofile/department/:id"  element={<DepartmentDetailsFacilitypage />}/>
+<Route  path="/appointment/facilityprofile/department/:slug/:id"  element={<DepartmentDetailsFacilitypage />}/>
 <Route path="/dashboard/patient/booking/:facilityId" element={<PatientFacilities  view="beds" />} />
 <Route path="/dashboard/patient/booking/:slug/:facilityId" element={<PatientFacilities  view="beds" />} />
-
+        <Route path="/appointment" element={<DoctorHospitalsPage />} />
+        <Route path="/appointment/doctors" element={<DoctorPages />} />
+        <Route path="/appointment/hospitals" element={<HospitalsPages />} />
+        <Route path="/appointment/:view" element={<DoctorHospitalsPage />}/>
 <Route path="/about" element={<AboutPage />} />
 <Route path="/contact" element={<Contact />} />
 <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -348,6 +360,8 @@ const App = () => {
 {/* <Route path="/appointment" element={<HomeLogin />} /> */}
 <Route path="/appointment" element={<HomeLoginPage />} />
 <Route path="/appointment/:view" element={<HomeLoginPage />} />
+<Route path="/dashboard/patient/facilities/:slug/:id" element={<PatientFacilitiesPagess />} />
+<Route path="/appointment/beds/:slug/:id" element={<PatientFacilitiesPages />} />
 {/* <Route path="/dashboard/facility/staffId" element={<StaffManagementDetails/>}/> */}
 
 

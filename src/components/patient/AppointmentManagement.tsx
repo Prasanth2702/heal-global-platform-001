@@ -1204,6 +1204,17 @@ import AppointmentCard from "./AppointmentCard";
 import AppointmentDepartmentsCard from "./AppointmentDepartmentsCard";
 import VideoMeeting from "../VideoMeeting";
 import { Button } from "@/components/ui/button";
+import { addDays, format, isBefore, startOfDay } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Filter } from "lucide-react";
+import Loader from "../ui/Loader";
 
 // ------------------------
 // Types for safety & clarity
@@ -1224,6 +1235,8 @@ export interface Appointment {
   slotStartTime: string; // (HH:MM format)
   slotEndTime: string; // (HH:MM format)
   doctorAvatar: string | null;
+  doctorEmail:string|null;
+  doctorPhone:number|null;
   cancellationReason?: string | null;
   notes?: string | null;
   isPast: boolean;
@@ -1249,6 +1262,8 @@ export interface DepartmentAppointment {
   slotStartTime: string;
   slotEndTime: string;
   isPast: boolean;
+  facilityEmail:string;
+  facilityPhone:number;
   cancellationReason?: string | null;
   notes?: string | null;
   chiefComplaint?: string | null;
@@ -1261,6 +1276,8 @@ interface VideoMeetingState {
   showMeeting: boolean;
   meetingId: string;
   doctorName: string;
+      appointmentId: string; // Add this
+
 }
 
 interface Profile {
@@ -1316,7 +1333,7 @@ export default function AppointmentManagement() {
   // Separate state for different appointment types
   const [doctorAppointments, setDoctorAppointments] = useState<Appointment[]>([]);
   const [hospitalAppointments, setHospitalAppointments] = useState<DepartmentAppointment[]>([]);
-  
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"upcoming" | "past" | "doctor" | "hospital">("upcoming");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "confirmed" | "cancelled" | "completed"
@@ -1326,8 +1343,20 @@ export default function AppointmentManagement() {
     showMeeting: false,
     meetingId: "",
     doctorName: "",
-  });
+          appointmentId: "",// Add this
 
+  });
+const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+const [doctorUserId, setDoctorUserId] = useState<string>("");
+useEffect(() => {
+  const getDoctorId = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setDoctorUserId(user.id);
+    }
+  };
+  getDoctorId();
+}, []);
   const [profile, setProfile] = useState<Profile | null>(null);
   const apiKey = import.meta.env.VITE_VIDEOSDK_API_KEY;
 
@@ -1336,11 +1365,16 @@ export default function AppointmentManagement() {
     fetchDoctorAppointments();
     fetchHospitalAppointments();
   }, []);
-
+// Selected Date Filter
+const selectedDateString = selectedDate
+  ? format(selectedDate, "yyyy-MM-dd")
+  : null;
   // -------------------------------------------------------------
   // Fetch DOCTOR appointments (with doctor_id)
   // -------------------------------------------------------------
   const fetchDoctorAppointments = async () => {
+      setIsLoading(true); // Start loading
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -1405,7 +1439,7 @@ export default function AppointmentManagement() {
 
         const { data: doctorProfile } = await supabase
           .from("profiles")
-          .select("avatar_url")
+          .select("email,phone_number,avatar_url")
           .eq("user_id", apt.doctor_id)
           .single();
 
@@ -1440,6 +1474,8 @@ export default function AppointmentManagement() {
           slotStartTime: slot?.start_time || "",
           slotEndTime: slot?.end_time || "",
           doctorAvatar: doctorProfile?.avatar_url || null,
+          doctorEmail: doctorProfile?.email || null,
+          doctorPhone: doctorProfile?.phone_number || null,
           cancellationReason: apt.cancellation_reason || null,
           notes: apt.notes || null,
           isPast,
@@ -1459,13 +1495,17 @@ export default function AppointmentManagement() {
       setDoctorAppointments(uniqueAppointments);
     } catch (err) {
       console.error("Error fetching doctor appointments:", err);
-    }
+    }finally {
+    setIsLoading(false); // Stop loading
+  }
   };
 
   // -------------------------------------------------------------
   // Fetch HOSPITAL/DEPARTMENT appointments (with department_id, no doctor_id)
   // -------------------------------------------------------------
   const fetchHospitalAppointments = async () => {
+      setIsLoading(true); // Start loading
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -1520,9 +1560,16 @@ export default function AppointmentManagement() {
 
         const { data: facility } = await supabase
           .from("facilities")
-          .select("name")
+          .select("facility_name, admin_user_id")
           .eq("id", apt.facility_id)
           .single();
+
+            const { data: profile } = await supabase
+    .from("profiles")
+    .select("email, phone_number")
+    .eq("user_id", facility?.admin_user_id)
+    .single();
+
 
         const { data: documents } = await supabase
           .from("documents")
@@ -1544,8 +1591,12 @@ export default function AppointmentManagement() {
           departmentId: apt.department_id,
           departmentName: department?.name || "Unknown Department",
           departmentDescription: department?.description || null,
-          facilityName: facility?.name || "Unknown Facility",
+          facilityName: facility?.facility_name || "Unknown Facility",
           facilityId: apt.facility_id,
+              // ✅ Added profile data
+    facilityEmail: profile?.email || "",
+    facilityPhone: profile?.phone_number || "",
+
           date: dateOnly,
           time: timeString,
           type: slot?.slot_type === "tele" ? "teleconsultation" : "in_person",
@@ -1574,7 +1625,9 @@ export default function AppointmentManagement() {
       setHospitalAppointments(uniqueAppointments);
     } catch (err) {
       console.error("Error fetching hospital appointments:", err);
-    }
+    }finally {
+    setIsLoading(false); // Stop loading
+  }
   };
 
   // -------------------------------------------------------------
@@ -1597,31 +1650,60 @@ export default function AppointmentManagement() {
   };
 
   // Filtered and sorted lists for upcoming/past tabs
+  // const upcomingDoctorAppointments = filterDoctorByStatus(
+  //   doctorAppointments.filter((a) => !a.isPast)
+  // ).sort(sortByDateTime);
   const upcomingDoctorAppointments = filterDoctorByStatus(
-    doctorAppointments.filter((a) => !a.isPast)
-  ).sort(sortByDateTime);
+  doctorAppointments.filter((a) => 
+    !a.isPast && (!selectedDateString || a.date === selectedDateString)
+  )
+).sort(sortByDateTime);
 
-  const pastDoctorAppointments = filterDoctorByStatus(
-    doctorAppointments.filter((a) => a.isPast)
-  ).sort((a, b) => {
-    // For past appointments, show most recent first (descending)
-    if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
-    return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
-  });
+  // const pastDoctorAppointments = filterDoctorByStatus(
+  //   doctorAppointments.filter((a) => a.isPast)
+  // ).sort((a, b) => {
+  //   // For past appointments, show most recent first (descending)
+  //   if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
+  //   return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
+  // });
+
+const pastDoctorAppointments = filterDoctorByStatus(
+  doctorAppointments.filter((a) => 
+    a.isPast && (!selectedDateString || a.date === selectedDateString)
+  )
+).sort((a, b) => {
+  if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
+  return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
+});
+
+  // const upcomingHospitalAppointments = filterHospitalByStatus(
+  //   hospitalAppointments.filter((a) => !a.isPast)
+  // ).sort(sortByDateTime);
 
   const upcomingHospitalAppointments = filterHospitalByStatus(
-    hospitalAppointments.filter((a) => !a.isPast)
-  ).sort(sortByDateTime);
+  hospitalAppointments.filter((a) => 
+    !a.isPast && (!selectedDateString || a.date === selectedDateString)
+  )
+).sort(sortByDateTime);
+const pastHospitalAppointments = filterHospitalByStatus(
+  hospitalAppointments.filter((a) => 
+    a.isPast && (!selectedDateString || a.date === selectedDateString)
+  )
+).sort((a, b) => {
+  if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
+  return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
+});
 
-  const pastHospitalAppointments = filterHospitalByStatus(
-    hospitalAppointments.filter((a) => a.isPast)
-  ).sort((a, b) => {
-    // For past appointments, show most recent first (descending)
-    if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
-    return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
-  });
+  // const pastHospitalAppointments = filterHospitalByStatus(
+  //   hospitalAppointments.filter((a) => a.isPast)
+  // ).sort((a, b) => {
+  //   // For past appointments, show most recent first (descending)
+  //   if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
+  //   return b.appointmentDateTime.getTime() - a.appointmentDateTime.getTime();
+  // });
 
   // Combined and sorted for "upcoming" and "past" tabs
+
   const allUpcoming = [...upcomingDoctorAppointments, ...upcomingHospitalAppointments]
     .sort(sortByDateTime);
   
@@ -1642,6 +1724,8 @@ export default function AppointmentManagement() {
       showMeeting: false,
       meetingId: "",
       doctorName: "",
+            appointmentId: "",// Add this
+
     });
   };
 
@@ -1700,6 +1784,8 @@ export default function AppointmentManagement() {
       showMeeting: true,
       meetingId: meetingId,
       doctorName: appointment.doctorName,
+     appointmentId: appointment.id, // Add this
+
     });
   };
 
@@ -1717,6 +1803,11 @@ export default function AppointmentManagement() {
           webcamEnabled={true}
           containerId="video-container"
           meetingTitle={`Consultation with ${videoMeeting.doctorName}`}
+          appointmentId={videoMeeting.appointmentId} // Pass appointment ID
+          userId={doctorUserId}
+        userRole="patient" // Set role to doctor
+        enableDocumentSharing={true}
+      
         />
       </div>
     );
@@ -1725,272 +1816,672 @@ export default function AppointmentManagement() {
   // -------------------------------------------------------------
   // Render
   // -------------------------------------------------------------
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">My Appointments</h2>
+//   return (
+//     <div className="p-6  mx-auto">
+//       <h1 className=" font-bold mb-4">My Appointments</h1>
+//                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      {/* Main Tabs */}
-      <div className="flex gap-3 mb-4 border-b pb-2">
-        <Button
-          variant={activeTab === "upcoming" ? "default" : "outline"}
-          onClick={() => setActiveTab("upcoming")}
-          className={activeTab === "upcoming" ? "bg-blue-600" : ""}
-        >
-          Upcoming ({allUpcoming.length})
-        </Button>
-        <Button
-          variant={activeTab === "past" ? "default" : "outline"}
-          onClick={() => setActiveTab("past")}
-          className={activeTab === "past" ? "bg-gray-600" : ""}
-        >
-          Past ({allPast.length})
-        </Button>
-        <Button
-          variant={activeTab === "doctor" ? "default" : "outline"}
-          onClick={() => setActiveTab("doctor")}
-          className={activeTab === "doctor" ? "bg-green-600" : "border-green-200 text-green-700"}
-        >
-          👨‍⚕️ Doctor ({doctorAppointments.length})
-        </Button>
-        <Button
-          variant={activeTab === "hospital" ? "default" : "outline"}
-          onClick={() => setActiveTab("hospital")}
-          className={activeTab === "hospital" ? "bg-blue-600" : "border-blue-200 text-blue-700"}
-        >
-          🏥 Hospital ({hospitalAppointments.length})
-        </Button>
-      </div>
+// <div className="lg:col-span-1 space-y-6">
+//               <Card>
+//                 <CardHeader>
+//                   <CardTitle className="flex items-center gap-2">
+//                     <Filter className="h-5 w-5" />
+//                     Quick Filters
+//                   </CardTitle>
+//                 </CardHeader>
+//                 <CardContent className="space-y-4">
+//                   <div className="space-y-2">
+//                     <Label>Selected Date</Label>
+//                     <div className="rounded-md">
+// <CalendarComponent
+//   mode="single"
+//   selected={selectedDate}
+//   onSelect={(date) => setSelectedDate(date)}
+//   initialFocus
+// />
+//                     </div>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </div>
+//             <div className="lg:col-span-2 space-y-6">
 
-      {/* Status Filter */}
-      <div className="flex gap-2 mb-6">
-        {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
-          {["all", "confirmed", "cancelled"].map((s) => (
-          <Button
-            key={s}
-            size="sm"
-            variant={statusFilter === s ? "default" : "outline"}
-            onClick={() => setStatusFilter(s as any)}
-          >
-            {s.charAt(0).toUpperCase() + s.slice(1)}
-          </Button>
-        ))}
-      </div>
+//       {/* Main Tabs */}
+//       <div className="flex gap-3 mb-4 border-b pb-2">
+//         <Button
+//           variant={activeTab === "upcoming" ? "default" : "outline"}
+//           onClick={() => setActiveTab("upcoming")}
+//           className={activeTab === "upcoming" ? "bg-blue-600" : ""}
+//         >
+//           Upcoming ({allUpcoming.length})
+//         </Button>
+//         <Button
+//           variant={activeTab === "past" ? "default" : "outline"}
+//           onClick={() => setActiveTab("past")}
+//           className={activeTab === "past" ? "bg-gray-600" : ""}
+//         >
+//           Past ({allPast.length})
+//         </Button>
+//         <Button
+//           variant={activeTab === "doctor" ? "default" : "outline"}
+//           onClick={() => setActiveTab("doctor")}
+//           className={activeTab === "doctor" ? "bg-green-600" : "border-green-200 text-green-700"}
+//         >
+//           👨‍⚕️ Doctor ({doctorAppointments.length})
+//         </Button>
+//         <Button
+//           variant={activeTab === "hospital" ? "default" : "outline"}
+//           onClick={() => setActiveTab("hospital")}
+//           className={activeTab === "hospital" ? "bg-blue-600" : "border-blue-200 text-blue-700"}
+//         >
+//           🏥 Hospital ({hospitalAppointments.length})
+//         </Button>
+//       </div>
 
-      {/* Today's date indicator */}
-      <div className="mb-4 text-sm text-gray-500">
-        Today: {new Date().toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })}
-      </div>
+//       {/* Status Filter */}
+//       <div className="flex gap-2 mb-6">
+//         {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
+//           {["all", "confirmed", "cancelled"].map((s) => (
+//           <Button
+//             key={s}
+//             size="sm"
+//             variant={statusFilter === s ? "default" : "outline"}
+//             onClick={() => setStatusFilter(s as any)}
+//           >
+//             {s.charAt(0).toUpperCase() + s.slice(1)}
+//           </Button>
+//         ))}
+//       </div>
 
-      {/* UPCOMING TAB - Shows both doctor and hospital appointments */}
-      {activeTab === "upcoming" && (
-        <div className="space-y-4">
-          {allUpcoming.length === 0 ? (
-            <p className="text-muted-foreground">No upcoming appointments found</p>
-          ) : (
-            <>
-              {/* Doctor Appointments in Green */}
-              {upcomingDoctorAppointments.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Doctor Appointments
-                  </h3>
-                  {upcomingDoctorAppointments.map((apt) => (
-                    <div key={apt.id} className="mb-4">
-                      {apt.date === today && (
-                        <div className="mb-1 text-xs font-semibold text-orange-500">
-                          🔴 TODAY
-                        </div>
-                      )}
-                      <AppointmentCard
-                        appointment={apt}
-                        userRole="patient"
-                        onJoinVideo={() => handleJoinVideo(apt.id)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+//       {/* Today's date indicator */}
+//       {/* <div className="mb-4 text-sm text-gray-500">
+//         Today: {new Date().toLocaleDateString('en-US', { 
+//           weekday: 'long', 
+//           year: 'numeric', 
+//           month: 'long', 
+//           day: 'numeric' 
+//         })}
+//       </div> */}
 
-              {/* Hospital Appointments in Blue */}
-              {upcomingHospitalAppointments.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Hospital Appointments
-                  </h3>
-                  {upcomingHospitalAppointments.map((apt) => (
-                    <div key={apt.id} className="mb-4">
-                      {apt.date === today && (
-                        <div className="mb-1 text-xs font-semibold text-orange-500">
-                          🔴 TODAY
-                        </div>
-                      )}
-                      <AppointmentDepartmentsCard
-                        appointment={apt}
-                        userRole="patient"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+//       {/* UPCOMING TAB - Shows both doctor and hospital appointments */}
+//       {activeTab === "upcoming" && (
+//         <div className="space-y-4">
+//           {allUpcoming.length === 0 ? (
+//             <p className="text-muted-foreground">No upcoming appointments found</p>
+//           ) : (
+//             <>
+//               {/* Doctor Appointments in Green */}
+//               {upcomingDoctorAppointments.length > 0 && (
+//                 <div className="mb-6">
+//                   <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
+//                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+//                     Doctor Appointments
+//                   </h3>
+//                   {upcomingDoctorAppointments.map((apt) => (
+//                     <div key={apt.id} className="mb-4">
+//                       {apt.date === today && (
+//                         <div className="mb-1 text-xs font-semibold text-orange-500">
+//                           🔴 TODAY
+//                         </div>
+//                       )}
+//                       <AppointmentCard
+//                         appointment={apt}
+//                         userRole="patient"
+//                         onJoinVideo={() => handleJoinVideo(apt.id)}
+//                       />
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
 
-      {/* PAST TAB - Shows both doctor and hospital appointments */}
-      {activeTab === "past" && (
-        <div className="space-y-4">
-          {allPast.length === 0 ? (
-            <p className="text-muted-foreground">No past appointments found</p>
-          ) : (
-            <>
-              {/* Doctor Appointments in Green */}
-              {pastDoctorAppointments.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Doctor Appointments
-                  </h3>
-                  {pastDoctorAppointments.map((apt) => (
-                    <div key={apt.id} className="mb-4">
-                      <AppointmentCard
-                        appointment={apt}
-                        userRole="patient"
-                        onJoinVideo={() => {}}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+//               {/* Hospital Appointments in Blue */}
+//               {upcomingHospitalAppointments.length > 0 && (
+//                 <div>
+//                   <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+//                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+//                     Hospital Appointments
+//                   </h3>
+//                   {upcomingHospitalAppointments.map((apt) => (
+//                     <div key={apt.id} className="mb-4">
+//                       {apt.date === today && (
+//                         <div className="mb-1 text-xs font-semibold text-orange-500">
+//                           🔴 TODAY
+//                         </div>
+//                       )}
+//                       <AppointmentDepartmentsCard
+//                         appointment={apt}
+//                         userRole="patient"
+//                       />
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
+//             </>
+//           )}
+//         </div>
+//       )}
 
-              {/* Hospital Appointments in Blue */}
-              {pastHospitalAppointments.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Hospital Appointments
-                  </h3>
-                  {pastHospitalAppointments.map((apt) => (
-                    <div key={apt.id} className="mb-4">
-                      <AppointmentDepartmentsCard
-                        appointment={apt}
-                        userRole="patient"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+//       {/* PAST TAB - Shows both doctor and hospital appointments */}
+//       {activeTab === "past" && (
+//         <div className="space-y-4">
+//           {allPast.length === 0 ? (
+//             <p className="text-muted-foreground">No past appointments found</p>
+//           ) : (
+//             <>
+//               {/* Doctor Appointments in Green */}
+//               {pastDoctorAppointments.length > 0 && (
+//                 <div className="mb-6">
+//                   <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
+//                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+//                     Doctor Appointments
+//                   </h3>
+//                   {pastDoctorAppointments.map((apt) => (
+//                     <div key={apt.id} className="mb-4">
+//                       <AppointmentCard
+//                         appointment={apt}
+//                         userRole="patient"
+//                         onJoinVideo={() => {}}
+//                       />
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
 
-      {/* DOCTOR TAB - Shows ONLY doctor appointments */}
-      {activeTab === "doctor" && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            All Doctor Appointments
-          </h3>
+//               {/* Hospital Appointments in Blue */}
+//               {pastHospitalAppointments.length > 0 && (
+//                 <div>
+//                   <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+//                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+//                     Hospital Appointments
+//                   </h3>
+//                   {pastHospitalAppointments.map((apt) => (
+//                     <div key={apt.id} className="mb-4">
+//                       <AppointmentDepartmentsCard
+//                         appointment={apt}
+//                         userRole="patient"
+//                       />
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
+//             </>
+//           )}
+//         </div>
+//       )}
+
+//       {/* DOCTOR TAB - Shows ONLY doctor appointments */}
+//       {activeTab === "doctor" && (
+//         <div className="space-y-4">
+//           <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
+//             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+//             All Doctor Appointments
+//           </h3>
           
-          {/* Upcoming Doctor Appointments */}
-          {upcomingDoctorAppointments.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-md font-medium mb-2 text-gray-600">Upcoming</h4>
-              {upcomingDoctorAppointments.map((apt) => (
-                <div key={apt.id} className="mb-4">
-                  {apt.date === today && (
-                    <div className="mb-1 text-xs font-semibold text-orange-500">
-                      🔴 TODAY
+//           {/* Upcoming Doctor Appointments */}
+//           {upcomingDoctorAppointments.length > 0 && (
+//             <div className="mb-6">
+//               <h4 className="text-md font-medium mb-2 text-gray-600">Upcoming</h4>
+//               {upcomingDoctorAppointments.map((apt) => (
+//                 <div key={apt.id} className="mb-4">
+//                   {apt.date === today && (
+//                     <div className="mb-1 text-xs font-semibold text-orange-500">
+//                       🔴 TODAY
+//                     </div>
+//                   )}
+//                   <AppointmentCard
+//                     appointment={apt}
+//                     userRole="patient"
+//                     onJoinVideo={() => handleJoinVideo(apt.id)}
+//                   />
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {/* Past Doctor Appointments */}
+//           {pastDoctorAppointments.length > 0 && (
+//             <div>
+//               <h4 className="text-md font-medium mb-2 text-gray-600">Past</h4>
+//               {pastDoctorAppointments.map((apt) => (
+//                 <div key={apt.id} className="mb-4">
+//                   <AppointmentCard
+//                     appointment={apt}
+//                     userRole="patient"
+//                     onJoinVideo={() => {}}
+//                   />
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {filterDoctorByStatus(doctorAppointments).length === 0 && (
+//             <p className="text-muted-foreground">No doctor appointments found</p>
+//           )}
+//         </div>
+//       )}
+
+//       {/* HOSPITAL TAB - Shows ONLY hospital/department appointments */}
+//       {activeTab === "hospital" && (
+//         <div className="space-y-4">
+//           <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+//             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+//             All Hospital Appointments
+//           </h3>
+
+//           {/* Upcoming Hospital Appointments */}
+//           {upcomingHospitalAppointments.length > 0 && (
+//             <div className="mb-6">
+//               <h4 className="text-md font-medium mb-2 text-gray-600">Upcoming</h4>
+//               {upcomingHospitalAppointments.map((apt) => (
+//                 <div key={apt.id} className="mb-4">
+//                   {apt.date === today && (
+//                     <div className="mb-1 text-xs font-semibold text-orange-500">
+//                       🔴 TODAY
+//                     </div>
+//                   )}
+//                   <AppointmentDepartmentsCard
+//                     appointment={apt}
+//                     userRole="patient"
+//                   />
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {/* Past Hospital Appointments */}
+//           {pastHospitalAppointments.length > 0 && (
+//             <div>
+//               {/* <h4 className="text-md font-medium mb-2 text-gray-600">Past</h4> */}
+//               {pastHospitalAppointments.map((apt) => (
+//                 <div key={apt.id} className="mb-4">
+//                   <AppointmentDepartmentsCard
+//                     appointment={apt}
+//                     userRole="patient"
+//                   />
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {filterHospitalByStatus(hospitalAppointments).length === 0 && (
+//             <p className="text-muted-foreground">No hospital appointments found</p>
+//           )}
+//         </div>
+//       )}
+//       </div>
+//       </div>
+//     </div>
+//   );
+
+return (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="container mx-auto px-4 py-6 md:py-8 lg:py-10">
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+          My Appointments
+        </h1>
+        <p className="text-gray-500 mt-2 text-sm md:text-base">
+          Manage and track all your healthcare appointments
+        </p>
+      </div>
+
+      {/* Main Grid - Reordered for better responsive flow */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        
+        {/* Left Column - Calendar (Now on left for better desktop view) */}
+        <div className="lg:col-span-1 order-1 lg:order-1">
+          <Card className="sticky top-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="border-b bg-gray-50/50 rounded-t-xl">
+              <CardTitle className="flex items-center gap-2 text-gray-700">
+                <Filter className="h-5 w-5 text-blue-500" />
+                Quick Filters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 md:p-6">
+              <div className="space-y-3">
+                <Label className="text-gray-600 font-semibold">Selected Date</Label>
+                <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => setSelectedDate(date)}
+                    initialFocus
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Appointments Content (Now on right for better desktop view) */}
+        <div className="lg:col-span-2 order-1 lg:order-2 space-y-6">
+          
+          {/* Main Tabs - Enhanced with better mobile responsiveness */}
+<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
+  <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
+    
+    <Button
+      variant={activeTab === "upcoming" ? "default" : "outline"}
+      onClick={() => setActiveTab("upcoming")}
+      className={`w-full md:w-auto transition-all duration-200 ${
+        activeTab === "upcoming" 
+          ? "bg-gradient-to-r from-blue-600 to-blue-500 shadow-md" 
+          : "hover:bg-gray-50"
+      }`}
+    >
+      Upcoming ({allUpcoming.length})
+    </Button>
+
+    <Button
+      variant={activeTab === "past" ? "default" : "outline"}
+      onClick={() => setActiveTab("past")}
+      className={`w-full md:w-auto transition-all duration-200 ${
+        activeTab === "past" 
+          ? "bg-gradient-to-r from-gray-600 to-gray-500 shadow-md" 
+          : "hover:bg-gray-50"
+      }`}
+    >
+      Past ({allPast.length})
+    </Button>
+
+    <Button
+      variant={activeTab === "doctor" ? "default" : "outline"}
+      onClick={() => setActiveTab("doctor")}
+      className={`w-full md:w-auto transition-all duration-200 ${
+        activeTab === "doctor" 
+          ? "bg-gradient-to-r from-green-600 to-green-500 shadow-md text-white" 
+          : "border-green-200 text-green-700 hover:bg-green-50"
+      }`}
+    >
+      👨‍⚕️ Doctor ({doctorAppointments.length})
+    </Button>
+
+    <Button
+      variant={activeTab === "hospital" ? "default" : "outline"}
+      onClick={() => setActiveTab("hospital")}
+      className={`w-full md:w-auto transition-all duration-200 ${
+        activeTab === "hospital" 
+          ? "bg-gradient-to-r from-blue-600 to-blue-500 shadow-md text-white" 
+          : "border-blue-200 text-blue-700 hover:bg-blue-50"
+      }`}
+    >
+      🏥 Hospital ({hospitalAppointments.length})
+    </Button>
+
+  </div>
+</div>
+
+          {/* Status Filter - Better spacing and visual design */}
+          <div className="flex flex-wrap gap-2">
+            {["all", "confirmed", "cancelled"].map((s) => (
+              <Button
+                key={s}
+                size="sm"
+                variant={statusFilter === s ? "default" : "outline"}
+                onClick={() => setStatusFilter(s as any)}
+                className={`transition-all duration-200 ${
+                  statusFilter === s 
+                    ? "shadow-md" 
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </Button>
+            ))}
+          </div>
+
+          {/* UPCOMING TAB - Enhanced card presentation */}
+          {activeTab === "upcoming" && (
+            <div className="space-y-6">
+                 {isLoading ? (
+      <div className="flex justify-center items-center py-12">
+        <Loader />
+      </div>
+    ) :  allUpcoming.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+                  <div className="text-gray-400 text-5xl mb-4">📅</div>
+                  <p className="text-muted-foreground">No upcoming appointments found</p>
+                </div>
+              ) : (
+                <>
+                  {/* Doctor Appointments in Green */}
+                  {upcomingDoctorAppointments.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-green-50 to-transparent px-5 py-3 border-b border-green-100">
+                        <h3 className="text-lg font-semibold text-green-700 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                          Doctor Appointments
+                        </h3>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {upcomingDoctorAppointments.map((apt) => (
+                          <div key={apt.id} className="p-4 md:p-5 hover:bg-gray-50 transition-colors">
+                            {apt.date === today && (
+                              <div className="mb-2 text-xs font-semibold text-orange-500 bg-orange-50 inline-block px-2 py-1 rounded-full">
+                                🔴 TODAY
+                              </div>
+                            )}
+                            <AppointmentCard
+                              appointment={apt}
+                              userRole="patient"
+                              onJoinVideo={() => handleJoinVideo(apt.id)}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <AppointmentCard
-                    appointment={apt}
-                    userRole="patient"
-                    onJoinVideo={() => handleJoinVideo(apt.id)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* Past Doctor Appointments */}
-          {pastDoctorAppointments.length > 0 && (
-            <div>
-              <h4 className="text-md font-medium mb-2 text-gray-600">Past</h4>
-              {pastDoctorAppointments.map((apt) => (
-                <div key={apt.id} className="mb-4">
-                  <AppointmentCard
-                    appointment={apt}
-                    userRole="patient"
-                    onJoinVideo={() => {}}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {filterDoctorByStatus(doctorAppointments).length === 0 && (
-            <p className="text-muted-foreground">No doctor appointments found</p>
-          )}
-        </div>
-      )}
-
-      {/* HOSPITAL TAB - Shows ONLY hospital/department appointments */}
-      {activeTab === "hospital" && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            All Hospital Appointments
-          </h3>
-
-          {/* Upcoming Hospital Appointments */}
-          {upcomingHospitalAppointments.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-md font-medium mb-2 text-gray-600">Upcoming</h4>
-              {upcomingHospitalAppointments.map((apt) => (
-                <div key={apt.id} className="mb-4">
-                  {apt.date === today && (
-                    <div className="mb-1 text-xs font-semibold text-orange-500">
-                      🔴 TODAY
+                  {/* Hospital Appointments in Blue */}
+                  {upcomingHospitalAppointments.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-blue-50 to-transparent px-5 py-3 border-b border-blue-100">
+                        <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></span>
+                          Hospital Appointments
+                        </h3>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {upcomingHospitalAppointments.map((apt) => (
+                          <div key={apt.id} className="p-4 md:p-5 hover:bg-gray-50 transition-colors">
+                            {apt.date === today && (
+                              <div className="mb-2 text-xs font-semibold text-orange-500 bg-orange-50 inline-block px-2 py-1 rounded-full">
+                                🔴 TODAY
+                              </div>
+                            )}
+                            <AppointmentDepartmentsCard
+                              appointment={apt}
+                              userRole="patient"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <AppointmentDepartmentsCard
-                    appointment={apt}
-                    userRole="patient"
-                  />
-                </div>
-              ))}
+                </>
+              )}
             </div>
           )}
 
-          {/* Past Hospital Appointments */}
-          {pastHospitalAppointments.length > 0 && (
-            <div>
-              {/* <h4 className="text-md font-medium mb-2 text-gray-600">Past</h4> */}
-              {pastHospitalAppointments.map((apt) => (
-                <div key={apt.id} className="mb-4">
-                  <AppointmentDepartmentsCard
-                    appointment={apt}
-                    userRole="patient"
-                  />
+          {/* PAST TAB - Similar enhanced design */}
+          {activeTab === "past" && (
+            <div className="space-y-6">
+                       {isLoading ? (
+      <div className="flex justify-center items-center py-12">
+        <Loader />
+      </div>
+    ) : allPast.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+                  <div className="text-gray-400 text-5xl mb-4">📜</div>
+                  <p className="text-muted-foreground">No past appointments found</p>
                 </div>
-              ))}
+              ) : (
+                <>
+                  {pastDoctorAppointments.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-green-50 to-transparent px-5 py-3 border-b border-green-100">
+                        <h3 className="text-lg font-semibold text-green-700 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+                          Doctor Appointments
+                        </h3>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {pastDoctorAppointments.map((apt) => (
+                          <div key={apt.id} className="p-4 md:p-5 hover:bg-gray-50 transition-colors">
+                            <AppointmentCard
+                              appointment={apt}
+                              userRole="patient"
+                              onJoinVideo={() => {}}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pastHospitalAppointments.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-blue-50 to-transparent px-5 py-3 border-b border-blue-100">
+                        <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                          Hospital Appointments
+                        </h3>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {pastHospitalAppointments.map((apt) => (
+                          <div key={apt.id} className="p-4 md:p-5 hover:bg-gray-50 transition-colors">
+                            <AppointmentDepartmentsCard
+                              appointment={apt}
+                              userRole="patient"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
-          {filterHospitalByStatus(hospitalAppointments).length === 0 && (
-            <p className="text-muted-foreground">No hospital appointments found</p>
+          {/* DOCTOR TAB */}
+          {activeTab === "doctor" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-50 to-transparent px-5 py-4 border-b border-green-100">
+                <h3 className="text-lg font-semibold text-green-700 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+                  All Doctor Appointments
+                </h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {upcomingDoctorAppointments.length > 0 && (
+                  <div className="p-4">
+                    <h4 className="text-md font-medium mb-3 text-gray-600 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                      Upcoming
+                    </h4>
+                    {upcomingDoctorAppointments.map((apt) => (
+                      <div key={apt.id} className="mb-4 last:mb-0">
+                        {apt.date === today && (
+                          <div className="mb-2 text-xs font-semibold text-orange-500 bg-orange-50 inline-block px-2 py-1 rounded-full">
+                            🔴 TODAY
+                          </div>
+                        )}
+                        <AppointmentCard
+                          appointment={apt}
+                          userRole="patient"
+                          onJoinVideo={() => handleJoinVideo(apt.id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {pastDoctorAppointments.length > 0 && (
+                  <div className="p-4 pt-0">
+                    <h4 className="text-md font-medium mb-3 text-gray-600 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                      Past
+                    </h4>
+                    {pastDoctorAppointments.map((apt) => (
+                      <div key={apt.id} className="mb-4 last:mb-0">
+                        <AppointmentCard
+                          appointment={apt}
+                          userRole="patient"
+                          onJoinVideo={() => {}}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {filterDoctorByStatus(doctorAppointments).length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No doctor appointments found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* HOSPITAL TAB */}
+          {activeTab === "hospital" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-50 to-transparent px-5 py-4 border-b border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                  All Hospital Appointments
+                </h3>
+              </div>
+              <div className="divide-y divide-gray-100 mt-2">
+                {upcomingHospitalAppointments.length > 0 && (
+                  <div className="p-4">
+                    <h4 className="text-md font-medium mb-3 text-gray-600 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      Upcoming
+                    </h4>
+                    {upcomingHospitalAppointments.map((apt) => (
+                      <div key={apt.id} className="mb-4 last:mb-0">
+                        {apt.date === today && (
+                          <div className="mb-2 text-xs font-semibold text-orange-500 bg-orange-50 inline-block px-2 py-1 rounded-full">
+                            🔴 TODAY
+                          </div>
+                        )}
+                        <AppointmentDepartmentsCard
+                          appointment={apt}
+                          userRole="patient"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {pastHospitalAppointments.length > 0 && (
+                  <div className="p-4 pt-0">
+                    {pastHospitalAppointments.map((apt) => (
+                      <div key={apt.id} className="mb-4 last:mb-0">
+                        <AppointmentDepartmentsCard
+                          appointment={apt}
+                          userRole="patient"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {filterHospitalByStatus(hospitalAppointments).length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No hospital appointments found</p>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
-  );
+  </div>
+);
 }

@@ -3728,7 +3728,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       </div>
 
-      <div>
+      {/* <div>
         <Label htmlFor="totalBeds">Total Beds</Label>
         <Input
           id="totalBeds"
@@ -3737,7 +3737,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           onChange={(e) => setFormData({ ...formData, totalBeds: Number(e.target.value) })}
           placeholder="Enter number of beds"
         />
-      </div>
+      </div> */}
 
       <div>
         <Label htmlFor="insuranceAccepted">Insurance Partners</Label>

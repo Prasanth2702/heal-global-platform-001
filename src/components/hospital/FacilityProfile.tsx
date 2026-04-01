@@ -582,6 +582,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export interface MedicalFacility {
   facilityName: string;
@@ -621,8 +622,14 @@ interface UploadedDocument {
   uploadedAt?: Date;
 }
 
-const FacilityProfile: React.FC = () => {
+interface DoctorProfileProps {
+  onBack?: () => void;
+}
+
+const FacilityProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
   const { toast } = useToast();
+  
+    const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<MedicalFacility>({
     facilityName: '',
@@ -659,7 +666,9 @@ const FacilityProfile: React.FC = () => {
   const [selectedPdf, setSelectedPdf] = useState<{ url: string; name: string } | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
-
+const [pendingDocs, setPendingDocs] = useState<File[]>([]);
+const [showUploadPopup, setShowUploadPopup] = useState(false);
+const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function fetchFacilityProfile() {
@@ -863,6 +872,10 @@ const fetchUserDocuments = async (userId: string) => {
   };
 
   const handleSave = async () => {
+      setSaving(true);
+
+  try {
+
     mixpanelInstance.track('Facility Profile Save Attempt', {
       facilityName: profileData.facilityName,
       facilityType: profileData.facilityType,
@@ -914,7 +927,39 @@ const fetchUserDocuments = async (userId: string) => {
     const { error: facilitiesUpdateError } = await supabase
       .from('facilities')
       .upsert(medicalProfessionalsUpdate, { onConflict: 'admin_user_id' });
+// Upload Documents After Save
+    if (pendingDocs.length > 0 && user) {
 
+      for (let file of pendingDocs) {
+
+        const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+
+        const { error } = await supabase.storage
+          .from('heal_med_app_files_bucket')
+          .upload(filePath, file);
+
+        if (!error) {
+
+          const { data: urlData } = supabase.storage
+            .from('heal_med_app_files_bucket')
+            .getPublicUrl(filePath);
+
+          setUploadedDocs(prev => [
+            ...prev,
+            {
+              name: file.name,
+              type: 'facility',
+              userId: user.id,
+              url: urlData.publicUrl,
+              path: filePath,
+              uploadedAt: new Date()
+            }
+          ]);
+        }
+      }
+
+      setPendingDocs([]);
+    }
     if (profilesUpdateError || facilitiesUpdateError) {
       toast({
         title: 'Save failed',
@@ -935,6 +980,12 @@ const fetchUserDocuments = async (userId: string) => {
       });
       setIsEditing(false);
     }
+  }
+    catch (error) {
+    console.error(error);
+  }
+
+  setSaving(false);
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1034,67 +1085,78 @@ const fetchUserDocuments = async (userId: string) => {
   
 //  setUploading(false);
 // };
- const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-    if (!user) {
-      toast({
-        title: "User not found",
-        description: "Please login again",
-        variant: "destructive"
-      });
-      return;
-    }
+//  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+//     const files = event.target.files;
+//     if (!files) return;
+//     if (!user) {
+//       toast({
+//         title: "User not found",
+//         description: "Please login again",
+//         variant: "destructive"
+//       });
+//       return;
+//     }
 
-    setUploading(true);
+//     setUploading(true);
 
-    for (let file of files) {
-      const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+//     for (let file of files) {
+//       const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
 
-      const { error } = await supabase
-        .storage
-        .from('heal_med_app_files_bucket')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+//       const { error } = await supabase
+//         .storage
+//         .from('heal_med_app_files_bucket')
+//         .upload(filePath, file, {
+//           cacheControl: '3600',
+//           upsert: false
+//         });
 
-      if (error) {
-        toast({
-          title: "Upload Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        setUploading(false);
-        return;
-      } 
-      else {
-        const { data: urlData } = supabase.storage
-          .from('heal_med_app_files_bucket')
-          .getPublicUrl(filePath);
+//       if (error) {
+//         toast({
+//           title: "Upload Failed",
+//           description: error.message,
+//           variant: "destructive"
+//         });
+//         setUploading(false);
+//         return;
+//       } 
+//       else {
+//         const { data: urlData } = supabase.storage
+//           .from('heal_med_app_files_bucket')
+//           .getPublicUrl(filePath);
 
-        setUploadedDocs(prev => [
-          ...prev,
-          {
-            name: file.name,
-            type: 'facility',
-            userId: user.id,
-            url: urlData.publicUrl,
-            path: filePath,
-            uploadedAt: new Date()
-          }
-        ]);
+//         setUploadedDocs(prev => [
+//           ...prev,
+//           {
+//             name: file.name,
+//             type: 'facility',
+//             userId: user.id,
+//             url: urlData.publicUrl,
+//             path: filePath,
+//             uploadedAt: new Date()
+//           }
+//         ]);
 
-        toast({
-          title: "Document Uploaded",
-          description: `${file.name} uploaded successfully.`,
-        });
-      }
-    }
+//         toast({
+//           title: "Document Uploaded",
+//           description: `${file.name} uploaded successfully.`,
+//         });
+//       }
+//     }
 
-    setUploading(false);
-    event.target.value = '';
-  };
+//     setUploading(false);
+//     event.target.value = '';
+//   };
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+
+  const fileArray = Array.from(files);
+
+  setPendingDocs(fileArray);
+  setShowUploadPopup(true);
+
+  event.target.value = "";
+};
 
 const handleDeleteDocument = async (doc: UploadedDocument) => {
     if (!doc.path) return;
@@ -1156,7 +1218,7 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
                 <Eye className="h-4 w-4" />
               </Button>
             )}
-            <Button
+            {/* <Button
               size="sm"
               variant="ghost"
               onClick={() => window.open(doc.url, '_blank')}
@@ -1178,54 +1240,123 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
                   <Trash2 className="h-4 w-4" />
                 )}
               </Button>
-            )}
+            )} */}
           </div>
         </div>
       </div>
     );
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Facility Profile
-            </h1>
-            <p className="text-muted-foreground">Manage facility details and services</p>
-          </div>
-        </div>
-        <Button
-          onClick={() => {
-            mixpanelInstance.track('Facility Profile Edit Click', {
-              currentState: isEditing ? 'saving' : 'editing'
-            });
-            isEditing ? handleSave() : setIsEditing(true);
-          }}
-          className={`${isEditing
-            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-            : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-            } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <span>Uploading...</span>
-          ) : isEditing ? (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </>
-          ) : (
-            <>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
-            </>
-          )}
-        </Button>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+
+  {/* Mobile Buttons Top */}
+  <div className="flex justify-between w-full mb-3 md:hidden">
+    <Button
+      variant="outline"
+      onClick={handleBack}
+      className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+    >
+      <X className="h-4 w-4" />
+      <span>Back</span>
+    </Button>
+
+    <Button
+      onClick={() => {
+        mixpanelInstance.track('Facility Profile Edit Click', {
+          currentState: isEditing ? 'saving' : 'editing'
+        });
+        isEditing ? handleSave() : setIsEditing(true);
+      }}
+      className={`${isEditing
+        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+        : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+        } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+      disabled={uploading}
+    >
+      {uploading ? (
+        <span>Uploading...</span>
+      ) : isEditing ? (
+        <>
+          <Save className="h-4 w-4 mr-2" />
+          Save
+        </>
+      ) : (
+        <>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </>
+      )}
+    </Button>
+  </div>
+
+  {/* Desktop Layout (Unchanged) */}
+  <div className="flex items-center justify-between w-full">
+    
+    <Button
+      variant="outline"
+      onClick={handleBack}
+      className="hidden md:flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+    >
+      <X className="h-4 w-4" />
+      <span>Back</span>
+    </Button>
+
+    <div className="flex items-center space-x-4 w-full justify-center md:justify-start text-center md:text-left">
+      <div>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Facility Profile
+        </h1>
+        <p className="text-muted-foreground">
+          Manage facility details and services
+        </p>
       </div>
+    </div>
+
+    <Button
+      onClick={() => {
+        mixpanelInstance.track('Facility Profile Edit Click', {
+          currentState: isEditing ? 'saving' : 'editing'
+        });
+        isEditing ? handleSave() : setIsEditing(true);
+      }}
+      className={`hidden md:flex ${isEditing
+        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+        : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+        } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+      disabled={saving}
+    >
+      {saving ? (
+  <>
+    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+    Saving...
+  </>
+) : isEditing ? (
+  <>
+    <Save className="h-4 w-4 mr-2" />
+    Save Changes
+  </>
+) : (
+  <>
+    <Edit className="h-4 w-4 mr-2" />
+    Edit Profile
+  </>
+)}
+
+    </Button>
+
+  </div>
+</div>
 
       {/* Facility Image and Documents */}
       <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -1423,6 +1554,53 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
         View Document
       </Button>
     </div>
+  </DialogContent>
+</Dialog>
+<Dialog open={showUploadPopup} onOpenChange={setShowUploadPopup}>
+  <DialogContent>
+
+    <DialogHeader>
+      <DialogTitle>
+        Document Upload
+      </DialogTitle>
+
+      <DialogDescription>
+        Selected documents will be saved only after clicking 
+        <strong> Save Changes</strong>.
+      </DialogDescription>
+
+    </DialogHeader>
+
+    <div className="space-y-3 mt-4">
+
+      {pendingDocs.map((file, index) => (
+        <div 
+          key={index}
+          className="flex items-center gap-2 p-2 border rounded"
+        >
+          <FileText className="h-4 w-4 text-blue-500" />
+
+          <span className="text-sm" title={file.name}>
+            {file.name.length > 20
+              ? file.name.slice(0, 10) + "..."
+              : file.name}
+          </span>
+
+        </div>
+      ))}
+
+    </div>
+
+    <div className="flex justify-end mt-4">
+
+      <DialogClose asChild>
+        <Button>
+          OK
+        </Button>
+      </DialogClose>
+
+    </div>
+
   </DialogContent>
 </Dialog>
 

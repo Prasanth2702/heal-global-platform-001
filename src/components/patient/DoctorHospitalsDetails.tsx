@@ -64,8 +64,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import Header from "@/pages/alldetails/Header";
-import Footer from "@/pages/alldetails/Footer";
+import Loader2 from "../ui/Loader2";
 
 // Types
 interface Doctor {
@@ -80,6 +79,8 @@ interface Doctor {
   availability: string;
   hospital?: string;
   image?: string;
+  email?:string;
+  phone_number?:number;
   qualifications?: string[];
   languages?: string[];
   about?: string;
@@ -507,59 +508,140 @@ useEffect(() => {
       determineEntityTypeAndFetch();
     }
   }, [id]);
-
   const determineEntityTypeAndFetch = async () => {
-    setLoading(true);
-    try {
-      // Try to fetch as doctor first
-      const { data: doctorData, error: doctorError } = await supabase
-        .from("medical_professionals")
-        .select(`
-          *,
-          medical_professionals_user_id_fkey (
-            first_name,
-            last_name,
-            avatar_url,
-            user_id
-          )
-        `)
+  setLoading(true);
+  try {
+    // Try to fetch as doctor first
+    const { data: doctorData, error: doctorError } = await supabase
+      .from("medical_professionals")
+      .select(`
+        *,
+        medical_professionals_user_id_fkey (
+          first_name,
+          last_name,
+          avatar_url,
+          user_id
+        )
+      `)
+      .eq("id", id)
+      .single();
+      
+    if (doctorData && !doctorError) {
+      // Fetch profile data using user_id from medical_professionals
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("email, phone_number, first_name, last_name")
+        .eq("user_id", doctorData.user_id)
+        .maybeSingle();
+      
+      const enrichedDoctor = {
+        ...doctorData,
+        email: profileData?.email || "",
+        phone_number: profileData?.phone_number || "",
+        profiles: profileData
+      };
+      
+      setEntityType("doctor");
+      await fetchDoctorDetails(enrichedDoctor);
+    } else {
+      // If not a doctor, try as facility
+      const { data: facilityData, error: facilityError } = await supabase
+        .from("facilities")
+        .select("*")
         .eq("id", id)
         .single();
 
-      if (doctorData && !doctorError) {
-        setEntityType("doctor");
-        await fetchDoctorDetails(doctorData);
+      if (facilityData && !facilityError) {
+        // Fetch profile data using admin_user_id from facilities
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("email, phone_number, first_name, last_name")
+          .eq("user_id", facilityData.admin_user_id)
+          .maybeSingle();
+      
+        const enrichedFacility = {
+          ...facilityData,
+          email: profileData?.email || "",
+          phone_number: profileData?.phone_number || "",
+          profiles: profileData
+        };
+        
+        setEntityType("hospital");
+        await fetchFacilityDetails(enrichedFacility);
       } else {
-        // If not a doctor, try as facility
-        const { data: facilityData, error: facilityError } = await supabase
-          .from("facilities")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (facilityData && !facilityError) {
-          setEntityType("hospital");
-          await fetchFacilityDetails(facilityData);
-        } else {
-          toast({
-            title: "Not Found",
-            description: "The requested doctor or hospital could not be found.",
-            variant: "destructive",
-          });
-          navigate("/dashboard/patient/search");
-        }
+        toast({
+          title: "Not Found",
+          description: "The requested doctor or hospital could not be found.",
+          variant: "destructive",
+        });
+        navigate("/dashboard/patient/hospitals");
       }
-    } catch (error) {
-      console.error("Error determining entity type:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load details. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error determining entity type:", error);
+    toast({
+      title: "Error",
+      description: "Failed to load details. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // const determineEntityTypeAndFetch = async () => {
+  //   setLoading(true);
+  //   try {
+  //     // Try to fetch as doctor first
+  //     const { data: doctorData, error: doctorError } = await supabase
+  //       .from("medical_professionals")
+  //       .select(`
+  //         *,
+  //         medical_professionals_user_id_fkey (
+  //           first_name,
+  //           last_name,
+  //           avatar_url,
+  //           user_id
+  //         )
+  //       `)
+  //       .eq("id", id)
+  //       .single();
+
+  //     if (doctorData && !doctorError) {
+  //       setEntityType("doctor");
+  //       await fetchDoctorDetails(doctorData);
+  //     } else {
+  //       // If not a doctor, try as facility
+  //       const { data: facilityData, error: facilityError } = await supabase
+  //         .from("facilities")
+  //         .select("*")
+  //         .eq("id", id)
+  //         .single();
+
+  //       if (facilityData && !facilityError) {
+  //         setEntityType("hospital");
+  //         await fetchFacilityDetails(facilityData);
+  //       } else {
+  //         toast({
+  //           title: "Not Found",
+  //           description: "The requested doctor or hospital could not be found.",
+  //           variant: "destructive",
+  //         });
+  //         navigate("/dashboard/patient/hospitals");
+  //         // navigate("/dashboard/patient/search");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error determining entity type:", error);
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to load details. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const fetchDoctorDetails = async (doctorData: any) => {
     const fullName = doctorData.medical_professionals_user_id_fkey
@@ -589,6 +671,9 @@ useEffect(() => {
       availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
       hospital: doctorData.medical_school || "City General Hospital",
       location: doctorData.about_yourself || "Mumbai, Maharashtra",
+          email: doctorData.email || "",  // Added email
+    phone_number: doctorData.phone_number || "",  // Added phone_number
+
       image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
       qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
       languages: ["English", "Hindi", "Marathi"],
@@ -1148,8 +1233,9 @@ const handleBookAppointmentClick = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading details...</p>
+          {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div> */}
+          <p className="mt-4 text-gray-600"><Loader2/></p>
+          {/* <p className="mt-4 text-gray-600">Loading details...</p> */}
         </div>
       </div>
     );
@@ -1162,7 +1248,8 @@ const handleBookAppointmentClick = () => {
           <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Not Found</h2>
           <p className="text-gray-600 mb-6">The requested profile could not be found.</p>
-          <Button onClick={() => navigate("/dashboard/patient/search")}>
+          <Button onClick={() => navigate("/dashboard/patient/hospitals")}>
+          {/* <Button onClick={() => navigate("/dashboard/patient/search")}> */}
             Back to Search
           </Button>
         </Card>
@@ -1175,7 +1262,6 @@ const handleBookAppointmentClick = () => {
   if (entityType === "doctor" && doctor) {
     return (
         <>
-        <Header/>
         {/* // <DashboardLayout userType="patient"> */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header with navigation */}
@@ -1209,6 +1295,19 @@ const handleBookAppointmentClick = () => {
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
                     <p className="text-xl text-blue-600 mt-1">{doctor.specialty}</p>
+                    {doctor.email && (
+      <div className="flex items-center gap-2 mt-1">
+        <Mail className="h-4 w-4 text-gray-500" />
+        <span className="text-sm text-gray-600">{doctor.email}</span>
+      </div>
+    )}
+    {doctor.phone_number && (
+      <div className="flex items-center gap-2 mt-1">
+        <Phone className="h-4 w-4 text-gray-500" />
+        <span className="text-sm text-gray-600">{doctor.phone_number}</span>
+      </div>
+    )}
+    
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center">
                         <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -1780,7 +1879,7 @@ const handleBookAppointmentClick = () => {
         )} */}
       </div>
        <ShareDialog />
-      <Footer/>
+ 
       {/* // </DashboardLayout> */}
       </>
     );
@@ -1790,7 +1889,6 @@ const handleBookAppointmentClick = () => {
   if (entityType === "hospital" && facility) {
     return (
         <>
-        <Header/>
         {/* // <DashboardLayout userType="patient"> */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header with navigation */}
@@ -1997,12 +2095,12 @@ const handleBookAppointmentClick = () => {
             {dept.description || "No description available"}
           </p>
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <BedDouble className="h-4 w-4 text-gray-500" />
               <span className="text-sm">
                 Available Beds: <span className="font-semibold">{dept.available_beds || 0}</span>/{dept.bed_capacity || 0}
               </span>
-            </div>
+            </div> */}
             <Button variant="ghost" size="sm" className="text-green-600">
               View Departments <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
@@ -2106,7 +2204,6 @@ const handleBookAppointmentClick = () => {
         </Tabs>
       </div>
       <ShareDialog />
-       <Footer/>
       {/* // </DashboardLayout> */}
       </>
     );

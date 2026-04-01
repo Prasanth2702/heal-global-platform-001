@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react"; 
 import { toast } from "@/hooks/use-toast";
+import Loader2 from "@/components/ui/Loader2";
 
 interface Ward {
   id: string;
@@ -193,8 +194,9 @@ const ViewBedBooking1 = () => {
 
         {loading ? (
           <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3">Loading wards...</span>
+            {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div> */}
+            {/* <span className="ml-3">Loading wards...</span> */}
+            <Loader2/>
           </div>
         ) : wards.length === 0 ? (
           <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">

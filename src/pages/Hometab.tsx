@@ -26,6 +26,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import Loader3 from '@/components/ui/Loader3';
 
 interface Doctor {
   id: string;
@@ -857,7 +858,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
       {loading ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
+            {/* <span className="visually-hidden">Loading...</span> */}
+            <Loader3/>
           </div>
         </div>
       ) : (
@@ -1091,7 +1093,7 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
 </div>
 
           </div>
-          <div className="card-body">
+          {/* <div className="card-body">
             {loadingBookings ? (
               <div className="text-center py-5">
                 <div className="spinner-border text-primary" role="status">
@@ -1197,11 +1199,18 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                               )}
                             </td>
                             <td>
-                              <PatientProtectedButton className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
-                                 path="/appointment/beds">
+                              {/* <PatientProtectedButton className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+                                 path={`/appointment/beds/${createSlug(booking?.facilityName || "")}/${booking.id}`}>
                         <Bed size={18} />
                         <span>View Bed</span>
-                      </PatientProtectedButton>
+                      </PatientProtectedButton> 
+                      <PatientProtectedButton 
+  className="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2" 
+  onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+  path={`/appointment/beds/${createSlug(booking.facilityName)}/${booking.facilityId}`}>
+  <Bed size={18} />
+  <span>View Bed</span>
+</PatientProtectedButton>
                             </td>
                           </tr>
                         );
@@ -1219,7 +1228,284 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
                 </table>
               </div>
             )}
-          </div>
+          </div> */}
+          <div className="card-body p-0 md:p-4">
+  {loadingBookings ? (
+    <div className="text-center py-5">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  ) : (
+    <>
+      {/* Desktop View - Table */}
+      <div className="hidden md:block">
+        <div className="table-responsive">
+          <table className="table table-hover align-middle">
+            <thead className="bg-light">
+              <tr>
+                <th className="px-3 py-2">City</th>
+                <th className="px-3 py-2">Hospital</th>
+                <th className="px-3 py-2">Bed Details</th>
+                <th className="px-3 py-2">Ward Details</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bedBookings.length > 0 ? (
+                bedBookings.map((booking) => {
+                  const statusBadge = getStatusBadge(booking.status);
+                  const StatusIcon = statusBadge.icon;
+                  
+                  return (
+                    <tr key={booking.id}>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={16} className="text-muted" />
+                          <span className="text-sm">{booking.city || 'N/A'}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <strong className="text-sm md:text-base">{booking.facilityName}</strong>
+                        <br />
+                        <small className="text-muted text-xs">{booking.facilityType}</small>
+                      </td>
+                      <td className="px-3 py-3">
+                        <div>
+                          <span className="badge bg-info text-dark text-xs md:text-sm px-2 py-1">
+                            {booking.bedType}
+                          </span>
+                          <br />
+                          <small className="text-muted text-xs">
+                            Bed: {booking.bedNumber}
+                            {booking.hasVentilator && ' • Ventilator'}
+                            {booking.hasOxygen && ' • O2'}
+                          </small>
+                          {booking.doctor && (
+                            <div className="mt-1">
+                              <small className="text-muted text-xs">Dr: {booking.doctor}</small>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <div>
+                          <span className="badge bg-secondary text-xs md:text-sm px-2 py-1">
+                            Floor {booking.floorNumber}
+                          </span>
+                          <br />
+                          <small className="text-muted text-xs">
+                            Wing: {booking.wing || 'Main'}
+                            {booking.isIsolation && ' • Isolation'}
+                          </small>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`badge ${statusBadge.class} d-inline-flex align-items-center gap-1 text-xs md:text-sm px-2 py-1`}>
+                          <StatusIcon size={12} />
+                          {booking.status}
+                        </span>
+                        <br />
+                        <small className={`${getAvailabilityColor(booking.availability)} text-xs`}>
+                          {booking.availability}
+                        </small>
+                        {booking.pricePerDay && (
+                          <div className="mt-1">
+                            <small className="text-muted text-xs">${booking.pricePerDay}/day</small>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-3">
+                        <PatientProtectedButton 
+                          className="btn btn-outline-primary flex justify-center items-center gap-2 text-sm md:text-base px-2 md:px-3 py-1 md:py-2 w-full"
+                          onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+                          path={`/appointment/beds/${createSlug(booking.facilityName)}/${booking.facilityId}`}>
+                          <Bed size={16} className="md:w-4 md:h-4" />
+                          <span>View Bed</span>
+                        </PatientProtectedButton>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">
+                    <div className="text-muted">
+                      <p className="text-sm">No bed bookings found</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Tablet View - Card Layout */}
+      <div className="hidden sm:block md:hidden">
+        <div className="grid grid-cols-1 gap-4 p-3">
+          {bedBookings.length > 0 ? (
+            bedBookings.map((booking) => {
+              const statusBadge = getStatusBadge(booking.status);
+              const StatusIcon = statusBadge.icon;
+              
+              return (
+                <div key={booking.id} className="bg-white rounded-lg shadow-sm border p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-base">{booking.facilityName}</h3>
+                      <p className="text-xs text-muted">{booking.facilityType}</p>
+                    </div>
+                    <span className={`badge ${statusBadge.class} text-xs px-2 py-1`}>
+                      <StatusIcon size={12} className="inline mr-1" />
+                      {booking.status}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-xs text-muted mb-1">City</p>
+                      <div className="flex items-center gap-1">
+                        <MapPin size={14} className="text-muted" />
+                        <span className="text-sm">{booking.city || 'N/A'}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted mb-1">Availability</p>
+                      <small className={`${getAvailabilityColor(booking.availability)} text-xs`}>
+                        {booking.availability}
+                      </small>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-xs text-muted mb-1">Bed Details</p>
+                      <span className="badge bg-info text-dark text-xs mb-1">
+                        {booking.bedType}
+                      </span>
+                      <p className="text-xs mt-1">Bed: {booking.bedNumber}</p>
+                      {booking.hasVentilator && <p className="text-xs">✓ Ventilator</p>}
+                      {booking.hasOxygen && <p className="text-xs">✓ Oxygen</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted mb-1">Ward Details</p>
+                      <p className="text-xs">Floor {booking.floorNumber}</p>
+                      <p className="text-xs">Wing: {booking.wing || 'Main'}</p>
+                      {booking.isIsolation && <p className="text-xs">Isolation Room</p>}
+                    </div>
+                  </div>
+                  
+                  {booking.doctor && (
+                    <div className="mb-3">
+                      <p className="text-xs text-muted mb-1">Doctor</p>
+                      <p className="text-sm">Dr. {booking.doctor}</p>
+                    </div>
+                  )}
+                  
+                  {booking.pricePerDay && (
+                    <div className="mb-3">
+                      <p className="text-xs text-muted mb-1">Price</p>
+                      <p className="text-sm font-semibold">${booking.pricePerDay}/day</p>
+                    </div>
+                  )}
+                  
+                  <PatientProtectedButton 
+                    className="btn btn-outline-primary w-full flex justify-center items-center gap-2 text-sm py-2"
+                    onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+                    path={`/appointment/beds/${createSlug(booking.facilityName)}/${booking.facilityId}`}>
+                    <Bed size={16} />
+                    <span>View Bed</span>
+                  </PatientProtectedButton>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted text-sm">No bed bookings found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile View - Simplified Card Layout */}
+      <div className="block sm:hidden">
+        <div className="space-y-3 p-2">
+          {bedBookings.length > 0 ? (
+            bedBookings.map((booking) => {
+              const statusBadge = getStatusBadge(booking.status);
+              const StatusIcon = statusBadge.icon;
+              
+              return (
+                <div key={booking.id} className="bg-white rounded-lg shadow-sm border p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">{booking.facilityName}</h3>
+                      <p className="text-xs text-muted">{booking.facilityType}</p>
+                    </div>
+                    <span className={`badge ${statusBadge.class} text-xs px-2 py-1 ml-2`}>
+                      <StatusIcon size={10} className="inline mr-1" />
+                      {booking.status}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin size={12} className="text-muted" />
+                    <span className="text-xs">{booking.city || 'N/A'}</span>
+                    <span className="text-xs text-muted">•</span>
+                    <small className={`${getAvailabilityColor(booking.availability)} text-xs`}>
+                      {booking.availability}
+                    </small>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="badge bg-info text-dark text-xs">
+                      {booking.bedType}
+                    </span>
+                    <span className="badge bg-secondary text-xs">
+                      Bed {booking.bedNumber}
+                    </span>
+                    <span className="badge bg-secondary text-xs">
+                      Floor {booking.floorNumber}
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-2 text-xs text-muted">
+                    {booking.hasVentilator && <span>✓ Ventilator</span>}
+                    {booking.hasOxygen && <span>✓ Oxygen</span>}
+                    {booking.isIsolation && <span>✓ Isolation</span>}
+                    {booking.wing && booking.wing !== 'Main' && <span>Wing: {booking.wing}</span>}
+                  </div>
+                  
+                  {booking.doctor && (
+                    <p className="text-xs text-muted mb-2">Dr. {booking.doctor}</p>
+                  )}
+                  
+                  {booking.pricePerDay && (
+                    <p className="text-xs font-semibold mb-2">${booking.pricePerDay}/day</p>
+                  )}
+                  
+                  <PatientProtectedButton 
+                    className="btn btn-outline-primary w-full flex justify-center items-center gap-2 text-sm py-1.5"
+                    onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(booking.facilityName)}/${booking.facilityId}/${booking.wardId}/${booking.id}`, true)}
+                    path={`/appointment/beds/${createSlug(booking.facilityName)}/${booking.facilityId}`}>
+                    <Bed size={14} />
+                    <span>View Bed</span>
+                  </PatientProtectedButton>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted text-sm">No bed bookings found</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )}
+</div>
         </div>
       </div>
     );
@@ -1294,52 +1580,78 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
           {activeTab === 'hospitals' && renderHospitalsTab()}
           {activeTab === 'bookings' && renderBedBookingsTab()}
         </div> */}
-        <div>
+        <div className="space-y-6 md:space-y-8">
   {/* Doctors Section - Blue Theme */}
-<div className="mb-5">
-  <div className="bg-primary bg-gradient text-white border-bottom shadow-sm mb-4">
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white"> Find Doctors / Specialists</h1>
-        <PatientProtectedButton className="btn btn-light text-primary fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)}  path="/appointment/doctors" >
-          View All Doctors →
-        </PatientProtectedButton>
+  <div className="mb-4 md:mb-5">
+    <div className="bg-primary bg-gradient text-white border-bottom shadow-sm mb-3 md:mb-4">
+      <div className="container px-3 md:px-4 py-3 md:py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-white">
+            Find Doctors / Specialists
+          </h1>
+          <PatientProtectedButton 
+            className="btn btn-light text-primary fw-bold text-sm md:text-base px-3 md:px-4 py-1 md:py-2 w-full sm:w-auto text-center" 
+            onClick={() => handleNavigation('/dashboard/patient/doctors', true)}  
+            // onClick={() => handleNavigation('/dashboard/patient/search', true)}  
+            path="/appointment/doctors"
+          >
+            View All Doctors →
+          </PatientProtectedButton>
+        </div>
       </div>
     </div>
+    <div className="px-2 md:px-0">
+      {renderDoctorsTab()}
+    </div>
   </div>
-  {renderDoctorsTab()}
-</div>
 
-{/* Hospitals Section - Green Theme */}
-<div className="mb-5">
-  <div className="bg-success bg-gradient text-white border-bottom shadow-sm mb-4">
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white">Find Hospitals(Facitlity) / Services </h1>
-        <PatientProtectedButton className="btn btn-light text-success fw-bold" onClick={() => handleNavigation('/dashboard/patient/search', true)} path="/appointment/facility">
-          View All Hospitals →
-        </PatientProtectedButton>
+  {/* Hospitals Section - Green Theme */}
+  <div className="mb-4 md:mb-5">
+    <div className="bg-success bg-gradient text-white border-bottom shadow-sm mb-3 md:mb-4">
+      <div className="container px-3 md:px-4 py-3 md:py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-white">
+            Find Hospitals (Facility) / Services
+          </h1>
+          <PatientProtectedButton 
+            className="btn btn-light text-success fw-bold text-sm md:text-base px-3 md:px-4 py-1 md:py-2 w-full sm:w-auto text-center" 
+            onClick={() => handleNavigation('/dashboard/patient/hospitals', true)} 
+            // onClick={() => handleNavigation('/dashboard/patient/search', true)} 
+            path="/appointment/facility"
+          >
+            View All Hospitals →
+          </PatientProtectedButton>
+        </div>
       </div>
     </div>
+    <div className="px-2 md:px-0">
+      {renderHospitalsTab()}
+    </div>
   </div>
-  {renderHospitalsTab()}
-</div>
 
-{/* Bed Bookings Section - Purple Theme */}
-<div className="mb-5">
-  <div className="bg-purple bg-gradient text-white border-bottom shadow-sm mb-4" style={{ backgroundColor: '#6f42c1' }}>
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center">
-        <h1 className="t text-white">Find Bed </h1>
-        <PatientProtectedButton className="btn btn-light" onClick={() => handleNavigation('/dashboard/patient/book/patient-facilities', true)} path="/appointment/beds">
-  View All Bookings →
-</PatientProtectedButton>
+  {/* Bed Bookings Section - Purple Theme */}
+  <div className="mb-4 md:mb-5">
+    <div className="bg-purple bg-gradient text-white border-bottom shadow-sm mb-3 md:mb-4" style={{ backgroundColor: '#6f42c1' }}>
+      <div className="container px-3 md:px-4 py-3 md:py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-white">
+            Find Bed
+          </h1>
+          <PatientProtectedButton 
+            className="btn btn-light text-purple-600 fw-bold text-sm md:text-base px-3 md:px-4 py-1 md:py-2 w-full sm:w-auto text-center" 
+            onClick={() => handleNavigation('/dashboard/patient/book/patient-facilities', true)} 
+            path="/appointment/beds"
+          >
+            View All Bookings →
+          </PatientProtectedButton>
+        </div>
       </div>
     </div>
+    <div className="px-2 md:px-0">
+      {renderBedBookingsTab()}
+    </div>
   </div>
-  {renderBedBookingsTab()}
 </div>
-      </div>
       </div>
 
       <style>{`

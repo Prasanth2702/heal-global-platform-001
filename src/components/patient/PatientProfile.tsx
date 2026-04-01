@@ -89,9 +89,12 @@ const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
  const [uploading, setUploading] = useState(false);
-
+const [pendingDocs, setPendingDocs] = useState<File[]>([]);
+const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-useEffect(() => {
+
+
+  useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
@@ -328,6 +331,8 @@ useEffect(() => {
 
 
   const handleSave = async () => {
+  setLoading(true);
+  try {
 
     if (!validateForm(profileData)) return;
 
@@ -366,6 +371,39 @@ useEffect(() => {
       .from('patients')
       .upsert(patientsUpdate, { onConflict: 'user_id' });
 
+if (pendingDocs.length > 0 && user) {
+  setUploading(true);
+
+  for (let file of pendingDocs) {
+    const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+
+    const { error } = await supabase.storage
+      .from('heal_med_app_files_bucket')
+      .upload(filePath, file);
+
+    if (!error) {
+      const { data: urlData } = supabase.storage
+        .from('heal_med_app_files_bucket')
+        .getPublicUrl(filePath);
+
+      setUploadedDocs(prev => [
+        ...prev,
+        {
+          name: file.name,
+          type: 'patient',
+          userId: user.id,
+          url: urlData.publicUrl,
+          path: filePath,
+          uploadedAt: new Date()
+        }
+      ]);
+    }
+  }
+
+  setPendingDocs([]);
+  setUploading(false);
+}
+
     if (profilesUpdateError || patientsUpdateError) {
       toast({
         title: 'Update Failed',
@@ -381,6 +419,11 @@ useEffect(() => {
       setIsEditing(false);
       setErrors({});
     }
+    } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,68 +474,78 @@ useEffect(() => {
       className: 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0'
     });
   };
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
 
-   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files) return;
-      if (!user) {
-        toast({
-          title: "User not found",
-          description: "Please login again",
-          variant: "destructive"
-        });
-        return;
-      }
+  const fileArray = Array.from(files);
+
+  setPendingDocs(fileArray);
+  setShowUploadDialog(true);
+
+  event.target.value = '';
+};
+  //  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //     const files = event.target.files;
+  //     if (!files) return;
+  //     if (!user) {
+  //       toast({
+  //         title: "User not found",
+  //         description: "Please login again",
+  //         variant: "destructive"
+  //       });
+  //       return;
+  //     }
   
-      setUploading(true);
+  //     setUploading(true);
   
-      for (let file of files) {
-        const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+  //     for (let file of files) {
+  //       const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
   
-        const { error } = await supabase
-          .storage
-          .from('heal_med_app_files_bucket')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+  //       const { error } = await supabase
+  //         .storage
+  //         .from('heal_med_app_files_bucket')
+  //         .upload(filePath, file, {
+  //           cacheControl: '3600',
+  //           upsert: false
+  //         });
   
-        if (error) {
-          toast({
-            title: "Upload Failed",
-            description: error.message,
-            variant: "destructive"
-          });
-          setUploading(false);
-          return;
-        } 
-        else {
-          const { data: urlData } = supabase.storage
-            .from('heal_med_app_files_bucket')
-            .getPublicUrl(filePath);
+  //       if (error) {
+  //         toast({
+  //           title: "Upload Failed",
+  //           description: error.message,
+  //           variant: "destructive"
+  //         });
+  //         setUploading(false);
+  //         return;
+  //       } 
+  //       else {
+  //         const { data: urlData } = supabase.storage
+  //           .from('heal_med_app_files_bucket')
+  //           .getPublicUrl(filePath);
   
-          setUploadedDocs(prev => [
-            ...prev,
-            {
-              name: file.name,
-              type: 'facility',
-              userId: user.id,
-              url: urlData.publicUrl,
-              path: filePath,
-              uploadedAt: new Date()
-            }
-          ]);
+  //         setUploadedDocs(prev => [
+  //           ...prev,
+  //           {
+  //             name: file.name,
+  //             type: 'facility',
+  //             userId: user.id,
+  //             url: urlData.publicUrl,
+  //             path: filePath,
+  //             uploadedAt: new Date()
+  //           }
+  //         ]);
   
-          toast({
-            title: "Document Uploaded",
-            description: `${file.name} uploaded successfully.`,
-          });
-        }
-      }
+  //         toast({
+  //           title: "Document Uploaded",
+  //           description: `${file.name} uploaded successfully.`,
+  //         });
+  //       }
+  //     }
   
-      setUploading(false);
-      event.target.value = '';
-    };
+  //     setUploading(false);
+  //     event.target.value = '';
+  //   };
   
   const handleDeleteDocument = async (doc: UploadedDocument) => {
       if (!doc.path) return;
@@ -554,7 +607,7 @@ useEffect(() => {
                   <Eye className="h-4 w-4" />
                 </Button>
               )}
-              <Button
+              {/* <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => window.open(doc.url, '_blank')}
@@ -576,7 +629,7 @@ useEffect(() => {
                     <Trash2 className="h-4 w-4" />
                   )}
                 </Button>
-              )}
+              )} */}
             </div>
 
           </div>
@@ -588,44 +641,89 @@ useEffect(() => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
-          >
-            <X className="h-4 w-4" />
-            <span>Back</span>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              My Profile
-            </h1>
-            <p className="text-muted-foreground">Manage your personal information and health data</p>
-          </div>
-        </div>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  
+  {/* Top Section */}
+  <div className="flex flex-col md:flex-row md:items-center md:space-x-4 gap-3">
+    
+    {/* Back Button */}
+    <div className="flex justify-between md:justify-start w-full md:w-auto mt-3">
+      <Button
+        variant="outline"
+        onClick={onBack}
+        className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+      >
+        <X className="h-4 w-4" />
+        <span>Back</span>
+      </Button>
 
-        <Button
-          onClick={isEditing ? handleSave : () => setIsEditing(true)}
-          className={`${isEditing
-            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-            : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-            } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
-        >
-          {isEditing ? (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </>
-          ) : (
-            <>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Edit Button Mobile */}
+      <div className="md:hidden">
+  <Button
+    onClick={isEditing ? handleSave : () => setIsEditing(true)}
+    disabled={loading}
+    className={`${
+      isEditing
+        ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+        : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+    } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+  >
+    {loading ? (
+      <span className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Saving...
+      </span>
+    ) : isEditing ? (
+      <>
+        <Save className="h-4 w-4 mr-2" />
+        Save Changes
+      </>
+    ) : (
+      <>
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Profile
+      </>
+    )}
+  </Button>
+</div>
+    </div>
+
+    {/* Title Section */}
+    <div className="text-center md:text-left">
+      <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        My Profile
+      </h1>
+      <p className="text-muted-foreground text-sm md:text-base">
+        Manage your personal information and health data
+      </p>
+    </div>
+
+  </div>
+
+  {/* Desktop Edit Button */}
+  <div className="hidden md:block">
+    <Button
+      onClick={isEditing ? handleSave : () => setIsEditing(true)}
+      className={`${isEditing
+          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+          : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+        } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+    >
+      {isEditing ? (
+        <>
+          <Save className="h-4 w-4 mr-2" />
+          Save Changes
+        </>
+      ) : (
+        <>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit Profile
+        </>
+      )}
+    </Button>
+  </div>
+
+</div>
 
       {/* Profile Picture and Basic Info */}
       <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -768,6 +866,46 @@ useEffect(() => {
                 </div>
               </DialogContent>
             </Dialog>
+            <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Document Upload</DialogTitle>
+      <DialogDescription>
+        Selected documents will be uploaded only after clicking 
+        <strong> Save Changes</strong>.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="space-y-3 mt-4">
+      {pendingDocs.map((file, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between p-2 border rounded"
+        >
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-blue-500" />
+<span 
+  className="text-sm" 
+  title={file.name}
+>
+  {file.name.length > 20 
+    ? file.name.substring(0, 10) + "..." 
+    : file.name}
+</span>          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button>
+          OK
+        </Button>
+      </DialogClose>
+    </div>
+
+  </DialogContent>
+</Dialog>
 
       {/* Personal Information */}
       <Card className="border-0 shadow-lg">

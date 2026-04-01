@@ -2279,80 +2279,91 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-4 px-3 sm:px-4 md:px-0">
+      {/* <div>
         {user && (
           <Tabs 
             value={activeFilterTab}
             onValueChange={(value) => {
               setActiveFilterTab(value);
               setSelectedSpecialty("all");
-              setLocationFilter("all"); // Reset location filter when switching tabs
+              setLocationFilter("all");
             }}
             className="mt-2"
           >
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto sm:max-w-full">
               <TabsTrigger 
                 value="doctors" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-sm sm:text-base py-2 sm:py-3"
               >
-                Doctors
+                <span className="flex items-center gap-2">
+                  <span className="hidden sm:inline">👨‍⚕️</span>
+                  Doctors
+                </span>
               </TabsTrigger>
               <TabsTrigger 
                 value="hospitals" 
-                className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
+                className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-sm sm:text-base py-2 sm:py-3"
               >
-                Hospitals / Facility
+                <span className="flex items-center gap-2">
+                  <span className="hidden sm:inline">🏥</span>
+                  Hospitals / Facility
+                </span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
         )}
-      </div>
+      </div> */}
       
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <Label htmlFor="search" className="text-lg font-semibold">
-            {activeFilterTab === "doctors" ? "Search Doctors" : 
-             activeFilterTab === "hospitals" ? "Search Hospitals" : "Search Healthcare"}
-          </Label>
-          <div className="flex gap-2 mt-1">
-            <div className="relative flex-1">
-              <Input
-                id="search"
-                placeholder={getPlaceholder()}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1 pr-10"
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+      {/* Modern Search Bar Section */}
+      {/* <div className="flex items-center justify-center "> */}
+        <div className="rounded-lg bg-gray-200 p-3 sm:p-5 w-full">
+          <div className="flex flex-col sm:flex-row">
+            {/* Search Icon Container */}
+            <div className="flex w-full sm:w-auto items-center justify-center rounded-tl-lg rounded-tr-lg sm:rounded-tr-none sm:rounded-bl-lg border-b sm:border-b-0 sm:border-r border-gray-200 bg-white p-3 sm:p-5">
+              <svg viewBox="0 0 20 20" aria-hidden="true" className="pointer-events-none w-5 h-5 fill-gray-500 transition">
+                <path d="M16.72 17.78a.75.75 0 1 0 1.06-1.06l-1.06 1.06ZM9 14.5A5.5 5.5 0 0 1 3.5 9H2a7 7 0 0 0 7 7v-1.5ZM3.5 9A5.5 5.5 0 0 1 9 3.5V2a7 7 0 0 0-7 7h1.5ZM9 3.5A5.5 5.5 0 0 1 14.5 9H16a7 7 0 0 0-7-7v1.5Zm3.89 10.45 3.83 3.83 1.06-1.06-3.83-3.83-1.06 1.06ZM14.5 9a5.48 5.48 0 0 1-1.61 3.89l1.06 1.06A6.98 6.98 0 0 0 16 9h-1.5Zm-1.61 3.89A5.48 5.48 0 0 1 9 14.5V16a6.98 6.98 0 0 0 4.95-2.05l-1.06-1.06Z" />
+              </svg>
             </div>
-            <Button onClick={onSearch} className="px-8 bg-blue-600 hover:bg-blue-700">
-              <Search className="mr-2 h-4 w-4" /> Search
-            </Button>
+            
+            {/* Search Input */}
+            <input 
+              type="text" 
+              className="flex-1 bg-white px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base font-semibold outline-0 w-full"
+              placeholder={getPlaceholder()}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            
+            {/* Search Button */}
+            <button 
+              onClick={onSearch}
+              className="bg-blue-500 px-4 sm:px-6 py-3 sm:py-4 rounded-bl-lg rounded-br-lg sm:rounded-bl-none sm:rounded-tr-lg sm:rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors w-full sm:w-auto"
+            >
+              Search
+            </button>
           </div>
         </div>
-      </div>
+      {/* </div> */}
 
-      <Card className="border-blue-200 shadow-md">
-        <CardContent className="pt-6">
-          <div className="grid md:grid-cols-3 gap-6">
+      {/* Filters Card - Fully Responsive */}
+      <Card className="border-blue-200 shadow-md overflow-hidden">
+        <CardContent className="p-4 sm:p-5 md:p-6">
+          {/* Responsive Grid System */}
+          <div className="grid grid-cols-1 xs:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+            
             {/* Facility Type Filter - Only for hospitals */}
             {activeFilterTab === "hospitals" && (
-              <div>
-                <Label className="text-sm font-semibold">Facility Type</Label>
+              <div className="col-span-1">
+                <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
+                  🏛️ Facility Type
+                </Label>
                 <Select
                   value={facilityType}
                   onValueChange={(value) => handleFilterChange('facilityType', value)}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="h-9 sm:h-10 text-sm">
                     <SelectValue placeholder="All Types" />
                   </SelectTrigger>
                   <SelectContent>
@@ -2368,16 +2379,18 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             )}
 
             {/* Specialty/Department Dropdown */}
-            <div>
-              <Label className="text-sm font-semibold">{getSpecialtyLabel()}</Label>
+            <div className="col-span-1">
+              <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
+                {activeFilterTab === "doctors" ? "🎯 Specialty" : "📋 Department"}
+              </Label>
               <Select
                 value={selectedSpecialty}
                 onValueChange={setSelectedSpecialty}
               >
-                <SelectTrigger className="mt-2">
+                <SelectTrigger className="h-9 sm:h-10 text-sm">
                   <SelectValue placeholder={`Select ${activeFilterTab === "doctors" ? "specialty" : "department"}`} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px]">
                   <SelectItem value="all">
                     {activeFilterTab === "doctors" ? "All Specialties" : "All Departments"}
                   </SelectItem>
@@ -2397,26 +2410,29 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
               </Select>
             </div>
             
-            <div>
-              <Label className="text-sm font-semibold">Select Date</Label>
+            {/* Date Filter */}
+            <div className="col-span-1">
+              <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
+                📅 Select Date
+              </Label>
               <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate?.(e.target.value)}
-                className="mt-2"
+                className="h-9 sm:h-10 text-sm"
               />
             </div>
 
             {/* City/Location Filter */}
-            <div className="md:col-span-1">
-              <Label className="text-sm font-semibold">
-                {activeFilterTab === "doctors" ? "Doctor City" : "Facility City"}
+            <div className="col-span-1 xs:col-span-2 lg:col-span-1">
+              <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
+                {activeFilterTab === "doctors" ? "📍 Doctor City" : "📍 Facility City"}
               </Label>
               <Select
                 value={locationFilter}
                 onValueChange={setLocationFilter}
               >
-                <SelectTrigger className="mt-2">
+                <SelectTrigger className="h-9 sm:h-10 text-sm">
                   <SelectValue placeholder={`Select ${activeFilterTab === "doctors" ? "doctor city" : "facility city"}`} />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
@@ -2432,75 +2448,347 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
                   )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                 {activeFilterTab === "doctors" 
-                  ? `Showing ${getAvailableCities().length} cities where doctors practice` 
-                  : `Showing ${getAvailableCities().length} cities with facilities`}
+                  ? `📊 ${getAvailableCities().length} cities with doctors` 
+                  : `📊 ${getAvailableCities().length} cities with facilities`}
               </p>
             </div>
-
-            {/* Active Filters Display */}
-            {(searchQuery || (selectedSpecialty && selectedSpecialty !== "all") || 
-              (locationFilter && locationFilter !== "all") || (facilityType && facilityType !== "all")) && (
-              <div className="md:col-span-3 mt-2 p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-700">Active Filters:</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSelectedSpecialty("all");
-                      setLocationFilter("all");
-                      if (setFacilityType) setFacilityType("all");
-                      onSearch();
-                    }}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Clear All
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {searchQuery && (
-                    <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                      Search: {searchQuery}
-                      <button onClick={() => { setSearchQuery(""); onSearch(); }} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                  {selectedSpecialty && selectedSpecialty !== "all" && (
-                    <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                      {activeFilterTab === "doctors" ? "Specialty" : "Dept"}: {selectedSpecialty}
-                      <button onClick={() => setSelectedSpecialty("all")} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                  {locationFilter && locationFilter !== "all" && (
-                    <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
-                      City: {locationFilter}
-                      <button onClick={() => setLocationFilter("all")} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                  {facilityType && facilityType !== "all" && activeFilterTab === "hospitals" && (
-                    <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
-                      Type: {formatFacilityType(facilityType)}
-                      <button onClick={() => setFacilityType("all")} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* Active Filters Display - Responsive */}
+          {(searchQuery || (selectedSpecialty && selectedSpecialty !== "all") || 
+            (locationFilter && locationFilter !== "all") || (facilityType && facilityType !== "all")) && (
+            <div className="mt-4 sm:mt-5 md:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                <span className="text-xs sm:text-sm font-semibold text-blue-700 flex items-center gap-2">
+                  <span className="text-base">🎯</span> Active Filters:
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedSpecialty("all");
+                    setLocationFilter("all");
+                    if (setFacilityType) setFacilityType("all");
+                    onSearch();
+                  }}
+                  className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
+                >
+                  ✖️ Clear All
+                </Button>
+              </div>
+              
+              {/* Filter Tags - Responsive wrapping */}
+              <div className="flex flex-wrap gap-2">
+                {searchQuery && (
+                  <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <span className="mr-1">🔍</span>
+                    {searchQuery.length > 20 ? `${searchQuery.substring(0, 20)}...` : searchQuery}
+                    <button onClick={() => { setSearchQuery(""); onSearch(); }} className="ml-1 hover:bg-blue-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedSpecialty && selectedSpecialty !== "all" && (
+                  <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    <span className="mr-1">🎯</span>
+                    {activeFilterTab === "doctors" ? "Specialty" : "Dept"}: {selectedSpecialty}
+                    <button onClick={() => setSelectedSpecialty("all")} className="ml-1 hover:bg-green-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {locationFilter && locationFilter !== "all" && (
+                  <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                    <span className="mr-1">📍</span>
+                    {locationFilter}
+                    <button onClick={() => setLocationFilter("all")} className="ml-1 hover:bg-purple-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {facilityType && facilityType !== "all" && activeFilterTab === "hospitals" && (
+                  <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                    <span className="mr-1">🏛️</span>
+                    {formatFacilityType(facilityType)}
+                    <button onClick={() => setFacilityType("all")} className="ml-1 hover:bg-orange-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Responsive Styles */}
+      <style>{`
+        @media (max-width: 480px) {
+          .xs\\:grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        
+        @media (min-width: 481px) and (max-width: 640px) {
+          .grid {
+            gap: 0.75rem;
+          }
+        }
+        
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .grid {
+            gap: 1rem;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          button, 
+          [role="button"],
+          .select-trigger {
+            min-height: 44px;
+          }
+          
+          input, select {
+            font-size: 16px !important;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .card:hover {
+            transform: translateY(-2px);
+            transition: transform 0.3s ease;
+          }
+        }
+      `}</style>
     </div>
   );
+
+  // return (
+  //   <div className="space-y-4">
+  //     <div>
+  //       {user && (
+  //         <Tabs 
+  //           value={activeFilterTab}
+  //           onValueChange={(value) => {
+  //             setActiveFilterTab(value);
+  //             setSelectedSpecialty("all");
+  //             setLocationFilter("all"); // Reset location filter when switching tabs
+  //           }}
+  //           className="mt-2"
+  //         >
+  //           <TabsList className="grid w-full grid-cols-2">
+  //             <TabsTrigger 
+  //               value="doctors" 
+  //               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+  //             >
+  //               Doctors
+  //             </TabsTrigger>
+  //             <TabsTrigger 
+  //               value="hospitals" 
+  //               className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
+  //             >
+  //               Hospitals / Facility
+  //             </TabsTrigger>
+  //           </TabsList>
+  //         </Tabs>
+  //       )}
+  //     </div>
+      
+  //     <div className="flex flex-col md:flex-row gap-4">
+  //       <div className="flex-1">
+  //         <Label htmlFor="search" className="text-lg font-semibold">
+  //           {activeFilterTab === "doctors" ? "Search Doctors" : 
+  //            activeFilterTab === "hospitals" ? "Search Hospitals" : "Search Healthcare"}
+  //         </Label>
+  //         <div className="flex gap-2 mt-1">
+  //           <div className="relative flex-1">
+  //             <Input
+  //               id="search"
+  //               placeholder={getPlaceholder()}
+  //               value={searchQuery}
+  //               onChange={(e) => setSearchQuery(e.target.value)}
+  //               onKeyPress={handleKeyPress}
+  //               className="flex-1 pr-10"
+  //             />
+  //             {searchQuery && (
+  //               <button
+  //                 onClick={clearSearch}
+  //                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+  //               >
+  //                 <X className="h-4 w-4" />
+  //               </button>
+  //             )}
+  //           </div>
+  //           <Button onClick={onSearch} className="px-8 bg-blue-600 hover:bg-blue-700">
+  //             <Search className="mr-2 h-4 w-4" /> Search
+  //           </Button>
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     <Card className="border-blue-200 shadow-md">
+  //       <CardContent className="pt-6">
+  //         <div className="grid md:grid-cols-3 gap-6">
+  //           {/* Facility Type Filter - Only for hospitals */}
+  //           {activeFilterTab === "hospitals" && (
+  //             <div>
+  //               <Label className="text-sm font-semibold">Facility Type</Label>
+  //               <Select
+  //                 value={facilityType}
+  //                 onValueChange={(value) => handleFilterChange('facilityType', value)}
+  //               >
+  //                 <SelectTrigger className="mt-2">
+  //                   <SelectValue placeholder="All Types" />
+  //                 </SelectTrigger>
+  //                 <SelectContent>
+  //                   <SelectItem value="all">All Types</SelectItem>
+  //                   {availableFacilityTypes.map(type => (
+  //                     <SelectItem key={type} value={type}>
+  //                       {formatFacilityType(type)}
+  //                     </SelectItem>
+  //                   ))}
+  //                 </SelectContent>
+  //               </Select>
+  //             </div>
+  //           )}
+
+  //           {/* Specialty/Department Dropdown */}
+  //           <div>
+  //             <Label className="text-sm font-semibold">{getSpecialtyLabel()}</Label>
+  //             <Select
+  //               value={selectedSpecialty}
+  //               onValueChange={setSelectedSpecialty}
+  //             >
+  //               <SelectTrigger className="mt-2">
+  //                 <SelectValue placeholder={`Select ${activeFilterTab === "doctors" ? "specialty" : "department"}`} />
+  //               </SelectTrigger>
+  //               <SelectContent>
+  //                 <SelectItem value="all">
+  //                   {activeFilterTab === "doctors" ? "All Specialties" : "All Departments"}
+  //                 </SelectItem>
+  //                 {activeFilterTab === "doctors" 
+  //                   ? doctorSpecialties.map((s) => (
+  //                       <SelectItem key={s} value={s}>
+  //                         {s}
+  //                       </SelectItem>
+  //                     ))
+  //                   : departments.map((d) => (
+  //                       <SelectItem key={d} value={d}>
+  //                         {d}
+  //                       </SelectItem>
+  //                     ))
+  //                 }
+  //               </SelectContent>
+  //             </Select>
+  //           </div>
+            
+  //           <div>
+  //             <Label className="text-sm font-semibold">Select Date</Label>
+  //             <Input
+  //               type="date"
+  //               value={selectedDate}
+  //               onChange={(e) => setSelectedDate?.(e.target.value)}
+  //               className="mt-2"
+  //             />
+  //           </div>
+
+  //           {/* City/Location Filter */}
+  //           <div className="md:col-span-1">
+  //             <Label className="text-sm font-semibold">
+  //               {activeFilterTab === "doctors" ? "Doctor City" : "Facility City"}
+  //             </Label>
+  //             <Select
+  //               value={locationFilter}
+  //               onValueChange={setLocationFilter}
+  //             >
+  //               <SelectTrigger className="mt-2">
+  //                 <SelectValue placeholder={`Select ${activeFilterTab === "doctors" ? "doctor city" : "facility city"}`} />
+  //               </SelectTrigger>
+  //               <SelectContent className="max-h-[300px]">
+  //                 <SelectItem value="all">All Cities</SelectItem>
+  //                 {getAvailableCities().length > 0 ? (
+  //                   getAvailableCities().map((city) => (
+  //                     <SelectItem key={city} value={city}>
+  //                       {city}
+  //                     </SelectItem>
+  //                   ))
+  //                 ) : (
+  //                   <SelectItem value="no-cities" disabled>No cities available</SelectItem>
+  //                 )}
+  //               </SelectContent>
+  //             </Select>
+  //             <p className="text-xs text-muted-foreground mt-1">
+  //               {activeFilterTab === "doctors" 
+  //                 ? `Showing ${getAvailableCities().length} cities where doctors practice` 
+  //                 : `Showing ${getAvailableCities().length} cities with facilities`}
+  //             </p>
+  //           </div>
+
+  //           {/* Active Filters Display */}
+  //           {(searchQuery || (selectedSpecialty && selectedSpecialty !== "all") || 
+  //             (locationFilter && locationFilter !== "all") || (facilityType && facilityType !== "all")) && (
+  //             <div className="md:col-span-3 mt-2 p-3 bg-blue-50 rounded-lg">
+  //               <div className="flex items-center justify-between">
+  //                 <span className="text-sm font-medium text-blue-700">Active Filters:</span>
+  //                 <Button
+  //                   variant="ghost"
+  //                   size="sm"
+  //                   onClick={() => {
+  //                     setSearchQuery("");
+  //                     setSelectedSpecialty("all");
+  //                     setLocationFilter("all");
+  //                     if (setFacilityType) setFacilityType("all");
+  //                     onSearch();
+  //                   }}
+  //                   className="text-blue-600 hover:text-blue-800"
+  //                 >
+  //                   Clear All
+  //                 </Button>
+  //               </div>
+  //               <div className="flex flex-wrap gap-2 mt-2">
+  //                 {searchQuery && (
+  //                   <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+  //                     Search: {searchQuery}
+  //                     <button onClick={() => { setSearchQuery(""); onSearch(); }} className="ml-1">
+  //                       <X className="h-3 w-3" />
+  //                     </button>
+  //                   </span>
+  //                 )}
+  //                 {selectedSpecialty && selectedSpecialty !== "all" && (
+  //                   <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+  //                     {activeFilterTab === "doctors" ? "Specialty" : "Dept"}: {selectedSpecialty}
+  //                     <button onClick={() => setSelectedSpecialty("all")} className="ml-1">
+  //                       <X className="h-3 w-3" />
+  //                     </button>
+  //                   </span>
+  //                 )}
+  //                 {locationFilter && locationFilter !== "all" && (
+  //                   <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
+  //                     City: {locationFilter}
+  //                     <button onClick={() => setLocationFilter("all")} className="ml-1">
+  //                       <X className="h-3 w-3" />
+  //                     </button>
+  //                   </span>
+  //                 )}
+  //                 {facilityType && facilityType !== "all" && activeFilterTab === "hospitals" && (
+  //                   <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
+  //                     Type: {formatFacilityType(facilityType)}
+  //                     <button onClick={() => setFacilityType("all")} className="ml-1">
+  //                       <X className="h-3 w-3" />
+  //                     </button>
+  //                   </span>
+  //                 )}
+  //               </div>
+  //             </div>
+  //           )}
+  //         </div>
+  //       </CardContent>
+  //     </Card>
+  //   </div>
+  // );
 };
 
 export default SearchHeader;

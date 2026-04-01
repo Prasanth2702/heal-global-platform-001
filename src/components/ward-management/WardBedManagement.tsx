@@ -45,6 +45,7 @@ import {
   Ban,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import Loader3 from "../ui/Loader3";
 
 // Zod schemas for validation
 const wardSchema = z.object({
@@ -1496,8 +1497,9 @@ const onSubmitBed = async (data) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Loading wards and beds...</span>
+        {/* <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Loading wards and beds...</span> */}
+        <Loader3/>
       </div>
     );
   }

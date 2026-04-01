@@ -370,6 +370,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import Loader2 from "../ui/Loader2";
 
 interface Profile {
   id: string;
@@ -1732,9 +1733,10 @@ const handleEdit = (department: Department) => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div> */}
           <p className="mt-2 text-muted-foreground">
-            Loading department data...
+            {/* Loading department data... */}
+            <Loader2/>
           </p>
         </div>
       </div>

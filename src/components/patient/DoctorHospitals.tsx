@@ -61,6 +61,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Loader2 from "../ui/Loader2";
 
 // Types
 interface Doctor {
@@ -75,6 +76,8 @@ interface Doctor {
   availability: string;
   hospital?: string;
   image?: string;
+  email?: string;
+  phone_number?: number;
   qualifications?: string[];
   languages?: string[];
   about?: string;
@@ -237,46 +240,46 @@ const [copied, setCopied] = useState(false);
     // Add this ref for the booking section
   const bookingSectionRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const fetchDepartmentDoctors = async (departmentId: string) => {
-  try {
-    // Fetch doctors associated with this department
-    const { data: doctorsData, error } = await supabase
-      .from("medical_professionals")
-      .select(`
-        *,
-        medical_professionals_user_id_fkey (
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .eq("department_id", departmentId);
+//   const fetchDepartmentDoctors = async (departmentId: string) => {
+//   try {
+//     // Fetch doctors associated with this department
+//     const { data: doctorsData, error } = await supabase
+//       .from("medical_professionals")
+//       .select(`
+//         *,
+//         medical_professionals_user_id_fkey (
+//           first_name,
+//           last_name,
+//           avatar_url
+//         )
+//       `)
+//       .eq("department_id", departmentId);
 
-    if (error) {
-      console.error("Error fetching department doctors:", error);
-      return;
-    }
+//     if (error) {
+//       console.error("Error fetching department doctors:", error);
+//       return;
+//     }
 
-    if (doctorsData) {
-      const mapped = doctorsData.map((item: any) => ({
-        id: item.id,
-        user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-        name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
-          item.medical_professionals_user_id_fkey?.last_name || ""
-        }`.trim() || "Unknown Doctor",
-        specialty: item.medical_speciality,
-        rating: item.rating || 4.5,
-        experience: `${item.years_experience || 10} years`,
-        consultationFee: item.consultation_fee || 500,
-        availability: "Available",
-        image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-      }));
-      setDepartmentDoctors(mapped);
-    }
-  } catch (error) {
-    console.error("Error in fetchDepartmentDoctors:", error);
-  }
-};
+//     if (doctorsData) {
+//       const mapped = doctorsData.map((item: any) => ({
+//         id: item.id,
+//         user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+//         name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+//           item.medical_professionals_user_id_fkey?.last_name || ""
+//         }`.trim() || "Unknown Doctor",
+//         specialty: item.medical_speciality,
+//         rating: item.rating || 4.5,
+//         experience: `${item.years_experience || 10} years`,
+//         consultationFee: item.consultation_fee || 500,
+//         availability: "Available",
+//         image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+//       }));
+//       setDepartmentDoctors(mapped);
+//     }
+//   } catch (error) {
+//     console.error("Error in fetchDepartmentDoctors:", error);
+//   }
+// };
 // const handleViewDepartment = (department: Department) => {
 //   setSelectedDepartment(department);
 //   fetchDepartmentDoctors(department.id);
@@ -484,59 +487,139 @@ useEffect(() => {
     }
   }, [id]);
 
-  const determineEntityTypeAndFetch = async () => {
-    setLoading(true);
-    try {
-      // Try to fetch as doctor first
-      const { data: doctorData, error: doctorError } = await supabase
-        .from("medical_professionals")
-        .select(`
-          *,
-          medical_professionals_user_id_fkey (
-            first_name,
-            last_name,
-            avatar_url,
-            user_id
-          )
-        `)
+  // const determineEntityTypeAndFetch = async () => {
+  //   setLoading(true);
+  //   try {
+  //     // Try to fetch as doctor first
+  //     const { data: doctorData, error: doctorError } = await supabase
+  //       .from("medical_professionals")
+  //       .select(`
+  //         *,
+  //         medical_professionals_user_id_fkey (
+  //           first_name,
+  //           last_name,
+  //           avatar_url,
+  //           user_id
+  //         )
+  //       `)
+  //       .eq("id", id)
+  //       .single();
+
+  //     if (doctorData && !doctorError) {
+  //       setEntityType("doctor");
+  //       await fetchDoctorDetails(doctorData);
+  //     } else {
+  //       // If not a doctor, try as facility
+  //       const { data: facilityData, error: facilityError } = await supabase
+  //         .from("facilities")
+  //         .select("*")
+  //         .eq("id", id)
+  //         .single();
+
+  //       if (facilityData && !facilityError) {
+  //         setEntityType("hospital");
+  //         await fetchFacilityDetails(facilityData);
+  //       } else {
+  //         toast({
+  //           title: "Not Found",
+  //           description: "The requested doctor or hospital could not be found.",
+  //           variant: "destructive",
+  //         });
+  //         navigate("/dashboard/patient/hospitals");
+  //         // navigate("/dashboard/patient/search");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error determining entity type:", error);
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to load details. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const determineEntityTypeAndFetch = async () => {
+  setLoading(true);
+  try {
+    // Try to fetch as doctor first
+    const { data: doctorData, error: doctorError } = await supabase
+      .from("medical_professionals")
+      .select(`
+        *,
+        medical_professionals_user_id_fkey (
+          first_name,
+          last_name,
+          avatar_url,
+          user_id
+        )
+      `)
+      .eq("id", id)
+      .single();
+      
+    if (doctorData && !doctorError) {
+      // Fetch profile data using user_id from medical_professionals
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("email, phone_number, first_name, last_name")
+        .eq("user_id", doctorData.user_id)
+        .maybeSingle();
+      
+      const enrichedDoctor = {
+        ...doctorData,
+        email: profileData?.email || "",
+        phone_number: profileData?.phone_number || "",
+        profiles: profileData
+      };
+      
+      setEntityType("doctor");
+      await fetchDoctorDetails(enrichedDoctor);
+    } else {
+      // If not a doctor, try as facility
+      const { data: facilityData, error: facilityError } = await supabase
+        .from("facilities")
+        .select("*")
         .eq("id", id)
         .single();
 
-      if (doctorData && !doctorError) {
-        setEntityType("doctor");
-        await fetchDoctorDetails(doctorData);
+      if (facilityData && !facilityError) {
+        // Fetch profile data using admin_user_id from facilities
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("email, phone_number, first_name, last_name")
+          .eq("user_id", facilityData.admin_user_id)
+          .maybeSingle();
+      
+        const enrichedFacility = {
+          ...facilityData,
+          email: profileData?.email || "",
+          phone_number: profileData?.phone_number || "",
+          profiles: profileData
+        };
+        
+        setEntityType("hospital");
+        await fetchFacilityDetails(enrichedFacility);
       } else {
-        // If not a doctor, try as facility
-        const { data: facilityData, error: facilityError } = await supabase
-          .from("facilities")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (facilityData && !facilityError) {
-          setEntityType("hospital");
-          await fetchFacilityDetails(facilityData);
-        } else {
-          toast({
-            title: "Not Found",
-            description: "The requested doctor or hospital could not be found.",
-            variant: "destructive",
-          });
-          navigate("/dashboard/patient/search");
-        }
+        toast({
+          title: "Not Found",
+          description: "The requested doctor or hospital could not be found.",
+          variant: "destructive",
+        });
+        navigate("/dashboard/patient/hospitals");
       }
-    } catch (error) {
-      console.error("Error determining entity type:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load details. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
-  };
-
+  } catch (error) {
+    console.error("Error determining entity type:", error);
+    toast({
+      title: "Error",
+      description: "Failed to load details. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   const fetchDoctorDetails = async (doctorData: any) => {
     const fullName = doctorData.medical_professionals_user_id_fkey
       ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
@@ -566,6 +649,9 @@ useEffect(() => {
       hospital: doctorData.medical_school || "City General Hospital",
       location: doctorData.about_yourself || "Mumbai, Maharashtra",
       image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
+          email: doctorData.email || "",  // Added email
+    phone_number: doctorData.phone_number || "",  // Added phone_number
+
       qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
       languages: ["English", "Hindi", "Marathi"],
       about: "Dr. Sharma is a highly experienced cardiologist with over 15 years of clinical practice. He specializes in interventional cardiology and has performed over 1000 successful angioplasties.",
@@ -1144,8 +1230,9 @@ const handleBookAppointmentClick = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading details...</p>
+          {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div> */}
+          <p className="mt-4 text-gray-600"><Loader2/></p>
+          {/* <p className="mt-4 text-gray-600">Loading details...</p> */}
         </div>
       </div>
     );
@@ -1158,7 +1245,8 @@ const handleBookAppointmentClick = () => {
           <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Not Found</h2>
           <p className="text-gray-600 mb-6">The requested profile could not be found.</p>
-          <Button onClick={() => navigate("/dashboard/patient/search")}>
+          <Button onClick={() => navigate("/dashboard/patient/doctors")}>
+          {/* <Button onClick={() => navigate("/dashboard/patient/search")}> */}
             Back to Search
           </Button>
         </Card>
@@ -1203,6 +1291,19 @@ const handleBookAppointmentClick = () => {
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
                     <p className="text-xl text-blue-600 mt-1">{doctor.specialty}</p>
+                        {doctor.email && (
+      <div className="flex items-center gap-2 mt-1">
+        <Mail className="h-4 w-4 text-gray-500" />
+        <span className="text-sm text-gray-600">{doctor.email}</span>
+      </div>
+    )}
+    {doctor.phone_number && (
+      <div className="flex items-center gap-2 mt-1">
+        <Phone className="h-4 w-4 text-gray-500" />
+        <span className="text-sm text-gray-600">{doctor.phone_number}</span>
+      </div>
+    )}
+    
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center">
                         <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -1963,12 +2064,12 @@ const handleBookAppointmentClick = () => {
             {dept.description || "No description available"}
           </p>
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <BedDouble className="h-4 w-4 text-gray-500" />
               <span className="text-sm">
                 Available Beds: <span className="font-semibold">{dept.available_beds || 0}</span>/{dept.bed_capacity || 0}
               </span>
-            </div>
+            </div> */}
             <Button variant="ghost" size="sm" className="text-green-600">
               View Departments <ChevronRight className="h-4 w-4 ml-1" />
             </Button>

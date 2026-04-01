@@ -2197,6 +2197,7 @@ import { Plus, Edit, Trash2, Clock, Calendar, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import mixpanelInstance from "@/utils/mixpanel";
 import { useUser } from "@/hooks/useUser"; // Import useUser hook
+import Loader3 from "../ui/Loader3";
 
 interface TimeSlot {
   id: string;
@@ -2926,7 +2927,15 @@ const TimeSlotManagement = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">Loading time slots...</div>
+             <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div> */}
+          <p className="mt-2 text-muted-foreground"><Loader3/></p>
+          {/* <p className="mt-2 text-muted-foreground">Loading staff data...</p> */}
+        </div>
+      </div>
+            // <div className="text-center py-8"><Loader3/></div>
+            // <div className="text-center py-8">Loading time slots...</div>
           ) : filteredSlotsByType.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No time slots found. Click "Add Time Slots" to create new ones.

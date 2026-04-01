@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import mixpanelInstance from "@/utils/mixpanel";
+import Loader1 from "../ui/Loader1";
 
 const WardOverviewPage: React.FC = () => {
   const [wards, setWards] = useState<Ward[]>([]);
@@ -407,8 +408,9 @@ const fetchWards = async () => {
   if (loading) {
     return (
       <div className="text-center py-8">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-        <p className="mt-3 text-muted-foreground">Loading ward data...</p>
+        {/* <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" /> */}
+        {/* <p className="mt-3 text-muted-foreground">Loading ward data...</p> */}
+        <Loader1/>
       </div>
     );
   }

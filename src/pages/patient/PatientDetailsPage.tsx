@@ -1119,6 +1119,11 @@ interface BedBooking {
   ward_name?: string;
   facility_type?: string;
   facility_address?: any;
+  facility_City?: String;
+  facility_State?: String;
+  facility_Country?: String;
+  facility_email?: String;
+  facility_phone?: number;
   ward_type?: string;
   floor_number?: number;
   assigned_bed_id?: string;
@@ -1162,14 +1167,27 @@ const PatientDetailsPage = () => {
             let facilityData = null;
             let bedData = null;
             let wardData = null;
+                      let profileData = null;
+
 
             if (booking.facility_id) {
               const { data: facility } = await supabase
                 .from("facilities")
-                .select("facility_name, facility_type, address")
+                .select("facility_name, facility_type, address,city,state,country_code,admin_user_id")
                 .eq("id", booking.facility_id)
                 .single();
               facilityData = facility;
+
+            // ✅ Fetch Profile using admin_user_id
+            if (facility?.admin_user_id) {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("email, phone_number")
+                .eq("user_id", facility.admin_user_id)
+                .single();
+
+              profileData = profile;
+            }
             }
 
             if (booking.assigned_bed_id) {
@@ -1204,6 +1222,11 @@ const PatientDetailsPage = () => {
               facility_name: facilityData?.facility_name,
               facility_type: facilityData?.facility_type,
               facility_address: facilityData?.address,
+              facility_City: facilityData?.city,
+              facility_State: facilityData?.state,
+              facility_Country: facilityData?.country_code,
+              facility_email: profileData?.email,
+            facility_phone: profileData?.phone_number,
               bed_number: bedData?.bed_number,
               ward_name: wardData?.name,
               ward_type: wardData?.ward_type,
@@ -1245,26 +1268,36 @@ const PatientDetailsPage = () => {
   };
 
   // Format address from JSON object
-  const formatAddress = (address: any) => {
-    if (!address) return "Not available";
+  // const formatAddress = (address: any) => {
+  //   if (!address) return "Not available";
     
-    try {
-      if (typeof address === 'string') {
-        return address;
-      }
+  //   try {
+  //     if (typeof address === 'string') {
+  //       return address;
+  //     }
       
-      const addr = address;
-      const parts = [];
-      if (addr.street) parts.push(addr.street);
-      if (addr.city) parts.push(addr.city);
-      if (addr.state) parts.push(addr.state);
-      if (addr.pincode) parts.push(addr.pincode);
+  //     const addr = address;
+  //     const parts = [];
+  //     if (addr.street) parts.push(addr.street);
+  //     if (addr.city) parts.push(addr.city);
+  //     if (addr.state) parts.push(addr.state);
+  //     if (addr.pincode) parts.push(addr.pincode);
       
-      return parts.join(", ") || "Address not specified";
-    } catch (err) {
-      return "Address format error";
-    }
-  };
+  //     return parts.join(", ") || "Address not specified";
+  //   } catch (err) {
+  //     return "Address format error";
+  //   }
+  // };
+  const formatAddress = (
+  address?: string,
+  city?: string,
+  state?: string,
+  country?: string
+) => {
+  return [address, city, state, country]
+    .filter(Boolean)
+    .join(", ");
+};
 const getEffectiveDates = (booking: BedBooking) => {
   const admission =
     booking.actual_admission_time || booking.expected_admission_date;
@@ -1610,13 +1643,19 @@ const getLiveStatus = (booking: BedBooking) => {
                                   <span className="text-gray-500">Facility:</span>{" "}
                                   <span className="font-medium">{booking.facility_name || "Not assigned"}</span>
                                 </p>
+                                <p className="text-sm">
+                                  <span className="text-gray-500">Email : {booking.facility_email}</span>{" "}
+                                </p>
+                                <p className="text-sm">
+                                  <span className="text-gray-500"> Phone : {booking.facility_phone}</span>
+                                </p>
                                 {booking.facility_type && (
                                   <p className="text-sm">
                                     <span className="text-gray-500">Type:</span>{" "}
                                     <span className="font-medium">{formatForDisplay(booking.facility_type)}</span>
                                   </p>
                                 )}
-                                {booking.facility_address && (
+                                {booking.facility_address && booking.facility_City &&booking.facility_State &&booking.facility_Country && (
                                   <div className="flex items-start space-x-2 mt-1">
                                     <MapPin className="h-3 w-3 text-gray-400 mt-0.5 flex-shrink-0" />
                                     <p className="text-xs text-gray-500">

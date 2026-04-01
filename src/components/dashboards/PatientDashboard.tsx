@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings, Bed } from "lucide-react";
+import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings, Bed, Factory, DockIcon } from "lucide-react";
 import DoctorSearch from "@/components/patient/DoctorSearch";
 import AppointmentManagement from "@/components/patient/AppointmentManagement";
 import DocumentVault from "@/components/patient/DocumentVault";
@@ -13,6 +13,7 @@ import PatientProfile from "@/components/patient/PatientProfile";
 import PatientDetailsPage from "@/pages/patient/PatientDetailsPage";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { supabase } from "@/integrations/supabase/client";
+import Loader1 from "../ui/Loader1";
 
 interface Doctor {
   id: string;
@@ -64,7 +65,7 @@ interface Patient {
 const PatientDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"overview" | "search" | "appointments" | "documents" | "sharing" | "payments" | "profile"|"bookings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "search"|"hospital"|"doctor" | "appointments" | "documents" | "sharing" | "payments" | "profile"|"bookings">("overview");
  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,7 +235,9 @@ useEffect(() => {
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/profile')) setActiveTab('profile');
-    else if (path.includes('/search')) setActiveTab('search');
+    // else if (path.includes('/search')) setActiveTab('search');
+    else if (path.includes('/doctor')) setActiveTab('doctor');
+    else if (path.includes('/hospital')) setActiveTab('hospital');
     else if (path.includes('/appointments')) setActiveTab('appointments');
     else if (path.includes('/records')) setActiveTab('documents');
     else if (path.includes('/sharing')) setActiveTab('sharing');
@@ -255,7 +258,9 @@ useEffect(() => {
     switch (tab) {
       case 'overview': navigate(basePath); break;
       case 'profile': navigate(`${basePath}/profile`); break;
-      case 'search': navigate(`${basePath}/search`); break;
+      // case 'search': navigate(`${basePath}/search`); break;
+      case 'doctor': navigate(`${basePath}/doctors`); break;
+      case 'hospital': navigate(`${basePath}/hospitals`); break;
       case 'appointments': navigate(`${basePath}/appointments`); break;
       case 'documents': navigate(`${basePath}/records`); break;
       case 'sharing': navigate(`${basePath}/sharing`); break;
@@ -358,6 +363,24 @@ const recentReports = [
               Overview
             </Button>
             <Button
+              variant={activeTab === "doctor" ? "default" : "ghost"}
+              size="sm"
+              onClick={() =>{trackButtonClick("doctor Tab"); handleTabChange("doctor")}}
+              className={activeTab === "doctor" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
+            >
+              <DockIcon className="h-4 w-4 mr-1" />
+              Find Doctors / Specialists
+            </Button>
+            <Button
+              variant={activeTab === "hospital" ? "default" : "ghost"}
+              size="sm"
+              onClick={() =>{trackButtonClick("hospital Tab"); handleTabChange("hospital")}}
+              className={activeTab === "hospital" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
+            >
+              <Factory className="h-4 w-4 mr-1" />
+              Find Facility / Service
+            </Button>
+            {/* <Button
               variant={activeTab === "search" ? "default" : "ghost"}
               size="sm"
               onClick={() =>{trackButtonClick("Search Tab"); handleTabChange("search")}}
@@ -365,7 +388,7 @@ const recentReports = [
             >
               <Search className="h-4 w-4 mr-1" />
               Find Doctors
-            </Button>
+            </Button> */}
             <Button
               variant={activeTab === "appointments" ? "default" : "ghost"}
               size="sm"
@@ -373,7 +396,7 @@ const recentReports = [
               className={activeTab === "appointments" ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white" : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"}
             >
               <Calendar className="h-4 w-4 mr-1" />
-              Appointments
+             My Appointments
             </Button>
             <Button
               variant={activeTab === "bookings" ? "default" : "ghost"}
@@ -414,7 +437,9 @@ const recentReports = [
           </div>
         </div>
 
-        {activeTab === "search" && <DoctorSearch  view="all"/>}
+        {/* {activeTab === "search" && <DoctorSearch  view="all"/>} */}
+        {activeTab === "doctor" && <DoctorSearch  view="doctors"/>}
+        {activeTab === "hospital" && <DoctorSearch  view="hospitals"/>}
         {activeTab === "appointments" && <AppointmentManagement />}
         {activeTab === "bookings" && <PatientDetailsPage />}
         {activeTab === "documents" && <DocumentVault />}
@@ -499,12 +524,30 @@ const recentReports = [
             <Button
               variant="ghost"
               size="sm"
+              onClick={() =>{trackButtonClick("doctor Tab"); handleTabChange("doctor")}}
+              className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
+            >
+              <DockIcon className="h-4 w-4 mr-1" />
+              Find Doctors / Specialists
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>{trackButtonClick("hospital Tab"); handleTabChange("hospital")}}
+              className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
+            >
+              <Factory className="h-4 w-4 mr-1" />
+              Find Facility / Service
+            </Button>
+            {/* <Button
+              variant="ghost"
+              size="sm"
               onClick={() =>{trackButtonClick("Search Tab"); handleTabChange("search")}}
               className="hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"
             >
               <Search className="h-4 w-4 mr-1" />
               Find Doctors
-            </Button>
+            </Button> */}
             <Button
               variant="ghost"
               size="sm"
@@ -512,7 +555,7 @@ const recentReports = [
               className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
             >
               <Calendar className="h-4 w-4 mr-1" />
-              Appointments
+             My Appointments
             </Button>
             <Button
               variant="ghost"
@@ -648,7 +691,8 @@ const recentReports = [
           <CardContent>
             <div className="space-y-4 mt-2">
               {loading ? (
-                <div className="text-center py-4 text-muted-foreground">Loading appointments...</div>
+                <div className="text-center py-4 text-muted-foreground"><Loader1/></div>
+                // <div className="text-center py-4 text-muted-foreground">Loading appointments...</div>
               ) : upcomingAppointments.length > 0 ? (
                 upcomingAppointments.map((appointment) => (
                   <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg hover:shadow-md transition-shadow">
@@ -833,18 +877,33 @@ const recentReports = [
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-2">
             <Button
               className="h-24 flex-col bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => { trackButtonClick("Search Tab"); handleTabChange("search"); }}
+              onClick={() => { trackButtonClick("doctor Tab"); handleTabChange("doctor"); }}
             >
-              <Search className="h-8 w-8 mb-2" />
-              <span className="text-sm font-semibold">Find Doctors</span>
+              <DockIcon className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Find Doctors / Specialists</span>
+            </Button>
+            <Button
+              className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => { trackButtonClick("hospital Tab"); handleTabChange("hospital"); }}
+            >
+              <Factory className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Find Facility / Service</span>
             </Button>
             <Button
               className="h-24 flex-col bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => { trackButtonClick("Appointments Tab"); handleTabChange("appointments"); }}
             >
               <Calendar className="h-8 w-8 mb-2" />
-              <span className="text-sm font-semibold">Appointments</span>
+              <span className="text-sm font-semibold">My Appointments</span>
             </Button>
+            <Button
+              className="h-24 flex-col bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => { trackButtonClick("Bookings Tab"); handleTabChange("bookings"); }}
+            >
+              <Shield className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">My Bed Bookings</span>
+            </Button>
+ 
             {/* <Button
               className="h-24 flex-col bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => { trackButtonClick("Documents Tab"); handleTabChange("documents"); }}

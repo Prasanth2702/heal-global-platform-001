@@ -59,6 +59,100 @@ const isUploadDisabled =
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (files.length === 0) {
+//     setStatus("error");
+//     setMessage("Please select at least one file");
+//     return;
+//   }
+
+//   setIsUploading(true);
+//   setStatus("idle");
+//   setMessage("");
+
+//   const { data: sessionData } = await supabase.auth.getSession();
+//   const accessToken = sessionData.session?.access_token;
+
+//   if (!accessToken) {
+//     setIsUploading(false);
+//     setStatus("error");
+//     setMessage("Authentication required");
+//     return;
+//   }
+
+//   const formData = new FormData();
+//         // ✅ REQUIRED BY ZOD
+// formData.append("appointment_id", appointmentId);
+// if (patientId) formData.append("patient_id", patientId);
+
+// // if (uploadedBy === "doctor" && doctorId) {
+// //   formData.append("uploaded_by", doctorId);
+// // }
+
+// // if (uploadedBy === "patient" && patientId) {
+// //   formData.append("uploaded_by", patientId);
+// // }
+// // if (uploadedBy === "department" && depertmentId) {
+// //   formData.append("uploaded_by", depertmentId);
+// // }
+// // In the handleSubmit function, change this part:
+
+// if (uploadedBy === "doctor" && doctorId) {
+//   formData.append("uploaded_by", doctorId);
+// } else if (uploadedBy === "patient" && patientId) {
+//   formData.append("uploaded_by", patientId);
+// } else if (uploadedBy === "department" && depertmentId) {
+//   // Make sure depertmentId is actually the user's ID, not the department ID
+//   formData.append("uploaded_by", depertmentId); // This should be the user's UUID
+// }
+//  // doctorId OR patientId
+// formData.append("document_type", documentType);  // ✅ REQUIRED BY ZOD
+
+
+
+//   if (description) formData.append("description", description);
+//   if (tags)
+//     formData.append(
+//       "tags",
+//       JSON.stringify(tags.split(",").map((t) => t.trim()))
+//     );
+
+//   files.forEach((file) => {
+//     formData.append("files", file);
+//   });
+
+//   try {
+//     const response = await fetch(EDGE_FUNCTION_URL, {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//       body: formData,
+//     });
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       throw new Error(result.error || "Upload failed");
+//     }
+
+//     setStatus("success");
+//     setMessage(`Uploaded ${result.uploaded_documents.length} document(s)`);
+
+//     setFiles([]);
+//     setDescription("");
+//     setTags("");
+//   } catch (err: any) {
+//     setStatus("error");
+//     setMessage(err.message);
+//   } finally {
+//     setIsUploading(false);
+//   }
+  
+// };
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -83,41 +177,27 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   const formData = new FormData();
-        // ✅ REQUIRED BY ZOD
-formData.append("appointment_id", appointmentId);
-if (patientId) formData.append("patient_id", patientId);
+  // ✅ REQUIRED BY ZOD
+  formData.append("appointment_id", appointmentId);
+  if (patientId) formData.append("patient_id", patientId);
 
-// if (uploadedBy === "doctor" && doctorId) {
-//   formData.append("uploaded_by", doctorId);
-// }
-
-// if (uploadedBy === "patient" && patientId) {
-//   formData.append("uploaded_by", patientId);
-// }
-// if (uploadedBy === "department" && depertmentId) {
-//   formData.append("uploaded_by", depertmentId);
-// }
-// In the handleSubmit function, change this part:
-
-if (uploadedBy === "doctor" && doctorId) {
-  formData.append("uploaded_by", doctorId);
-} else if (uploadedBy === "patient" && patientId) {
-  formData.append("uploaded_by", patientId);
-} else if (uploadedBy === "department" && depertmentId) {
-  // Make sure depertmentId is actually the user's ID, not the department ID
-  formData.append("uploaded_by", depertmentId); // This should be the user's UUID
-}
- // doctorId OR patientId
-formData.append("document_type", documentType);  // ✅ REQUIRED BY ZOD
-
-
-
+  // Handle uploaded_by based on role
+  if (uploadedBy === "doctor" && doctorId) {
+    formData.append("uploaded_by", doctorId);
+  } else if (uploadedBy === "patient" && patientId) {
+    formData.append("uploaded_by", patientId);
+  } else if (uploadedBy === "department" && depertmentId) {
+    formData.append("uploaded_by", depertmentId);
+  }
+  
+  formData.append("document_type", documentType);
   if (description) formData.append("description", description);
-  if (tags)
+  if (tags) {
     formData.append(
       "tags",
       JSON.stringify(tags.split(",").map((t) => t.trim()))
     );
+  }
 
   files.forEach((file) => {
     formData.append("files", file);
@@ -138,21 +218,80 @@ formData.append("document_type", documentType);  // ✅ REQUIRED BY ZOD
       throw new Error(result.error || "Upload failed");
     }
 
-    setStatus("success");
-    setMessage(`Uploaded ${result.uploaded_documents.length} document(s)`);
+    // ✅ SUCCESSFUL UPLOAD - Now trigger document indexing for each uploaded document
+    const uploadedDocuments = result.uploaded_documents || [];
+    
+    if (uploadedDocuments.length > 0) {
+      // Trigger indexing for each document
+      const indexingPromises = uploadedDocuments.map(async (doc: any) => {
+        try {
+          const indexingResponse = await fetch(
+            'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/process-document',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                document_id: doc.id,
+                force_reindex: false
+              }),
+            }
+          );
+          
+          const indexingResult = await indexingResponse.json();
+          
+          if (!indexingResponse.ok) {
+            console.error(`Failed to index document ${doc.id}:`, indexingResult);
+            return { success: false, docId: doc.id, error: indexingResult };
+          }
+          
+          return { success: true, docId: doc.id };
+        } catch (err) {
+          console.error(`Error indexing document ${doc.id}:`, err);
+          return { success: false, docId: doc.id, error: err };
+        }
+      });
+      
+      // Wait for all indexing requests to complete (don't block user experience)
+      const indexingResults = await Promise.allSettled(indexingPromises);
+      
+      const failedIndexing = indexingResults.filter(
+        result => result.status === 'rejected' || 
+        (result.status === 'fulfilled' && !result.value.success)
+      );
+      
+      if (failedIndexing.length > 0) {
+        console.warn(`${failedIndexing.length} document(s) failed to index`);
+        // Optional: Show partial success message
+        setStatus("success");
+        setMessage(
+          `Uploaded ${uploadedDocuments.length} document(s). ` +
+          `${uploadedDocuments.length - failedIndexing.length} document(s) indexed successfully. ` +
+          `Failed to index ${failedIndexing.length} document(s).`
+        );
+      } else {
+        setStatus("success");
+        setMessage(`Uploaded and indexed ${uploadedDocuments.length} document(s)`);
+      }
+    } else {
+      setStatus("success");
+      setMessage(`Uploaded ${result.uploaded_documents.length} document(s)`);
+    }
 
+    // Clear form
     setFiles([]);
     setDescription("");
     setTags("");
+    
   } catch (err: any) {
     setStatus("error");
     setMessage(err.message);
   } finally {
     setIsUploading(false);
   }
-  
 };
-
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
@@ -167,8 +306,8 @@ formData.append("document_type", documentType);  // ✅ REQUIRED BY ZOD
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Document Type
           </label>
-          {uploadedBy === "doctor" ? (
-            <input type="text" value="Prescription" readOnly className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" /> ):(
+          {/* {uploadedBy === "doctor" ? ( */}
+            {/* <input type="text" value="Prescription" readOnly className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" /> ):( */}
           <select
   value={documentType}
   onChange={(e) => setDocumentType(e.target.value)}
@@ -183,7 +322,7 @@ formData.append("document_type", documentType);  // ✅ REQUIRED BY ZOD
   <option value="id_proof">ID Proof</option>
 </select>
 
-            )}
+            {/* )} */}
         </div>
 
         {/* File Upload */}

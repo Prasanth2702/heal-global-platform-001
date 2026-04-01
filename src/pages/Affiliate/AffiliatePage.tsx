@@ -45,6 +45,7 @@ import { Cookies } from 'react-cookie';
 import { toast } from '@/hooks/use-toast';
 import Header from '../alldetails/Header';
 import Footer from '../alldetails/Footer';
+import Loader3 from '@/components/ui/Loader3';
 
 const AffiliatePage = () => {
     const navigate = useNavigate();
@@ -151,8 +152,9 @@ const AffiliatePage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your affiliate dashboard...</p>
+          {/* <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your affiliate dashboard...</p> */}
+          <Loader3/>
         </div>
       </div>
     );

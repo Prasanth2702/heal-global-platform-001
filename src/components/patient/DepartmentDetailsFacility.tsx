@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import Footer from "@/pages/alldetails/Footer";
 import Header from "@/pages/alldetails/Header";
+import Loader2 from "../ui/Loader2";
 
 interface Department {
   id: string;
@@ -419,8 +420,9 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
         <Header/>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading department details...</p>
+            {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div> */}
+            <p className="mt-4 text-gray-600"><Loader2/></p>
+            {/* <p className="mt-4 text-gray-600">Loading department details...</p> */}
           </div>
         </div>
         <Footer/>
@@ -497,7 +499,7 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
         </Card>
 
         {/* Department Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-6 text-center">
               <BedDouble className="h-8 w-8 text-green-600 mx-auto mb-2" />
@@ -532,7 +534,7 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
               </Badge>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Department Info */}
         <div className="grid md:grid-cols-3 gap-6">

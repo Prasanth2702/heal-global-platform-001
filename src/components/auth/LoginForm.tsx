@@ -268,6 +268,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { userType } = useParams();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const [formData, setFormData] = useState({
     email: "",
@@ -329,7 +330,7 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+setIsLoading(true);
     mixpanelInstance.track('Login Attempt', {
       email: formData.email,
       userType: userType,
@@ -415,6 +416,8 @@ const LoginForm = () => {
         reason: 'email_not_registered'
       });
     }
+    setIsLoading(false);
+return;
   };
 
   const handleLoginSuccess = async () => {
@@ -517,8 +520,11 @@ const LoginForm = () => {
               </Button>
             </div>
 
-            <Button type="submit" variant={config.variant} className="w-full" size="lg" onClick={handleSignInClick}>
-              Sign In
+            <Button type="submit" variant={config.variant} className="w-full" size="lg" onClick={handleSignInClick}   disabled={isLoading}
+>
+              {/* Sign In */}
+                {isLoading ? "Signing in..." : "Sign In"}
+
             </Button>
           </form>
         </TabsContent>

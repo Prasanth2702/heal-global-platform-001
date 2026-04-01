@@ -803,6 +803,7 @@
 // };
 
 // export default DoctorProfile;
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -827,6 +828,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
+import Loader1 from '../ui/Loader1';
 
 export type UserRole = 'medicalProfessional';
 
@@ -909,7 +911,9 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
  const [uploading, setUploading] = useState(false);
-
+const [pendingDocs, setPendingDocs] = useState<File[]>([]);
+const [showUploadPopup, setShowUploadPopup] = useState(false);
+const [savingDocs, setSavingDocs] = useState(false);
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -1134,6 +1138,10 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
   };
 
   const handleSave = async () => {
+      setSavingDocs(true);
+
+  try {
+
     if (!validateForm(profileData)) return;
     if (!user) return;
 
@@ -1189,6 +1197,43 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
       if (medicalUpdateError) {
         throw new Error(medicalUpdateError.message);
       }
+      // Upload Documents After Save
+if (pendingDocs.length > 0 && user) {
+
+  setSavingDocs(true);
+
+  for (let file of pendingDocs) {
+
+    const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+
+    const { error } = await supabase
+      .storage
+      .from('heal_med_app_files_bucket')
+      .upload(filePath, file);
+
+    if (!error) {
+
+      const { data: urlData } = supabase.storage
+        .from('heal_med_app_files_bucket')
+        .getPublicUrl(filePath);
+
+      setUploadedDocs(prev => [
+        ...prev,
+        {
+          name: file.name,
+          type: 'doctor',
+          userId: user.id,
+          url: urlData.publicUrl,
+          path: filePath,
+          uploadedAt: new Date()
+        }
+      ]);
+    }
+  }
+
+  setPendingDocs([]);
+  setSavingDocs(false);
+}
 
       toast({
         title: 'Profile Updated',
@@ -1209,6 +1254,12 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
         className: 'bg-red-500 text-white',
       });
     }
+      } catch (error) {
+    console.error(error);
+  }
+
+  setSavingDocs(false);
+
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1261,74 +1312,86 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-8 text-center">
-        <div className="animate-pulse">Loading profile...</div>
+      <div className="max-w-4xl mx-auto p-8 text-center ">
+        {/* <div className="animate-pulse">Loading profile...</div> */}
+        <Loader1/>
       </div>
     );
   }
 
-   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files) return;
-      if (!user) {
-        toast({
-          title: "User not found",
-          description: "Please login again",
-          variant: "destructive"
-        });
-        return;
-      }
+  //  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //     const files = event.target.files;
+  //     if (!files) return;
+  //     if (!user) {
+  //       toast({
+  //         title: "User not found",
+  //         description: "Please login again",
+  //         variant: "destructive"
+  //       });
+  //       return;
+  //     }
   
-      setUploading(true);
+  //     setUploading(true);
   
-      for (let file of files) {
-        const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
+  //     for (let file of files) {
+  //       const filePath = `medical_documents/${user.id}/${Date.now()}_${file.name}`;
   
-        const { error } = await supabase
-          .storage
-          .from('heal_med_app_files_bucket')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+  //       const { error } = await supabase
+  //         .storage
+  //         .from('heal_med_app_files_bucket')
+  //         .upload(filePath, file, {
+  //           cacheControl: '3600',
+  //           upsert: false
+  //         });
   
-        if (error) {
-          toast({
-            title: "Upload Failed",
-            description: error.message,
-            variant: "destructive"
-          });
-          setUploading(false);
-          return;
-        } 
-        else {
-          const { data: urlData } = supabase.storage
-            .from('heal_med_app_files_bucket')
-            .getPublicUrl(filePath);
+  //       if (error) {
+  //         toast({
+  //           title: "Upload Failed",
+  //           description: error.message,
+  //           variant: "destructive"
+  //         });
+  //         setUploading(false);
+  //         return;
+  //       } 
+  //       else {
+  //         const { data: urlData } = supabase.storage
+  //           .from('heal_med_app_files_bucket')
+  //           .getPublicUrl(filePath);
   
-          setUploadedDocs(prev => [
-            ...prev,
-            {
-              name: file.name,
-              type: 'facility',
-              userId: user.id,
-              url: urlData.publicUrl,
-              path: filePath,
-              uploadedAt: new Date()
-            }
-          ]);
+  //         setUploadedDocs(prev => [
+  //           ...prev,
+  //           {
+  //             name: file.name,
+  //             type: 'facility',
+  //             userId: user.id,
+  //             url: urlData.publicUrl,
+  //             path: filePath,
+  //             uploadedAt: new Date()
+  //           }
+  //         ]);
   
-          toast({
-            title: "Document Uploaded",
-            description: `${file.name} uploaded successfully.`,
-          });
-        }
-      }
+  //         toast({
+  //           title: "Document Uploaded",
+  //           description: `${file.name} uploaded successfully.`,
+  //         });
+  //       }
+  //     }
   
-      setUploading(false);
-      event.target.value = '';
-    };
-  
+  //     setUploading(false);
+  //     event.target.value = '';
+  //   };
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+
+  const fileArray = Array.from(files);
+
+  setPendingDocs(fileArray);
+  setShowUploadPopup(true);
+
+  event.target.value = "";
+};
+
   const handleDeleteDocument = async (doc: UploadedDocument) => {
       if (!doc.path) return;
       
@@ -1389,15 +1452,15 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
                   <Eye className="h-4 w-4" />
                 </Button>
               )}
-              <Button
+              {/* <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => window.open(doc.url, '_blank')}
                 className="h-8 w-8 p-0"
               >
                 <Download className="h-4 w-4" />
-              </Button>
-              {isEditing && (
+              </Button> */}
+              {/* {isEditing && (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -1411,7 +1474,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
                     <Trash2 className="h-4 w-4" />
                   )}
                 </Button>
-              )}
+              )} */}
             </div>
 
           </div>
@@ -1438,7 +1501,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
@@ -1476,7 +1539,98 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
             </>
           )}
         </Button>
+      </div> */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+  
+  {/* Mobile Buttons Top */}
+  <div className="flex justify-between w-full mb-3 md:hidden">
+    <Button
+      variant="outline"
+      onClick={handleBack}
+      className="flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+    >
+      <X className="h-4 w-4" />
+      <span>Back</span>
+    </Button>
+
+    <Button
+      onClick={isEditing ? handleSave : () => setIsEditing(true)}
+      className={`${
+        isEditing
+          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+          : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+      } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+    >
+      {isEditing ? (
+        <>
+          <Save className="h-4 w-4 mr-2" />
+          Save
+        </>
+      ) : (
+        <>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </>
+      )}
+    </Button>
+  </div>
+
+  {/* Desktop Layout (Unchanged) */}
+  <div className="flex items-center justify-between w-full">
+    <div className="flex items-center space-x-4">
+      
+      {/* Back Button Desktop Only */}
+      <Button
+        variant="outline"
+        onClick={handleBack}
+        className="hidden md:flex items-center space-x-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+      >
+        <X className="h-4 w-4" />
+        <span>Back</span>
+      </Button>
+
+      <div className="text-center md:text-left w-full">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          My Profile
+        </h1>
+        <p className="text-muted-foreground">
+          Manage your professional information
+        </p>
       </div>
+    </div>
+
+    {/* Edit Button Desktop Only */}
+    <Button
+      onClick={isEditing ? handleSave : () => setIsEditing(true)}
+      disabled={savingDocs}
+      className={`hidden md:flex ${
+        isEditing
+          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+          : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+      } text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+    >
+      {savingDocs ? (
+  <>
+    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+    Saving...
+  </>
+) : isEditing ? (
+  <>
+    <Save className="h-4 w-4 mr-2" />
+    Save Changes
+  </>
+) : (
+  <>
+    <Edit className="h-4 w-4 mr-2" />
+    Edit Profile
+  </>
+)}
+
+    </Button>
+
+  </div>
+
+</div>
 
       {/* Rest of your JSX remains the same... */}
       {/* Profile Picture and Basic Info Card */}
@@ -1621,6 +1775,53 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={showUploadPopup} onOpenChange={setShowUploadPopup}>
+  <DialogContent>
+
+    <DialogHeader>
+      <DialogTitle>
+        Document Upload
+      </DialogTitle>
+
+      <DialogDescription>
+        Selected documents will be saved only after clicking 
+        <strong> Save Changes</strong>.
+      </DialogDescription>
+
+    </DialogHeader>
+
+    <div className="space-y-3 mt-4">
+
+      {pendingDocs.map((file, index) => (
+        <div 
+          key={index}
+          className="flex items-center gap-2 p-2 border rounded"
+        >
+          <FileText className="h-4 w-4 text-blue-500" />
+
+          <span className="text-sm" title={file.name}>
+            {file.name.length > 10
+              ? file.name.slice(0, 10) + "..."
+              : file.name}
+          </span>
+
+        </div>
+      ))}
+
+    </div>
+
+    <div className="flex justify-end mt-4">
+
+      <DialogClose asChild>
+        <Button>
+          OK
+        </Button>
+      </DialogClose>
+
+    </div>
+
+  </DialogContent>
+</Dialog>
 <Card className="border-0 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
           <CardTitle className="flex items-center text-xl">

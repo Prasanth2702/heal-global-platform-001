@@ -2232,6 +2232,18 @@ const getRoleText = () => {
             </>
           )}
         </div>
+ {documents.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowDocsModal(true)}
+                            className="mt-2 m-5 items-center gap-1 text-emerald-600 hover:bg-emerald-50"
+                          >
+                            <FileText className="h-4 w-4" />
+                            <span className="text-sm">Documents</span>
+                          </Button>
+                        )}
+              
 
         {enhancedAppointment.notes && !enhancedAppointment.isPast && (
           <div className="border border-blue-100 bg-blue-50 p-4 rounded-lg">
@@ -2280,6 +2292,7 @@ const getRoleText = () => {
                 Mark as Completed
               </Button>
             )}
+                        
 
             {/* View Only Message */}
             {!isAssignedDoctor && !hasManagementAccess && (
@@ -2296,7 +2309,7 @@ const getRoleText = () => {
         open={showDocsModal}
         onClose={() => setShowDocsModal(false)}
         appointmentId={appointment.id}
-        role="doctor"
+        role="hospital_admin"
       />
 
       {/* Upload Modal */}
@@ -2329,6 +2342,7 @@ const getRoleText = () => {
                   setShowUploadModal(false);
                 }}
               />
+               
             </div>
           </div>
         </div>

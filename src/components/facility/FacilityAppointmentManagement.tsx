@@ -1462,7 +1462,11 @@ import FacilityAppointmentCard from "./FacilityAppointmentCard";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Calendar, Users, Building2 } from "lucide-react";
-
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Filter } from "lucide-react";
+import { format } from "date-fns";
+import Loader1 from "../ui/Loader1";
 // Types
 interface DepartmentInfo {
   id: string;
@@ -1553,7 +1557,7 @@ export default function FacilityAppointmentManagement() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentFacilityId, setCurrentFacilityId] = useState<string | null>(null);
   const [facilityName, setFacilityName] = useState<string>("");
-  
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   // UI state
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed">("all");
@@ -2145,16 +2149,25 @@ export default function FacilityAppointmentManagement() {
 
   // Apply filters
   const filteredAppointments = filterByDepartment(filterByStatus(appointments));
-  const upcoming = filteredAppointments.filter((a) => !a.isPast);
-  const past = filteredAppointments.filter((a) => a.isPast);
+  // const upcoming = filteredAppointments.filter((a) => !a.isPast);
+  // const past = filteredAppointments.filter((a) => a.isPast);
+const selectedDateString = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
 
+// Apply date filter to appointments
+const dateFilteredAppointments = filteredAppointments.filter((a) => 
+  !selectedDateString || a.date.includes(selectedDateString)
+);
+
+const upcoming = dateFilteredAppointments.filter((a) => !a.isPast);
+const past = dateFilteredAppointments.filter((a) => a.isPast);
   // Show loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading appointments...</p>
+          {/* <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" /> */}
+          {/* <p className="text-gray-600">Loading appointments...</p> */}
+          <Loader1/>
         </div>
       </div>
     );
@@ -2194,193 +2207,428 @@ export default function FacilityAppointmentManagement() {
     );
   }
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900">Appointment Management</h2>
-            {facilityName && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                {facilityName}
-              </span>
-            )}
-          </div>
-          <p className="text-gray-600 mt-1">
-            {facilityUser.role === 'hospital_admin' && 'Administrator view - All facility appointments'}
-            {facilityUser.role === 'hospital_staff' && 'Staff view - Department appointments'}
-          </p>
-        </div>
+  // return (
+  //   <div className="p-6 max-w-7xl mx-auto">
+  //     {/* Header */}
+  //     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+  //       <div>
+  //         <div className="flex items-center gap-2">
+  //           <h2 className="text-2xl font-bold text-gray-900">Appointment Management</h2>
+  //           {facilityName && (
+  //             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+  //               {facilityName}
+  //             </span>
+  //           )}
+  //         </div>
+  //         <p className="text-gray-600 mt-1">
+  //           {facilityUser.role === 'hospital_admin' && 'Administrator view - All facility appointments'}
+  //           {facilityUser.role === 'hospital_staff' && 'Staff view - Department appointments'}
+  //         </p>
+  //       </div>
         
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Department Filter */}
-          {(facilityUser.role === 'hospital_admin' || departments.length > 1) && (
-            <div className="flex items-center gap-2 flex-1 md:flex-none">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Department:
-              </label>
-              <select
-                className="border rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-auto"
-                value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                disabled={refreshing}
-              >
-                {facilityUser.role === 'hospital_admin' && (
-                  <option value="all">All Departments</option>
-                )}
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name} {dept.head_doctor_id === currentUserId ? ' (Head)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+  //       <div className="flex items-center gap-3 w-full md:w-auto">
+  //         {/* Department Filter */}
+  //         {(facilityUser.role === 'hospital_admin' || departments.length > 1) && (
+  //           <div className="flex items-center gap-2 flex-1 md:flex-none">
+  //             <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+  //               Department:
+  //             </label>
+  //             <select
+  //               className="border rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-auto"
+  //               value={selectedDepartment}
+  //               onChange={(e) => setSelectedDepartment(e.target.value)}
+  //               disabled={refreshing}
+  //             >
+  //               {facilityUser.role === 'hospital_admin' && (
+  //                 <option value="all">All Departments</option>
+  //               )}
+  //               {departments.map((dept) => (
+  //                 <option key={dept.id} value={dept.id}>
+  //                   {dept.name} {dept.head_doctor_id === currentUserId ? ' (Head)' : ''}
+  //                 </option>
+  //               ))}
+  //             </select>
+  //           </div>
+  //         )}
           
-          {/* Refresh Button */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={refreshAppointments}
-            disabled={refreshing}
-            className="shrink-0"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-      </div>
+  //         {/* Refresh Button */}
+  //         <Button
+  //           variant="outline"
+  //           size="icon"
+  //           onClick={refreshAppointments}
+  //           disabled={refreshing}
+  //           className="shrink-0"
+  //         >
+  //           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+  //         </Button>
+  //       </div>
+  //     </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-blue-600 font-medium">Total Appointments</p>
-              <p className="text-2xl font-bold text-blue-900">{filteredAppointments.length}</p>
-            </div>
-            <Calendar className="h-8 w-8 text-blue-500 opacity-50" />
-          </div>
-        </div>
+  //     {/* Summary Cards */}
+  //     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  //       <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+  //         <div className="flex items-center justify-between">
+  //           <div>
+  //             <p className="text-sm text-blue-600 font-medium">Total Appointments</p>
+  //             <p className="text-2xl font-bold text-blue-900">{filteredAppointments.length}</p>
+  //           </div>
+  //           <Calendar className="h-8 w-8 text-blue-500 opacity-50" />
+  //         </div>
+  //       </div>
         
-        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-green-600 font-medium">Upcoming</p>
-              <p className="text-2xl font-bold text-green-900">{upcoming.length}</p>
-            </div>
-            <Calendar className="h-8 w-8 text-green-500 opacity-50" />
-          </div>
-        </div>
+  //       <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+  //         <div className="flex items-center justify-between">
+  //           <div>
+  //             <p className="text-sm text-green-600 font-medium">Upcoming</p>
+  //             <p className="text-2xl font-bold text-green-900">{upcoming.length}</p>
+  //           </div>
+  //           <Calendar className="h-8 w-8 text-green-500 opacity-50" />
+  //         </div>
+  //       </div>
         
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-purple-600 font-medium">Past</p>
-              <p className="text-2xl font-bold text-purple-900">{past.length}</p>
-            </div>
-            <Calendar className="h-8 w-8 text-purple-500 opacity-50" />
-          </div>
-        </div>
+  //       <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+  //         <div className="flex items-center justify-between">
+  //           <div>
+  //             <p className="text-sm text-purple-600 font-medium">Past</p>
+  //             <p className="text-2xl font-bold text-purple-900">{past.length}</p>
+  //           </div>
+  //           <Calendar className="h-8 w-8 text-purple-500 opacity-50" />
+  //         </div>
+  //       </div>
         
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-orange-600 font-medium">Departments</p>
-              <p className="text-2xl font-bold text-orange-900">{departments.length}</p>
-            </div>
-            <Users className="h-8 w-8 text-orange-500 opacity-50" />
-          </div>
-        </div>
-      </div>
+  //       <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+  //         <div className="flex items-center justify-between">
+  //           <div>
+  //             <p className="text-sm text-orange-600 font-medium">Departments</p>
+  //             <p className="text-2xl font-bold text-orange-900">{departments.length}</p>
+  //           </div>
+  //           <Users className="h-8 w-8 text-orange-500 opacity-50" />
+  //         </div>
+  //       </div>
+  //     </div>
 
-      {/* Tabs and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="border-b px-4">
-          <div className="flex gap-2">
-            <button
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === "upcoming"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => setActiveTab("upcoming")}
-            >
-              Upcoming ({upcoming.length})
-            </button>
-            <button
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === "past"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => setActiveTab("past")}
-            >
-              Past ({past.length})
-            </button>
-          </div>
-        </div>
+  //     {/* Tabs and Filters */}
+  //     <div className="bg-white rounded-lg shadow-sm border mb-6">
+  //       <div className="border-b px-4">
+  //         <div className="flex gap-2">
+  //           <button
+  //             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+  //               activeTab === "upcoming"
+  //                 ? "border-blue-600 text-blue-600"
+  //                 : "border-transparent text-gray-500 hover:text-gray-700"
+  //             }`}
+  //             onClick={() => setActiveTab("upcoming")}
+  //           >
+  //             Upcoming ({upcoming.length})
+  //           </button>
+  //           <button
+  //             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+  //               activeTab === "past"
+  //                 ? "border-blue-600 text-blue-600"
+  //                 : "border-transparent text-gray-500 hover:text-gray-700"
+  //             }`}
+  //             onClick={() => setActiveTab("past")}
+  //           >
+  //             Past ({past.length})
+  //           </button>
+  //         </div>
+  //       </div>
 
-        <div className="p-4 border-b bg-gray-50">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-gray-700 mr-2 py-1">Status:</span>
-            {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
-            {["all", "confirmed", "cancelled"].map((s) => ( 
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s as any)}
-                className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                  statusFilter === s
-                    ? s === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300'
-                    : s === 'cancelled' ? 'bg-red-100 text-red-800 border-red-300'
-                    : s === 'completed' ? 'bg-gray-100 text-gray-800 border-gray-300'
-                    : 'bg-blue-100 text-blue-800 border-blue-300'
-                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+  //       <div className="p-4 border-b bg-gray-50">
+  //         <div className="flex flex-wrap gap-2">
+  //           <span className="text-sm font-medium text-gray-700 mr-2 py-1">Status:</span>
+  //           {/* {["all", "confirmed", "cancelled", "completed"].map((s) => ( */}
+  //           {["all", "confirmed", "cancelled"].map((s) => ( 
+  //             <button
+  //               key={s}
+  //               onClick={() => setStatusFilter(s as any)}
+  //               className={`px-3 py-1 text-sm rounded-full transition-colors ${
+  //                 statusFilter === s
+  //                   ? s === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300'
+  //                   : s === 'cancelled' ? 'bg-red-100 text-red-800 border-red-300'
+  //                   : s === 'completed' ? 'bg-gray-100 text-gray-800 border-gray-300'
+  //                   : 'bg-blue-100 text-blue-800 border-blue-300'
+  //                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+  //               }`}
+  //             >
+  //               {s.charAt(0).toUpperCase() + s.slice(1)}
+  //             </button>
+  //           ))}
+  //         </div>
+  //       </div>
 
-        {/* Appointments List */}
-        <div className="p-4">
-          {refreshing ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {(activeTab === "upcoming" ? upcoming : past).length > 0 ? (
-                (activeTab === "upcoming" ? upcoming : past).map((apt) => (
-                  <FacilityAppointmentCard
-                    key={apt.id}
-                    appointment={apt}
-                    onRefresh={handleAppointmentUpdate}
-                    onJoinVideo={() => handleJoinVideo(apt.id)}
-                    department={departments.find((d) => d.id === apt.department_id) || null}
-                    userRole={facilityUser.role === 'hospital_admin' ? 'admin' : 'staff'}
-                    currentUserId={currentUserId || ''}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium">No appointments found</p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    {selectedDepartment !== "all" 
-                      ? "Try selecting a different department"
-                      : facilityUser.role === 'hospital_staff'
-                      ? "No appointments assigned to your departments"
-                      : "No appointments scheduled"}
-                  </p>
-                </div>
-              )}
-            </div>
+  //       {/* Appointments List */}
+  //       <div className="p-4">
+  //         {refreshing ? (
+  //           <div className="flex justify-center items-center h-40">
+  //             <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+  //           </div>
+  //         ) : (
+  //           <div className="space-y-4">
+  //             {(activeTab === "upcoming" ? upcoming : past).length > 0 ? (
+  //               (activeTab === "upcoming" ? upcoming : past).map((apt) => (
+  //                 <FacilityAppointmentCard
+  //                   key={apt.id}
+  //                   appointment={apt}
+  //                   onRefresh={handleAppointmentUpdate}
+  //                   onJoinVideo={() => handleJoinVideo(apt.id)}
+  //                   department={departments.find((d) => d.id === apt.department_id) || null}
+  //                   userRole={facilityUser.role === 'hospital_admin' ? 'admin' : 'staff'}
+  //                   currentUserId={currentUserId || ''}
+  //                 />
+  //               ))
+  //             ) : (
+  //               <div className="text-center py-12 bg-gray-50 rounded-lg">
+  //                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+  //                 <p className="text-gray-500 font-medium">No appointments found</p>
+  //                 <p className="text-sm text-gray-400 mt-1">
+  //                   {selectedDepartment !== "all" 
+  //                     ? "Try selecting a different department"
+  //                     : facilityUser.role === 'hospital_staff'
+  //                     ? "No appointments assigned to your departments"
+  //                     : "No appointments scheduled"}
+  //                 </p>
+  //               </div>
+  //             )}
+  //           </div>
+  //         )}
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
+  return (
+  <div className="p-6 max-w-7xl mx-auto">
+    {/* Header Section */}
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900">Appointment Management</h2>
+          {facilityName && (
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+              {facilityName}
+            </span>
           )}
+        </div>
+        <p className="text-gray-600 mt-1">
+          {facilityUser.role === 'hospital_admin' && 'Administrator view - All facility appointments'}
+          {facilityUser.role === 'hospital_staff' && 'Staff view - Department appointments'}
+        </p>
+      </div>
+      
+      <div className="flex items-center gap-3 w-full md:w-auto">
+        {/* Department Filter */}
+        {(facilityUser.role === 'hospital_admin' || departments.length > 1) && (
+          <div className="flex items-center gap-2 flex-1 md:flex-none">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              Department:
+            </label>
+            <select
+              className="border rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-auto"
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              disabled={refreshing}
+            >
+              {facilityUser.role === 'hospital_admin' && (
+                <option value="all">All Departments</option>
+              )}
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name} {dept.head_doctor_id === currentUserId ? ' (Head)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        {/* Refresh Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={refreshAppointments}
+          disabled={refreshing}
+          className="shrink-0"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+    </div>
+
+    {/* Summary Cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-blue-600 font-medium">Total Appointments</p>
+            <p className="text-2xl font-bold text-blue-900">{dateFilteredAppointments.length}</p>
+          </div>
+          <Calendar className="h-8 w-8 text-blue-500 opacity-50" />
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-green-600 font-medium">Upcoming</p>
+            <p className="text-2xl font-bold text-green-900">{upcoming.length}</p>
+          </div>
+          <Calendar className="h-8 w-8 text-green-500 opacity-50" />
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-purple-600 font-medium">Past</p>
+            <p className="text-2xl font-bold text-purple-900">{past.length}</p>
+          </div>
+          <Calendar className="h-8 w-8 text-purple-500 opacity-50" />
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-orange-600 font-medium">Departments</p>
+            <p className="text-2xl font-bold text-orange-900">{departments.length}</p>
+          </div>
+          <Users className="h-8 w-8 text-orange-500 opacity-50" />
         </div>
       </div>
     </div>
-  );
+
+    {/* Main Grid - Calendar on Left, Appointments on Right */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      {/* Left Column - Calendar */}
+      <div className="lg:col-span-1">
+        <Card className="sticky top-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="border-b bg-gray-50/50 rounded-t-xl">
+            <CardTitle className="flex items-center gap-2 text-gray-700">
+              <Filter className="h-5 w-5 text-blue-500" />
+              Date Filter
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 md:p-6">
+            <div className="space-y-3">
+              <label className="text-gray-600 font-semibold text-sm">Select Date</label>
+              <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => setSelectedDate(date)}
+                  initialFocus
+                  className="w-full"
+                />
+              </div>
+              {selectedDate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedDate(undefined)}
+                  className="w-full mt-2 text-gray-500 hover:text-gray-700"
+                >
+                  Clear Filter
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Right Column - Appointments Content */}
+      <div className="lg:col-span-2">
+        
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm border mb-4">
+          <div className="border-b px-4">
+            <div className="flex gap-2">
+              <button
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "upcoming"
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setActiveTab("upcoming")}
+              >
+                Upcoming ({upcoming.length})
+              </button>
+              <button
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "past"
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setActiveTab("past")}
+              >
+                Past ({past.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div className="p-4 border-b bg-gray-50">
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-gray-700 mr-2 py-1">Status:</span>
+              {["all", "confirmed", "cancelled"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s as any)}
+                  className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                    statusFilter === s
+                      ? s === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300'
+                      : s === 'cancelled' ? 'bg-red-100 text-red-800 border-red-300'
+                      : 'bg-blue-100 text-blue-800 border-blue-300'
+                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Appointments List */}
+          <div className="p-4">
+            {refreshing ? (
+              <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {(activeTab === "upcoming" ? upcoming : past).length > 0 ? (
+                  (activeTab === "upcoming" ? upcoming : past).map((apt) => (
+                    <FacilityAppointmentCard
+                      key={apt.id}
+                      appointment={apt}
+                      onRefresh={handleAppointmentUpdate}
+                      onJoinVideo={() => handleJoinVideo(apt.id)}
+                      department={departments.find((d) => d.id === apt.department_id) || null}
+                      userRole={facilityUser.role === 'hospital_admin' ? 'admin' : 'staff'}
+                      currentUserId={currentUserId || ''}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 font-medium">No appointments found</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {selectedDate 
+                        ? "No appointments on selected date" 
+                        : selectedDepartment !== "all" 
+                          ? "Try selecting a different department"
+                          : facilityUser.role === 'hospital_staff'
+                            ? "No appointments assigned to your departments"
+                            : "No appointments scheduled"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 }

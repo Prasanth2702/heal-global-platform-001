@@ -408,6 +408,7 @@ import { Clock, User, Calendar, CheckCircle, XCircle, AlertCircle, Search } from
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import Loader1 from "../ui/Loader1";
 
 interface AppointmentFlow {
   id: string;
@@ -1042,7 +1043,8 @@ const handleFetchError = (error: any) => {
                          appointments.filter(apt => apt.waitingTime).length || 0;
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading appointments...</div>;
+    return <div className="flex justify-center p-8"><Loader1/></div>;
+    // return <div className="flex justify-center p-8">Loading appointments...</div>;
   }
 
   return (

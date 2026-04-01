@@ -3000,31 +3000,59 @@ const handleDateChange = (doctorId: string, newDate: string) => {
       setActiveFilterTab("all");
     }
   }, [view]);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user || null;
+useEffect(() => {
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUser = session?.user || null;
     setUser(currentUser);
-    if (currentUser) {
-     setActiveFilterTab("doctors");   // default doctors
-   } 
-    };
-    
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        const currentUser = session?.user || null;
-    setUser(currentUser);
-
-    // ✅ Update tab on login/logout
-    if (currentUser) {
+    // Don't override the tab if view is specified
+    if (currentUser && view === "all") {
       setActiveFilterTab("doctors");
+    } else if (view !== "all") {
+      // If view is "doctors" or "hospitals", set the tab accordingly
+      setActiveFilterTab(view);
     }
-    });
+  };
+  
+  checkUser();
 
-    return () => subscription.unsubscribe();
-  }, []);
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const currentUser = session?.user || null;
+    setUser(currentUser);
+    // Don't override the tab if view is specified
+    if (currentUser && view === "all") {
+      setActiveFilterTab("doctors");
+    } else if (view !== "all") {
+      setActiveFilterTab(view);
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}, [view]); // Add view to dependency array
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     const { data: { session } } = await supabase.auth.getSession();
+  //     const currentUser = session?.user || null;
+  //   setUser(currentUser);
+  //   if (currentUser) {
+  //    setActiveFilterTab("doctors");   // default doctors
+  //  } 
+  //   };
+    
+  //   checkUser();
+
+  //   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  //       const currentUser = session?.user || null;
+  //   setUser(currentUser);
+
+  //   // ✅ Update tab on login/logout
+  //   if (currentUser) {
+  //     setActiveFilterTab("doctors");
+  //   }
+  //   });
+
+  //   return () => subscription.unsubscribe();
+  // }, []);
 
   // Data Fetching
   const fetchDoctors = async () => {
@@ -3930,6 +3958,7 @@ const handleBookNow = (slot: TimeSlot, dateIndex: number, doctor: Doctor) => {
   setFacilityType={setFacilityType}
    selectedDate={selectedDate}
   setSelectedDate={setSelectedDate}
+  
       />
 
       {/* Results Count */}

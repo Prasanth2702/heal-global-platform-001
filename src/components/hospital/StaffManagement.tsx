@@ -1551,6 +1551,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
 import { useUser } from "@/hooks/useUser";
+import Loader3 from "../ui/Loader3";
 
 // Types based on your Supabase schema
 interface Profile {
@@ -2877,8 +2878,9 @@ if (!editingStaff) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading staff data...</p>
+          {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div> */}
+          <p className="mt-2 text-muted-foreground"><Loader3/></p>
+          {/* <p className="mt-2 text-muted-foreground">Loading staff data...</p> */}
         </div>
       </div>
     );

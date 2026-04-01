@@ -104,6 +104,7 @@ import {
 } from "date-fns";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
+import Loader2 from "@/components/ui/Loader2";
 
 interface Booking {
   id: string;
@@ -1229,8 +1230,9 @@ const handleBookBed = async ( bedId: string,wardId:string ,facilityName: string)
           {loading && (
             <Card className="mb-6">
               <CardContent className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading wards...</p>
+                {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading wards...</p> */}
+                <Loader2/>
               </CardContent>
             </Card>
           )}

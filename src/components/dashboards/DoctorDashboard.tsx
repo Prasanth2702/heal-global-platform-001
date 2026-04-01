@@ -11,6 +11,7 @@ import DoctorSchedulePage from "../doctor/DoctorSchedulePage";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { supabase } from "@/integrations/supabase/client";
 import PatientAttendDetails from "../doctor/PatientAttendDetails";
+import Loader1 from "../ui/Loader1";
 
 const DoctorDashboard = () => {
 
@@ -134,29 +135,29 @@ useEffect(() => {
         setAppointments(transformedAppointments);
         return;
       }
+const patientMap = new Map();
 
-      // Create patient lookup map
-      const patientMap = new Map();
-      patientsData?.forEach(patient => {
-        patientMap.set(patient.id, patient);
-      });
+patients?.forEach(profile => {
+  patientMap.set(profile.user_id, profile);
+});
 
-      // Merge appointments with patient details
-      const transformedAppointments = appointmentsData.map(app => {
-        const patient = patientMap.get(app.patient_id);
-        return {
-          id: app.id,
-          patient: patient ? 
-            `${patient.first_name || ''} ${patient.last_name || ''}`.trim() : 
-            "Unknown Patient",
-          time: new Date(app.appointment_date).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          type: app.type || "In-person",
-          status: app.status || "Confirmed"
-        };
-      });
+const transformedAppointments = appointmentsData.map(app => {
+  const patient = patientMap.get(app.patient_id);
+
+  return {
+    id: app.id,
+    patient: patient
+      ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim()
+      : "Unknown Patient",
+    avatar: patient?.avatar_url || null,
+    time: new Date(app.appointment_date).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    type: app.type || "In-person",
+    status: app.status || "Confirmed"
+  };
+});
 
       setAppointments(transformedAppointments);
     } catch (error) {
@@ -401,7 +402,7 @@ if (activeTab !== "overview") {
               className={activeTab === "profile" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-100"}
             >
               <FileText className="h-4 w-4 mr-1" />
-              Profile
+              My Profile
             </Button>
             {/* <Button
               variant={activeTab === "payments" ? "default" : "ghost"}
@@ -469,7 +470,7 @@ if (activeTab !== "overview") {
               className="hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"
             >
               <Calendar className="h-4 w-4 mr-1" />
-              Appointments
+              My Appointments
             </Button>
             {/* <Button
               variant="ghost"
@@ -505,7 +506,7 @@ if (activeTab !== "overview") {
               className="hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"
             >
               <File className="h-4 w-4 mr-1" />
-              Profile
+              My Profile
             </Button>
             {/* <Button
               variant="ghost"
@@ -589,11 +590,17 @@ if (activeTab !== "overview") {
                 </div>
               ))} */}
               {loading ? (
-  <div className="text-center py-4 text-muted-foreground">Loading appointments...</div>
+  <div className="text-center py-4 text-muted-foreground"><Loader1/></div>
+  // <div className="text-center py-4 text-muted-foreground">Loading appointments...</div>
 ) : appointments.length > 0 ? (
   appointments.map((appointment) => (
     <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
+
       <div>
+        <img
+    src={appointment.avatar || "/placeholder-avatar.png"}
+    className="w-10 h-10 rounded-full object-cover"
+  />
         <p className="font-medium">{appointment.patient}</p>
         <p className="text-sm text-muted-foreground">
           {appointment.time} • {appointment.type}
@@ -601,7 +608,7 @@ if (activeTab !== "overview") {
       </div>
       <div className="text-right">
         <span className={`text-xs px-2 py-1 rounded ${
-          appointment.status === 'Confirmed' 
+          appointment.status === 'confirmed' 
             ? 'bg-doctor/10 text-doctor' 
             : 'bg-yellow-100 text-yellow-800'
         }`}>

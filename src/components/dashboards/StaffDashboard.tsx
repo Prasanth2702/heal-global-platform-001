@@ -586,7 +586,7 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
           {!hasBedManagement && (
           <TabsTrigger value="appointments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
             <Calendar1 className="h-4 w-4" />
-            <span className="hidden sm:inline">Appointments</span>
+            <span className="hidden sm:inline">My Appointments</span>
           </TabsTrigger>
           )}
           {/* <TabsTrigger value="payments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Payments Tab")}>

@@ -515,7 +515,8 @@ return;
             </div>
 
             <div className="text-right">
-              <Button variant="link" className="p-0 h-auto text-sm" onClick={() => navigate("/forgot-password/" + userType)}>
+              <Button     type="button"
+ variant="link" className="p-0 h-auto text-sm" onClick={() => navigate("/forgot-password/" + userType)}>
                 Forgot password?
               </Button>
             </div>

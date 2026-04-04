@@ -160,7 +160,7 @@ const doctorDocs = documents.filter(
             Close
           </Button>
           {/* Mixpanel tracking for Close button */}
-          <Button
+          {/* <Button
             variant="outline"
             onClick={() => {
               mixpanelInstance.track("Appointment Documents Modal Closed", {
@@ -172,7 +172,7 @@ const doctorDocs = documents.filter(
             }}
           >
             Close (Track)
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

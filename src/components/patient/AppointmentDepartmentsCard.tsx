@@ -4,11 +4,13 @@
 // ========================================
 
 import React, { useEffect, useState } from "react";
-import { Calendar, MapPin, Clock, FileText, User, Upload, Building2 } from "lucide-react";
+import { Calendar, MapPin, Clock, FileText, User, Upload, Building2, Building } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import { Button } from "@/components/ui/button";
+import AppointmentCard from "./AppointmentCard";
+import { useNavigate } from "react-router-dom";
 
 // Define the DepartmentAppointment interface
 interface DepartmentAppointment {
@@ -41,6 +43,9 @@ interface DepartmentAppointment {
     created_at: string;
     uploaded_by: string;
     uploader_role: string;
+    tags?: string | string[];   // JSON or array
+  ai_summary?: string; // Add AI-generated summary
+
   }[];
 }
 
@@ -58,6 +63,7 @@ export default function AppointmentDepartmentsCard({
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showFullNotes, setShowFullNotes] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
+const navigate = useNavigate();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -409,6 +415,7 @@ export default function AppointmentDepartmentsCard({
           <span className="font-medium">{appointment.time}</span>
         </div>
       </div>
+      
 
       {/* Chief Complaint */}
       {appointment.chiefComplaint && (
@@ -442,6 +449,8 @@ export default function AppointmentDepartmentsCard({
         )}
       </div>
 
+      
+
       {/* Documents Button */}
       <Button
         variant="ghost"
@@ -460,6 +469,12 @@ export default function AppointmentDepartmentsCard({
         appointmentId={appointment.id}
         role="patient"
       />
+      
+      {appointment.facilityId && (
+      <Button size="sm" variant="outline" onClick={() => navigate(`/patient/appointment-facility/${appointment.facilityId}/${appointment.id}`)}>
+        <Building className="h-4 w-4 mr-1" /> Hospital Profile
+      </Button>
+    )}
 
       {/* Cancellation Reason */}
       {appointment.status === "cancelled" && appointment.cancellationReason && (

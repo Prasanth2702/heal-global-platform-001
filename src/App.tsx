@@ -78,6 +78,9 @@ import DoctorHospitalsPages from "./components/patient/DoctorHospitalsPages";
 import DoctorHospitalsPagess from "./components/patient/DoctorHospitalsPagess";
 import PatientFacilitiesPages from "./components/patient/PatientFacilitiesPages";
 import PatientFacilitiesPagess from "./components/patient/PatientFacilitiesPagess";
+import FacilityPatientViews from "./components/facility/FacilityPatientViews";
+import DoctorPatientViews from "./components/doctor/doctorPatientViews";
+import PatientViews from "./components/patient/PatientViews";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -363,6 +366,10 @@ const App = () => {
 <Route path="/dashboard/patient/facilities/:slug/:id" element={<PatientFacilitiesPagess />} />
 <Route path="/appointment/beds/:slug/:id" element={<PatientFacilitiesPages />} />
 {/* <Route path="/dashboard/facility/staffId" element={<StaffManagementDetails/>}/> */}
+  <Route path="/facility/appointment-patient/:Id/:appointmentId" element={<FacilityPatientViews />} />
+  <Route path="/doctor/appointment-patient/:Id/:appointmentId" element={<DoctorPatientViews />} />
+  <Route path="/patient/appointment-doctor/:Id/:appointmentId" element={<PatientViews />} />
+  <Route path="/patient/appointment-facility/:Id/:appointmentId" element={<PatientViews />} />
 
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}

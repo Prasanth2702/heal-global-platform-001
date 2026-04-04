@@ -1256,7 +1256,9 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    // <div className="max-w-4xl mx-auto space-y-6 m-2 sm:m-4 lg:m-6">
+      <div className="max-w-4xl mx-auto space-y-6 m-3 md:m-3">
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
 

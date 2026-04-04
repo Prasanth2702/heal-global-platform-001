@@ -157,14 +157,13 @@ const WardDashboardPage = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
           <WardBedManagement
             facilityId={facilityId}
             onSuccess={() => {
               console.log("Ward/Bed operation completed successfully!");
             }}
           />
-        </div>
+        
       </div>
     </DashboardLayout>
   );

@@ -1,0 +1,15 @@
+import React from 'react'
+import DashboardLayout from '../layouts/DashboardLayout'
+import FacilityPatientView from '../facility/FacilityPatientView'
+
+const DoctorPatientViews = () => {
+  return (
+    <div>
+      <DashboardLayout userType="doctor">
+      < FacilityPatientView/>
+    </DashboardLayout>
+    </div>
+  )
+}
+
+export default DoctorPatientViews

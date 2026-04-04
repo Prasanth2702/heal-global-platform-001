@@ -3,12 +3,13 @@
 // ========================================
 
 import React from "react";
-import { Calendar, MapPin, Video, Clock, FileText, User, Upload } from "lucide-react";
+import { Calendar, MapPin, Video, Clock, FileText, User, Upload, Building } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import { useEffect, useState } from "react";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 // Define the Appointment interface
 interface Appointment {
   id: string;
@@ -35,7 +36,11 @@ interface Appointment {
   file_path: string;
   mime_type: string;
   created_at: string;
+    tags?: string | string[];   // JSON or array
+  ai_summary?: string; // Add AI-generated summary
 }[];
+doctorId?: string;      // user_id of the doctor
+facilityId?: string;    // admin_user_id of the facility (or facility id)
 }
 
 interface Props {
@@ -56,6 +61,7 @@ export default function AppointmentCard({
   const [showUpload, setShowUpload] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
 
+const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -525,6 +531,21 @@ return (
         role="patient"
       />
 
+      
+     {appointment.doctorId && (
+      <Button size="sm" variant="outline" onClick={() => navigate(`/patient/appointment-doctor/${appointment.doctorId}/${appointment.id}`)}>
+        <User className="h-4 w-4 mr-1" /> Doctor Profile
+      </Button>
+    )}
+
+    {/* NEW: Hospital Profile */}
+    {appointment.facilityId && (
+      <Button size="sm" variant="outline" onClick={() => navigate(`/patient/appointment-facility/${appointment.facilityId}/${appointment.id}`)}>
+        <Building className="h-4 w-4 mr-1" /> Hospital Profile
+      </Button>
+    )}
+
+{/* For past appointments, add similar buttons (if needed) */}
       {/* Cancellation Reason */}
       {appointment.status === "cancelled" && appointment.cancellationReason && (
         <div className="bg-red-50 rounded-lg p-4 space-y-2 border border-red-200">
@@ -591,9 +612,9 @@ return (
       </div>
 
       {/* Prescriptions Section */}
-      {appointment.documents && appointment.documents.length > 0 && (
+      {/* {appointment.documents && appointment.documents.length > 0 && (
         <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 max-h-52 overflow-y-auto">
-          {/* Header */}
+          {/* Header 
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2 text-emerald-700 font-semibold">
               <FileText size={16} />
@@ -605,7 +626,7 @@ return (
             </span>
           </div>
 
-          {/* File List */}
+          {/* File List 
           <div className="space-y-2">
             {appointment.documents.map((doc) => (
               <button
@@ -626,7 +647,7 @@ return (
                   transition-all border border-gray-200
                 "
               >
-                {/* Left */}
+                {/* Left 
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="rounded-md bg-emerald-100 p-2 text-emerald-700 flex-shrink-0">
                     <FileText size={18} />
@@ -643,7 +664,7 @@ return (
                   </div>
                 </div>
 
-                {/* Right */}
+                {/* Right 
                 <span className="text-xs font-medium text-emerald-600 group-hover:text-emerald-700 flex-shrink-0 ml-2">
                   View →
                 </span>
@@ -651,7 +672,91 @@ return (
             ))}
           </div>
         </div>
-      )}
+      )} */}
+      {/* Prescriptions Section */}
+{appointment.documents && appointment.documents.length > 0 && (
+  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 max-h-96 overflow-y-auto">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2 text-emerald-700 font-semibold">
+        <FileText size={16} />
+        <span>Documents</span>
+      </div>
+      <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
+        {appointment.documents.length}
+      </span>
+    </div>
+
+    <div className="space-y-3">
+      {appointment.documents.map((doc) => {
+        // Parse tags if it's a JSON string
+        let tagsArray: string[] = [];
+        if (doc.tags) {
+          try {
+            tagsArray = typeof doc.tags === 'string' ? JSON.parse(doc.tags) : doc.tags;
+          } catch (e) {
+            console.error("Failed to parse tags", e);
+          }
+        }
+
+        return (
+          <div
+            key={doc.id}
+            className="group rounded-lg bg-white p-3 border border-gray-200 hover:border-emerald-400 hover:shadow-md transition-all"
+          >
+            {/* File row with view button */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="rounded-md bg-emerald-100 p-2 text-emerald-700 flex-shrink-0">
+                  <FileText size={18} />
+                </div>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">
+                    {doc.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Uploaded on {new Date(doc.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  const { data } = await supabase.storage
+                    .from("patient_files")
+                    .createSignedUrl(doc.file_path, 300);
+                  if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                }}
+                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex-shrink-0 ml-2"
+              >
+                View →
+              </button>
+            </div>
+
+            {/* Tags (if any) */}
+            {tagsArray.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {tagsArray.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* AI Summary (if any) */}
+            {doc.ai_summary && (
+              <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">
+                <span className="font-medium text-gray-700">AI Summary:</span> {doc.ai_summary}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
       {/* PATIENT DOCUMENT UPLOAD */}
       {userRole === "patient" &&

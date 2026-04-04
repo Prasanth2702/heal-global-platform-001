@@ -1793,12 +1793,25 @@ import { useState, useEffect } from "react";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import mixpanelInstance from "@/utils/mixpanel";
+import { useNavigate } from "react-router-dom";
 
 interface DepartmentInfo {
   id: string;
   name: string;
   description?: string;
   head_doctor_id?: string;
+  documents?: {
+    id: string;
+    name: string;
+    file_path: string;
+    mime_type: string;
+    created_at: string;
+    uploaded_by: string;
+    uploader_role: string;
+    tags?: string | string[];   // JSON or array
+  ai_summary?: string; // Add AI-generated summary
+
+  }[];
 }
 
 interface Props {
@@ -1825,6 +1838,7 @@ export default function FacilityAppointmentCard({
   currentUserId,
 }: Props) {
   const enhancedAppointment = appointment as EnhancedFacilityAppointment;
+const navigate = useNavigate();
 
   const [openCancel, setOpenCancel] = useState(false);
   const [reason, setReason] = useState("");
@@ -1882,6 +1896,7 @@ export default function FacilityAppointmentCard({
 
     fetchDocuments();
   }, [appointment.id]);
+  
 
   const cancelAppointment = async () => {
     mixpanelInstance.track('Facility Appointment Cancelled', {
@@ -2209,8 +2224,10 @@ const getRoleText = () => {
             {department.description && (
               <div className="text-xs text-blue-700 mt-1">{department.description}</div>
             )}
+            
           </div>
         )}
+        
 
         <div
           className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium
@@ -2231,7 +2248,9 @@ const getRoleText = () => {
               Clinic Visit
             </>
           )}
+          
         </div>
+            
  {documents.length > 0 && (
                           <Button
                             variant="ghost"
@@ -2242,10 +2261,10 @@ const getRoleText = () => {
                             <FileText className="h-4 w-4" />
                             <span className="text-sm">Documents</span>
                           </Button>
-                        )}
+                        )} 
               
 
-        {enhancedAppointment.notes && !enhancedAppointment.isPast && (
+        {enhancedAppointment.notes && enhancedAppointment.isPast && (
           <div className="border border-blue-100 bg-blue-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 text-blue-700 font-medium mb-1 text-sm">
               <FileText size={12} />
@@ -2255,6 +2274,40 @@ const getRoleText = () => {
           </div>
         )}
 
+        <AppointmentDocumentsModal
+                open={showDocsModal}
+                onClose={() => setShowDocsModal(false)}
+                appointmentId={appointment.id}
+                role="hospital_admin"
+              />
+{enhancedAppointment.isPast && canUploadPrescription && (
+  <div className="flex justify-end mt-3">
+    <Button
+      variant="doctor"
+      size="sm"
+      onClick={() => setShowUploadModal(true)}
+    >
+      <FileText className="h-4 w-4 mr-1" />
+      Upload Documents
+    </Button>
+  </div>
+  
+)}
+{enhancedAppointment.isPast && canUploadPrescription && (
+  
+//   <Button onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}`)}>
+//   View Full Details
+// </Button>    
+<Button 
+  onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}`, { 
+    state: { appointmentId: appointment.id } 
+  })}
+>
+  View Full Details
+</Button>
+
+  
+)}
         {/* Action Buttons */}
         {!enhancedAppointment.isPast &&
           enhancedAppointment.status !== "cancelled" && (
@@ -2292,7 +2345,16 @@ const getRoleText = () => {
                 Mark as Completed
               </Button>
             )}
-                        
+            
+             {/* <Button onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}`)}>
+  View Full Details
+</Button>       */}
+<Button 
+  onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`)}
+>
+  View Full Details
+</Button>
+
 
             {/* View Only Message */}
             {!isAssignedDoctor && !hasManagementAccess && (
@@ -2302,15 +2364,89 @@ const getRoleText = () => {
             )}
           </div>
         )}
+  {documents.length > 0 && (
+  <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/40 p-4 max-h-52 overflow-y-auto">
+    {/* Header */}
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2 text-blue-700 font-semibold">
+        <FileText size={16} />
+        <span>Documents</span>
+      </div>
+      <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">
+        {documents.length}
+      </span>
+    </div>
+
+    {/* File List */}
+    <div className="space-y-2">
+      {documents.map((doc) => {
+        // Parse tags if it's a JSON string
+        let tagsArray: string[] = [];
+        if (doc.tags) {
+          try {
+            tagsArray = typeof doc.tags === 'string' ? JSON.parse(doc.tags) : doc.tags;
+          } catch (e) {
+            console.error("Failed to parse tags", e);
+          }
+        }
+
+        return (
+          <div key={doc.id} className="group w-full rounded-lg bg-white p-3 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all">
+            {/* Main row: file icon, name, uploader, view button */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="rounded-md bg-blue-100 p-2 text-blue-700 flex-shrink-0">
+                  <FileText size={18} />
+                </div>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 group-hover:text-blue-700 truncate">
+                    {doc.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Uploaded by {doc.uploader_role} on{" "}
+                    {new Date(doc.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  const { data } = await supabase.storage
+                    .from("patient_files")
+                    .createSignedUrl(doc.file_path, 300);
+                  if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                }}
+                className="text-xs font-medium text-blue-600 group-hover:text-blue-700 flex-shrink-0 md:ml-2"
+              >
+                View →
+              </button>
+            </div>
+
+            {/* Tags (if any) */}
+            {tagsArray.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {tagsArray.map((tag, idx) => (
+                  <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* AI Summary (if any) */}
+            {doc.ai_summary && (
+              <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">
+                <span className="font-medium text-gray-700">AI Summary:</span> {doc.ai_summary}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
       </div>
 
-      {/* Documents Modal */}
-      <AppointmentDocumentsModal
-        open={showDocsModal}
-        onClose={() => setShowDocsModal(false)}
-        appointmentId={appointment.id}
-        role="hospital_admin"
-      />
+
 
       {/* Upload Modal */}
       {showUploadModal && (
@@ -2347,6 +2483,7 @@ const getRoleText = () => {
           </div>
         </div>
       )}
+  
 
       {/* Cancel Modal */}
       {openCancel && canCancelAppointment && (

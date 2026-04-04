@@ -4204,7 +4204,7 @@ const fetchData = async () => {
                 </Select>
               </div>
 
-              <Button variant="outline" size="sm" onClick={handleSchedule}>
+              {/* <Button variant="outline" size="sm" onClick={handleSchedule}>
                 <CalendarDays className="mr-2 h-4 w-4" />
                 Schedule
               </Button>
@@ -4212,7 +4212,7 @@ const fetchData = async () => {
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardContent>

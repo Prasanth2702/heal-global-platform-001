@@ -1215,6 +1215,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Filter } from "lucide-react";
 import Loader from "../ui/Loader";
+import { useNavigate } from "react-router-dom";
 
 // ------------------------
 // Types for safety & clarity
@@ -1243,6 +1244,7 @@ export interface Appointment {
   videoRoomId?: string; // This is the meeting ID
   documents?: Document[];
   appointmentDateTime?: Date; // For sorting
+
 }
 
 // New interface for department/hospital appointments
@@ -1296,6 +1298,8 @@ interface Document {
   created_at: string;
   uploaded_by: string;
   uploader_role: string;
+    tags?: string | string[];   // JSON or array
+  ai_summary?: string; // Add AI-generated summary
 }
 
 // ------------------------
@@ -1329,7 +1333,8 @@ const createFullDateTime = (date: string, time: string) => {
 // ------------------------
 export default function AppointmentManagement() {
   const { toast } = useToast();
-  
+  const navigate = useNavigate();
+
   // Separate state for different appointment types
   const [doctorAppointments, setDoctorAppointments] = useState<Appointment[]>([]);
   const [hospitalAppointments, setHospitalAppointments] = useState<DepartmentAppointment[]>([]);
@@ -1611,7 +1616,7 @@ const selectedDateString = selectedDate
           chiefComplaint: apt.chief_complaint || null,
           completedAt: apt.completed_at || null,
           documents: documents || [],
-          appointmentDateTime: createFullDateTime(dateOnly, timeString)
+          appointmentDateTime: createFullDateTime(dateOnly, timeString),
         } as DepartmentAppointment;
 
         return appointment;
@@ -2365,6 +2370,8 @@ return (
               )}
             </div>
           )}
+
+          
 
           {/* DOCTOR TAB */}
           {activeTab === "doctor" && (

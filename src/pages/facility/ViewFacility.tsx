@@ -5033,263 +5033,556 @@ const ViewFacility: React.FC = () => {
     );
   }
 
+  // return (
+  //   <>
+  //     <div className="view-facility-page">
+  //       {/* Header Section */}
+  //       <div className="page-header bg-gradient-primary mb-4">
+  //         <Container fluid>
+  //           <Row className="align-items-center py-4">
+  //             <Col>
+  //               <div className="d-flex align-items-center">
+  //                 <div className="header-icon-wrapper bg-white p-3 rounded-circle me-3">
+  //                   <BuildingIcon size={32} className="text-primary" />
+  //                 </div>
+  //                 <div>
+  //                   <h1 className="h2 text-white mb-1">Facility Management</h1>
+  //                   <p className="text-white-50 mb-0">
+  //                     Manage all facility operations from a single dashboard
+  //                   </p>
+  //                 </div>
+  //               </div>
+  //             </Col>
+  //             <Col xs="auto">
+  //               <div className="d-flex gap-3">
+  //                 {/* <Button
+  //                   variant="light"
+  //                   className="d-flex align-items-center"
+  //                   onClick={refreshData}
+  //                   disabled={refreshing}
+  //                 >
+  //                   <RefreshCw
+  //                     size={18}
+  //                     className={`me-2 ${refreshing ? "spin" : ""}`}
+  //                   />
+  //                   {refreshing ? "Refreshing..." : "Refresh Data"}
+  //                 </Button>
+  //                 <Button
+  //                   variant="light"
+  //                   className="d-flex align-items-center"
+  //                   onClick={() => {
+  //                     // Implement export functionality
+  //                     console.log("Export report");
+  //                   }}
+  //                 >
+  //                   <Download size={18} className="me-2" />
+  //                   Export Report
+  //                 </Button> */}
+  //                 <Button
+  //                   variant="light"
+  //                   className="d-flex align-items-center"
+  //                   onClick={handleAddWard}
+  //                 >
+  //                   <PlusCircle size={18} className="me-2" />
+  //                   Add New Ward
+  //                 </Button>
+  //               </div>
+  //             </Col>
+  //           </Row>
+  //         </Container>
+  //       </div>
+
+  //       {error && (
+  //         <Container fluid className="mb-4">
+  //           <Alert variant="danger" onClose={() => setError(null)} dismissible>
+  //             <Alert.Heading>Error</Alert.Heading>
+  //             <p>{error}</p>
+  //             <Button onClick={fetchStats} variant="outline-danger" size="sm">
+  //               Retry
+  //             </Button>
+  //           </Alert>
+  //         </Container>
+  //       )}
+
+  //       {/* Quick Stats Row */}
+  //       <Container fluid className="mb-4">
+  //         <Row className="g-4">
+  //           <Col xl={3} lg={6}>
+  //             <Card className="border-0 shadow-sm h-100 hover-lift">
+  //               <Card.Body className="py-4">
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+  //                     <Building size={24} className="text-primary" />
+  //                   </div>
+  //                   <div>
+  //                     <div className="text-muted small">Total Wards</div>
+  //                     <h3 className="mb-0">{stats.totalWards}</h3>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+
+  //           <Col xl={3} lg={6}>
+  //             <Card className="border-0 shadow-sm h-100 hover-lift">
+  //               <Card.Body className="py-4">
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+  //                     <BedIcon size={24} className="text-success" />
+  //                   </div>
+  //                   <div>
+  //                     <div className="text-muted small">Total Beds</div>
+  //                     <h3 className="mb-0">{stats.totalBeds}</h3>
+  //                   </div>
+  //                 </div>
+  //                 <div className="mt-3 d-flex justify-content-between">
+  //                   <div>
+  //                     <Badge bg="success" className="px-2">
+  //                       {stats.availableBeds} Available
+  //                     </Badge>
+  //                   </div>
+  //                   <div>
+  //                     <Badge bg="danger" className="px-2">
+  //                       {stats.occupiedBeds} Occupied
+  //                     </Badge>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+
+  //           <Col xl={3} lg={6}>
+  //             <Card className="border-0 shadow-sm h-100 hover-lift">
+  //               <Card.Body className="py-4">
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+  //                     <Activity size={24} className="text-warning" />
+  //                   </div>
+  //                   <div>
+  //                     <div className="text-muted small">Occupancy Rate</div>
+  //                     <h3 className="mb-0">{stats.occupancyRate}%</h3>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+
+  //           <Col xl={3} lg={6}>
+  //             <Card className="border-0 shadow-sm h-100 hover-lift">
+  //               <Card.Body className="py-4">
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
+  //                     <Users size={24} className="text-danger" />
+  //                   </div>
+  //                   <div>
+  //                     <div className="text-muted small">Admitted Patients</div>
+  //                     <h3 className="mb-0">{stats.admittedPatients}</h3>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+  //         </Row>
+  //       </Container>
+
+  //       {/* Navigation Tabs */}
+  //       <Container fluid>
+  //         <Tab.Container
+  //           activeKey={activeTab}
+  //           onSelect={(k) => setActiveTab(k || "overview")}
+  //         >
+  //           <Card className="border-0 shadow-sm mb-4">
+  //             <Card.Header className="bg-white border-bottom-0 pt-3">
+  //               <Nav variant="tabs" className="border-bottom-0">
+  //                 <Nav.Item>
+  //                   <Nav.Link
+  //                     eventKey="overview"
+  //                     className="d-flex align-items-center"
+  //                   >
+  //                     <Building size={18} className="me-2" />
+  //                     Ward Overview
+  //                   </Nav.Link>
+  //                 </Nav.Item>
+  //                 <Nav.Item>
+  //                   <Nav.Link
+  //                     eventKey="beds"
+  //                     className="d-flex align-items-center"
+  //                   >
+  //                     <BedIcon size={18} className="me-2" />
+  //                     Bed Management
+  //                   </Nav.Link>
+  //                 </Nav.Item>
+  //                 <Nav.Item>
+  //                   <Nav.Link
+  //                     eventKey="bed-bookings"
+  //                     className="d-flex align-items-center"
+  //                   >
+  //                     <BedIcon size={18} className="me-2" />
+  //                     Bed Booking Management
+  //                   </Nav.Link>
+  //                 </Nav.Item>
+  //                 <Nav.Item>
+  //                   <Nav.Link
+  //                     eventKey="patients"
+  //                     className="d-flex align-items-center"
+  //                   >
+  //                     <Users size={18} className="me-2" />
+  //                     Patient Bookings
+  //                   </Nav.Link>
+  //                 </Nav.Item>
+  //                 <Nav.Item>
+  //                   <Nav.Link
+  //                     eventKey="reports"
+  //                     className="d-flex align-items-center"
+  //                   >
+  //                     <Activity size={18} className="me-2" />
+  //                     Analytics & Reports
+  //                   </Nav.Link>
+  //                 </Nav.Item>
+  //               </Nav>
+  //             </Card.Header>
+
+  //             <Card.Body className="pt-4">
+  //               <Tab.Content>
+  //                 <Tab.Pane eventKey="overview">
+  //                   <WardOverviewPage />
+  //                 </Tab.Pane>
+  //                 <Tab.Pane eventKey="beds">
+  //                   <BedManagementPage />
+  //                 </Tab.Pane>
+  //                 <Tab.Pane eventKey="bed-bookings">
+  //                   <BedBookingManagementPage />
+  //                 </Tab.Pane>
+  //                 <Tab.Pane eventKey="patients">
+  //                   <PatientBookingsPage />
+  //                 </Tab.Pane>
+  //                 <Tab.Pane eventKey="reports">
+  //                   <AnalyticsReportsPage />
+  //                 </Tab.Pane>
+  //               </Tab.Content>
+  //             </Card.Body>
+  //           </Card>
+  //         </Tab.Container>
+  //       </Container>
+  //     </div>
+
+  //     <style>{`
+  //       .hover-lift {
+  //         transition: transform 0.2s ease, box-shadow 0.2s ease;
+  //       }
+  //       .hover-lift:hover {
+  //         transform: translateY(-4px);
+  //         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  //       }
+  //       .bg-gradient-primary {
+  //         background: linear-gradient(135deg, #4a6bff 0%, #6a11cb 100%);
+  //       }
+  //       .header-icon-wrapper {
+  //         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  //       }
+  //       .spin {
+  //         animation: spin 1s linear infinite;
+  //       }
+  //       @keyframes spin {
+  //         0% { transform: rotate(0deg); }
+  //         100% { transform: rotate(360deg); }
+  //       }
+  //     `}</style>
+  //   </>
+  // );
+
   return (
-    <>
-      <div className="view-facility-page">
-        {/* Header Section */}
-        <div className="page-header bg-gradient-primary mb-4">
-          <Container fluid>
-            <Row className="align-items-center py-4">
-              <Col>
-                <div className="d-flex align-items-center">
-                  <div className="header-icon-wrapper bg-white p-3 rounded-circle me-3">
-                    <BuildingIcon size={32} className="text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="h2 text-white mb-1">Facility Management</h1>
-                    <p className="text-white-50 mb-0">
-                      Manage all facility operations from a single dashboard
-                    </p>
-                  </div>
+  <>
+    <div className="view-facility-page">
+      {/* Header Section - responsive padding */}
+      <div className="page-header bg-gradient-primary mb-3 mb-md-4">
+        <Container fluid>
+          <Row className="align-items-center py-3 py-md-4">
+            <Col xs={12} md={8} className="mb-3 mb-md-0">
+              <div className="d-flex align-items-center justify-content-center justify-content-md-start">
+                <div className="header-icon-wrapper bg-white p-2 p-md-3 rounded-circle me-2 me-md-3">
+                  <BuildingIcon size={24} className="text-primary" style={{ width: '24px', height: '24px' }} />
                 </div>
-              </Col>
-              <Col xs="auto">
-                <div className="d-flex gap-3">
-                  {/* <Button
-                    variant="light"
-                    className="d-flex align-items-center"
-                    onClick={refreshData}
-                    disabled={refreshing}
-                  >
-                    <RefreshCw
-                      size={18}
-                      className={`me-2 ${refreshing ? "spin" : ""}`}
-                    />
-                    {refreshing ? "Refreshing..." : "Refresh Data"}
-                  </Button>
-                  <Button
-                    variant="light"
-                    className="d-flex align-items-center"
-                    onClick={() => {
-                      // Implement export functionality
-                      console.log("Export report");
-                    }}
-                  >
-                    <Download size={18} className="me-2" />
-                    Export Report
-                  </Button> */}
-                  <Button
-                    variant="light"
-                    className="d-flex align-items-center"
-                    onClick={handleAddWard}
-                  >
-                    <PlusCircle size={18} className="me-2" />
-                    Add New Ward
-                  </Button>
+                <div>
+                  <h1 className="h3 h2-md text-white mb-0">Facility Management</h1>
+                  <p className="text-white-50 mb-0 small">
+                    Manage all facility operations from a single dashboard
+                  </p>
                 </div>
-              </Col>
-            </Row>
-          </Container>
-        </div>
-
-        {error && (
-          <Container fluid className="mb-4">
-            <Alert variant="danger" onClose={() => setError(null)} dismissible>
-              <Alert.Heading>Error</Alert.Heading>
-              <p>{error}</p>
-              <Button onClick={fetchStats} variant="outline-danger" size="sm">
-                Retry
-              </Button>
-            </Alert>
-          </Container>
-        )}
-
-        {/* Quick Stats Row */}
-        <Container fluid className="mb-4">
-          <Row className="g-4">
-            <Col xl={3} lg={6}>
-              <Card className="border-0 shadow-sm h-100 hover-lift">
-                <Card.Body className="py-4">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                      <Building size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <div className="text-muted small">Total Wards</div>
-                      <h3 className="mb-0">{stats.totalWards}</h3>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
+              </div>
             </Col>
-
-            <Col xl={3} lg={6}>
-              <Card className="border-0 shadow-sm h-100 hover-lift">
-                <Card.Body className="py-4">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
-                      <BedIcon size={24} className="text-success" />
-                    </div>
-                    <div>
-                      <div className="text-muted small">Total Beds</div>
-                      <h3 className="mb-0">{stats.totalBeds}</h3>
-                    </div>
-                  </div>
-                  <div className="mt-3 d-flex justify-content-between">
-                    <div>
-                      <Badge bg="success" className="px-2">
-                        {stats.availableBeds} Available
-                      </Badge>
-                    </div>
-                    <div>
-                      <Badge bg="danger" className="px-2">
-                        {stats.occupiedBeds} Occupied
-                      </Badge>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-
-            <Col xl={3} lg={6}>
-              <Card className="border-0 shadow-sm h-100 hover-lift">
-                <Card.Body className="py-4">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
-                      <Activity size={24} className="text-warning" />
-                    </div>
-                    <div>
-                      <div className="text-muted small">Occupancy Rate</div>
-                      <h3 className="mb-0">{stats.occupancyRate}%</h3>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-
-            <Col xl={3} lg={6}>
-              <Card className="border-0 shadow-sm h-100 hover-lift">
-                <Card.Body className="py-4">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
-                      <Users size={24} className="text-danger" />
-                    </div>
-                    <div>
-                      <div className="text-muted small">Admitted Patients</div>
-                      <h3 className="mb-0">{stats.admittedPatients}</h3>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
+            <Col xs={12} md={4} className="text-center text-md-end">
+              <div className="d-flex justify-content-center justify-content-md-end gap-2 gap-md-3">
+                <Button
+                  variant="light"
+                  className="d-flex align-items-center btn-sm"
+                  onClick={handleAddWard}
+                >
+                  <PlusCircle size={16} className="me-1 me-md-2" />
+                  <span className="d-none d-sm-inline">Add New Ward</span>
+                  <span className="d-inline d-sm-none">Add Ward</span>
+                </Button>
+              </div>
             </Col>
           </Row>
         </Container>
-
-        {/* Navigation Tabs */}
-        <Container fluid>
-          <Tab.Container
-            activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k || "overview")}
-          >
-            <Card className="border-0 shadow-sm mb-4">
-              <Card.Header className="bg-white border-bottom-0 pt-3">
-                <Nav variant="tabs" className="border-bottom-0">
-                  <Nav.Item>
-                    <Nav.Link
-                      eventKey="overview"
-                      className="d-flex align-items-center"
-                    >
-                      <Building size={18} className="me-2" />
-                      Ward Overview
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      eventKey="beds"
-                      className="d-flex align-items-center"
-                    >
-                      <BedIcon size={18} className="me-2" />
-                      Bed Management
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      eventKey="bed-bookings"
-                      className="d-flex align-items-center"
-                    >
-                      <BedIcon size={18} className="me-2" />
-                      Bed Booking Management
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      eventKey="patients"
-                      className="d-flex align-items-center"
-                    >
-                      <Users size={18} className="me-2" />
-                      Patient Bookings
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      eventKey="reports"
-                      className="d-flex align-items-center"
-                    >
-                      <Activity size={18} className="me-2" />
-                      Analytics & Reports
-                    </Nav.Link>
-                  </Nav.Item>
-                </Nav>
-              </Card.Header>
-
-              <Card.Body className="pt-4">
-                <Tab.Content>
-                  <Tab.Pane eventKey="overview">
-                    <WardOverviewPage />
-                  </Tab.Pane>
-                  <Tab.Pane eventKey="beds">
-                    <BedManagementPage />
-                  </Tab.Pane>
-                  <Tab.Pane eventKey="bed-bookings">
-                    <BedBookingManagementPage />
-                  </Tab.Pane>
-                  <Tab.Pane eventKey="patients">
-                    <PatientBookingsPage />
-                  </Tab.Pane>
-                  <Tab.Pane eventKey="reports">
-                    <AnalyticsReportsPage />
-                  </Tab.Pane>
-                </Tab.Content>
-              </Card.Body>
-            </Card>
-          </Tab.Container>
-        </Container>
       </div>
 
-      <style>{`
-        .hover-lift {
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+      {error && (
+        <Container fluid className="mb-3 mb-md-4">
+          <Alert variant="danger" onClose={() => setError(null)} dismissible>
+            <Alert.Heading>Error</Alert.Heading>
+            <p>{error}</p>
+            <Button onClick={fetchStats} variant="outline-danger" size="sm">
+              Retry
+            </Button>
+          </Alert>
+        </Container>
+      )}
+
+      {/* Quick Stats Row - responsive grid */}
+      <Container fluid className="mb-3 mb-md-4">
+        <Row className="g-3 g-md-4">
+          <Col xs={6} lg={3}>
+            <Card className="border-0 shadow-sm h-100 hover-lift">
+              <Card.Body className="py-3 py-md-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 p-2 p-md-3 rounded-circle me-2 me-md-3">
+                    <Building size={20} className="text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-muted small">Total Wards</div>
+                    <h3 className="mb-0 fs-4 fs-md-3">{stats.totalWards}</h3>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col xs={6} lg={3}>
+            <Card className="border-0 shadow-sm h-100 hover-lift">
+              <Card.Body className="py-3 py-md-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-success bg-opacity-10 p-2 p-md-3 rounded-circle me-2 me-md-3">
+                    <BedIcon size={20} className="text-success" />
+                  </div>
+                  <div>
+                    <div className="text-muted small">Total Beds</div>
+                    <h3 className="mb-0 fs-4 fs-md-3">{stats.totalBeds}</h3>
+                  </div>
+                </div>
+                <div className="mt-2 mt-md-3 d-flex justify-content-between">
+                  <Badge bg="success" className="px-2 py-1 small">
+                    {stats.availableBeds} Available
+                  </Badge>
+                  <Badge bg="danger" className="px-2 py-1 small">
+                    {stats.occupiedBeds} Occupied
+                  </Badge>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col xs={6} lg={3}>
+            <Card className="border-0 shadow-sm h-100 hover-lift">
+              <Card.Body className="py-3 py-md-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-warning bg-opacity-10 p-2 p-md-3 rounded-circle me-2 me-md-3">
+                    <Activity size={20} className="text-warning" />
+                  </div>
+                  <div>
+                    <div className="text-muted small">Occupancy Rate</div>
+                    <h3 className="mb-0 fs-4 fs-md-3">{stats.occupancyRate}%</h3>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col xs={6} lg={3}>
+            <Card className="border-0 shadow-sm h-100 hover-lift">
+              <Card.Body className="py-3 py-md-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-danger bg-opacity-10 p-2 p-md-3 rounded-circle me-2 me-md-3">
+                    <Users size={20} className="text-danger" />
+                  </div>
+                  <div>
+                    <div className="text-muted small">Admitted Patients</div>
+                    <h3 className="mb-0 fs-4 fs-md-3">{stats.admittedPatients}</h3>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+
+      {/* Tab Container - responsive tabs */}
+      <Container fluid>
+        <Tab.Container
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k || "overview")}
+        >
+          <Card className="border-0 shadow-sm mb-4">
+            {/* Desktop/Tablet tabs - shown on md and up */}
+            <Card.Header className="bg-white border-bottom-0 pt-3 d-none d-md-block">
+              <Nav variant="tabs" className="border-bottom-0">
+                <Nav.Item>
+                  <Nav.Link eventKey="overview" className="d-flex align-items-center">
+                    <Building size={18} className="me-2" />
+                    Ward Overview
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="beds" className="d-flex align-items-center">
+                    <BedIcon size={18} className="me-2" />
+                    Bed Management
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="bed-bookings" className="d-flex align-items-center">
+                    <BedIcon size={18} className="me-2" />
+                    Bed Booking Management
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="patients" className="d-flex align-items-center">
+                    <Users size={18} className="me-2" />
+                    Patient Bookings
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="reports" className="d-flex align-items-center">
+                    <Activity size={18} className="me-2" />
+                    Analytics & Reports
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
+              
+            </Card.Header>
+
+            <Card.Body className="pt-3 pt-md-4">
+              <div className="d-md-none border-top bg-light p-3">
+  <Row className="g-2">
+    
+    <Col xs={6} className="text-center">
+      <Button
+        variant={activeTab === "overview" ? "primary" : "outline-secondary"}
+        size="sm"
+        className="w-100 py-2"
+        onClick={() => setActiveTab("overview")}
+      >
+        <Building size={16} className="d-block mx-auto mb-1" />
+        <span className="small">Overview</span>
+      </Button>
+    </Col>
+
+    <Col xs={6} className="text-center">
+      <Button
+        variant={activeTab === "beds" ? "primary" : "outline-secondary"}
+        size="sm"
+        className="w-100 py-2"
+        onClick={() => setActiveTab("beds")}
+      >
+        <BedIcon size={16} className="d-block mx-auto mb-1" />
+        <span className="small">Beds</span>
+      </Button>
+    </Col>
+
+    <Col xs={6} className="text-center">
+      <Button
+        variant={activeTab === "bed-bookings" ? "primary" : "outline-secondary"}
+        size="sm"
+        className="w-100 py-2"
+        onClick={() => setActiveTab("bed-bookings")}
+      >
+        <BedIcon size={16} className="d-block mx-auto mb-1" />
+        <span className="small">Bookings</span>
+      </Button>
+    </Col>
+
+    <Col xs={6} className="text-center">
+      <Button
+        variant={activeTab === "patients" ? "primary" : "outline-secondary"}
+        size="sm"
+        className="w-100 py-2"
+        onClick={() => setActiveTab("patients")}
+      >
+        <Users size={16} className="d-block mx-auto mb-1" />
+        <span className="small">Patients</span>
+      </Button>
+    </Col>
+
+    <Col xs={6} className="text-center">
+      <Button
+        variant={activeTab === "reports" ? "primary" : "outline-secondary"}
+        size="sm"
+        className="w-100 py-2"
+        onClick={() => setActiveTab("reports")}
+      >
+        <Activity size={16} className="d-block mx-auto mb-1" />
+        <span className="small">Reports</span>
+      </Button>
+    </Col>
+
+  </Row>
+</div>
+              <Tab.Content>
+                <Tab.Pane eventKey="overview">
+                  <WardOverviewPage />
+                </Tab.Pane>
+                <Tab.Pane eventKey="beds">
+                  <BedManagementPage />
+                </Tab.Pane>
+                <Tab.Pane eventKey="bed-bookings">
+                  <BedBookingManagementPage />
+                </Tab.Pane>
+                <Tab.Pane eventKey="patients">
+                  <PatientBookingsPage />
+                </Tab.Pane>
+                <Tab.Pane eventKey="reports">
+                  <AnalyticsReportsPage />
+                </Tab.Pane>
+              </Tab.Content>
+            </Card.Body>
+
+            {/* Mobile bottom tab buttons - visible only on small screens */}
+            
+          </Card>
+        </Tab.Container>
+      </Container>
+    </div>
+
+    <style>{`
+      .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(135deg, #4a6bff 0%, #6a11cb 100%);
+      }
+      .header-icon-wrapper {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      /* Responsive font sizes */
+      @media (max-width: 768px) {
+        .h2-md {
+          font-size: 1.5rem;
         }
-        .hover-lift:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
-        }
-        .bg-gradient-primary {
-          background: linear-gradient(135deg, #4a6bff 0%, #6a11cb 100%);
-        }
-        .header-icon-wrapper {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .spin {
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </>
-  );
+      }
+    `}</style>
+  </>
+);
 };
 
 export default ViewFacility;

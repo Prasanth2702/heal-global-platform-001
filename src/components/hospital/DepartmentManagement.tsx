@@ -1772,7 +1772,7 @@ const getSubmitHandler = () => {
 };
 
   return (
-    <div className="space-y-6">
+  <div className="space-y-6">
       
 <div className="flex items-center justify-between">
   <div>
@@ -3084,7 +3084,7 @@ const getSubmitHandler = () => {
 </div>
       
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Building2 className="mr-2 h-5 w-5" />
@@ -3110,11 +3110,11 @@ const getSubmitHandler = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Department Name</TableHead>
-                  {/* <TableHead>Head Doctor</TableHead> */}
+                  {/* <TableHead>Head Doctor</TableHead> 
                   <TableHead>Services</TableHead>
                   <TableHead>Staff Count</TableHead>
                   <TableHead>Operating Hours</TableHead>
-                  {/* <TableHead>Beds</TableHead> */}
+                  {/* <TableHead>Beds</TableHead> 
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -3139,7 +3139,7 @@ const getSubmitHandler = () => {
                           Head Doctor
                         </p>
                       </div>
-                    </TableCell> */}
+                    </TableCell> 
                     <TableCell>
                       <div className="max-w-xs">
                         {Array.isArray(department.services) &&
@@ -3180,7 +3180,7 @@ const getSubmitHandler = () => {
                         <Clock className="mr-1 h-3 w-3" />
                         {department.operatingHours||"N/A"}
                       </div>
-                    </TableCell> */}
+                    </TableCell> 
                     <TableCell>
   <TooltipProvider>
     <Tooltip>
@@ -3222,7 +3222,7 @@ const getSubmitHandler = () => {
                           </p>
                         </div>
                       </div>
-                    </TableCell> */}
+                    </TableCell> 
                     <TableCell>
                       <Badge className={getStatusColor(department.is_active)}>
                         {department.is_active ? "Active" : "Inactive"}
@@ -3261,7 +3261,274 @@ const getSubmitHandler = () => {
             </Table>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
+      <Card>
+  <CardHeader>
+    <CardTitle className="flex items-center">
+      <Building2 className="mr-2 h-5 w-5" />
+      Departments Overview
+    </CardTitle>
+    <CardDescription>
+      {departments.length} departments in{" "}
+      {userFacility?.facility_name || "your facility"}
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {departments.length === 0 ? (
+      <div className="text-center py-8">
+        <Building2 className="h-12 w-12 mx-auto text-muted-foreground" />
+        <h3 className="mt-4 text-lg font-semibold">No Departments</h3>
+        <p className="text-muted-foreground mt-2">
+          Get started by adding your first department to{" "}
+          {userFacility?.facility_name || "your facility"}.
+        </p>
+      </div>
+    ) : (
+      <>
+        {/* Desktop table view – hidden on mobile/tablet */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Department Name</TableHead>
+                <TableHead>Services</TableHead>
+                <TableHead>Staff Count</TableHead>
+                <TableHead>Operating Hours</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {departments.map((department) => (
+                <TableRow key={department.id}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{department.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {department.description}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="max-w-xs">
+                      {Array.isArray(department.services) &&
+                      department.services.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {department.services.slice(0, 3).map((service, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {service}
+                            </Badge>
+                          ))}
+                          {department.services.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{department.services.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          No services listed
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Users className="mr-1 h-3 w-3" />
+                      {department.staffCount || "N/A"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center cursor-help">
+                            <Clock className="mr-1 h-3 w-3" />
+                            {department.operatingHours || "N/A"}
+                          </div>
+                        </TooltipTrigger>
+                        {department.timeSlots && department.timeSlots.length > 0 && (
+                          <TooltipContent className="max-w-sm">
+                            <div className="space-y-1">
+                              <p className="font-medium">Operating Schedule</p>
+                              {formatDetailedHours(
+                                department.timeSlots.filter(
+                                  slot =>
+                                    slot.day_of_week ===
+                                    new Date().toLocaleDateString("en-US", {
+                                      weekday: "long",
+                                    })
+                                )
+                              ).map((line, i) => (
+                                <p key={i} className="text-sm">
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(department.is_active)}>
+                      {department.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          trackDepartmentAction("edit_click", department);
+                          handleEdit(department);
+                        }}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      {department.name !== "Bed Management" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            trackDepartmentAction("delete_click", department);
+                            handleDelete(department.id);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile/Tablet card view – visible below md breakpoint */}
+        <div className="md:hidden space-y-4">
+          {departments.map((department) => (
+            <div
+              key={department.id}
+              className="border rounded-lg p-4 bg-white shadow-sm space-y-3"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-base">{department.name}</h3>
+                  {department.description && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {department.description}
+                    </p>
+                  )}
+                </div>
+                <Badge className={getStatusColor(department.is_active)}>
+                  {department.is_active ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Staff:</span>{" "}
+                  <div className="flex items-center mt-0.5">
+                    <Users className="mr-1 h-3 w-3" />
+                    {department.staffCount || "N/A"}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Hours:</span>
+                  <div className="flex items-center mt-0.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center cursor-help">
+                            <Clock className="mr-1 h-3 w-3" />
+                            {department.operatingHours || "N/A"}
+                          </div>
+                        </TooltipTrigger>
+                        {department.timeSlots && department.timeSlots.length > 0 && (
+                          <TooltipContent className="max-w-sm">
+                            <div className="space-y-1">
+                              <p className="font-medium">Operating Schedule</p>
+                              {formatDetailedHours(
+                                department.timeSlots.filter(
+                                  slot =>
+                                    slot.day_of_week ===
+                                    new Date().toLocaleDateString("en-US", {
+                                      weekday: "long",
+                                    })
+                                )
+                              ).map((line, i) => (
+                                <p key={i} className="text-sm">
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-sm text-muted-foreground">Services:</span>
+                <div className="mt-1">
+                  {Array.isArray(department.services) &&
+                  department.services.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {department.services.slice(0, 3).map((service, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {service}
+                        </Badge>
+                      ))}
+                      {department.services.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{department.services.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No services listed
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    trackDepartmentAction("edit_click", department);
+                    handleEdit(department);
+                  }}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                {department.name !== "Bed Management" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      trackDepartmentAction("delete_click", department);
+                      handleDelete(department.id);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+  </CardContent>
+</Card>
     </div>
   );
 };

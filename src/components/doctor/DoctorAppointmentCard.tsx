@@ -566,6 +566,7 @@ import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   appointment: DoctorAppointment;
@@ -587,6 +588,7 @@ export default function DoctorAppointmentCard({
 }: Props) {
   // Type cast to include optional slot times
   const enhancedAppointment = appointment as EnhancedDoctorAppointment;
+const navigate = useNavigate();
 
   const [openCancel, setOpenCancel] = useState(false);
   const [reason, setReason] = useState("");
@@ -805,6 +807,14 @@ export default function DoctorAppointmentCard({
           <p className="text-sm text-blue-800">{enhancedAppointment.notes}</p>
         </div>
       )}
+      {/* {enhancedAppointment.isPast && canUploadPrescription && (
+  
+  <Button onClick={() => navigate(`/doctor/appointment-patient/${appointment.patientId}`)}>
+  View Full Details
+</Button>    
+  
+)}
+ */}
 
       <AppointmentDocumentsModal
         open={showDocsModal}
@@ -847,6 +857,9 @@ export default function DoctorAppointmentCard({
             </Button>
           </div>
         )}
+  
+  
+
 
       {openComplete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -898,6 +911,10 @@ export default function DoctorAppointmentCard({
       {/* UPLOAD PRESCRIPTION */}
       {canUploadPrescription && (
         <div className="mt-4 border-t pt-4">
+            <Button onClick={() => navigate(`/doctor/appointment-patient/${appointment.patientId}/${appointment.id}`)}>
+  View Full Details
+</Button>    
+
           <Button
             variant="doctor"
             size="sm"

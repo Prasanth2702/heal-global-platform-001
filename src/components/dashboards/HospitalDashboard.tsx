@@ -275,24 +275,22 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
         ...additionalData
       });
     };
-
-
-
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Hospital Management Dashboard</h1>
-          <p className="text-muted-foreground">
-            Comprehensive hospital operations management
-          </p>
-        </div>
+return (
+  <div className="space-y-6 m-3 md:m-3">
+    {/* Header - unchanged */}
+    <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-bold">Hospital Management Dashboard</h1>
+        <p className="text-muted-foreground">
+          Comprehensive hospital operations management
+        </p>
       </div>
+    </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10">
+    <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
+      {/* Desktop/Tablet tab bar - hidden on mobile */}
+      <div className="hidden md:block">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center space-x-2" onClick={() => trackButtonClick("Overview Tab")}>
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -313,30 +311,81 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Appointments</span>
           </TabsTrigger>
-          {/* <TabsTrigger value="payments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Payments Tab")}>
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Payments</span>
-          </TabsTrigger>
-          <TabsTrigger value="earnings" className="flex items-center space-x-2" onClick={() => trackButtonClick("Earnings Tab")}>
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Earnings</span>
-          </TabsTrigger>
-          <TabsTrigger value="inventory" className="flex items-center space-x-2" onClick={() => trackButtonClick("Inventory Tab")}>
-            <Package className="h-4 w-4" />
-            <span className="hidden sm:inline">Inventory</span>
-          </TabsTrigger>
-          <TabsTrigger value="facilitics" className="flex items-center space-x-2" onClick={() => trackButtonClick("Facility Tab")}>
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Facility</span>
-          </TabsTrigger> */}
           <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
           </TabsTrigger>
         </TabsList>
+      </div>
+
+      {/* Mobile bottom button bar - visible only on small screens */}
+      <div className="md:hidden">
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant={activeTab === "overview" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("overview")}
+          >
+            <Activity className="h-4 w-4 mr-1" />
+            <span>Overview</span>
+          </Button>
+          <Button
+            variant={activeTab === "departments" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("departments")}
+          >
+            <Building2 className="h-4 w-4 mr-1" />
+            <span>Departments</span>
+          </Button>
+          <Button
+            variant={activeTab === "staff" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("staff")}
+          >
+            <Users className="h-4 w-4 mr-1" />
+            <span>Staff</span>
+          </Button>
+          <Button
+            variant={activeTab === "timeslots" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("timeslots")}
+          >
+            <Calendar className="h-4 w-4 mr-1" />
+            <span>Time Slots</span>
+          </Button>
+          <Button
+            variant={activeTab === "appointments" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("appointments")}
+          >
+            <Calendar1 className="h-4 w-4 mr-1" />
+            <span>Appointments</span>
+          </Button>
+          <Button
+            variant={activeTab === "profile" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("profile")}
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            <span>Profile</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Add bottom padding on mobile to avoid content being hidden behind the fixed bar */}
+      <div className="pb-20 md:pb-0">
+        {/* Profile Tab */}
         <TabsContent value="profile">
           <FacilityProfile />
         </TabsContent>
+
+        {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
@@ -393,59 +442,226 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
                 <p className="text-xs text-muted-foreground">Under treatment</p>
               </CardContent>
             </Card>
-
-            {/* <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Inventory Alerts</CardTitle>
-                <Package className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">{overviewStats.inventoryAlerts}</div>
-                <p className="text-xs text-muted-foreground">Low stock items</p>
-              </CardContent>
-            </Card> */}
           </div>
 
           <div className="mt-6">
             <AppointmentFlow />
           </div>
- </TabsContent>
+        </TabsContent>
+
+        {/* Departments Tab */}
         <TabsContent value="departments">
           <DepartmentManagement />
         </TabsContent>
-        {/* <TabsContent value="bed-departments">
-          <BedDepartments />
-        </TabsContent> */}
 
+        {/* Staff Tab */}
         <TabsContent value="staff">
           <StaffManagement />
         </TabsContent>
+
+        {/* Appointments Tab */}
         <TabsContent value="appointments">
           <FacilityAppointmentManagement />
         </TabsContent>
 
+        {/* Time Slots Tab */}
         <TabsContent value="timeslots">
           <TimeSlotManagement />
         </TabsContent>
 
+        {/* Payments Tab (if needed) */}
         <TabsContent value="payments">
           <HospitalPayments />
         </TabsContent>
 
+        {/* Earnings Tab (if needed) */}
         <TabsContent value="earnings">
           <HospitalEarnings />
         </TabsContent>
 
+        {/* Inventory Tab (if needed) */}
         <TabsContent value="inventory">
           <InventoryManagement />
         </TabsContent>
 
+        {/* Facility Tab (if needed) */}
         <TabsContent value="facilitics">
           <FacilityCertifications />
         </TabsContent>
-      </Tabs>
-    </div>
-  );
+      </div>
+    </Tabs>
+  </div>
+);
+
+
+
+//   return (
+//     <div className="space-y-6">
+//       {/* Header */}
+//       <div className="flex items-center justify-between">
+//         <div>
+//           <h1 className="text-3xl font-bold">Hospital Management Dashboard</h1>
+//           <p className="text-muted-foreground">
+//             Comprehensive hospital operations management
+//           </p>
+//         </div>
+//       </div>
+
+//       <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
+//         <TabsList className="grid w-full grid-cols-10">
+//           <TabsTrigger value="overview" className="flex items-center space-x-2" onClick={() => trackButtonClick("Overview Tab")}>
+//             <Activity className="h-4 w-4" />
+//             <span className="hidden sm:inline">Overview</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="departments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Departments Tab")}>
+//             <Building2 className="h-4 w-4" />
+//             <span className="hidden sm:inline">Departments</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="staff" className="flex items-center space-x-2" onClick={() => trackButtonClick("Staff Tab")}>
+//             <Users className="h-4 w-4" />
+//             <span className="hidden sm:inline">Staff</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="timeslots" className="flex items-center space-x-2" onClick={() => trackButtonClick("Time Slots Tab")}>
+//             <Calendar className="h-4 w-4" />
+//             <span className="hidden sm:inline">Time Slots</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="appointments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
+//             <Calendar1 className="h-4 w-4" />
+//             <span className="hidden sm:inline">My Appointments</span>
+//           </TabsTrigger>
+//           {/* <TabsTrigger value="payments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Payments Tab")}>
+//             <CreditCard className="h-4 w-4" />
+//             <span className="hidden sm:inline">Payments</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="earnings" className="flex items-center space-x-2" onClick={() => trackButtonClick("Earnings Tab")}>
+//             <TrendingUp className="h-4 w-4" />
+//             <span className="hidden sm:inline">Earnings</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="inventory" className="flex items-center space-x-2" onClick={() => trackButtonClick("Inventory Tab")}>
+//             <Package className="h-4 w-4" />
+//             <span className="hidden sm:inline">Inventory</span>
+//           </TabsTrigger>
+//           <TabsTrigger value="facilitics" className="flex items-center space-x-2" onClick={() => trackButtonClick("Facility Tab")}>
+//             <FileText className="h-4 w-4" />
+//             <span className="hidden sm:inline">Facility</span>
+//           </TabsTrigger> */}
+//           <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
+//             <Settings className="h-4 w-4" />
+//             <span className="hidden sm:inline">My profile</span>
+//           </TabsTrigger>
+//         </TabsList>
+//         <TabsContent value="profile">
+//           <FacilityProfile />
+//         </TabsContent>
+//         <TabsContent value="overview">
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//             <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Total Departments</CardTitle>
+//                 <Building2 className="h-4 w-4 text-muted-foreground" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold">{loading ? "..." : overviewStats.totalDepartments}</div>
+//                 <p className="text-xs text-muted-foreground">Active departments</p>
+//               </CardContent>
+//             </Card>
+
+//             <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
+//                 <Users className="h-4 w-4 text-muted-foreground" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold">{overviewStats.totalStaff}</div>
+//                 <p className="text-xs text-muted-foreground">Medical professionals</p>
+//               </CardContent>
+//             </Card>
+
+//             <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
+//                 <Calendar className="h-4 w-4 text-muted-foreground" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold">{overviewStats.todayAppointments}</div>
+//                 <p className="text-xs text-muted-foreground">Scheduled for today</p>
+//               </CardContent>
+//             </Card>
+
+//             <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+//                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold">₹{(overviewStats.monthlyRevenue / 100000).toFixed(1)}L</div>
+//                 <p className="text-xs text-muted-foreground">This month</p>
+//               </CardContent>
+//             </Card>
+
+//             <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
+//                 <Activity className="h-4 w-4 text-muted-foreground" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold">{overviewStats.activePatients}</div>
+//                 <p className="text-xs text-muted-foreground">Under treatment</p>
+//               </CardContent>
+//             </Card>
+
+//             {/* <Card>
+//               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+//                 <CardTitle className="text-sm font-medium">Inventory Alerts</CardTitle>
+//                 <Package className="h-4 w-4 text-destructive" />
+//               </CardHeader>
+//               <CardContent>
+//                 <div className="text-2xl font-bold text-destructive">{overviewStats.inventoryAlerts}</div>
+//                 <p className="text-xs text-muted-foreground">Low stock items</p>
+//               </CardContent>
+//             </Card> */}
+//           </div>
+
+//           <div className="mt-6">
+//             <AppointmentFlow />
+//           </div>
+//  </TabsContent>
+//         <TabsContent value="departments">
+//           <DepartmentManagement />
+//         </TabsContent>
+//         {/* <TabsContent value="bed-departments">
+//           <BedDepartments />
+//         </TabsContent> */}
+
+//         <TabsContent value="staff">
+//           <StaffManagement />
+//         </TabsContent>
+//         <TabsContent value="appointments">
+//           <FacilityAppointmentManagement />
+//         </TabsContent>
+
+//         <TabsContent value="timeslots">
+//           <TimeSlotManagement />
+//         </TabsContent>
+
+//         <TabsContent value="payments">
+//           <HospitalPayments />
+//         </TabsContent>
+
+//         <TabsContent value="earnings">
+//           <HospitalEarnings />
+//         </TabsContent>
+
+//         <TabsContent value="inventory">
+//           <InventoryManagement />
+//         </TabsContent>
+
+//         <TabsContent value="facilitics">
+//           <FacilityCertifications />
+//         </TabsContent>
+//       </Tabs>
+//     </div>
+//   );
 };
 
 export default HospitalDashboard;

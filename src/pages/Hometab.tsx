@@ -419,6 +419,8 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
   const fetchBedBookings = async () => {
     setLoadingBookings(true);
     try {
+
+      
       // First fetch beds
       const { data: bedsData, error: bedsError } = await supabase
         .from("beds")
@@ -528,7 +530,15 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
         };
       });
 
-      setBedBookings(transformedData);
+      // setBedBookings(transformedData);
+          const validBookings = transformedData.filter(booking => 
+      booking.facilityId && 
+      booking.facilityName !== 'Unknown Facility' && 
+      booking.wardId
+    );
+
+    setBedBookings(validBookings);
+
     } catch (error) {
       console.error("Error fetching bed bookings:", error);
     } finally {
@@ -857,10 +867,10 @@ const handleNavigation = async (path: string, requiresAuth: boolean = true) => {
       {/* Loading State */}
       {loading ? (
         <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
+          {/* <div className="spinner-border text-primary" role="status"> */}
             {/* <span className="visually-hidden">Loading...</span> */}
             <Loader3/>
-          </div>
+          {/* </div> */}
         </div>
       ) : (
         <>

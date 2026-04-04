@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -231,6 +231,28 @@ useEffect(() => {
 
   fetchAppointments();
 }, []);
+
+const [documentsCount, setDocumentsCount] = useState(0);
+useEffect(() => {
+  const fetchDocumentCount = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { count, error } = await supabase
+      .from("documents")
+      .select("*", { count: "exact", head: true })
+      .eq("owner_id", user.id);   // ✅ Change "owner_id" to "user_id"
+
+    if (error) {
+      console.error("Error fetching document count:", error);
+    } else {
+      setDocumentsCount(count || 0);
+    }
+  };
+
+  fetchDocumentCount();
+}, []);
+
 
   useEffect(() => {
     const path = location.pathname;
@@ -492,6 +514,7 @@ const recentReports = [
     }
   };
 
+
   return (
     <div className="p-6 space-y-6 bg-gradient-to-br from-blue-50/30 via-purple-50/30 to-pink-50/30 min-h-screen">
       {/* Header */}
@@ -597,6 +620,8 @@ const recentReports = [
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Link to="/dashboard/patient/appointments" className="block cursor-pointer">
+
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-purple-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-blue-100">Upcoming Appointments</CardTitle>
@@ -606,13 +631,14 @@ const recentReports = [
             </CardDescription>
           </CardHeader>
         </Card>
+        </Link>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-emerald-100">Medical Reports</CardTitle>
             <CardDescription className="text-3xl font-bold text-white flex items-center">
               <FileText className="h-6 w-6 mr-2" />
-              {/* {recentReports.length} */}0
+              {/* {recentReports.length} */}{documentsCount}
             </CardDescription>
           </CardHeader>
         </Card>

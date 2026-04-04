@@ -2894,6 +2894,9 @@ const VideoMeeting = ({
           uploaded_by: doc.uploaded_by,
           owner_id: doc.owner_id,
           created_at: doc.created_at,
+            tags: doc.tags || [], // Add tags for categorization
+  ai_summary: doc.ai_summary || "Not available", // Add AI-generated summary
+
         }));
 
         setDocuments(docs);

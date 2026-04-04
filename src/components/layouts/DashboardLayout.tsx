@@ -178,7 +178,7 @@ const checkBedManagementDepartment = async () => {
 
   const userTypeConfig = {
     patient: {
-      title: "NextGen Medical - Patient",
+      title: "NextGen Medical - Patient Dashboard",
       variant: "patient" as const,
       routes: [
         { path: "/dashboard/patient", label: "Dashboard", icon: TrendingUp },
@@ -240,7 +240,7 @@ const checkBedManagementDepartment = async () => {
   //     ]
     },
     doctor: {
-      title: "NextGen Medical - Doctor",
+      title: "NextGen Medical - Doctor Dashboard",
       variant: "doctor" as const,
       routes: [
         { path: "/dashboard/doctor", label: "Dashboard", icon: TrendingUp },
@@ -274,7 +274,7 @@ const checkBedManagementDepartment = async () => {
   //   ]
     },
     facility: {
-      title: "NextGen Medical - Facility",
+      title: "NextGen Medical - Facility Dashboard",
       variant: "facility" as const,
       routes: [
         { path: "/dashboard/facility", label: "Dashboard", icon: TrendingUp },
@@ -354,7 +354,7 @@ const checkBedManagementDepartment = async () => {
   //   }]
     },
     admin: {
-      title: "NextGen Medical - Admin",
+      title: "NextGen Medical - Admin Dashboard",
       variant: "admin" as const,
       routes: [
         { path: "/dashboard/admin", label: "Overview", icon: TrendingUp },
@@ -391,7 +391,7 @@ const checkBedManagementDepartment = async () => {
 // ]
     },
     hospital_staff: {
-      title: "NextGen Medical - Hospital staff",
+      title: "NextGen Medical - Hospital staff Dashboard",
       variant: "hospital_staff" as const,
       routes: [
         { path: "/dashboard/staff", label: "Overview", icon: TrendingUp },

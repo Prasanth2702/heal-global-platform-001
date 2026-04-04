@@ -1504,883 +1504,2939 @@ const onSubmitBed = async (data) => {
     );
   }
 
+  // return (
+  //   <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+  //     <div className="max-w-7xl mx-auto">
+  //       {/* Header */}
+  //       <div className="mb-6 md:mb-8">
+  //         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+  //           Ward & Bed Management
+  //         </h1>
+  //         <p className="text-gray-600 mt-2">
+  //           Manage hospital wards, beds, and their configurations
+  //         </p>
+  //       </div>
+
+  //       {/* Popup Modals */}
+  //       {activePopup && (
+  //         <PopupModal
+  //           show={activePopup}
+  //           onClose={() => {
+  //             setShowSuccessPopup(false);
+  //             setShowErrorPopup(false);
+  //             setShowAlertPopup(false);
+  //           }}
+  //           title={popupConfig.title}
+  //           message={popupConfig.message}
+  //           type={popupConfig.type}
+  //           onConfirm={handlePopupAction}
+  //           confirmText={popupConfig.type === "warning" ? "Confirm" : "OK"}
+  //           showCancel={popupConfig.type === "warning"}
+  //           cancelText="Cancel"
+  //         />
+  //       )}
+
+  //       {/* Summary Stats Footer */}
+  //       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+  //         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+  //           <div className="flex items-center justify-between">
+  //             <div>
+  //               <p className="text-sm text-gray-600">Total Wards</p>
+  //               <p className="text-2xl font-bold text-gray-900">
+  //                 {wards.length}
+  //               </p>
+  //             </div>
+  //             <Building className="w-8 h-8 text-blue-500" />
+  //           </div>
+  //           <div className="mt-2 flex items-center text-sm">
+  //             <span className="text-green-600 font-semibold">
+  //               {wards.filter((w) => w.is_operational).length}
+  //             </span>
+  //             <span className="text-gray-600 ml-1">operational</span>
+  //           </div>
+  //         </div>
+
+  //         <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+  //           <div className="flex items-center justify-between">
+  //             <div>
+  //               <p className="text-sm text-gray-600">Total Beds</p>
+  //               <p className="text-2xl font-bold text-gray-900">
+  //                 {beds.length}
+  //               </p>
+  //             </div>
+  //             <Bed className="w-8 h-8 text-green-500" />
+  //           </div>
+  //           <div className="mt-2 flex items-center text-sm">
+  //             <span className="text-blue-600 font-semibold">
+  //               {
+  //                 beds.filter(
+  //                   (b) => b.display_status === "AVAILABLE" && !b.is_booked
+  //                 ).length
+  //               }
+  //             </span>
+  //             <span className="text-gray-600 ml-1">available now</span>
+  //           </div>
+  //         </div>
+
+  //         <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100">
+  //           <div className="flex items-center justify-between">
+  //             <div>
+  //               <p className="text-sm text-gray-600">Capacity Usage</p>
+  //               <p className="text-2xl font-bold text-gray-90">
+  //                 {calculateCapacityUsage()}%
+  //               </p>
+  //             </div>
+  //             <Users className="w-8 h-8 text-purple-500" />
+  //           </div>
+  //           <div className="mt-2 text-sm text-gray-600">
+  //             {
+  //               beds.filter(
+  //                 (b) => b.display_status === "OCCUPIED" || b.is_booked
+  //               ).length
+  //             }{" "}
+  //             beds occupied
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       {/* Main Content Card */}
+  //       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+  //         {/* Tabs Navigation */}
+  //         <div className="border-b border-gray-200">
+  //           <div className="px-4 md:px-6">
+  //             <nav className="flex space-x-1 md:space-x-2" aria-label="Tabs">
+  //               <button
+  //                 onClick={() => setActiveTab("wards")}
+  //                 className={`
+  //                   relative py-3 px-4 md:px-6 font-medium text-sm md:text-base rounded-t-lg transition-all duration-200
+  //                   ${
+  //                     activeTab === "wards"
+  //                       ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
+  //                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+  //                   }
+  //                 `}
+  //               >
+  //                 <div className="flex items-center space-x-2">
+  //                   <Building
+  //                     className={`w-5 h-5 ${
+  //                       activeTab === "wards"
+  //                         ? "text-blue-600"
+  //                         : "text-gray-400"
+  //                     }`}
+  //                   />
+  //                   <span>Wards</span>
+  //                   <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+  //                     {wards.length}
+  //                   </span>
+  //                 </div>
+  //               </button>
+
+  //               <button
+  //                 onClick={() => setActiveTab("beds")}
+  //                 className={`
+  //                   relative py-3 px-4 md:px-6 font-medium text-sm md:text-base rounded-t-lg transition-all duration-200
+  //                   ${
+  //                     activeTab === "beds"
+  //                       ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
+  //                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+  //                   }
+  //                 `}
+  //               >
+  //                 <div className="flex items-center space-x-2">
+  //                   <Bed
+  //                     className={`w-5 h-5 ${
+  //                       activeTab === "beds" ? "text-blue-600" : "text-gray-400"
+  //                     }`}
+  //                   />
+  //                   <span>Beds</span>
+  //                   <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+  //                     {beds.length}
+  //                   </span>
+  //                 </div>
+  //               </button>
+  //             </nav>
+  //           </div>
+  //         </div>
+
+  //         {/* Tab Content */}
+  //         <div className="p-4 md:p-6">
+  //           {/* Wards Tab */}
+  //           {activeTab === "wards" && (
+  //             <div className="animate-slide-in">
+  //               <div className="grid  gap-6">
+  //                 {/* Ward Form Card */}
+  //                 {editingWard || showWardForm ? (
+  //                   <div
+  //                     className={`rounded-xl border p-5 shadow-sm sticky top-6 ${
+  //                       editingWard
+  //                         ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-amber-200"
+  //                         : "bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200"
+  //                     }`}
+  //                   >
+  //                     <div className="mb-6">
+  //                       <h3
+  //                         className={`text-lg font-bold flex items-center ${
+  //                           editingWard ? "text-amber-900" : "text-emerald-900"
+  //                         }`}
+  //                       >
+  //                         {editingWard ? (
+  //                           <>
+  //                             <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
+  //                             Edit Ward
+  //                           </>
+  //                         ) : (
+  //                           <>
+  //                             <Plus className="w-5 h-5 text-emerald-600 mr-2" />
+  //                             Create New Ward
+  //                           </>
+  //                         )}
+  //                       </h3>
+  //                       <p
+  //                         className={`text-sm mt-1 ${
+  //                           editingWard ? "text-amber-700" : "text-emerald-700"
+  //                         }`}
+  //                       >
+  //                         {editingWard
+  //                           ? "Update ward details"
+  //                           : "Add a new ward to your facility"}
+  //                       </p>
+  //                     </div>
+
+  //                     <form
+  //                       onSubmit={handleSubmitWard(onSubmitWard)}
+  //                       className="space-y-4"
+  //                     >
+  //                       {/* Form Grid */}
+  //                       <div className="space-y-4">
+  //                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  //                           <div>
+  //                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+  //                               <Hash className="w-4 h-4 mr-1 text-gray-400" />
+  //                               Ward Code *
+  //                             </label>
+  //                             <input
+  //                               {...registerWard("ward_code")}
+  //                               type="text"
+  //                               className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+  //                                 wardErrors.ward_code
+  //                                   ? "border-red-300 bg-red-50"
+  //                                   : "border-gray-300 hover:border-gray-400"
+  //                               }`}
+  //                               placeholder="e.g., ICU-01"
+  //                               disabled={submitting}
+  //                             />
+  //                             {wardErrors.ward_code && (
+  //                               <p className="mt-2 text-sm text-red-600 flex items-center">
+  //                                 <AlertCircle className="w-4 h-4 mr-1" />
+  //                                 {wardErrors.ward_code.message}
+  //                               </p>
+  //                             )}
+  //                           </div>
+
+  //                           <div>
+  //                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+  //                               <Building className="w-4 h-4 mr-1 text-gray-400" />
+  //                               Ward Name *
+  //                             </label>
+  //                             <input
+  //                               {...registerWard("name")}
+  //                               type="text"
+  //                               className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+  //                                 wardErrors.name
+  //                                   ? "border-red-300 bg-red-50"
+  //                                   : "border-gray-300 hover:border-gray-400"
+  //                               }`}
+  //                               placeholder="e.g., Intensive Care Unit"
+  //                               disabled={submitting}
+  //                             />
+  //                             {wardErrors.name && (
+  //                               <p className="mt-2 text-sm text-red-600 flex items-center">
+  //                                 <AlertCircle className="w-4 h-4 mr-1" />
+  //                                 {wardErrors.name.message}
+  //                               </p>
+  //                             )}
+  //                           </div>
+  //                         </div>
+
+  //                         <div>
+  //                           <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+  //                             <Tag className="w-4 h-4 mr-1 text-gray-400" />
+  //                             Ward Type *
+  //                           </label>
+  //                           <Controller
+  //                             name="ward_type"
+  //                             control={controlWard}
+  //                             render={({ field }) => (
+  //                               <select
+  //                                 {...field}
+  //                                 className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none ${
+  //                                   wardErrors.ward_type
+  //                                     ? "border-red-300 bg-red-50"
+  //                                     : "border-gray-300 hover:border-gray-400"
+  //                                 }`}
+  //                                 disabled={submitting}
+  //                               >
+  //                                 <option value="">Select ward type...</option>
+  //                                 <option value="GENERAL">
+  //                                   🏥 General Ward
+  //                                 </option>
+  //                                 <option value="ICU">
+  //                                   💙 Intensive Care Unit (ICU)
+  //                                 </option>
+  //                                 <option value="CCU">
+  //                                   ❤️ Cardiac Care Unit (CCU)
+  //                                 </option>
+  //                                 <option value="NICU">
+  //                                   👶 Neonatal ICU (NICU)
+  //                                 </option>
+  //                                 <option value="MATERNITY">
+  //                                   🤰 Maternity Ward
+  //                                 </option>
+  //                                 <option value="EMERGENCY">
+  //                                   🚨 Emergency Department
+  //                                 </option>
+  //                               </select>
+  //                             )}
+  //                           />
+  //                           {wardErrors.ward_type && (
+  //                             <p className="mt-2 text-sm text-red-600 flex items-center">
+  //                               <AlertCircle className="w-4 h-4 mr-1" />
+  //                               {wardErrors.ward_type.message}
+  //                             </p>
+  //                           )}
+  //                         </div>
+
+  //                         <div>
+  //                           <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+  //                             <FileText className="w-4 h-4 mr-1 text-gray-400" />
+  //                             Description
+  //                           </label>
+  //                           <textarea
+  //                             {...registerWard("description" as any)}
+  //                             rows={3}
+  //                             className="w-full px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+  //                             placeholder="Describe this ward's purpose and features..."
+  //                             disabled={submitting}
+  //                           />
+  //                         </div>
+
+  //                         {/* Location Information */}
+  //                         <div
+  //                           className={`p-4 rounded-lg border ${
+  //                             editingWard
+  //                               ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
+  //                               : "bg-gradient-to-r from-emerald-100 to-green-100 border-emerald-200"
+  //                           }`}
+  //                         >
+  //                           <h4
+  //                             className={`text-sm font-semibold mb-3 flex items-center ${
+  //                               editingWard
+  //                                 ? "text-amber-800"
+  //                                 : "text-emerald-800"
+  //                             }`}
+  //                           >
+  //                             <MapPin
+  //                               className={`w-4 h-4 mr-2 ${
+  //                                 editingWard
+  //                                   ? "text-amber-600"
+  //                                   : "text-emerald-600"
+  //                               }`}
+  //                             />
+  //                             Location Information
+  //                           </h4>
+  //                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  //                             <div>
+  //                               <label className="block text-xs font-medium text-gray-600 mb-1">
+  //                                 Floor Number
+  //                               </label>
+  //                               <div className="relative">
+  //                                 <input
+  //                                   {...registerWard("floor_number", {
+  //                                     valueAsNumber: true,
+  //                                   })}
+  //                                   type="number"
+  //                                   className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+  //                                   placeholder="0"
+  //                                   disabled={submitting}
+  //                                 />
+  //                               </div>
+  //                             </div>
+  //                             <div>
+  //                               <label className="block text-xs font-medium text-gray-600 mb-1">
+  //                                 Wing
+  //                               </label>
+  //                               <input
+  //                                 {...registerWard("wing")}
+  //                                 type="text"
+  //                                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+  //                                 placeholder="e.g., East"
+  //                                 disabled={submitting}
+  //                               />
+  //                             </div>
+  //                           </div>
+  //                         </div>
+
+  //                         {/* Operational Status */}
+  //                         <div
+  //                           className={`flex items-center justify-between p-3 rounded-lg border ${
+  //                             editingWard
+  //                               ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
+  //                               : "bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200"
+  //                           }`}
+  //                         >
+  //                           <div className="flex items-center">
+  //                             <div className="flex-shrink-0">
+  //                               <div
+  //                                 className={`w-3 h-3 rounded-full ${
+  //                                   watchWard("is_operational")
+  //                                     ? "bg-green-500"
+  //                                     : "bg-yellow-500"
+  //                                 } mr-3`}
+  //                               />
+  //                             </div>
+  //                             <div>
+  //                               <p className="text-sm font-medium text-gray-900">
+  //                                 {watchWard("is_operational")
+  //                                   ? "Operational"
+  //                                   : "Non-Operational"}
+  //                               </p>
+  //                               <p className="text-xs text-gray-600">
+  //                                 {watchWard("is_operational")
+  //                                   ? "Ward is active and accepting patients"
+  //                                   : "Ward is temporarily unavailable"}
+  //                               </p>
+  //                             </div>
+  //                           </div>
+  //                           <Controller
+  //                             name="is_operational"
+  //                             control={controlWard}
+  //                             render={({ field }) => (
+  //                               <button
+  //                                 type="button"
+  //                                 onClick={() => field.onChange(!field.value)}
+  //                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+  //                                   field.value ? "bg-green-600" : "bg-gray-300"
+  //                                 }`}
+  //                                 disabled={submitting}
+  //                               >
+  //                                 <span
+  //                                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+  //                                     field.value
+  //                                       ? "translate-x-6"
+  //                                       : "translate-x-1"
+  //                                   }`}
+  //                                 />
+  //                               </button>
+  //                             )}
+  //                           />
+  //                         </div>
+  //                       </div>
+
+  //                       {/* Form Actions */}
+  //                       <div
+  //                         className={`flex space-x-3 pt-4 border-t ${
+  //                           editingWard
+  //                             ? "border-amber-200"
+  //                             : "border-emerald-200"
+  //                         }`}
+  //                       >
+  //                         <button
+  //                           type="submit"
+  //                           disabled={submitting}
+  //                           className={`flex-1 text-white py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
+  //                             editingWard
+  //                               ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
+  //                               : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 focus:ring-emerald-500"
+  //                           }`}
+  //                         >
+  //                           {submitting ? (
+  //                             <div className="flex items-center justify-center">
+  //                               <Loader2 className="w-5 h-5 animate-spin mr-2" />
+  //                               {editingWard ? "Updating..." : "Creating..."}
+  //                             </div>
+  //                           ) : editingWard ? (
+  //                             <div className="flex items-center justify-center">
+  //                               <Save className="w-5 h-5 mr-2" />
+  //                               Update Ward
+  //                             </div>
+  //                           ) : (
+  //                             <div className="flex items-center justify-center">
+  //                               <Plus className="w-5 h-5 mr-2" />
+  //                               Create Ward
+  //                             </div>
+  //                           )}
+  //                         </button>
+
+  //                         <button
+  //                           type="button"
+  //                           onClick={() => {
+  //                             resetWard();
+  //                             setEditingWard(null);
+  //                             setShowWardForm(false);
+  //                           }}
+  //                           disabled={submitting}
+  //                           className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+  //                         >
+  //                           Cancel
+  //                         </button>
+  //                       </div>
+  //                     </form>
+  //                   </div>
+  //                 ) : (
+  //                   <div
+  //                     className={`rounded-xl border shadow-sm ${
+  //                       editingWard
+  //                         ? "bg-gradient-to-br from-orange-50 to-pink-50 border-pink-200"
+  //                         : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
+  //                     }`}
+  //                   >
+  //                     <div
+  //                       className={`p-5 border-b ${
+  //                         editingWard ? "border-amber-200" : "border-blue-200"
+  //                       }`}
+  //                     >
+  //                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  //                         <div>
+  //                           <h3
+  //                             className={`text-lg font-bold flex items-center ${
+  //                               editingWard ? "text-amber-900" : "text-blue-900"
+  //                             }`}
+  //                           >
+  //                             {editingWard ? (
+  //                               <>
+  //                                 <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
+  //                                 Edit Ward Mode
+  //                               </>
+  //                             ) : (
+  //                               <>
+  //                                 <Building className="w-5 h-5 text-blue-600 mr-2" />
+  //                                 All Wards
+  //                               </>
+  //                             )}
+  //                           </h3>
+  //                           <p
+  //                             className={`text-sm mt-1 ${
+  //                               editingWard ? "text-amber-700" : "text-blue-700"
+  //                             }`}
+  //                           >
+  //                             {editingWard
+  //                               ? "Currently editing a ward. Click cancel to exit edit mode."
+  //                               : "Manage your facility's wards and their configurations"}
+  //                           </p>
+  //                         </div>
+  //                         <div className="flex items-center space-x-2">
+  //                           <div className="text-sm text-gray-500">
+  //                             <span className="font-semibold text-green-600">
+  //                               {wards.filter((w) => w.is_operational).length}
+  //                             </span>{" "}
+  //                             operational •
+  //                             <span
+  //                               className={`font-semibold ml-2 ${
+  //                                 editingWard
+  //                                   ? "text-amber-600"
+  //                                   : "text-blue-600"
+  //                               }`}
+  //                             >
+  //                               {" "}
+  //                               {wards.reduce(
+  //                                 (acc, w) => acc + w.total_beds,
+  //                                 0
+  //                               )}
+  //                             </span>{" "}
+  //                             total beds
+  //                           </div>
+  //                           {/* Create Ward Button */}
+  //                           <button
+  //                             onClick={() => {
+  //                               resetWard();
+  //                               setEditingWard(null);
+  //                               setShowWardForm(true);
+  //                             }}
+  //                             className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-sm font-medium"
+  //                           >
+  //                             <Plus className="w-4 h-4 mr-2" />
+  //                             Create Ward
+  //                           </button>
+  //                         </div>
+  //                       </div>
+  //                     </div>
+
+  //                     {wards.length === 0 ? (
+  //                       <div className="p-8 text-center">
+  //                         <div
+  //                           className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+  //                             editingWard
+  //                               ? "bg-gradient-to-br from-amber-100 to-yellow-100"
+  //                               : "bg-gradient-to-br from-blue-100 to-cyan-100"
+  //                           }`}
+  //                         >
+  //                           <Building
+  //                             className={`w-8 h-8 ${
+  //                               editingWard ? "text-amber-400" : "text-blue-400"
+  //                             }`}
+  //                           />
+  //                         </div>
+  //                         <h4 className="text-lg font-semibold text-gray-900 mb-2">
+  //                           No wards created yet
+  //                         </h4>
+  //                         <p className="text-gray-600 mb-4">
+  //                           Create your first ward to start adding beds and
+  //                           managing patient accommodations
+  //                         </p>
+  //                         <button
+  //                           onClick={() => {
+  //                             resetWard();
+  //                             setShowWardForm(true);
+  //                           }}
+  //                           className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
+  //                             editingWard
+  //                               ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
+  //                               : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
+  //                           }`}
+  //                         >
+  //                           <Plus className="w-4 h-4 mr-2" />
+  //                           Create First Ward
+  //                         </button>
+  //                       </div>
+  //                     ) : (
+  //                       <div className="p-4">
+  //                         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+  //                           {wards.map((ward) => (
+  //                             <div
+  //                               key={ward.id}
+  //                               className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
+  //                                 editingWard?.id === ward.id
+  //                                   ? "bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-300 ring-2 ring-amber-500 ring-opacity-50"
+  //                                   : editingWard
+  //                                   ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 hover:border-amber-300"
+  //                                   : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
+  //                               }`}
+  //                             >
+  //                               <div className="p-5">
+  //                                 {/* Ward Header */}
+  //                                 <div className="flex justify-between items-start mb-4">
+  //                                   <div>
+  //                                     <div className="flex items-center gap-2 mb-2">
+  //                                       <span
+  //                                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+  //                                           editingWard
+  //                                             ? "bg-gradient-to-r from-amber-100 to-yellow-200 text-amber-800"
+  //                                             : "bg-gradient-to-r from-blue-100 to-cyan-200 text-blue-800"
+  //                                         }`}
+  //                                       >
+  //                                         {ward.ward_code}
+  //                                       </span>
+  //                                       <span
+  //                                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+  //                                           ward.is_operational
+  //                                             ? "bg-gradient-to-r from-green-100 to-emerald-200 text-green-800"
+  //                                             : "bg-gradient-to-r from-yellow-100 to-amber-200 text-yellow-800"
+  //                                         }`}
+  //                                       >
+  //                                         <div
+  //                                           className={`w-2 h-2 rounded-full mr-2 ${
+  //                                             ward.is_operational
+  //                                               ? "bg-green-500"
+  //                                               : "bg-yellow-500"
+  //                                           }`}
+  //                                         />
+  //                                         {ward.is_operational
+  //                                           ? "Operational"
+  //                                           : "Non-Op"}
+  //                                       </span>
+  //                                     </div>
+  //                                     <h4
+  //                                       className={`text-lg font-bold mb-1 ${
+  //                                         editingWard
+  //                                           ? "text-amber-900"
+  //                                           : "text-gray-900"
+  //                                       }`}
+  //                                     >
+  //                                       {ward.name}
+  //                                     </h4>
+  //                                     <p className="text-xs text-gray-500">
+  //                                       {ward.ward_type} • Floor{" "}
+  //                                       {ward.floor_number || "N/A"}
+  //                                       {ward.wing && ` • ${ward.wing} Wing`}
+  //                                     </p>
+  //                                   </div>
+  //                                   <div className="flex space-x-1">
+  //                                     <button
+  //                                       onClick={() => handleEditWard(ward)}
+  //                                       className={`p-2 rounded-lg transition-colors duration-200 ${
+  //                                         editingWard
+  //                                           ? "text-amber-600 hover:bg-amber-100"
+  //                                           : "text-blue-600 hover:bg-blue-100"
+  //                                       }`}
+  //                                       title="Edit ward"
+  //                                     >
+  //                                       <Edit2 className="w-4 h-4" />
+  //                                     </button>
+  //                                     <button
+  //                                       onClick={async () => {
+  //                                         // Check for active bookings in this ward
+  //                                         const bookedBedIds =
+  //                                           await fetchBookedBeds(ward.id);
+  //                                         if (bookedBedIds.length > 0) {
+  //                                           showPopup(
+  //                                             "Cannot Delete Ward",
+  //                                             "This ward has beds with active bookings. Please cancel all bookings first.",
+  //                                             "error"
+  //                                           );
+  //                                         } else {
+  //                                           // Check if ward has any beds
+  //                                           const { data: wardBeds } =
+  //                                             await supabase
+  //                                               .from("beds")
+  //                                               .select("id")
+  //                                               .eq("ward_id", ward.id);
+
+  //                                           setItemToDelete({
+  //                                             type: "ward",
+  //                                             id: ward.id,
+  //                                             name: ward.name,
+  //                                             bedCount: wardBeds?.length || 0,
+  //                                           });
+
+  //                                           if (
+  //                                             wardBeds &&
+  //                                             wardBeds.length > 0
+  //                                           ) {
+  //                                             showPopup(
+  //                                               "Delete Ward with Beds",
+  //                                               `This ward has ${wardBeds.length} bed(s). Deleting will remove all beds. Are you sure you want to proceed?`,
+  //                                               "warning"
+  //                                             );
+  //                                           } else {
+  //                                             showPopup(
+  //                                               "Delete Ward",
+  //                                               `Are you sure you want to delete "${ward.name}"?`,
+  //                                               "warning"
+  //                                             );
+  //                                           }
+  //                                         }
+  //                                       }}
+  //                                       className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
+  //                                       title="Delete ward"
+  //                                     >
+  //                                       <Trash2 className="w-4 h-4" />
+  //                                     </button>
+  //                                   </div>
+  //                                 </div>
+
+  //                                 {/* Ward Description */}
+  //                                 {ward.description && (
+  //                                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+  //                                     {ward.description}
+  //                                   </p>
+  //                                 )}
+
+  //                                 {/* Stats Section */}
+  //                                 <div
+  //                                   className={`p-3 rounded-lg mb-4 ${
+  //                                     editingWard
+  //                                       ? "bg-gradient-to-r from-amber-50 to-yellow-50"
+  //                                       : "bg-gradient-to-r from-blue-50 to-cyan-50"
+  //                                   }`}
+  //                                 >
+  //                                   <div className="flex items-center justify-between">
+  //                                     <div className="text-center">
+  //                                       <div
+  //                                         className={`text-2xl font-bold ${
+  //                                           editingWard
+  //                                             ? "text-amber-700"
+  //                                             : "text-blue-700"
+  //                                         }`}
+  //                                       >
+  //                                         {ward.total_beds || 0}
+  //                                       </div>
+  //                                       <div className="text-xs text-gray-600">
+  //                                         Total Beds
+  //                                       </div>
+  //                                     </div>
+  //                                     <div className="h-10 w-px bg-gray-300"></div>
+  //                                     <div className="text-center">
+  //                                       <div className="text-2xl font-bold text-green-600">
+  //                                         {ward.available_beds || 0}
+  //                                       </div>
+  //                                       <div className="text-xs text-gray-600">
+  //                                         Available
+  //                                       </div>
+  //                                     </div>
+  //                                     <div className="h-10 w-px bg-gray-300"></div>
+  //                                     <div className="text-center">
+  //                                       <div className="text-2xl font-bold text-gray-700">
+  //                                         {ward.occupied_beds || 0}
+  //                                       </div>
+  //                                       <div className="text-xs text-gray-600">
+  //                                         Occupied
+  //                                       </div>
+  //                                     </div>
+  //                                   </div>
+  //                                 </div>
+
+  //                                 {/* Ward Details */}
+  //                                 <div className="space-y-2">
+  //                                   <div className="flex items-center text-sm text-gray-600">
+  //                                     <MapPin
+  //                                       className={`w-4 h-4 mr-2 ${
+  //                                         editingWard
+  //                                           ? "text-amber-500"
+  //                                           : "text-gray-400"
+  //                                       }`}
+  //                                     />
+  //                                     <span>
+  //                                       Floor {ward.floor_number || "N/A"}
+  //                                       {ward.wing && ` • ${ward.wing} Wing`}
+  //                                     </span>
+  //                                   </div>
+  //                                   <div className="flex items-center text-sm text-gray-600">
+  //                                     <Clock
+  //                                       className={`w-4 h-4 mr-2 ${
+  //                                         editingWard
+  //                                           ? "text-amber-500"
+  //                                           : "text-gray-400"
+  //                                       }`}
+  //                                     />
+  //                                     <span>
+  //                                       Updated:{" "}
+  //                                       {new Date(
+  //                                         ward.updated_at
+  //                                       ).toLocaleDateString()}
+  //                                     </span>
+  //                                   </div>
+  //                                 </div>
+
+  //                                 {/* View Beds Button */}
+  //                                 <button
+  //                                   onClick={() => {
+  //                                     setSelectedWard(ward);
+  //                                     setActiveTab("beds");
+  //                                   }}
+  //                                   className={`w-full mt-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
+  //                                     editingWard
+  //                                       ? "bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700"
+  //                                       : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+  //                                   }`}
+  //                                 >
+  //                                   <div className="flex items-center justify-center">
+  //                                     <Bed className="w-4 h-4 mr-2" />
+  //                                     View Beds ({ward.total_beds || 0})
+  //                                   </div>
+  //                                 </button>
+  //                               </div>
+  //                             </div>
+  //                           ))}
+  //                         </div>
+  //                       </div>
+  //                     )}
+  //                   </div>
+  //                 )}
+  //               </div>
+  //             </div>
+  //           )}
+
+  //           {/* Beds Tab */}
+  //           {activeTab === "beds" && (
+  //             <div className="animate-slide-in">
+  //               {editingBed || showBedForm ? (
+  //                 <div
+  //                   className={`rounded-xl border p-5 shadow-sm sticky top-6 ${
+  //                     editingBed
+  //                       ? "bg-gradient-to-br from-orange-50 to-amber-50 border-amber-200"
+  //                       : "bg-gradient-to-br from-teal-50 to-emerald-50 border-emerald-200"
+  //                   }`}
+  //                 >
+  //                   <div className="flex items-start justify-between mb-6">
+  //                     {/* LEFT SIDE – Title & Description */}
+  //                     <div>
+  //                       <h3
+  //                         className={`text-lg font-bold flex items-center ${
+  //                           editingBed ? "text-amber-900" : "text-emerald-900"
+  //                         }`}
+  //                       >
+  //                         {editingBed ? (
+  //                           <>
+  //                             <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
+  //                             Edit Bed
+  //                           </>
+  //                         ) : (
+  //                           <>
+  //                             <Plus className="w-5 h-5 text-emerald-600 mr-2" />
+  //                             Create New Bed
+  //                           </>
+  //                         )}
+  //                       </h3>
+
+  //                       <p
+  //                         className={`text-sm mt-1 ${
+  //                           editingBed ? "text-amber-700" : "text-emerald-700"
+  //                         }`}
+  //                       >
+  //                         {editingBed
+  //                           ? "Update bed details and features"
+  //                           : "Add a new bed to selected ward"}
+  //                       </p>
+  //                     </div>
+
+  //                     {/* RIGHT SIDE – Cancel Button */}
+  //                     {!editingBed && (
+  //                       <button
+  //                         type="button"
+  //                         onClick={() => {
+  //                           resetBed();
+  //                           setEditingBed(null);
+  //                           setSelectedWard(null);
+  //                           setShowBedForm(false);
+  //                         }}
+  //                         disabled={submitting}
+  //                         className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+  //                       >
+  //                         Cancel
+  //                       </button>
+  //                     )}
+  //                   </div>
+
+  //                   {/* Ward Selection */}
+  //                   <div
+  //                     className={`mb-6 p-4 rounded-xl border ${
+  //                       editingBed
+  //                         ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
+  //                         : "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-200"
+  //                     }`}
+  //                   >
+  //                     <label
+  //                       className={`block text-sm font-semibold mb-2 flex items-center ${
+  //                         editingBed ? "text-amber-800" : "text-emerald-800"
+  //                       }`}
+  //                     >
+  //                       <Building
+  //                         className={`w-4 h-4 mr-2 ${
+  //                           editingBed ? "text-amber-600" : "text-emerald-600"
+  //                         }`}
+  //                       />
+  //                       Select Ward *
+  //                     </label>
+  //                     {wards.length === 0 ? (
+  //                       <div className="text-center py-4">
+  //                         <AlertCircle
+  //                           className={`w-8 h-8 mx-auto mb-2 ${
+  //                             editingBed ? "text-amber-500" : "text-emerald-500"
+  //                           }`}
+  //                         />
+  //                         <p className="text-sm text-gray-600 mb-2">
+  //                           No wards available. Create a ward first.
+  //                         </p>
+  //                         <button
+  //                           type="button"
+  //                           onClick={() => setActiveTab("wards")}
+  //                           className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+  //                             editingBed
+  //                               ? "text-amber-600 hover:text-amber-800 hover:bg-amber-100"
+  //                               : "text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100"
+  //                           }`}
+  //                         >
+  //                           <ArrowRight className="w-4 h-4 mr-1" />
+  //                           Go to Wards
+  //                         </button>
+  //                       </div>
+  //                     ) : (
+  //                       <div className="space-y-3">
+  //                         <select
+  //                           value={selectedWard?.id || ""}
+  //                           onChange={(e) => {
+  //                             const ward = wards.find(
+  //                               (w) => w.id === e.target.value
+  //                             );
+  //                             setSelectedWard(ward);
+  //                             if (!editingBed && ward) {
+  //                               setBedValue("floor_number", ward.floor_number);
+  //                               setBedValue("wing", ward.wing);
+  //                             }
+  //                           }}
+  //                           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+  //                           disabled={!!editingBed || submitting}
+  //                         >
+  //                           <option value="">Select a ward...</option>
+  //                           {wards
+  //                             .filter((w) => w.is_operational)
+  //                             .map((ward) => (
+  //                               <option key={ward.id} value={ward.id}>
+  //                                 {ward.ward_code} - {ward.name} (
+  //                                 {ward.available_beds}/{ward.total_beds} beds)
+  //                               </option>
+  //                             ))}
+  //                         </select>
+
+  //                         {selectedWard && (
+  //                           <div
+  //                             className={`p-3 rounded-lg border ${
+  //                               editingBed
+  //                                 ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
+  //                                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200"
+  //                             }`}
+  //                           >
+  //                             <div className="flex items-center justify-between">
+  //                               <div>
+  //                                 <p className="text-sm font-semibold text-gray-900">
+  //                                   {selectedWard.name}
+  //                                 </p>
+  //                                 <p className="text-xs text-gray-500">
+  //                                   {selectedWard.ward_code} •{" "}
+  //                                   {selectedWard.floor_number
+  //                                     ? `Floor ${selectedWard.floor_number}`
+  //                                     : "No floor"}
+  //                                 </p>
+  //                               </div>
+  //                               <div className="text-right">
+  //                                 <p
+  //                                   className={`text-sm font-semibold ${
+  //                                     editingBed
+  //                                       ? "text-amber-600"
+  //                                       : "text-emerald-600"
+  //                                   }`}
+  //                                 >
+  //                                   {selectedWard.available_beds}/
+  //                                   {selectedWard.total_beds}
+  //                                 </p>
+  //                                 <p className="text-xs text-gray-500">
+  //                                   beds available
+  //                                 </p>
+  //                               </div>
+  //                             </div>
+  //                           </div>
+  //                         )}
+  //                       </div>
+  //                     )}
+  //                   </div>
+
+  //                   {selectedWard || editingBed ? (
+  //                     <form
+  //                       onSubmit={handleSubmitBed(onSubmitBed)}
+  //                       className="space-y-4"
+  //                     >
+  //                       {/* Basic Information */}
+  //                       <div className="space-y-4">
+  //                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  //                           <div>
+  //                             <label className="block text-sm font-semibold text-gray-700 mb-2">
+  //                               Bed Number *
+  //                             </label>
+  //                             <input
+  //                               {...registerBed("bed_number")}
+  //                               type="text"
+  //                               className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+  //                                 bedErrors.bed_number
+  //                                   ? "border-red-300 bg-red-50"
+  //                                   : "border-gray-300 hover:border-gray-400"
+  //                               }`}
+  //                               placeholder="e.g., BED-001"
+  //                               disabled={submitting}
+  //                             />
+  //                             {bedErrors.bed_number && (
+  //                               <p className="mt-2 text-sm text-red-600 flex items-center">
+  //                                 <AlertCircle className="w-4 h-4 mr-1" />
+  //                                 {bedErrors.bed_number.message}
+  //                               </p>
+  //                             )}
+  //                           </div>
+
+  //                           <div>
+  //                             <label className="block text-sm font-semibold text-gray-700 mb-2">
+  //                               Bed Label
+  //                             </label>
+  //                             <input
+  //                               {...registerBed("bed_label")}
+  //                               type="text"
+  //                               className="w-full px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+  //                               placeholder="e.g., Near Window"
+  //                               disabled={submitting}
+  //                             />
+  //                           </div>
+  //                         </div>
+
+  //                         <div>
+  //                           <label className="block text-sm font-semibold text-gray-700 mb-2">
+  //                             Bed Type *
+  //                           </label>
+  //                           <Controller
+  //                             name="bed_type"
+  //                             control={controlBed}
+  //                             render={({ field }) => (
+  //                               <select
+  //                                 {...field}
+  //                                 className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+  //                                   bedErrors.bed_type
+  //                                     ? "border-red-300 bg-red-50"
+  //                                     : "border-gray-300 hover:border-gray-400"
+  //                                 }`}
+  //                                 disabled={submitting}
+  //                               >
+  //                                 <option value="">Select bed type...</option>
+  //                                 <option value="GENERAL">
+  //                                   🛏️ General Bed
+  //                                 </option>
+  //                                 <option value="ICU">💙 ICU Bed</option>
+  //                                 <option value="PRIVATE">
+  //                                   🚪 Private Room
+  //                                 </option>
+  //                                 <option value="ISOLATION">
+  //                                   🦠 Isolation Room
+  //                                 </option>
+  //                                 <option value="MATERNITY">
+  //                                   🤰 Maternity Bed
+  //                                 </option>
+  //                                 <option value="PEDIATRIC">
+  //                                   👶 Pediatric Bed
+  //                                 </option>
+  //                               </select>
+  //                             )}
+  //                           />
+  //                           {bedErrors.bed_type && (
+  //                             <p className="mt-2 text-sm text-red-600 flex items-center">
+  //                               <AlertCircle className="w-4 h-4 mr-1" />
+  //                               {bedErrors.bed_type.message}
+  //                             </p>
+  //                           )}
+  //                         </div>
+
+  //                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+  //                           <div>
+  //                             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //                               Room Number
+  //                             </label>
+  //                             <input
+  //                               {...registerBed("room_number")}
+  //                               type="text"
+  //                               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+  //                               placeholder="Room-101"
+  //                               disabled={submitting}
+  //                             />
+  //                           </div>
+  //                           <div>
+  //                             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //                               Floor
+  //                             </label>
+  //                             <input
+  //                               {...registerBed("floor_number", {
+  //                                 valueAsNumber: true,
+  //                               })}
+  //                               type="number"
+  //                               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+  //                               placeholder="0"
+  //                               disabled={submitting}
+  //                             />
+  //                           </div>
+  //                           <div>
+  //                             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //                               Wing
+  //                             </label>
+  //                             <input
+  //                               {...registerBed("wing")}
+  //                               type="text"
+  //                               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+  //                               placeholder="East"
+  //                               disabled={submitting}
+  //                             />
+  //                           </div>
+  //                         </div>
+  //                       </div>
+
+  //                       {/* Equipment & Features */}
+  //                       <div className="space-y-4">
+  //                         <div
+  //                           className={`p-4 rounded-xl border ${
+  //                             editingBed
+  //                               ? "bg-gradient-to-r from-orange-50 to-amber-100 border-amber-200"
+  //                               : "bg-gradient-to-r from-teal-50 to-emerald-100 border-emerald-200"
+  //                           }`}
+  //                         >
+  //                           <h4
+  //                             className={`text-sm font-semibold mb-3 flex items-center ${
+  //                               editingBed
+  //                                 ? "text-amber-800"
+  //                                 : "text-emerald-800"
+  //                             }`}
+  //                           >
+  //                             <Zap
+  //                               className={`w-4 h-4 mr-2 ${
+  //                                 editingBed
+  //                                   ? "text-amber-600"
+  //                                   : "text-emerald-600"
+  //                               }`}
+  //                             />
+  //                             Equipment Capabilities
+  //                           </h4>
+  //                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+  //                             {[
+  //                               {
+  //                                 field: "has_oxygen",
+  //                                 label: "Oxygen",
+  //                                 icon: "💨",
+  //                               },
+  //                               {
+  //                                 field: "has_suction",
+  //                                 label: "Suction",
+  //                                 icon: "🌀",
+  //                               },
+  //                               {
+  //                                 field: "has_monitor",
+  //                                 label: "Monitor",
+  //                                 icon: "📊",
+  //                               },
+  //                               {
+  //                                 field: "has_ventilator",
+  //                                 label: "Ventilator",
+  //                                 icon: "🫁",
+  //                               },
+  //                               {
+  //                                 field: "has_infusion_pump",
+  //                                 label: "Infusion Pump",
+  //                                 icon: "💉",
+  //                               },
+  //                             ].map(({ field, label, icon }) => (
+  //                               <div key={field} className="flex items-center">
+  //                                 <Controller
+  //                                   name={field as keyof typeof bedSchema._type}
+  //                                   control={controlBed}
+  //                                   render={({ field: controllerField }) => (
+  //                                     <input
+  //                                       type="checkbox"
+  //                                       checked={controllerField.value}
+  //                                       onChange={controllerField.onChange}
+  //                                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+  //                                       disabled={submitting}
+  //                                       id={field}
+  //                                     />
+  //                                   )}
+  //                                 />
+  //                                 <label
+  //                                   htmlFor={field}
+  //                                   className="ml-2 text-sm text-gray-700 cursor-pointer flex items-center"
+  //                                 >
+  //                                   <span className="mr-1">{icon}</span>
+  //                                   {label}
+  //                                 </label>
+  //                               </div>
+  //                             ))}
+  //                           </div>
+  //                         </div>
+
+  //                         <div
+  //                           className={`p-4 rounded-xl border ${
+  //                             editingBed
+  //                               ? "bg-gradient-to-r from-yellow-50 to-orange-100 border-amber-200"
+  //                               : "bg-gradient-to-r from-cyan-50 to-teal-100 border-emerald-200"
+  //                           }`}
+  //                         >
+  //                           <h4
+  //                             className={`text-sm font-semibold mb-3 flex items-center ${
+  //                               editingBed
+  //                                 ? "text-amber-800"
+  //                                 : "text-emerald-800"
+  //                             }`}
+  //                           >
+  //                             <Star
+  //                               className={`w-4 h-4 mr-2 ${
+  //                                 editingBed
+  //                                   ? "text-amber-600"
+  //                                   : "text-emerald-600"
+  //                               }`}
+  //                             />
+  //                             Special Features
+  //                           </h4>
+  //                           <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+  //                             {[
+  //                               {
+  //                                 field: "is_bariatric",
+  //                                 label: "Bariatric",
+  //                                 icon: "⚖️",
+  //                               },
+  //                               {
+  //                                 field: "is_isolation",
+  //                                 label: "Isolation",
+  //                                 icon: "🦠",
+  //                               },
+  //                               {
+  //                                 field: "is_negative_pressure",
+  //                                 label: "Negative Pressure",
+  //                                 icon: "🌬️",
+  //                               },
+  //                               {
+  //                                 field: "is_wheelchair_accessible",
+  //                                 label: "Accessible",
+  //                                 icon: "♿",
+  //                               },
+  //                             ].map(({ field, label, icon }) => (
+  //                               <div key={field} className="flex items-center">
+  //                                 <Controller
+  //                                   name={field as keyof typeof bedSchema._type}
+  //                                   control={controlBed}
+  //                                   render={({ field: controllerField }) => (
+  //                                     <input
+  //                                       type="checkbox"
+  //                                       checked={controllerField.value}
+  //                                       onChange={controllerField.onChange}
+  //                                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+  //                                       disabled={submitting}
+  //                                       id={`feature-${field}`}
+  //                                     />
+  //                                   )}
+  //                                 />
+  //                                 <label
+  //                                   htmlFor={`feature-${field}`}
+  //                                   className="ml-2 text-sm text-gray-700 cursor-pointer flex items-center"
+  //                                 >
+  //                                   <span className="mr-1">{icon}</span>
+  //                                   {label}
+  //                                 </label>
+  //                               </div>
+  //                             ))}
+  //                           </div>
+  //                         </div>
+  //                       </div>
+
+  //                       {/* Form Actions */}
+  //                       <div
+  //                         className={`flex space-x-3 pt-4 border-t ${
+  //                           editingBed
+  //                             ? "border-amber-200"
+  //                             : "border-emerald-200"
+  //                         }`}
+  //                       >
+  //                         <button
+  //                           type="submit"
+  //                           disabled={
+  //                             submitting || (!selectedWard && !editingBed)
+  //                           }
+  //                           className={`flex-1 text-white py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
+  //                             editingBed
+  //                               ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 focus:ring-amber-500"
+  //                               : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500"
+  //                           }`}
+  //                         >
+  //                           {submitting ? (
+  //                             <div className="flex items-center justify-center">
+  //                               <Loader2 className="w-5 h-5 animate-spin mr-2" />
+  //                               {editingBed ? "Updating..." : "Creating..."}
+  //                             </div>
+  //                           ) : editingBed ? (
+  //                             <div className="flex items-center justify-center">
+  //                               <Save className="w-5 h-5 mr-2" />
+  //                               Update Bed
+  //                             </div>
+  //                           ) : (
+  //                             <div className="flex items-center justify-center">
+  //                               <Plus className="w-5 h-5 mr-2" />
+  //                               Create Bed
+  //                             </div>
+  //                           )}
+  //                         </button>
+
+  //                         <button
+  //                           type="button"
+  //                           onClick={() => {
+  //                             resetBed();
+  //                             setEditingBed(null);
+  //                             setSelectedWard(null);
+  //                             setShowBedForm(false);
+  //                           }}
+  //                           disabled={submitting}
+  //                           className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+  //                         >
+  //                           Cancel
+  //                         </button>
+  //                       </div>
+  //                     </form>
+  //                   ) : (
+  //                     <div className="text-center py-8">
+  //                       <div
+  //                         className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+  //                           editingBed
+  //                             ? "bg-gradient-to-br from-amber-100 to-yellow-100"
+  //                             : "bg-gradient-to-br from-emerald-100 to-teal-100"
+  //                         }`}
+  //                       >
+  //                         <Bed
+  //                           className={`w-8 h-8 ${
+  //                             editingBed ? "text-amber-400" : "text-emerald-400"
+  //                           }`}
+  //                         />
+  //                       </div>
+  //                       <p className="text-gray-600 font-medium">
+  //                         Please select a ward to create beds
+  //                       </p>
+  //                     </div>
+  //                   )}
+  //                 </div>
+  //               ) : (
+  //                 <div
+  //                   className={`rounded-xl border shadow-sm ${
+  //                     editingBed
+  //                       ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200"
+  //                       : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
+  //                   }`}
+  //                 >
+  //                   <div
+  //                     className={`p-5 border-b ${
+  //                       editingBed ? "border-sky-200" : "border-blue-200"
+  //                     }`}
+  //                   >
+  //                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  //                       <div>
+  //                         <h3
+  //                           className={`text-lg font-bold flex items-center ${
+  //                             editingBed ? "text-sky-900" : "text-blue-900"
+  //                           }`}
+  //                         >
+  //                           {editingBed ? (
+  //                             <>
+  //                               <Edit2 className="w-5 h-5 text-sky-600 mr-2" />
+  //                               Edit Bed Mode
+  //                             </>
+  //                           ) : (
+  //                             <>
+  //                               <Bed className="w-5 h-5 text-blue-600 mr-2" />
+  //                               All Beds
+  //                             </>
+  //                           )}
+  //                         </h3>
+  //                         <p
+  //                           className={`text-sm mt-1 ${
+  //                             editingBed ? "text-sky-700" : "text-blue-700"
+  //                           }`}
+  //                         >
+  //                           {selectedWard
+  //                             ? `Beds in ${selectedWard.name}`
+  //                             : "All beds across all wards"}
+  //                         </p>
+  //                       </div>
+
+  //                       <div className="flex items-center gap-3">
+  //                         {/* Ward Filter Buttons */}
+  //                         <div className="flex flex-wrap gap-2">
+  //                           <button
+  //                             onClick={() => setSelectedWard(null)}
+  //                             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+  //                               !selectedWard
+  //                                 ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
+  //                                 : "text-gray-600 hover:bg-gray-100 border border-gray-300"
+  //                             }`}
+  //                           >
+  //                             All Wards
+  //                           </button>
+  //                           {wards
+  //                             .filter((w) => w.is_operational)
+  //                             .slice(0, 3)
+  //                             .map((ward) => (
+  //                               <button
+  //                                 key={ward.id}
+  //                                 onClick={() => setSelectedWard(ward)}
+  //                                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+  //                                   selectedWard?.id === ward.id
+  //                                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
+  //                                     : "text-gray-600 hover:bg-gray-100 border border-gray-300"
+  //                                 }`}
+  //                               >
+  //                                 {ward.ward_code}
+  //                               </button>
+  //                             ))}
+  //                           {wards.filter((w) => w.is_operational).length >
+  //                             3 && (
+  //                             <div className="relative group">
+  //                               <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg">
+  //                                 +
+  //                                 {wards.filter((w) => w.is_operational)
+  //                                   .length - 3}{" "}
+  //                                 more
+  //                               </button>
+  //                               <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">
+  //                                 {wards
+  //                                   .filter((w) => w.is_operational)
+  //                                   .slice(3)
+  //                                   .map((ward) => (
+  //                                     <button
+  //                                       key={ward.id}
+  //                                       onClick={() => setSelectedWard(ward)}
+  //                                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+  //                                     >
+  //                                       {ward.ward_code} - {ward.name}
+  //                                     </button>
+  //                                   ))}
+  //                               </div>
+  //                             </div>
+  //                           )}
+  //                         </div>
+
+  //                         {/* Create Bed Button - Only show when not editing */}
+
+  //                         <button
+  //                           onClick={() => {
+  //                             resetBed();
+  //                             setEditingBed(null);
+  //                             setShowBedForm(true);
+  //                           }}
+  //                           className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-sm font-medium"
+  //                         >
+  //                           <Plus className="w-4 h-4 mr-2" />
+  //                           Create Bed
+  //                         </button>
+  //                       </div>
+  //                     </div>
+  //                   </div>
+
+  //                   {beds.filter(
+  //                     (bed) => !selectedWard || bed.ward_id === selectedWard.id
+  //                   ).length === 0 ? (
+  //                     <div className="p-8 text-center">
+  //                       <div
+  //                         className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+  //                           editingBed
+  //                             ? "bg-gradient-to-br from-sky-100 to-cyan-100"
+  //                             : "bg-gradient-to-br from-blue-100 to-cyan-100"
+  //                         }`}
+  //                       >
+  //                         <Bed
+  //                           className={`w-8 h-8 ${
+  //                             editingBed ? "text-sky-400" : "text-blue-400"
+  //                           }`}
+  //                         />
+  //                       </div>
+  //                       <h4 className="text-lg font-semibold text-gray-900 mb-2">
+  //                         No beds found
+  //                       </h4>
+  //                       <p className="text-gray-600 mb-4">
+  //                         {selectedWard
+  //                           ? `No beds in ${selectedWard.name}. Create the first bed for this ward.`
+  //                           : "No beds available. Create beds by selecting a ward."}
+  //                       </p>
+  //                       {selectedWard && (
+  //                         <button
+  //                           onClick={() => {
+  //                             resetBed();
+  //                             setShowBedForm(true);
+  //                           }}
+  //                           className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
+  //                             editingBed
+  //                               ? "bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 focus:ring-sky-500"
+  //                               : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
+  //                           }`}
+  //                         >
+  //                           <Plus className="w-4 h-4 mr-2" />
+  //                           Add First Bed
+  //                         </button>
+  //                       )}
+  //                     </div>
+  //                   ) : (
+  //                     <div className="p-4">
+  //                       <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+  //                         {beds
+  //                           .filter(
+  //                             (bed) =>
+  //                               !selectedWard || bed.ward_id === selectedWard.id
+  //                           )
+  //                           .map((bed) => {
+  //                             const statusDisplay = getBedStatusDisplay(
+  //                               bed.display_status,
+  //                               bed.is_booked
+  //                             );
+
+  //                             return (
+  //                               <div
+  //                                 key={bed.id}
+  //                                 className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
+  //                                   editingBed?.id === bed.id
+  //                                     ? "bg-gradient-to-br from-sky-100 to-cyan-100 border-sky-300 ring-2 ring-sky-500 ring-opacity-50"
+  //                                     : editingBed
+  //                                     ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200 hover:border-sky-300"
+  //                                     : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
+  //                                 }`}
+  //                               >
+  //                                 <div className="p-5">
+  //                                   {/* Bed Header */}
+  //                                   <div className="flex justify-between items-start mb-4">
+  //                                     <div>
+  //                                       <div className="flex items-center flex-wrap gap-2 mb-2">
+  //                                         <span
+  //                                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getBedTypeColor(
+  //                                             bed.bed_type
+  //                                           )}`}
+  //                                         >
+  //                                           {getBedTypeIcon(bed.bed_type)}
+  //                                           <span className="ml-1">
+  //                                             {bed.bed_type.replace("_", " ")}
+  //                                           </span>
+  //                                         </span>
+  //                                         <span
+  //                                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusDisplay.color}`}
+  //                                         >
+  //                                           <div
+  //                                             className={`w-2 h-2 rounded-full mr-2 ${statusDisplay.dotColor}`}
+  //                                           />
+  //                                           {statusDisplay.text}
+  //                                         </span>
+  //                                       </div>
+
+  //                                       <div className="flex items-baseline space-x-2 mb-3">
+  //                                         <h4
+  //                                           className={`text-xl font-bold ${
+  //                                             editingBed
+  //                                               ? "text-sky-900"
+  //                                               : "text-gray-900"
+  //                                           }`}
+  //                                         >
+  //                                           {bed.bed_number}
+  //                                         </h4>
+  //                                         {bed.bed_label && (
+  //                                           <span className="text-gray-600 font-medium">
+  //                                             {bed.bed_label}
+  //                                           </span>
+  //                                         )}
+  //                                       </div>
+
+  //                                       {/* Ward Info */}
+  //                                       <div className="flex items-center text-sm text-gray-600 mb-3">
+  //                                         <Building
+  //                                           className={`w-4 h-4 mr-2 ${
+  //                                             editingBed
+  //                                               ? "text-sky-500"
+  //                                               : "text-gray-400"
+  //                                           }`}
+  //                                         />
+  //                                         <span className="font-medium">
+  //                                           {bed.wards?.name || "Unknown Ward"}
+  //                                         </span>
+  //                                         {bed.room_number && (
+  //                                           <span className="mx-2">•</span>
+  //                                         )}
+  //                                         {bed.room_number && (
+  //                                           <span>Room {bed.room_number}</span>
+  //                                         )}
+  //                                       </div>
+  //                                     </div>
+
+  //                                     <div className="flex space-x-1">
+  //                                       <button
+  //                                         onClick={() => handleEditBed(bed)}
+  //                                         className={`p-2 rounded-lg transition-colors duration-200 ${
+  //                                           editingBed
+  //                                             ? "text-sky-600 hover:bg-sky-100"
+  //                                             : "text-blue-600 hover:bg-blue-100"
+  //                                         }`}
+  //                                         title="Edit bed"
+  //                                         disabled={bed.is_booked}
+  //                                       >
+  //                                         <Edit2 className="w-4 h-4" />
+  //                                       </button>
+  //                                       <button
+  //                                         onClick={() =>
+  //                                           confirmDeleteBed(
+  //                                             bed.id,
+  //                                             bed.bed_number
+  //                                           )
+  //                                         }
+  //                                         className={`p-2 rounded-lg transition-colors duration-200 ${
+  //                                           bed.is_booked
+  //                                             ? "text-gray-400 hover:bg-gray-100 cursor-not-allowed"
+  //                                             : "text-red-600 hover:bg-red-100"
+  //                                         }`}
+  //                                         title={
+  //                                           bed.is_booked
+  //                                             ? "Cannot delete booked bed"
+  //                                             : "Delete bed"
+  //                                         }
+  //                                         disabled={bed.is_booked}
+  //                                       >
+  //                                         {bed.is_booked ? (
+  //                                           <Ban className="w-4 h-4" />
+  //                                         ) : (
+  //                                           <Trash2 className="w-4 h-4" />
+  //                                         )}
+  //                                       </button>
+  //                                     </div>
+  //                                   </div>
+
+  //                                   {/* Stats Section */}
+  //                                   <div
+  //                                     className={`p-3 rounded-lg mb-4 ${
+  //                                       editingBed
+  //                                         ? "bg-gradient-to-r from-sky-50 to-cyan-50"
+  //                                         : "bg-gradient-to-r from-blue-50 to-cyan-50"
+  //                                     }`}
+  //                                   >
+  //                                     <div className="grid grid-cols-3 gap-3">
+  //                                       <div className="text-center">
+  //                                         <div
+  //                                           className={`text-lg font-bold ${
+  //                                             editingBed
+  //                                               ? "text-sky-700"
+  //                                               : "text-blue-700"
+  //                                           }`}
+  //                                         >
+  //                                           {bed.floor_number || "N/A"}
+  //                                         </div>
+  //                                         <div className="text-xs text-gray-600">
+  //                                           Floor
+  //                                         </div>
+  //                                       </div>
+  //                                       <div className="text-center">
+  //                                         <div className="text-lg font-bold text-gray-700">
+  //                                           {bed.wing || "N/A"}
+  //                                         </div>
+  //                                         <div className="text-xs text-gray-600">
+  //                                           Wing
+  //                                         </div>
+  //                                       </div>
+  //                                       <div className="text-center">
+  //                                         <div
+  //                                           className={`text-lg font-bold px-2 py-1 rounded ${
+  //                                             bed.is_active
+  //                                               ? "bg-green-100 text-green-800"
+  //                                               : "bg-gray-100 text-gray-800"
+  //                                           }`}
+  //                                         >
+  //                                           {bed.is_active
+  //                                             ? "Active"
+  //                                             : "Inactive"}
+  //                                         </div>
+  //                                         <div className="text-xs text-gray-600">
+  //                                           Status
+  //                                         </div>
+  //                                       </div>
+  //                                     </div>
+  //                                   </div>
+
+  //                                   {/* Booked Message */}
+  //                                   {bed.is_booked && (
+  //                                     <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg">
+  //                                       <div className="flex items-center text-sm text-purple-800">
+  //                                         <AlertCircle className="w-4 h-4 mr-2 text-purple-600" />
+  //                                         <span className="font-medium">
+  //                                           This bed is booked
+  //                                         </span>
+  //                                       </div>
+  //                                       <p className="text-xs text-purple-600 mt-1">
+  //                                         Cannot edit or delete until booking is
+  //                                         cancelled.
+  //                                       </p>
+  //                                     </div>
+  //                                   )}
+
+  //                                   {/* Footer */}
+  //                                   <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+  //                                     <div className="text-xs text-gray-500">
+  //                                       <span>ID: {bed.id.slice(0, 8)}...</span>
+  //                                       {bed.last_maintenance && (
+  //                                         <span className="ml-3">
+  //                                           Last maintenance:{" "}
+  //                                           {new Date(
+  //                                             bed.last_maintenance
+  //                                           ).toLocaleDateString()}
+  //                                         </span>
+  //                                       )}
+  //                                     </div>
+  //                                     <div
+  //                                       className={`text-xs px-2 py-1 rounded ${
+  //                                         editingBed
+  //                                           ? "bg-sky-100 text-sky-800"
+  //                                           : "bg-blue-100 text-blue-800"
+  //                                       }`}
+  //                                     >
+  //                                       {bed.wards?.ward_code || "N/A"}
+  //                                     </div>
+  //                                   </div>
+  //                                 </div>
+  //                               </div>
+  //                             );
+  //                           })}
+  //                       </div>
+  //                     </div>
+  //                   )}
+  //                 </div>
+  //               )}
+  //             </div>
+  //           )}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Ward & Bed Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Manage hospital wards, beds, and their configurations
-          </p>
+  <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
+    <div className="max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 md:mb-8 text-center sm:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+          Ward & Bed Management
+        </h1>
+        <p className="text-gray-600 mt-2 text-sm sm:text-base">
+          Manage hospital wards, beds, and their configurations
+        </p>
+      </div>
+
+      {/* Popup Modals (unchanged) */}
+      {activePopup && (
+        <PopupModal
+          show={activePopup}
+          onClose={() => {
+            setShowSuccessPopup(false);
+            setShowErrorPopup(false);
+            setShowAlertPopup(false);
+          }}
+          title={popupConfig.title}
+          message={popupConfig.message}
+          type={popupConfig.type}
+          onConfirm={handlePopupAction}
+          confirmText={popupConfig.type === "warning" ? "Confirm" : "OK"}
+          showCancel={popupConfig.type === "warning"}
+          cancelText="Cancel"
+        />
+      )}
+
+      {/* Summary Stats - Responsive grid */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 border border-blue-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-600">Total Wards</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                {wards.length}
+              </p>
+            </div>
+            <Building className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
+          </div>
+          <div className="mt-2 flex items-center text-xs sm:text-sm">
+            <span className="text-green-600 font-semibold">
+              {wards.filter((w) => w.is_operational).length}
+            </span>
+            <span className="text-gray-600 ml-1">operational</span>
+          </div>
         </div>
 
-        {/* Popup Modals */}
-        {activePopup && (
-          <PopupModal
-            show={activePopup}
-            onClose={() => {
-              setShowSuccessPopup(false);
-              setShowErrorPopup(false);
-              setShowAlertPopup(false);
-            }}
-            title={popupConfig.title}
-            message={popupConfig.message}
-            type={popupConfig.type}
-            onConfirm={handlePopupAction}
-            confirmText={popupConfig.type === "warning" ? "Confirm" : "OK"}
-            showCancel={popupConfig.type === "warning"}
-            cancelText="Cancel"
-          />
-        )}
-
-        {/* Summary Stats Footer */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Wards</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {wards.length}
-                </p>
-              </div>
-              <Building className="w-8 h-8 text-blue-500" />
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 sm:p-4 border border-green-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-600">Total Beds</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                {beds.length}
+              </p>
             </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-green-600 font-semibold">
-                {wards.filter((w) => w.is_operational).length}
-              </span>
-              <span className="text-gray-600 ml-1">operational</span>
-            </div>
+            <Bed className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
           </div>
-
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Beds</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {beds.length}
-                </p>
-              </div>
-              <Bed className="w-8 h-8 text-green-500" />
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-blue-600 font-semibold">
-                {
-                  beds.filter(
-                    (b) => b.display_status === "AVAILABLE" && !b.is_booked
-                  ).length
-                }
-              </span>
-              <span className="text-gray-600 ml-1">available now</span>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Capacity Usage</p>
-                <p className="text-2xl font-bold text-gray-90">
-                  {calculateCapacityUsage()}%
-                </p>
-              </div>
-              <Users className="w-8 h-8 text-purple-500" />
-            </div>
-            <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-2 flex items-center text-xs sm:text-sm">
+            <span className="text-blue-600 font-semibold">
               {
                 beds.filter(
-                  (b) => b.display_status === "OCCUPIED" || b.is_booked
+                  (b) => b.display_status === "AVAILABLE" && !b.is_booked
                 ).length
-              }{" "}
-              beds occupied
-            </div>
+              }
+            </span>
+            <span className="text-gray-600 ml-1">available now</span>
           </div>
         </div>
 
-        {/* Main Content Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          {/* Tabs Navigation */}
-          <div className="border-b border-gray-200">
-            <div className="px-4 md:px-6">
-              <nav className="flex space-x-1 md:space-x-2" aria-label="Tabs">
-                <button
-                  onClick={() => setActiveTab("wards")}
-                  className={`
-                    relative py-3 px-4 md:px-6 font-medium text-sm md:text-base rounded-t-lg transition-all duration-200
-                    ${
-                      activeTab === "wards"
-                        ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }
-                  `}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Building
-                      className={`w-5 h-5 ${
-                        activeTab === "wards"
-                          ? "text-blue-600"
-                          : "text-gray-400"
-                      }`}
-                    />
-                    <span>Wards</span>
-                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {wards.length}
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("beds")}
-                  className={`
-                    relative py-3 px-4 md:px-6 font-medium text-sm md:text-base rounded-t-lg transition-all duration-200
-                    ${
-                      activeTab === "beds"
-                        ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }
-                  `}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Bed
-                      className={`w-5 h-5 ${
-                        activeTab === "beds" ? "text-blue-600" : "text-gray-400"
-                      }`}
-                    />
-                    <span>Beds</span>
-                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {beds.length}
-                    </span>
-                  </div>
-                </button>
-              </nav>
+        <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-3 sm:p-4 border border-purple-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-600">Capacity Usage</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                {calculateCapacityUsage()}%
+              </p>
             </div>
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
           </div>
+          <div className="mt-2 text-xs sm:text-sm text-gray-600">
+            {
+              beds.filter(
+                (b) => b.display_status === "OCCUPIED" || b.is_booked
+              ).length
+            }{" "}
+            beds occupied
+          </div>
+        </div>
+      </div>
 
-          {/* Tab Content */}
-          <div className="p-4 md:p-6">
-            {/* Wards Tab */}
-            {activeTab === "wards" && (
-              <div className="animate-slide-in">
-                <div className="grid  gap-6">
-                  {/* Ward Form Card */}
-                  {editingWard || showWardForm ? (
-                    <div
-                      className={`rounded-xl border p-5 shadow-sm sticky top-6 ${
-                        editingWard
-                          ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-amber-200"
-                          : "bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200"
-                      }`}
-                    >
-                      <div className="mb-6">
-                        <h3
-                          className={`text-lg font-bold flex items-center ${
-                            editingWard ? "text-amber-900" : "text-emerald-900"
-                          }`}
-                        >
-                          {editingWard ? (
-                            <>
-                              <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
-                              Edit Ward
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-5 h-5 text-emerald-600 mr-2" />
-                              Create New Ward
-                            </>
-                          )}
-                        </h3>
-                        <p
-                          className={`text-sm mt-1 ${
-                            editingWard ? "text-amber-700" : "text-emerald-700"
-                          }`}
-                        >
-                          {editingWard
-                            ? "Update ward details"
-                            : "Add a new ward to your facility"}
-                        </p>
-                      </div>
+      {/* Main Content Card */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        {/* Tabs Navigation - Responsive */}
+        <div className="border-b border-gray-200">
+          <div className="px-3 sm:px-4 md:px-6">
+            <nav className="flex space-x-1 md:space-x-2 overflow-x-auto scrollbar-hide" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab("wards")}
+                className={`
+                  relative py-2.5 sm:py-3 px-3 sm:px-4 md:px-6 font-medium text-xs sm:text-sm md:text-base rounded-t-lg transition-all duration-200 whitespace-nowrap
+                  ${
+                    activeTab === "wards"
+                      ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }
+                `}
+              >
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <Building
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                      activeTab === "wards" ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
+                  <span>Wards</span>
+                  <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {wards.length}
+                  </span>
+                </div>
+              </button>
 
-                      <form
-                        onSubmit={handleSubmitWard(onSubmitWard)}
-                        className="space-y-4"
+              <button
+                onClick={() => setActiveTab("beds")}
+                className={`
+                  relative py-2.5 sm:py-3 px-3 sm:px-4 md:px-6 font-medium text-xs sm:text-sm md:text-base rounded-t-lg transition-all duration-200 whitespace-nowrap
+                  ${
+                    activeTab === "beds"
+                      ? "text-blue-700 bg-blue-50 border-t-2 border-blue-600"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }
+                `}
+              >
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <Bed
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                      activeTab === "beds" ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
+                  <span>Beds</span>
+                  <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {beds.length}
+                  </span>
+                </div>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-3 sm:p-4 md:p-6">
+          {/* Wards Tab */}
+          {activeTab === "wards" && (
+            <div className="animate-slide-in">
+              <div className="grid gap-5 md:gap-6">
+                {/* Ward Form Card - Responsive sticky */}
+                {editingWard || showWardForm ? (
+                  <div
+                    className={`rounded-xl border p-4 sm:p-5 shadow-sm sticky top-6 ${
+                      editingWard
+                        ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-amber-200"
+                        : "bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200"
+                    }`}
+                  >
+                    <div className="mb-4 sm:mb-6">
+                      <h3
+                        className={`text-base sm:text-lg font-bold flex items-center ${
+                          editingWard ? "text-amber-900" : "text-emerald-900"
+                        }`}
                       >
-                        {/* Form Grid */}
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                <Hash className="w-4 h-4 mr-1 text-gray-400" />
-                                Ward Code *
-                              </label>
-                              <input
-                                {...registerWard("ward_code")}
-                                type="text"
-                                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                  wardErrors.ward_code
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                                placeholder="e.g., ICU-01"
-                                disabled={submitting}
-                              />
-                              {wardErrors.ward_code && (
-                                <p className="mt-2 text-sm text-red-600 flex items-center">
-                                  <AlertCircle className="w-4 h-4 mr-1" />
-                                  {wardErrors.ward_code.message}
-                                </p>
-                              )}
-                            </div>
+                        {editingWard ? (
+                          <>
+                            <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mr-2" />
+                            Edit Ward
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mr-2" />
+                            Create New Ward
+                          </>
+                        )}
+                      </h3>
+                      <p
+                        className={`text-xs sm:text-sm mt-1 ${
+                          editingWard ? "text-amber-700" : "text-emerald-700"
+                        }`}
+                      >
+                        {editingWard
+                          ? "Update ward details"
+                          : "Add a new ward to your facility"}
+                      </p>
+                    </div>
 
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                <Building className="w-4 h-4 mr-1 text-gray-400" />
-                                Ward Name *
-                              </label>
-                              <input
-                                {...registerWard("name")}
-                                type="text"
-                                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                  wardErrors.name
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                                placeholder="e.g., Intensive Care Unit"
-                                disabled={submitting}
-                              />
-                              {wardErrors.name && (
-                                <p className="mt-2 text-sm text-red-600 flex items-center">
-                                  <AlertCircle className="w-4 h-4 mr-1" />
-                                  {wardErrors.name.message}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
+                    <form onSubmit={handleSubmitWard(onSubmitWard)} className="space-y-4">
+                      {/* Form fields (unchanged content, only responsive classes added) */}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                              <Tag className="w-4 h-4 mr-1 text-gray-400" />
-                              Ward Type *
+                              <Hash className="w-4 h-4 mr-1 text-gray-400" />
+                              Ward Code *
                             </label>
-                            <Controller
-                              name="ward_type"
-                              control={controlWard}
-                              render={({ field }) => (
-                                <select
-                                  {...field}
-                                  className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none ${
-                                    wardErrors.ward_type
-                                      ? "border-red-300 bg-red-50"
-                                      : "border-gray-300 hover:border-gray-400"
-                                  }`}
-                                  disabled={submitting}
-                                >
-                                  <option value="">Select ward type...</option>
-                                  <option value="GENERAL">
-                                    🏥 General Ward
-                                  </option>
-                                  <option value="ICU">
-                                    💙 Intensive Care Unit (ICU)
-                                  </option>
-                                  <option value="CCU">
-                                    ❤️ Cardiac Care Unit (CCU)
-                                  </option>
-                                  <option value="NICU">
-                                    👶 Neonatal ICU (NICU)
-                                  </option>
-                                  <option value="MATERNITY">
-                                    🤰 Maternity Ward
-                                  </option>
-                                  <option value="EMERGENCY">
-                                    🚨 Emergency Department
-                                  </option>
-                                </select>
-                              )}
+                            <input
+                              {...registerWard("ward_code")}
+                              type="text"
+                              className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                wardErrors.ward_code
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300 hover:border-gray-400"
+                              }`}
+                              placeholder="e.g., ICU-01"
+                              disabled={submitting}
                             />
-                            {wardErrors.ward_type && (
+                            {wardErrors.ward_code && (
                               <p className="mt-2 text-sm text-red-600 flex items-center">
                                 <AlertCircle className="w-4 h-4 mr-1" />
-                                {wardErrors.ward_type.message}
+                                {wardErrors.ward_code.message}
                               </p>
                             )}
                           </div>
 
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                              <FileText className="w-4 h-4 mr-1 text-gray-400" />
-                              Description
+                              <Building className="w-4 h-4 mr-1 text-gray-400" />
+                              Ward Name *
                             </label>
-                            <textarea
-                              {...registerWard("description" as any)}
-                              rows={3}
-                              className="w-full px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                              placeholder="Describe this ward's purpose and features..."
+                            <input
+                              {...registerWard("name")}
+                              type="text"
+                              className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                wardErrors.name
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300 hover:border-gray-400"
+                              }`}
+                              placeholder="e.g., Intensive Care Unit"
                               disabled={submitting}
                             />
-                          </div>
-
-                          {/* Location Information */}
-                          <div
-                            className={`p-4 rounded-lg border ${
-                              editingWard
-                                ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
-                                : "bg-gradient-to-r from-emerald-100 to-green-100 border-emerald-200"
-                            }`}
-                          >
-                            <h4
-                              className={`text-sm font-semibold mb-3 flex items-center ${
-                                editingWard
-                                  ? "text-amber-800"
-                                  : "text-emerald-800"
-                              }`}
-                            >
-                              <MapPin
-                                className={`w-4 h-4 mr-2 ${
-                                  editingWard
-                                    ? "text-amber-600"
-                                    : "text-emerald-600"
-                                }`}
-                              />
-                              Location Information
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                  Floor Number
-                                </label>
-                                <div className="relative">
-                                  <input
-                                    {...registerWard("floor_number", {
-                                      valueAsNumber: true,
-                                    })}
-                                    type="number"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="0"
-                                    disabled={submitting}
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                  Wing
-                                </label>
-                                <input
-                                  {...registerWard("wing")}
-                                  type="text"
-                                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="e.g., East"
-                                  disabled={submitting}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Operational Status */}
-                          <div
-                            className={`flex items-center justify-between p-3 rounded-lg border ${
-                              editingWard
-                                ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
-                                : "bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200"
-                            }`}
-                          >
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0">
-                                <div
-                                  className={`w-3 h-3 rounded-full ${
-                                    watchWard("is_operational")
-                                      ? "bg-green-500"
-                                      : "bg-yellow-500"
-                                  } mr-3`}
-                                />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">
-                                  {watchWard("is_operational")
-                                    ? "Operational"
-                                    : "Non-Operational"}
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  {watchWard("is_operational")
-                                    ? "Ward is active and accepting patients"
-                                    : "Ward is temporarily unavailable"}
-                                </p>
-                              </div>
-                            </div>
-                            <Controller
-                              name="is_operational"
-                              control={controlWard}
-                              render={({ field }) => (
-                                <button
-                                  type="button"
-                                  onClick={() => field.onChange(!field.value)}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    field.value ? "bg-green-600" : "bg-gray-300"
-                                  }`}
-                                  disabled={submitting}
-                                >
-                                  <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                      field.value
-                                        ? "translate-x-6"
-                                        : "translate-x-1"
-                                    }`}
-                                  />
-                                </button>
-                              )}
-                            />
+                            {wardErrors.name && (
+                              <p className="mt-2 text-sm text-red-600 flex items-center">
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {wardErrors.name.message}
+                              </p>
+                            )}
                           </div>
                         </div>
 
-                        {/* Form Actions */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                            <Tag className="w-4 h-4 mr-1 text-gray-400" />
+                            Ward Type *
+                          </label>
+                          <Controller
+                            name="ward_type"
+                            control={controlWard}
+                            render={({ field }) => (
+                              <select
+                                {...field}
+                                className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                  wardErrors.ward_type
+                                    ? "border-red-300 bg-red-50"
+                                    : "border-gray-300 hover:border-gray-400"
+                                }`}
+                                disabled={submitting}
+                              >
+                                <option value="">Select ward type...</option>
+                                <option value="GENERAL">🏥 General Ward</option>
+                                <option value="ICU">💙 Intensive Care Unit (ICU)</option>
+                                <option value="CCU">❤️ Cardiac Care Unit (CCU)</option>
+                                <option value="NICU">👶 Neonatal ICU (NICU)</option>
+                                <option value="MATERNITY">🤰 Maternity Ward</option>
+                                <option value="EMERGENCY">🚨 Emergency Department</option>
+                              </select>
+                            )}
+                          />
+                          {wardErrors.ward_type && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center">
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              {wardErrors.ward_type.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                            <FileText className="w-4 h-4 mr-1 text-gray-400" />
+                            Description
+                          </label>
+                          <textarea
+                            {...registerWard("description" as any)}
+                            rows={3}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                            placeholder="Describe this ward's purpose and features..."
+                            disabled={submitting}
+                          />
+                        </div>
+
+                        {/* Location Information - Responsive */}
                         <div
-                          className={`flex space-x-3 pt-4 border-t ${
+                          className={`p-3 sm:p-4 rounded-lg border ${
                             editingWard
-                              ? "border-amber-200"
-                              : "border-emerald-200"
+                              ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
+                              : "bg-gradient-to-r from-emerald-100 to-green-100 border-emerald-200"
                           }`}
                         >
-                          <button
-                            type="submit"
-                            disabled={submitting}
-                            className={`flex-1 text-white py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
-                              editingWard
-                                ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
-                                : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 focus:ring-emerald-500"
+                          <h4
+                            className={`text-xs sm:text-sm font-semibold mb-3 flex items-center ${
+                              editingWard ? "text-amber-800" : "text-emerald-800"
                             }`}
                           >
-                            {submitting ? (
-                              <div className="flex items-center justify-center">
-                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                {editingWard ? "Updating..." : "Creating..."}
-                              </div>
-                            ) : editingWard ? (
-                              <div className="flex items-center justify-center">
-                                <Save className="w-5 h-5 mr-2" />
-                                Update Ward
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create Ward
-                              </div>
-                            )}
-                          </button>
+                            <MapPin
+                              className={`w-4 h-4 mr-2 ${
+                                editingWard ? "text-amber-600" : "text-emerald-600"
+                              }`}
+                            />
+                            Location Information
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Floor Number
+                              </label>
+                              <input
+                                {...registerWard("floor_number", { valueAsNumber: true })}
+                                type="number"
+                                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="0"
+                                disabled={submitting}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Wing
+                              </label>
+                              <input
+                                {...registerWard("wing")}
+                                type="text"
+                                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="e.g., East"
+                                disabled={submitting}
+                              />
+                            </div>
+                          </div>
+                        </div>
 
+                        {/* Operational Status Toggle - Responsive */}
+                        <div
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg border gap-3 ${
+                            editingWard
+                              ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
+                              : "bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200"
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                              <div
+                                className={`w-3 h-3 rounded-full ${
+                                  watchWard("is_operational")
+                                    ? "bg-green-500"
+                                    : "bg-yellow-500"
+                                } mr-3`}
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {watchWard("is_operational")
+                                  ? "Operational"
+                                  : "Non-Operational"}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {watchWard("is_operational")
+                                  ? "Ward is active and accepting patients"
+                                  : "Ward is temporarily unavailable"}
+                              </p>
+                            </div>
+                          </div>
+                          <Controller
+                            name="is_operational"
+                            control={controlWard}
+                            render={({ field }) => (
+                              <button
+                                type="button"
+                                onClick={() => field.onChange(!field.value)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  field.value ? "bg-green-600" : "bg-gray-300"
+                                }`}
+                                disabled={submitting}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    field.value ? "translate-x-6" : "translate-x-1"
+                                  }`}
+                                />
+                              </button>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Form Actions */}
+                      <div
+                        className={`flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t ${
+                          editingWard ? "border-amber-200" : "border-emerald-200"
+                        }`}
+                      >
+                        <button
+                          type="submit"
+                          disabled={submitting}
+                          className={`w-full sm:flex-1 text-white py-2 sm:py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
+                            editingWard
+                              ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
+                              : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 focus:ring-emerald-500"
+                          }`}
+                        >
+                          {submitting ? (
+                            <div className="flex items-center justify-center">
+                              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                              {editingWard ? "Updating..." : "Creating..."}
+                            </div>
+                          ) : editingWard ? (
+                            <div className="flex items-center justify-center">
+                              <Save className="w-5 h-5 mr-2" />
+                              Update Ward
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center">
+                              <Plus className="w-5 h-5 mr-2" />
+                              Create Ward
+                            </div>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            resetWard();
+                            setEditingWard(null);
+                            setShowWardForm(false);
+                          }}
+                          disabled={submitting}
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <div
+                    className={`rounded-xl border shadow-sm ${
+                      editingWard
+                        ? "bg-gradient-to-br from-orange-50 to-pink-50 border-pink-200"
+                        : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
+                    }`}
+                  >
+                    <div
+                      className={`p-4 sm:p-5 border-b ${
+                        editingWard ? "border-amber-200" : "border-blue-200"
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h3
+                            className={`text-base sm:text-lg font-bold flex items-center ${
+                              editingWard ? "text-amber-900" : "text-blue-900"
+                            }`}
+                          >
+                            {editingWard ? (
+                              <>
+                                <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mr-2" />
+                                Edit Ward Mode
+                              </>
+                            ) : (
+                              <>
+                                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
+                                All Wards
+                              </>
+                            )}
+                          </h3>
+                          <p
+                            className={`text-xs sm:text-sm mt-1 ${
+                              editingWard ? "text-amber-700" : "text-blue-700"
+                            }`}
+                          >
+                            {editingWard
+                              ? "Currently editing a ward. Click cancel to exit edit mode."
+                              : "Manage your facility's wards and their configurations"}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="text-xs sm:text-sm text-gray-500">
+                            <span className="font-semibold text-green-600">
+                              {wards.filter((w) => w.is_operational).length}
+                            </span>{" "}
+                            operational •
+                            <span
+                              className={`font-semibold ml-2 ${
+                                editingWard ? "text-amber-600" : "text-blue-600"
+                              }`}
+                            >
+                              {" "}
+                              {wards.reduce((acc, w) => acc + w.total_beds, 0)}
+                            </span>{" "}
+                            total beds
+                          </div>
                           <button
-                            type="button"
                             onClick={() => {
                               resetWard();
                               setEditingWard(null);
-                              setShowWardForm(false);
+                              setShowWardForm(true);
                             }}
-                            disabled={submitting}
-                            className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+                            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-xs sm:text-sm font-medium"
                           >
-                            Cancel
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            Create Ward
                           </button>
                         </div>
-                      </form>
+                      </div>
                     </div>
-                  ) : (
-                    <div
-                      className={`rounded-xl border shadow-sm ${
-                        editingWard
-                          ? "bg-gradient-to-br from-orange-50 to-pink-50 border-pink-200"
-                          : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
-                      }`}
-                    >
-                      <div
-                        className={`p-5 border-b ${
-                          editingWard ? "border-amber-200" : "border-blue-200"
+
+                    {wards.length === 0 ? (
+                      <div className="p-6 sm:p-8 text-center">
+                        <div
+                          className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center ${
+                            editingWard
+                              ? "bg-gradient-to-br from-amber-100 to-yellow-100"
+                              : "bg-gradient-to-br from-blue-100 to-cyan-100"
+                          }`}
+                        >
+                          <Building
+                            className={`w-6 h-6 sm:w-8 sm:h-8 ${
+                              editingWard ? "text-amber-400" : "text-blue-400"
+                            }`}
+                          />
+                        </div>
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                          No wards created yet
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Create your first ward to start adding beds and managing patient accommodations
+                        </p>
+                        <button
+                          onClick={() => {
+                            resetWard();
+                            setShowWardForm(true);
+                          }}
+                          className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
+                            editingWard
+                              ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
+                              : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
+                          }`}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create First Ward
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-3 sm:p-4">
+                        <div className="grid grid-cols-1 gap-4">
+                          {wards.map((ward) => (
+                            <div
+                              key={ward.id}
+                              className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
+                                editingWard?.id === ward.id
+                                  ? "bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-300 ring-2 ring-amber-500 ring-opacity-50"
+                                  : editingWard
+                                  ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 hover:border-amber-300"
+                                  : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
+                              }`}
+                            >
+                              <div className="p-4 sm:p-5">
+                                {/* Ward Header */}
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                                  <div>
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                      <span
+                                        className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                                          editingWard
+                                            ? "bg-gradient-to-r from-amber-100 to-yellow-200 text-amber-800"
+                                            : "bg-gradient-to-r from-blue-100 to-cyan-200 text-blue-800"
+                                        }`}
+                                      >
+                                        {ward.ward_code}
+                                      </span>
+                                      <span
+                                        className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                                          ward.is_operational
+                                            ? "bg-gradient-to-r from-green-100 to-emerald-200 text-green-800"
+                                            : "bg-gradient-to-r from-yellow-100 to-amber-200 text-yellow-800"
+                                        }`}
+                                      >
+                                        <div
+                                          className={`w-2 h-2 rounded-full mr-2 ${
+                                            ward.is_operational ? "bg-green-500" : "bg-yellow-500"
+                                          }`}
+                                        />
+                                        {ward.is_operational ? "Operational" : "Non-Op"}
+                                      </span>
+                                    </div>
+                                    <h4
+                                      className={`text-base sm:text-lg font-bold mb-1 ${
+                                        editingWard ? "text-amber-900" : "text-gray-900"
+                                      }`}
+                                    >
+                                      {ward.name}
+                                    </h4>
+                                    <p className="text-xs text-gray-500">
+                                      {ward.ward_type} • Floor {ward.floor_number || "N/A"}
+                                      {ward.wing && ` • ${ward.wing} Wing`}
+                                    </p>
+                                  </div>
+                                  <div className="flex space-x-1">
+                                    <button
+                                      onClick={() => handleEditWard(ward)}
+                                      className={`p-2 rounded-lg transition-colors duration-200 ${
+                                        editingWard
+                                          ? "text-amber-600 hover:bg-amber-100"
+                                          : "text-blue-600 hover:bg-blue-100"
+                                      }`}
+                                      title="Edit ward"
+                                    >
+                                      <Edit2 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={async () => {
+                                        const bookedBedIds = await fetchBookedBeds(ward.id);
+                                        if (bookedBedIds.length > 0) {
+                                          showPopup(
+                                            "Cannot Delete Ward",
+                                            "This ward has beds with active bookings. Please cancel all bookings first.",
+                                            "error"
+                                          );
+                                        } else {
+                                          const { data: wardBeds } = await supabase
+                                            .from("beds")
+                                            .select("id")
+                                            .eq("ward_id", ward.id);
+                                          setItemToDelete({
+                                            type: "ward",
+                                            id: ward.id,
+                                            name: ward.name,
+                                            bedCount: wardBeds?.length || 0,
+                                          });
+                                          if (wardBeds && wardBeds.length > 0) {
+                                            showPopup(
+                                              "Delete Ward with Beds",
+                                              `This ward has ${wardBeds.length} bed(s). Deleting will remove all beds. Are you sure you want to proceed?`,
+                                              "warning"
+                                            );
+                                          } else {
+                                            showPopup(
+                                              "Delete Ward",
+                                              `Are you sure you want to delete "${ward.name}"?`,
+                                              "warning"
+                                            );
+                                          }
+                                        }
+                                      }}
+                                      className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
+                                      title="Delete ward"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Ward Description */}
+                                {ward.description && (
+                                  <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-2">
+                                    {ward.description}
+                                  </p>
+                                )}
+
+                                {/* Stats Section - Responsive */}
+                                <div
+                                  className={`p-3 rounded-lg mb-4 ${
+                                    editingWard
+                                      ? "bg-gradient-to-r from-amber-50 to-yellow-50"
+                                      : "bg-gradient-to-r from-blue-50 to-cyan-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="text-center flex-1">
+                                      <div
+                                        className={`text-xl sm:text-2xl font-bold ${
+                                          editingWard ? "text-amber-700" : "text-blue-700"
+                                        }`}
+                                      >
+                                        {ward.total_beds || 0}
+                                      </div>
+                                      <div className="text-xs text-gray-600">Total Beds</div>
+                                    </div>
+                                    <div className="h-8 sm:h-10 w-px bg-gray-300"></div>
+                                    <div className="text-center flex-1">
+                                      <div className="text-xl sm:text-2xl font-bold text-green-600">
+                                        {ward.available_beds || 0}
+                                      </div>
+                                      <div className="text-xs text-gray-600">Available</div>
+                                    </div>
+                                    <div className="h-8 sm:h-10 w-px bg-gray-300"></div>
+                                    <div className="text-center flex-1">
+                                      <div className="text-xl sm:text-2xl font-bold text-gray-700">
+                                        {ward.occupied_beds || 0}
+                                      </div>
+                                      <div className="text-xs text-gray-600">Occupied</div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Ward Details */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                                    <MapPin
+                                      className={`w-4 h-4 mr-2 ${
+                                        editingWard ? "text-amber-500" : "text-gray-400"
+                                      }`}
+                                    />
+                                    <span>
+                                      Floor {ward.floor_number || "N/A"}
+                                      {ward.wing && ` • ${ward.wing} Wing`}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                                    <Clock
+                                      className={`w-4 h-4 mr-2 ${
+                                        editingWard ? "text-amber-500" : "text-gray-400"
+                                      }`}
+                                    />
+                                    <span>
+                                      Updated: {new Date(ward.updated_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* View Beds Button */}
+                                <button
+                                  onClick={() => {
+                                    setSelectedWard(ward);
+                                    setActiveTab("beds");
+                                  }}
+                                  className={`w-full mt-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors duration-200 ${
+                                    editingWard
+                                      ? "bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700"
+                                      : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-center">
+                                    <Bed className="w-4 h-4 mr-2" />
+                                    View Beds ({ward.total_beds || 0})
+                                  </div>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Beds Tab - similarly responsive (keeping all logic, only responsive classes) */}
+          {activeTab === "beds" && (
+            <div className="animate-slide-in">
+              {/* Bed Form - responsive */}
+              {editingBed || showBedForm ? (
+                <div
+                  className={`rounded-xl border p-4 sm:p-5 shadow-sm sticky top-6 ${
+                    editingBed
+                      ? "bg-gradient-to-br from-orange-50 to-amber-50 border-amber-200"
+                      : "bg-gradient-to-br from-teal-50 to-emerald-50 border-emerald-200"
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4 sm:mb-6">
+                    <div>
+                      <h3
+                        className={`text-base sm:text-lg font-bold flex items-center ${
+                          editingBed ? "text-amber-900" : "text-emerald-900"
                         }`}
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div>
-                            <h3
-                              className={`text-lg font-bold flex items-center ${
-                                editingWard ? "text-amber-900" : "text-blue-900"
-                              }`}
-                            >
-                              {editingWard ? (
-                                <>
-                                  <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
-                                  Edit Ward Mode
-                                </>
-                              ) : (
-                                <>
-                                  <Building className="w-5 h-5 text-blue-600 mr-2" />
-                                  All Wards
-                                </>
-                              )}
-                            </h3>
-                            <p
-                              className={`text-sm mt-1 ${
-                                editingWard ? "text-amber-700" : "text-blue-700"
-                              }`}
-                            >
-                              {editingWard
-                                ? "Currently editing a ward. Click cancel to exit edit mode."
-                                : "Manage your facility's wards and their configurations"}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="text-sm text-gray-500">
-                              <span className="font-semibold text-green-600">
-                                {wards.filter((w) => w.is_operational).length}
-                              </span>{" "}
-                              operational •
-                              <span
-                                className={`font-semibold ml-2 ${
-                                  editingWard
-                                    ? "text-amber-600"
-                                    : "text-blue-600"
-                                }`}
-                              >
-                                {" "}
-                                {wards.reduce(
-                                  (acc, w) => acc + w.total_beds,
-                                  0
-                                )}
-                              </span>{" "}
-                              total beds
+                        {editingBed ? (
+                          <>
+                            <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mr-2" />
+                            Edit Bed
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mr-2" />
+                            Create New Bed
+                          </>
+                        )}
+                      </h3>
+                      <p
+                        className={`text-xs sm:text-sm mt-1 ${
+                          editingBed ? "text-amber-700" : "text-emerald-700"
+                        }`}
+                      >
+                        {editingBed
+                          ? "Update bed details and features"
+                          : "Add a new bed to selected ward"}
+                      </p>
+                    </div>
+                    {!editingBed && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          resetBed();
+                          setEditingBed(null);
+                          setSelectedWard(null);
+                          setShowBedForm(false);
+                        }}
+                        disabled={submitting}
+                        className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium text-sm"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Ward Selection */}
+                  <div
+                    className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl border ${
+                      editingBed
+                        ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
+                        : "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-200"
+                    }`}
+                  >
+                    <label
+                      className={`block text-sm font-semibold mb-2 flex items-center ${
+                        editingBed ? "text-amber-800" : "text-emerald-800"
+                      }`}
+                    >
+                      <Building
+                        className={`w-4 h-4 mr-2 ${
+                          editingBed ? "text-amber-600" : "text-emerald-600"
+                        }`}
+                      />
+                      Select Ward *
+                    </label>
+                    {wards.length === 0 ? (
+                      <div className="text-center py-4">
+                        <AlertCircle
+                          className={`w-8 h-8 mx-auto mb-2 ${
+                            editingBed ? "text-amber-500" : "text-emerald-500"
+                          }`}
+                        />
+                        <p className="text-sm text-gray-600 mb-2">No wards available. Create a ward first.</p>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("wards")}
+                          className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                            editingBed
+                              ? "text-amber-600 hover:text-amber-800 hover:bg-amber-100"
+                              : "text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100"
+                          }`}
+                        >
+                          <ArrowRight className="w-4 h-4 mr-1" />
+                          Go to Wards
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <select
+                          value={selectedWard?.id || ""}
+                          onChange={(e) => {
+                            const ward = wards.find((w) => w.id === e.target.value);
+                            setSelectedWard(ward);
+                            if (!editingBed && ward) {
+                              setBedValue("floor_number", ward.floor_number);
+                              setBedValue("wing", ward.wing);
+                            }
+                          }}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          disabled={!!editingBed || submitting}
+                        >
+                          <option value="">Select a ward...</option>
+                          {wards
+                            .filter((w) => w.is_operational)
+                            .map((ward) => (
+                              <option key={ward.id} value={ward.id}>
+                                {ward.ward_code} - {ward.name} ({ward.available_beds}/{ward.total_beds} beds)
+                              </option>
+                            ))}
+                        </select>
+
+                        {selectedWard && (
+                          <div
+                            className={`p-3 rounded-lg border ${
+                              editingBed
+                                ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
+                                : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200"
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900">{selectedWard.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {selectedWard.ward_code} •{" "}
+                                  {selectedWard.floor_number ? `Floor ${selectedWard.floor_number}` : "No floor"}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p
+                                  className={`text-sm font-semibold ${
+                                    editingBed ? "text-amber-600" : "text-emerald-600"
+                                  }`}
+                                >
+                                  {selectedWard.available_beds}/{selectedWard.total_beds}
+                                </p>
+                                <p className="text-xs text-gray-500">beds available</p>
+                              </div>
                             </div>
-                            {/* Create Ward Button */}
-                            <button
-                              onClick={() => {
-                                resetWard();
-                                setEditingWard(null);
-                                setShowWardForm(true);
-                              }}
-                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-sm font-medium"
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Create Ward
-                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedWard || editingBed ? (
+                    <form onSubmit={handleSubmitBed(onSubmitBed)} className="space-y-4">
+                      {/* Form fields (content unchanged) - responsive classes added */}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Bed Number *
+                            </label>
+                            <input
+                              {...registerBed("bed_number")}
+                              type="text"
+                              className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                bedErrors.bed_number
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300 hover:border-gray-400"
+                              }`}
+                              placeholder="e.g., BED-001"
+                              disabled={submitting}
+                            />
+                            {bedErrors.bed_number && (
+                              <p className="mt-2 text-sm text-red-600 flex items-center">
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {bedErrors.bed_number.message}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Bed Label
+                            </label>
+                            <input
+                              {...registerBed("bed_label")}
+                              type="text"
+                              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                              placeholder="e.g., Near Window"
+                              disabled={submitting}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Bed Type *
+                          </label>
+                          <Controller
+                            name="bed_type"
+                            control={controlBed}
+                            render={({ field }) => (
+                              <select
+                                {...field}
+                                className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                  bedErrors.bed_type
+                                    ? "border-red-300 bg-red-50"
+                                    : "border-gray-300 hover:border-gray-400"
+                                }`}
+                                disabled={submitting}
+                              >
+                                <option value="">Select bed type...</option>
+                                <option value="GENERAL">🛏️ General Bed</option>
+                                <option value="ICU">💙 ICU Bed</option>
+                                <option value="PRIVATE">🚪 Private Room</option>
+                                <option value="ISOLATION">🦠 Isolation Room</option>
+                                <option value="MATERNITY">🤰 Maternity Bed</option>
+                                <option value="PEDIATRIC">👶 Pediatric Bed</option>
+                              </select>
+                            )}
+                          />
+                          {bedErrors.bed_type && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center">
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              {bedErrors.bed_type.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Room Number
+                            </label>
+                            <input
+                              {...registerBed("room_number")}
+                              type="text"
+                              className="w-full px-2 sm:px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Room-101"
+                              disabled={submitting}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Floor
+                            </label>
+                            <input
+                              {...registerBed("floor_number", { valueAsNumber: true })}
+                              type="number"
+                              className="w-full px-2 sm:px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="0"
+                              disabled={submitting}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Wing
+                            </label>
+                            <input
+                              {...registerBed("wing")}
+                              type="text"
+                              className="w-full px-2 sm:px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="East"
+                              disabled={submitting}
+                            />
                           </div>
                         </div>
                       </div>
 
-                      {wards.length === 0 ? (
-                        <div className="p-8 text-center">
-                          <div
-                            className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                              editingWard
-                                ? "bg-gradient-to-br from-amber-100 to-yellow-100"
-                                : "bg-gradient-to-br from-blue-100 to-cyan-100"
+                      {/* Equipment & Features sections (unchanged content) */}
+                      <div className="space-y-4">
+                        <div
+                          className={`p-3 sm:p-4 rounded-xl border ${
+                            editingBed
+                              ? "bg-gradient-to-r from-orange-50 to-amber-100 border-amber-200"
+                              : "bg-gradient-to-r from-teal-50 to-emerald-100 border-emerald-200"
+                          }`}
+                        >
+                          <h4
+                            className={`text-xs sm:text-sm font-semibold mb-3 flex items-center ${
+                              editingBed ? "text-amber-800" : "text-emerald-800"
                             }`}
                           >
-                            <Building
-                              className={`w-8 h-8 ${
-                                editingWard ? "text-amber-400" : "text-blue-400"
+                            <Zap
+                              className={`w-4 h-4 mr-2 ${
+                                editingBed ? "text-amber-600" : "text-emerald-600"
                               }`}
                             />
-                          </div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                            No wards created yet
+                            Equipment Capabilities
                           </h4>
-                          <p className="text-gray-600 mb-4">
-                            Create your first ward to start adding beds and
-                            managing patient accommodations
-                          </p>
-                          <button
-                            onClick={() => {
-                              resetWard();
-                              setShowWardForm(true);
-                            }}
-                            className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
-                              editingWard
-                                ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:ring-amber-500"
-                                : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
-                            }`}
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create First Ward
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="p-4">
-                          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-                            {wards.map((ward) => (
-                              <div
-                                key={ward.id}
-                                className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
-                                  editingWard?.id === ward.id
-                                    ? "bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-300 ring-2 ring-amber-500 ring-opacity-50"
-                                    : editingWard
-                                    ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 hover:border-amber-300"
-                                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
-                                }`}
-                              >
-                                <div className="p-5">
-                                  {/* Ward Header */}
-                                  <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <span
-                                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                            editingWard
-                                              ? "bg-gradient-to-r from-amber-100 to-yellow-200 text-amber-800"
-                                              : "bg-gradient-to-r from-blue-100 to-cyan-200 text-blue-800"
-                                          }`}
-                                        >
-                                          {ward.ward_code}
-                                        </span>
-                                        <span
-                                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                            ward.is_operational
-                                              ? "bg-gradient-to-r from-green-100 to-emerald-200 text-green-800"
-                                              : "bg-gradient-to-r from-yellow-100 to-amber-200 text-yellow-800"
-                                          }`}
-                                        >
-                                          <div
-                                            className={`w-2 h-2 rounded-full mr-2 ${
-                                              ward.is_operational
-                                                ? "bg-green-500"
-                                                : "bg-yellow-500"
-                                            }`}
-                                          />
-                                          {ward.is_operational
-                                            ? "Operational"
-                                            : "Non-Op"}
-                                        </span>
-                                      </div>
-                                      <h4
-                                        className={`text-lg font-bold mb-1 ${
-                                          editingWard
-                                            ? "text-amber-900"
-                                            : "text-gray-900"
-                                        }`}
-                                      >
-                                        {ward.name}
-                                      </h4>
-                                      <p className="text-xs text-gray-500">
-                                        {ward.ward_type} • Floor{" "}
-                                        {ward.floor_number || "N/A"}
-                                        {ward.wing && ` • ${ward.wing} Wing`}
-                                      </p>
-                                    </div>
-                                    <div className="flex space-x-1">
-                                      <button
-                                        onClick={() => handleEditWard(ward)}
-                                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                                          editingWard
-                                            ? "text-amber-600 hover:bg-amber-100"
-                                            : "text-blue-600 hover:bg-blue-100"
-                                        }`}
-                                        title="Edit ward"
-                                      >
-                                        <Edit2 className="w-4 h-4" />
-                                      </button>
-                                      <button
-                                        onClick={async () => {
-                                          // Check for active bookings in this ward
-                                          const bookedBedIds =
-                                            await fetchBookedBeds(ward.id);
-                                          if (bookedBedIds.length > 0) {
-                                            showPopup(
-                                              "Cannot Delete Ward",
-                                              "This ward has beds with active bookings. Please cancel all bookings first.",
-                                              "error"
-                                            );
-                                          } else {
-                                            // Check if ward has any beds
-                                            const { data: wardBeds } =
-                                              await supabase
-                                                .from("beds")
-                                                .select("id")
-                                                .eq("ward_id", ward.id);
-
-                                            setItemToDelete({
-                                              type: "ward",
-                                              id: ward.id,
-                                              name: ward.name,
-                                              bedCount: wardBeds?.length || 0,
-                                            });
-
-                                            if (
-                                              wardBeds &&
-                                              wardBeds.length > 0
-                                            ) {
-                                              showPopup(
-                                                "Delete Ward with Beds",
-                                                `This ward has ${wardBeds.length} bed(s). Deleting will remove all beds. Are you sure you want to proceed?`,
-                                                "warning"
-                                              );
-                                            } else {
-                                              showPopup(
-                                                "Delete Ward",
-                                                `Are you sure you want to delete "${ward.name}"?`,
-                                                "warning"
-                                              );
-                                            }
-                                          }
-                                        }}
-                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
-                                        title="Delete ward"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  {/* Ward Description */}
-                                  {ward.description && (
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                      {ward.description}
-                                    </p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                            {[
+                              { field: "has_oxygen", label: "Oxygen", icon: "💨" },
+                              { field: "has_suction", label: "Suction", icon: "🌀" },
+                              { field: "has_monitor", label: "Monitor", icon: "📊" },
+                              { field: "has_ventilator", label: "Ventilator", icon: "🫁" },
+                              { field: "has_infusion_pump", label: "Infusion Pump", icon: "💉" },
+                            ].map(({ field, label, icon }) => (
+                              <div key={field} className="flex items-center">
+                                <Controller
+                                  name={field as keyof typeof bedSchema._type}
+                                  control={controlBed}
+                                  render={({ field: controllerField }) => (
+                                    <input
+                                      type="checkbox"
+                                      checked={controllerField.value}
+                                      onChange={controllerField.onChange}
+                                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                      disabled={submitting}
+                                      id={field}
+                                    />
                                   )}
-
-                                  {/* Stats Section */}
-                                  <div
-                                    className={`p-3 rounded-lg mb-4 ${
-                                      editingWard
-                                        ? "bg-gradient-to-r from-amber-50 to-yellow-50"
-                                        : "bg-gradient-to-r from-blue-50 to-cyan-50"
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div className="text-center">
-                                        <div
-                                          className={`text-2xl font-bold ${
-                                            editingWard
-                                              ? "text-amber-700"
-                                              : "text-blue-700"
-                                          }`}
-                                        >
-                                          {ward.total_beds || 0}
-                                        </div>
-                                        <div className="text-xs text-gray-600">
-                                          Total Beds
-                                        </div>
-                                      </div>
-                                      <div className="h-10 w-px bg-gray-300"></div>
-                                      <div className="text-center">
-                                        <div className="text-2xl font-bold text-green-600">
-                                          {ward.available_beds || 0}
-                                        </div>
-                                        <div className="text-xs text-gray-600">
-                                          Available
-                                        </div>
-                                      </div>
-                                      <div className="h-10 w-px bg-gray-300"></div>
-                                      <div className="text-center">
-                                        <div className="text-2xl font-bold text-gray-700">
-                                          {ward.occupied_beds || 0}
-                                        </div>
-                                        <div className="text-xs text-gray-600">
-                                          Occupied
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Ward Details */}
-                                  <div className="space-y-2">
-                                    <div className="flex items-center text-sm text-gray-600">
-                                      <MapPin
-                                        className={`w-4 h-4 mr-2 ${
-                                          editingWard
-                                            ? "text-amber-500"
-                                            : "text-gray-400"
-                                        }`}
-                                      />
-                                      <span>
-                                        Floor {ward.floor_number || "N/A"}
-                                        {ward.wing && ` • ${ward.wing} Wing`}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                      <Clock
-                                        className={`w-4 h-4 mr-2 ${
-                                          editingWard
-                                            ? "text-amber-500"
-                                            : "text-gray-400"
-                                        }`}
-                                      />
-                                      <span>
-                                        Updated:{" "}
-                                        {new Date(
-                                          ward.updated_at
-                                        ).toLocaleDateString()}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {/* View Beds Button */}
-                                  <button
-                                    onClick={() => {
-                                      setSelectedWard(ward);
-                                      setActiveTab("beds");
-                                    }}
-                                    className={`w-full mt-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                                      editingWard
-                                        ? "bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700"
-                                        : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-center">
-                                      <Bed className="w-4 h-4 mr-2" />
-                                      View Beds ({ward.total_beds || 0})
-                                    </div>
-                                  </button>
-                                </div>
+                                />
+                                <label htmlFor={field} className="ml-2 text-xs sm:text-sm text-gray-700 cursor-pointer flex items-center">
+                                  <span className="mr-1">{icon}</span>
+                                  {label}
+                                </label>
                               </div>
                             ))}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
-            {/* Beds Tab */}
-            {activeTab === "beds" && (
-              <div className="animate-slide-in">
-                {editingBed || showBedForm ? (
-                  <div
-                    className={`rounded-xl border p-5 shadow-sm sticky top-6 ${
-                      editingBed
-                        ? "bg-gradient-to-br from-orange-50 to-amber-50 border-amber-200"
-                        : "bg-gradient-to-br from-teal-50 to-emerald-50 border-emerald-200"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-6">
-                      {/* LEFT SIDE – Title & Description */}
-                      <div>
-                        <h3
-                          className={`text-lg font-bold flex items-center ${
-                            editingBed ? "text-amber-900" : "text-emerald-900"
+                        <div
+                          className={`p-3 sm:p-4 rounded-xl border ${
+                            editingBed
+                              ? "bg-gradient-to-r from-yellow-50 to-orange-100 border-amber-200"
+                              : "bg-gradient-to-r from-cyan-50 to-teal-100 border-emerald-200"
                           }`}
                         >
-                          {editingBed ? (
-                            <>
-                              <Edit2 className="w-5 h-5 text-amber-600 mr-2" />
-                              Edit Bed
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-5 h-5 text-emerald-600 mr-2" />
-                              Create New Bed
-                            </>
-                          )}
-                        </h3>
-
-                        <p
-                          className={`text-sm mt-1 ${
-                            editingBed ? "text-amber-700" : "text-emerald-700"
-                          }`}
-                        >
-                          {editingBed
-                            ? "Update bed details and features"
-                            : "Add a new bed to selected ward"}
-                        </p>
+                          <h4
+                            className={`text-xs sm:text-sm font-semibold mb-3 flex items-center ${
+                              editingBed ? "text-amber-800" : "text-emerald-800"
+                            }`}
+                          >
+                            <Star
+                              className={`w-4 h-4 mr-2 ${
+                                editingBed ? "text-amber-600" : "text-emerald-600"
+                              }`}
+                            />
+                            Special Features
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
+                            {[
+                              { field: "is_bariatric", label: "Bariatric", icon: "⚖️" },
+                              { field: "is_isolation", label: "Isolation", icon: "🦠" },
+                              { field: "is_negative_pressure", label: "Negative Pressure", icon: "🌬️" },
+                              { field: "is_wheelchair_accessible", label: "Accessible", icon: "♿" },
+                            ].map(({ field, label, icon }) => (
+                              <div key={field} className="flex items-center">
+                                <Controller
+                                  name={field as keyof typeof bedSchema._type}
+                                  control={controlBed}
+                                  render={({ field: controllerField }) => (
+                                    <input
+                                      type="checkbox"
+                                      checked={controllerField.value}
+                                      onChange={controllerField.onChange}
+                                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                      disabled={submitting}
+                                      id={`feature-${field}`}
+                                    />
+                                  )}
+                                />
+                                <label htmlFor={`feature-${field}`} className="ml-2 text-xs sm:text-sm text-gray-700 cursor-pointer flex items-center">
+                                  <span className="mr-1">{icon}</span>
+                                  {label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
 
-                      {/* RIGHT SIDE – Cancel Button */}
-                      {!editingBed && (
+                      {/* Form Actions */}
+                      <div
+                        className={`flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t ${
+                          editingBed ? "border-amber-200" : "border-emerald-200"
+                        }`}
+                      >
+                        <button
+                          type="submit"
+                          disabled={submitting || (!selectedWard && !editingBed)}
+                          className={`w-full sm:flex-1 text-white py-2 sm:py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
+                            editingBed
+                              ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 focus:ring-amber-500"
+                              : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500"
+                          }`}
+                        >
+                          {submitting ? (
+                            <div className="flex items-center justify-center">
+                              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                              {editingBed ? "Updating..." : "Creating..."}
+                            </div>
+                          ) : editingBed ? (
+                            <div className="flex items-center justify-center">
+                              <Save className="w-5 h-5 mr-2" />
+                              Update Bed
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center">
+                              <Plus className="w-5 h-5 mr-2" />
+                              Create Bed
+                            </div>
+                          )}
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => {
@@ -2394,873 +4450,360 @@ const onSubmitBed = async (data) => {
                         >
                           Cancel
                         </button>
-                      )}
-                    </div>
-
-                    {/* Ward Selection */}
-                    <div
-                      className={`mb-6 p-4 rounded-xl border ${
-                        editingBed
-                          ? "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-200"
-                          : "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-200"
-                      }`}
-                    >
-                      <label
-                        className={`block text-sm font-semibold mb-2 flex items-center ${
-                          editingBed ? "text-amber-800" : "text-emerald-800"
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="text-center py-6 sm:py-8">
+                      <div
+                        className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center ${
+                          editingBed
+                            ? "bg-gradient-to-br from-amber-100 to-yellow-100"
+                            : "bg-gradient-to-br from-emerald-100 to-teal-100"
                         }`}
                       >
-                        <Building
-                          className={`w-4 h-4 mr-2 ${
-                            editingBed ? "text-amber-600" : "text-emerald-600"
+                        <Bed
+                          className={`w-6 h-6 sm:w-8 sm:h-8 ${
+                            editingBed ? "text-amber-400" : "text-emerald-400"
                           }`}
                         />
-                        Select Ward *
-                      </label>
-                      {wards.length === 0 ? (
-                        <div className="text-center py-4">
-                          <AlertCircle
-                            className={`w-8 h-8 mx-auto mb-2 ${
-                              editingBed ? "text-amber-500" : "text-emerald-500"
-                            }`}
-                          />
-                          <p className="text-sm text-gray-600 mb-2">
-                            No wards available. Create a ward first.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab("wards")}
-                            className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                              editingBed
-                                ? "text-amber-600 hover:text-amber-800 hover:bg-amber-100"
-                                : "text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100"
-                            }`}
-                          >
-                            <ArrowRight className="w-4 h-4 mr-1" />
-                            Go to Wards
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <select
-                            value={selectedWard?.id || ""}
-                            onChange={(e) => {
-                              const ward = wards.find(
-                                (w) => w.id === e.target.value
-                              );
-                              setSelectedWard(ward);
-                              if (!editingBed && ward) {
-                                setBedValue("floor_number", ward.floor_number);
-                                setBedValue("wing", ward.wing);
-                              }
-                            }}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            disabled={!!editingBed || submitting}
-                          >
-                            <option value="">Select a ward...</option>
-                            {wards
-                              .filter((w) => w.is_operational)
-                              .map((ward) => (
-                                <option key={ward.id} value={ward.id}>
-                                  {ward.ward_code} - {ward.name} (
-                                  {ward.available_beds}/{ward.total_beds} beds)
-                                </option>
-                              ))}
-                          </select>
+                      </div>
+                      <p className="text-gray-600 font-medium">Please select a ward to create beds</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={`rounded-xl border shadow-sm ${
+                    editingBed
+                      ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200"
+                      : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
+                  }`}
+                >
+                  <div
+                    className={`p-4 sm:p-5 border-b ${
+                      editingBed ? "border-sky-200" : "border-blue-200"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h3
+                          className={`text-base sm:text-lg font-bold flex items-center ${
+                            editingBed ? "text-sky-900" : "text-blue-900"
+                          }`}
+                        >
+                          {editingBed ? (
+                            <>
+                              <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 mr-2" />
+                              Edit Bed Mode
+                            </>
+                          ) : (
+                            <>
+                              <Bed className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
+                              All Beds
+                            </>
+                          )}
+                        </h3>
+                        <p
+                          className={`text-xs sm:text-sm mt-1 ${
+                            editingBed ? "text-sky-700" : "text-blue-700"
+                          }`}
+                        >
+                          {selectedWard ? `Beds in ${selectedWard.name}` : "All beds across all wards"}
+                        </p>
+                      </div>
 
-                          {selectedWard && (
-                            <div
-                              className={`p-3 rounded-lg border ${
-                                editingBed
-                                  ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200"
-                                  : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">
-                                    {selectedWard.name}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {selectedWard.ward_code} •{" "}
-                                    {selectedWard.floor_number
-                                      ? `Floor ${selectedWard.floor_number}`
-                                      : "No floor"}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <p
-                                    className={`text-sm font-semibold ${
-                                      editingBed
-                                        ? "text-amber-600"
-                                        : "text-emerald-600"
-                                    }`}
-                                  >
-                                    {selectedWard.available_beds}/
-                                    {selectedWard.total_beds}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    beds available
-                                  </p>
-                                </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Ward Filter Buttons */}
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setSelectedWard(null)}
+                            className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                              !selectedWard
+                                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
+                                : "text-gray-600 hover:bg-gray-100 border border-gray-300"
+                            }`}
+                          >
+                            All Wards
+                          </button>
+                          {wards
+                            .filter((w) => w.is_operational)
+                            .slice(0, 2)
+                            .map((ward) => (
+                              <button
+                                key={ward.id}
+                                onClick={() => setSelectedWard(ward)}
+                                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                                  selectedWard?.id === ward.id
+                                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
+                                    : "text-gray-600 hover:bg-gray-100 border border-gray-300"
+                                }`}
+                              >
+                                {ward.ward_code}
+                              </button>
+                            ))}
+                          {wards.filter((w) => w.is_operational).length > 2 && (
+                            <div className="relative group">
+                              <button className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg">
+                                +{wards.filter((w) => w.is_operational).length - 2} more
+                              </button>
+                              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">
+                                {wards
+                                  .filter((w) => w.is_operational)
+                                  .slice(2)
+                                  .map((ward) => (
+                                    <button
+                                      key={ward.id}
+                                      onClick={() => setSelectedWard(ward)}
+                                      className="w-full text-left px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                      {ward.ward_code} - {ward.name}
+                                    </button>
+                                  ))}
                               </div>
                             </div>
                           )}
                         </div>
+
+                        <button
+                          onClick={() => {
+                            resetBed();
+                            setEditingBed(null);
+                            setShowBedForm(true);
+                          }}
+                          className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-xs sm:text-sm font-medium"
+                        >
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Create Bed
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {beds.filter((bed) => !selectedWard || bed.ward_id === selectedWard.id).length === 0 ? (
+                    <div className="p-6 sm:p-8 text-center">
+                      <div
+                        className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center ${
+                          editingBed
+                            ? "bg-gradient-to-br from-sky-100 to-cyan-100"
+                            : "bg-gradient-to-br from-blue-100 to-cyan-100"
+                        }`}
+                      >
+                        <Bed
+                          className={`w-6 h-6 sm:w-8 sm:h-8 ${
+                            editingBed ? "text-sky-400" : "text-blue-400"
+                          }`}
+                        />
+                      </div>
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                        No beds found
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        {selectedWard
+                          ? `No beds in ${selectedWard.name}. Create the first bed for this ward.`
+                          : "No beds available. Create beds by selecting a ward."}
+                      </p>
+                      {selectedWard && (
+                        <button
+                          onClick={() => {
+                            resetBed();
+                            setShowBedForm(true);
+                          }}
+                          className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
+                            editingBed
+                              ? "bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 focus:ring-sky-500"
+                              : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
+                          }`}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Bed
+                        </button>
                       )}
                     </div>
-
-                    {selectedWard || editingBed ? (
-                      <form
-                        onSubmit={handleSubmitBed(onSubmitBed)}
-                        className="space-y-4"
-                      >
-                        {/* Basic Information */}
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Bed Number *
-                              </label>
-                              <input
-                                {...registerBed("bed_number")}
-                                type="text"
-                                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                  bedErrors.bed_number
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-gray-300 hover:border-gray-400"
+                  ) : (
+                    <div className="p-3 sm:p-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        {beds
+                          .filter((bed) => !selectedWard || bed.ward_id === selectedWard.id)
+                          .map((bed) => {
+                            const statusDisplay = getBedStatusDisplay(bed.display_status, bed.is_booked);
+                            return (
+                              <div
+                                key={bed.id}
+                                className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
+                                  editingBed?.id === bed.id
+                                    ? "bg-gradient-to-br from-sky-100 to-cyan-100 border-sky-300 ring-2 ring-sky-500 ring-opacity-50"
+                                    : editingBed
+                                    ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200 hover:border-sky-300"
+                                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
                                 }`}
-                                placeholder="e.g., BED-001"
-                                disabled={submitting}
-                              />
-                              {bedErrors.bed_number && (
-                                <p className="mt-2 text-sm text-red-600 flex items-center">
-                                  <AlertCircle className="w-4 h-4 mr-1" />
-                                  {bedErrors.bed_number.message}
-                                </p>
-                              )}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Bed Label
-                              </label>
-                              <input
-                                {...registerBed("bed_label")}
-                                type="text"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="e.g., Near Window"
-                                disabled={submitting}
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              Bed Type *
-                            </label>
-                            <Controller
-                              name="bed_type"
-                              control={controlBed}
-                              render={({ field }) => (
-                                <select
-                                  {...field}
-                                  className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    bedErrors.bed_type
-                                      ? "border-red-300 bg-red-50"
-                                      : "border-gray-300 hover:border-gray-400"
-                                  }`}
-                                  disabled={submitting}
-                                >
-                                  <option value="">Select bed type...</option>
-                                  <option value="GENERAL">
-                                    🛏️ General Bed
-                                  </option>
-                                  <option value="ICU">💙 ICU Bed</option>
-                                  <option value="PRIVATE">
-                                    🚪 Private Room
-                                  </option>
-                                  <option value="ISOLATION">
-                                    🦠 Isolation Room
-                                  </option>
-                                  <option value="MATERNITY">
-                                    🤰 Maternity Bed
-                                  </option>
-                                  <option value="PEDIATRIC">
-                                    👶 Pediatric Bed
-                                  </option>
-                                </select>
-                              )}
-                            />
-                            {bedErrors.bed_type && (
-                              <p className="mt-2 text-sm text-red-600 flex items-center">
-                                <AlertCircle className="w-4 h-4 mr-1" />
-                                {bedErrors.bed_type.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Room Number
-                              </label>
-                              <input
-                                {...registerBed("room_number")}
-                                type="text"
-                                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Room-101"
-                                disabled={submitting}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Floor
-                              </label>
-                              <input
-                                {...registerBed("floor_number", {
-                                  valueAsNumber: true,
-                                })}
-                                type="number"
-                                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="0"
-                                disabled={submitting}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Wing
-                              </label>
-                              <input
-                                {...registerBed("wing")}
-                                type="text"
-                                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="East"
-                                disabled={submitting}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Equipment & Features */}
-                        <div className="space-y-4">
-                          <div
-                            className={`p-4 rounded-xl border ${
-                              editingBed
-                                ? "bg-gradient-to-r from-orange-50 to-amber-100 border-amber-200"
-                                : "bg-gradient-to-r from-teal-50 to-emerald-100 border-emerald-200"
-                            }`}
-                          >
-                            <h4
-                              className={`text-sm font-semibold mb-3 flex items-center ${
-                                editingBed
-                                  ? "text-amber-800"
-                                  : "text-emerald-800"
-                              }`}
-                            >
-                              <Zap
-                                className={`w-4 h-4 mr-2 ${
-                                  editingBed
-                                    ? "text-amber-600"
-                                    : "text-emerald-600"
-                                }`}
-                              />
-                              Equipment Capabilities
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                              {[
-                                {
-                                  field: "has_oxygen",
-                                  label: "Oxygen",
-                                  icon: "💨",
-                                },
-                                {
-                                  field: "has_suction",
-                                  label: "Suction",
-                                  icon: "🌀",
-                                },
-                                {
-                                  field: "has_monitor",
-                                  label: "Monitor",
-                                  icon: "📊",
-                                },
-                                {
-                                  field: "has_ventilator",
-                                  label: "Ventilator",
-                                  icon: "🫁",
-                                },
-                                {
-                                  field: "has_infusion_pump",
-                                  label: "Infusion Pump",
-                                  icon: "💉",
-                                },
-                              ].map(({ field, label, icon }) => (
-                                <div key={field} className="flex items-center">
-                                  <Controller
-                                    name={field as keyof typeof bedSchema._type}
-                                    control={controlBed}
-                                    render={({ field: controllerField }) => (
-                                      <input
-                                        type="checkbox"
-                                        checked={controllerField.value}
-                                        onChange={controllerField.onChange}
-                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        disabled={submitting}
-                                        id={field}
-                                      />
-                                    )}
-                                  />
-                                  <label
-                                    htmlFor={field}
-                                    className="ml-2 text-sm text-gray-700 cursor-pointer flex items-center"
-                                  >
-                                    <span className="mr-1">{icon}</span>
-                                    {label}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div
-                            className={`p-4 rounded-xl border ${
-                              editingBed
-                                ? "bg-gradient-to-r from-yellow-50 to-orange-100 border-amber-200"
-                                : "bg-gradient-to-r from-cyan-50 to-teal-100 border-emerald-200"
-                            }`}
-                          >
-                            <h4
-                              className={`text-sm font-semibold mb-3 flex items-center ${
-                                editingBed
-                                  ? "text-amber-800"
-                                  : "text-emerald-800"
-                              }`}
-                            >
-                              <Star
-                                className={`w-4 h-4 mr-2 ${
-                                  editingBed
-                                    ? "text-amber-600"
-                                    : "text-emerald-600"
-                                }`}
-                              />
-                              Special Features
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
-                              {[
-                                {
-                                  field: "is_bariatric",
-                                  label: "Bariatric",
-                                  icon: "⚖️",
-                                },
-                                {
-                                  field: "is_isolation",
-                                  label: "Isolation",
-                                  icon: "🦠",
-                                },
-                                {
-                                  field: "is_negative_pressure",
-                                  label: "Negative Pressure",
-                                  icon: "🌬️",
-                                },
-                                {
-                                  field: "is_wheelchair_accessible",
-                                  label: "Accessible",
-                                  icon: "♿",
-                                },
-                              ].map(({ field, label, icon }) => (
-                                <div key={field} className="flex items-center">
-                                  <Controller
-                                    name={field as keyof typeof bedSchema._type}
-                                    control={controlBed}
-                                    render={({ field: controllerField }) => (
-                                      <input
-                                        type="checkbox"
-                                        checked={controllerField.value}
-                                        onChange={controllerField.onChange}
-                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        disabled={submitting}
-                                        id={`feature-${field}`}
-                                      />
-                                    )}
-                                  />
-                                  <label
-                                    htmlFor={`feature-${field}`}
-                                    className="ml-2 text-sm text-gray-700 cursor-pointer flex items-center"
-                                  >
-                                    <span className="mr-1">{icon}</span>
-                                    {label}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Form Actions */}
-                        <div
-                          className={`flex space-x-3 pt-4 border-t ${
-                            editingBed
-                              ? "border-amber-200"
-                              : "border-emerald-200"
-                          }`}
-                        >
-                          <button
-                            type="submit"
-                            disabled={
-                              submitting || (!selectedWard && !editingBed)
-                            }
-                            className={`flex-1 text-white py-3 px-4 rounded-lg font-medium hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm ${
-                              editingBed
-                                ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 focus:ring-amber-500"
-                                : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500"
-                            }`}
-                          >
-                            {submitting ? (
-                              <div className="flex items-center justify-center">
-                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                {editingBed ? "Updating..." : "Creating..."}
-                              </div>
-                            ) : editingBed ? (
-                              <div className="flex items-center justify-center">
-                                <Save className="w-5 h-5 mr-2" />
-                                Update Bed
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create Bed
-                              </div>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              resetBed();
-                              setEditingBed(null);
-                              setSelectedWard(null);
-                              setShowBedForm(false);
-                            }}
-                            disabled={submitting}
-                            className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      <div className="text-center py-8">
-                        <div
-                          className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                            editingBed
-                              ? "bg-gradient-to-br from-amber-100 to-yellow-100"
-                              : "bg-gradient-to-br from-emerald-100 to-teal-100"
-                          }`}
-                        >
-                          <Bed
-                            className={`w-8 h-8 ${
-                              editingBed ? "text-amber-400" : "text-emerald-400"
-                            }`}
-                          />
-                        </div>
-                        <p className="text-gray-600 font-medium">
-                          Please select a ward to create beds
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    className={`rounded-xl border shadow-sm ${
-                      editingBed
-                        ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200"
-                        : "bg-gradient-to-br from-cyan-50 to-blue-50 border-blue-200"
-                    }`}
-                  >
-                    <div
-                      className={`p-5 border-b ${
-                        editingBed ? "border-sky-200" : "border-blue-200"
-                      }`}
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                          <h3
-                            className={`text-lg font-bold flex items-center ${
-                              editingBed ? "text-sky-900" : "text-blue-900"
-                            }`}
-                          >
-                            {editingBed ? (
-                              <>
-                                <Edit2 className="w-5 h-5 text-sky-600 mr-2" />
-                                Edit Bed Mode
-                              </>
-                            ) : (
-                              <>
-                                <Bed className="w-5 h-5 text-blue-600 mr-2" />
-                                All Beds
-                              </>
-                            )}
-                          </h3>
-                          <p
-                            className={`text-sm mt-1 ${
-                              editingBed ? "text-sky-700" : "text-blue-700"
-                            }`}
-                          >
-                            {selectedWard
-                              ? `Beds in ${selectedWard.name}`
-                              : "All beds across all wards"}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          {/* Ward Filter Buttons */}
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() => setSelectedWard(null)}
-                              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                                !selectedWard
-                                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
-                                  : "text-gray-600 hover:bg-gray-100 border border-gray-300"
-                              }`}
-                            >
-                              All Wards
-                            </button>
-                            {wards
-                              .filter((w) => w.is_operational)
-                              .slice(0, 3)
-                              .map((ward) => (
-                                <button
-                                  key={ward.id}
-                                  onClick={() => setSelectedWard(ward)}
-                                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                                    selectedWard?.id === ward.id
-                                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm"
-                                      : "text-gray-600 hover:bg-gray-100 border border-gray-300"
-                                  }`}
-                                >
-                                  {ward.ward_code}
-                                </button>
-                              ))}
-                            {wards.filter((w) => w.is_operational).length >
-                              3 && (
-                              <div className="relative group">
-                                <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg">
-                                  +
-                                  {wards.filter((w) => w.is_operational)
-                                    .length - 3}{" "}
-                                  more
-                                </button>
-                                <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">
-                                  {wards
-                                    .filter((w) => w.is_operational)
-                                    .slice(3)
-                                    .map((ward) => (
-                                      <button
-                                        key={ward.id}
-                                        onClick={() => setSelectedWard(ward)}
-                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                      >
-                                        {ward.ward_code} - {ward.name}
-                                      </button>
-                                    ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Create Bed Button - Only show when not editing */}
-
-                          <button
-                            onClick={() => {
-                              resetBed();
-                              setEditingBed(null);
-                              setShowBedForm(true);
-                            }}
-                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm text-sm font-medium"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create Bed
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {beds.filter(
-                      (bed) => !selectedWard || bed.ward_id === selectedWard.id
-                    ).length === 0 ? (
-                      <div className="p-8 text-center">
-                        <div
-                          className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                            editingBed
-                              ? "bg-gradient-to-br from-sky-100 to-cyan-100"
-                              : "bg-gradient-to-br from-blue-100 to-cyan-100"
-                          }`}
-                        >
-                          <Bed
-                            className={`w-8 h-8 ${
-                              editingBed ? "text-sky-400" : "text-blue-400"
-                            }`}
-                          />
-                        </div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                          No beds found
-                        </h4>
-                        <p className="text-gray-600 mb-4">
-                          {selectedWard
-                            ? `No beds in ${selectedWard.name}. Create the first bed for this ward.`
-                            : "No beds available. Create beds by selecting a ward."}
-                        </p>
-                        {selectedWard && (
-                          <button
-                            onClick={() => {
-                              resetBed();
-                              setShowBedForm(true);
-                            }}
-                            className={`inline-flex items-center px-4 py-2 text-white rounded-lg hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm ${
-                              editingBed
-                                ? "bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 focus:ring-sky-500"
-                                : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500"
-                            }`}
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add First Bed
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-                          {beds
-                            .filter(
-                              (bed) =>
-                                !selectedWard || bed.ward_id === selectedWard.id
-                            )
-                            .map((bed) => {
-                              const statusDisplay = getBedStatusDisplay(
-                                bed.display_status,
-                                bed.is_booked
-                              );
-
-                              return (
-                                <div
-                                  key={bed.id}
-                                  className={`rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${
-                                    editingBed?.id === bed.id
-                                      ? "bg-gradient-to-br from-sky-100 to-cyan-100 border-sky-300 ring-2 ring-sky-500 ring-opacity-50"
-                                      : editingBed
-                                      ? "bg-gradient-to-br from-sky-50 to-cyan-50 border-sky-200 hover:border-sky-300"
-                                      : "bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-300"
-                                  }`}
-                                >
-                                  <div className="p-5">
-                                    {/* Bed Header */}
-                                    <div className="flex justify-between items-start mb-4">
-                                      <div>
-                                        <div className="flex items-center flex-wrap gap-2 mb-2">
-                                          <span
-                                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getBedTypeColor(
-                                              bed.bed_type
-                                            )}`}
-                                          >
-                                            {getBedTypeIcon(bed.bed_type)}
-                                            <span className="ml-1">
-                                              {bed.bed_type.replace("_", " ")}
-                                            </span>
-                                          </span>
-                                          <span
-                                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusDisplay.color}`}
-                                          >
-                                            <div
-                                              className={`w-2 h-2 rounded-full mr-2 ${statusDisplay.dotColor}`}
-                                            />
-                                            {statusDisplay.text}
-                                          </span>
-                                        </div>
-
-                                        <div className="flex items-baseline space-x-2 mb-3">
-                                          <h4
-                                            className={`text-xl font-bold ${
-                                              editingBed
-                                                ? "text-sky-900"
-                                                : "text-gray-900"
-                                            }`}
-                                          >
-                                            {bed.bed_number}
-                                          </h4>
-                                          {bed.bed_label && (
-                                            <span className="text-gray-600 font-medium">
-                                              {bed.bed_label}
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        {/* Ward Info */}
-                                        <div className="flex items-center text-sm text-gray-600 mb-3">
-                                          <Building
-                                            className={`w-4 h-4 mr-2 ${
-                                              editingBed
-                                                ? "text-sky-500"
-                                                : "text-gray-400"
-                                            }`}
-                                          />
-                                          <span className="font-medium">
-                                            {bed.wards?.name || "Unknown Ward"}
-                                          </span>
-                                          {bed.room_number && (
-                                            <span className="mx-2">•</span>
-                                          )}
-                                          {bed.room_number && (
-                                            <span>Room {bed.room_number}</span>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      <div className="flex space-x-1">
-                                        <button
-                                          onClick={() => handleEditBed(bed)}
-                                          className={`p-2 rounded-lg transition-colors duration-200 ${
-                                            editingBed
-                                              ? "text-sky-600 hover:bg-sky-100"
-                                              : "text-blue-600 hover:bg-blue-100"
-                                          }`}
-                                          title="Edit bed"
-                                          disabled={bed.is_booked}
+                              >
+                                <div className="p-4 sm:p-5">
+                                  {/* Bed Header */}
+                                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                                    <div>
+                                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <span
+                                          className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${getBedTypeColor(
+                                            bed.bed_type
+                                          )}`}
                                         >
-                                          <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            confirmDeleteBed(
-                                              bed.id,
-                                              bed.bed_number
-                                            )
-                                          }
-                                          className={`p-2 rounded-lg transition-colors duration-200 ${
-                                            bed.is_booked
-                                              ? "text-gray-400 hover:bg-gray-100 cursor-not-allowed"
-                                              : "text-red-600 hover:bg-red-100"
-                                          }`}
-                                          title={
-                                            bed.is_booked
-                                              ? "Cannot delete booked bed"
-                                              : "Delete bed"
-                                          }
-                                          disabled={bed.is_booked}
+                                          {getBedTypeIcon(bed.bed_type)}
+                                          <span className="ml-1">{bed.bed_type.replace("_", " ")}</span>
+                                        </span>
+                                        <span
+                                          className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${statusDisplay.color}`}
                                         >
-                                          {bed.is_booked ? (
-                                            <Ban className="w-4 h-4" />
-                                          ) : (
-                                            <Trash2 className="w-4 h-4" />
-                                          )}
-                                        </button>
+                                          <div className={`w-2 h-2 rounded-full mr-2 ${statusDisplay.dotColor}`} />
+                                          {statusDisplay.text}
+                                        </span>
                                       </div>
-                                    </div>
 
-                                    {/* Stats Section */}
-                                    <div
-                                      className={`p-3 rounded-lg mb-4 ${
-                                        editingBed
-                                          ? "bg-gradient-to-r from-sky-50 to-cyan-50"
-                                          : "bg-gradient-to-r from-blue-50 to-cyan-50"
-                                      }`}
-                                    >
-                                      <div className="grid grid-cols-3 gap-3">
-                                        <div className="text-center">
-                                          <div
-                                            className={`text-lg font-bold ${
-                                              editingBed
-                                                ? "text-sky-700"
-                                                : "text-blue-700"
-                                            }`}
-                                          >
-                                            {bed.floor_number || "N/A"}
-                                          </div>
-                                          <div className="text-xs text-gray-600">
-                                            Floor
-                                          </div>
-                                        </div>
-                                        <div className="text-center">
-                                          <div className="text-lg font-bold text-gray-700">
-                                            {bed.wing || "N/A"}
-                                          </div>
-                                          <div className="text-xs text-gray-600">
-                                            Wing
-                                          </div>
-                                        </div>
-                                        <div className="text-center">
-                                          <div
-                                            className={`text-lg font-bold px-2 py-1 rounded ${
-                                              bed.is_active
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-gray-100 text-gray-800"
-                                            }`}
-                                          >
-                                            {bed.is_active
-                                              ? "Active"
-                                              : "Inactive"}
-                                          </div>
-                                          <div className="text-xs text-gray-600">
-                                            Status
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Booked Message */}
-                                    {bed.is_booked && (
-                                      <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg">
-                                        <div className="flex items-center text-sm text-purple-800">
-                                          <AlertCircle className="w-4 h-4 mr-2 text-purple-600" />
-                                          <span className="font-medium">
-                                            This bed is booked
-                                          </span>
-                                        </div>
-                                        <p className="text-xs text-purple-600 mt-1">
-                                          Cannot edit or delete until booking is
-                                          cancelled.
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {/* Footer */}
-                                    <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                                      <div className="text-xs text-gray-500">
-                                        <span>ID: {bed.id.slice(0, 8)}...</span>
-                                        {bed.last_maintenance && (
-                                          <span className="ml-3">
-                                            Last maintenance:{" "}
-                                            {new Date(
-                                              bed.last_maintenance
-                                            ).toLocaleDateString()}
+                                      <div className="flex items-baseline flex-wrap gap-2 mb-3">
+                                        <h4
+                                          className={`text-lg sm:text-xl font-bold ${
+                                            editingBed ? "text-sky-900" : "text-gray-900"
+                                          }`}
+                                        >
+                                          {bed.bed_number}
+                                        </h4>
+                                        {bed.bed_label && (
+                                          <span className="text-gray-600 font-medium text-sm">
+                                            {bed.bed_label}
                                           </span>
                                         )}
                                       </div>
-                                      <div
-                                        className={`text-xs px-2 py-1 rounded ${
+
+                                      {/* Ward Info */}
+                                      <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600">
+                                        <Building
+                                          className={`w-4 h-4 mr-2 ${
+                                            editingBed ? "text-sky-500" : "text-gray-400"
+                                          }`}
+                                        />
+                                        <span className="font-medium">{bed.wards?.name || "Unknown Ward"}</span>
+                                        {bed.room_number && <span className="mx-2">•</span>}
+                                        {bed.room_number && <span>Room {bed.room_number}</span>}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex space-x-1">
+                                      <button
+                                        onClick={() => handleEditBed(bed)}
+                                        className={`p-2 rounded-lg transition-colors duration-200 ${
                                           editingBed
-                                            ? "bg-sky-100 text-sky-800"
-                                            : "bg-blue-100 text-blue-800"
+                                            ? "text-sky-600 hover:bg-sky-100"
+                                            : "text-blue-600 hover:bg-blue-100"
                                         }`}
+                                        title="Edit bed"
+                                        disabled={bed.is_booked}
                                       >
-                                        {bed.wards?.ward_code || "N/A"}
+                                        <Edit2 className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => confirmDeleteBed(bed.id, bed.bed_number)}
+                                        className={`p-2 rounded-lg transition-colors duration-200 ${
+                                          bed.is_booked
+                                            ? "text-gray-400 hover:bg-gray-100 cursor-not-allowed"
+                                            : "text-red-600 hover:bg-red-100"
+                                        }`}
+                                        title={bed.is_booked ? "Cannot delete booked bed" : "Delete bed"}
+                                        disabled={bed.is_booked}
+                                      >
+                                        {bed.is_booked ? <Ban className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Stats Section */}
+                                  <div
+                                    className={`p-3 rounded-lg mb-4 ${
+                                      editingBed
+                                        ? "bg-gradient-to-r from-sky-50 to-cyan-50"
+                                        : "bg-gradient-to-r from-blue-50 to-cyan-50"
+                                    }`}
+                                  >
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                      <div className="text-center">
+                                        <div
+                                          className={`text-base sm:text-lg font-bold ${
+                                            editingBed ? "text-sky-700" : "text-blue-700"
+                                          }`}
+                                        >
+                                          {bed.floor_number || "N/A"}
+                                        </div>
+                                        <div className="text-xs text-gray-600">Floor</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-base sm:text-lg font-bold text-gray-700">
+                                          {bed.wing || "N/A"}
+                                        </div>
+                                        <div className="text-xs text-gray-600">Wing</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div
+                                          className={`text-base sm:text-lg font-bold px-2 py-1 rounded ${
+                                            bed.is_active
+                                              ? "bg-green-100 text-green-800"
+                                              : "bg-gray-100 text-gray-800"
+                                          }`}
+                                        >
+                                          {bed.is_active ? "Active" : "Inactive"}
+                                        </div>
+                                        <div className="text-xs text-gray-600">Status</div>
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Booked Message */}
+                                  {bed.is_booked && (
+                                    <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg">
+                                      <div className="flex items-center text-xs sm:text-sm text-purple-800">
+                                        <AlertCircle className="w-4 h-4 mr-2 text-purple-600" />
+                                        <span className="font-medium">This bed is booked</span>
+                                      </div>
+                                      <p className="text-xs text-purple-600 mt-1">
+                                        Cannot edit or delete until booking is cancelled.
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {/* Footer */}
+                                  <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                    <div className="text-xs text-gray-500">
+                                      <span>ID: {bed.id.slice(0, 8)}...</span>
+                                      {bed.last_maintenance && (
+                                        <span className="ml-3">
+                                          Last maintenance: {new Date(bed.last_maintenance).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div
+                                      className={`text-xs px-2 py-1 rounded ${
+                                        editingBed
+                                          ? "bg-sky-100 text-sky-800"
+                                          : "bg-blue-100 text-blue-800"
+                                      }`}
+                                    >
+                                      {bed.wards?.ward_code || "N/A"}
+                                    </div>
+                                  </div>
                                 </div>
-                              );
-                            })}
-                        </div>
+                              </div>
+                            );
+                          })}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default WardBedManagement;

@@ -2885,87 +2885,59 @@ if (!editingStaff) {
       </div>
     );
   }
+return (
+  <div className="space-y-6">
+    {/* Header – responsive centering + button alignment */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="text-center sm:text-left">
+        <h2 className="text-2xl font-bold">Staff Management</h2>
+        <p className="text-muted-foreground">
+          Manage staff for {userFacility?.facility_name || "your facility"}
+        </p>
+      </div>
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Staff Management</h2>
-          <p className="text-muted-foreground">
-            Manage staff for {userFacility?.facility_name || "your facility"}
-          </p>
-        </div>
-        {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            {(isMaintenance || !userHasStaff || editingStaff) ? (
-              <Button onClick={() => {
-                trackStaffAction('add_staff_click');
-                resetForm();
-                setIsAddDialogOpen(true);
-              }}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Staff Member
-              </Button>
-            ) : (
-              <Button 
-                disabled 
-                variant="outline"
-                title="Only maintenance staff can add multiple staff members"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Staff Member
-              </Button>
-            )}
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingStaff
-                  ? "Update staff member information"
-                  : `Add a new team member to ${userFacility?.facility_name || "your facility"}`}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
+      {/* Add Staff Button Dialog – unchanged */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogTrigger asChild>
+          {(isMaintenance || !userHasStaff || editingStaff) ? (
+            <Button onClick={() => {
+              trackStaffAction('add_staff_click');
+              resetForm();
+              setIsAddDialogOpen(true);
+            }}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Staff Member
+            </Button>
+          ) : (
+            <Button 
+              disabled 
+              variant="outline"
+              title="Only maintenance staff can add multiple staff members"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Staff Member
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          {/* Dialog content exactly as provided – unchanged */}
+          <DialogHeader>
+            <DialogTitle>
+              {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingStaff
+                ? "Update staff member information"
+                : `Create a new user account and add them as staff to ${userFacility?.facility_name || "your facility"}`}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold mb-4">Department / Services</h3>
+                <div className="grid grid-cols-2 gap-4 mt-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="employee_id">Employee ID</Label>
-                    <Input
-                      id="employee_id"
-                      value={formData.employee_id}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          employee_id: e.target.value,
-                        }))
-                      }
-                      placeholder="EMP-001"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="position">Position</Label>
-                    <Input
-                      id="position"
-                      value={formData.position}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          position: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g., Senior Doctor, Head Nurse"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="department_id">Department</Label>
+                    <Label htmlFor="department_id">Department *</Label>
                     <Select
                       value={formData.department_id}
                       onValueChange={(value) =>
@@ -2989,10 +2961,158 @@ if (!editingStaff) {
                     </Select>
                   </div>
                 </div>
+              </div>
+              {!editingStaff && (
+                <>
+                  <div className="border-b pb-4">
+                    <h3 className="text-lg font-semibold mb-4">User / Services</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="first_name">First Name *</Label>
+                        <Input
+                          id="first_name"
+                          value={formData.first_name}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              first_name: e.target.value,
+                            }))
+                          }
+                          placeholder="John"
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="last_name">Last Name *</Label>
+                        <Input
+                          id="last_name"
+                          value={formData.last_name}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              last_name: e.target.value,
+                            }))
+                          }
+                          placeholder="Doe"
+                          required
+                        />
+                      </div>
+                    </div>
 
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              email: e.target.value,
+                            }))
+                          }
+                          placeholder="john.doe@hospital.com"
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="phone_number">Phone Number</Label>
+                        <Input
+                          id="phone_number"
+                          value={formData.phone_number}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              phone_number: e.target.value,
+                            }))
+                          }
+                          placeholder="+1234567890"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="password">Password *</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={formData.password}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              password: e.target.value,
+                            }))
+                          }
+                          placeholder="••••••••"
+                          required={!editingStaff}
+                          minLength={6}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Minimum 6 characters
+                        </p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                        <Input
+                          id="confirmPassword"
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              confirmPassword: e.target.value,
+                            }))
+                          }
+                          placeholder="••••••••"
+                          required={!editingStaff}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className={!editingStaff ? "pt-4" : ""}>
+                <h3 className="text-lg font-semibold mb-4">Staff Details</h3>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="hire_date">Hire Date</Label>
+                    <Label htmlFor="employee_id">Employee ID *</Label>
+                    <Input
+                      id="employee_id"
+                      value={formData.employee_id}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          employee_id: e.target.value,
+                        }))
+                      }
+                      placeholder="EMP-001"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="position">Position *</Label>
+                    <Input
+                      id="position"
+                      value={formData.position}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          position: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g., Senior Doctor, Head Nurse"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="hire_date">Hire Date *</Label>
                     <Input
                       id="hire_date"
                       type="date"
@@ -3025,7 +3145,7 @@ if (!editingStaff) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 mt-4">
                   <div className="grid gap-2">
                     <Label htmlFor="shift">Shift</Label>
                     <Select
@@ -3072,489 +3192,184 @@ if (!editingStaff) {
                     </Select>
                   </div>
                 </div>
+
+                {editingStaff && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong> Editing staff member details only. 
+                      To change user account information (email, password, name), 
+                      please use the user management section.
+                    </p>
+                  </div>
+                )}
               </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {editingStaff ? "Update Staff Member" : "Add Staff Member"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog> */}
-         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                  <DialogTrigger asChild>
-                    {(isMaintenance || !userHasStaff || editingStaff) ? (
-                      <Button onClick={() => {
-                        trackStaffAction('add_staff_click');
-                        resetForm();
-                        setIsAddDialogOpen(true);
-                      }}>
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Add Staff Member
-                      </Button>
-                    ) : (
-                      <Button 
-                        disabled 
-                        variant="outline"
-                        title="Only maintenance staff can add multiple staff members"
-                      >
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Add Staff Member
-                      </Button>
-                    )}
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {editingStaff
-                          ? "Update staff member information"
-                          : `Create a new user account and add them as staff to ${userFacility?.facility_name || "your facility"}`}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit}>
-                      <div className="grid gap-4 py-4">
-                         <div className="border-b pb-4">
-                        <h3 className="text-lg font-semibold mb-4">Department / Services </h3>
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="department_id">Department *</Label>
-                              <Select
-                                value={formData.department_id}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    department_id: value,
-                                  }))
-                                }
-                                required
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {departments.map((dept) => (
-                                    <SelectItem key={dept.id} value={dept.id}>
-                                      {dept.type}{dept.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          </div>
-                        {!editingStaff && (
-                          <>
-                            <div className="border-b pb-4">
-                              <h3 className="text-lg font-semibold mb-4">User / Services</h3>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                  <Label htmlFor="first_name">First Name *</Label>
-                                  <Input
-                                    id="first_name"
-                                    value={formData.first_name}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        first_name: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="John"
-                                    required
-                                  />
-                                </div>
-                                <div className="grid gap-2">
-                                  <Label htmlFor="last_name">Last Name *</Label>
-                                  <Input
-                                    id="last_name"
-                                    value={formData.last_name}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        last_name: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="Doe"
-                                    required
-                                  />
-                                </div>
-                              </div>
-        
-                              <div className="grid grid-cols-2 gap-4 mt-4">
-                                <div className="grid gap-2">
-                                  <Label htmlFor="email">Email *</Label>
-                                  <Input
-                                    id="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        email: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="john.doe@hospital.com"
-                                    required
-                                  />
-                                </div>
-                                <div className="grid gap-2">
-                                  <Label htmlFor="phone_number">Phone Number</Label>
-                                  <Input
-                                    id="phone_number"
-                                    value={formData.phone_number}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        phone_number: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="+1234567890"
-                                  />
-                                </div>
-                              </div>
-        
-                              <div className="grid grid-cols-2 gap-4 mt-4">
-                                <div className="grid gap-2">
-                                  <Label htmlFor="password">Password *</Label>
-                                  <Input
-                                    id="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        password: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="••••••••"
-                                    required={!editingStaff}
-                                    minLength={6}
-                                  />
-                                  <p className="text-xs text-muted-foreground">
-                                    Minimum 6 characters
-                                  </p>
-                                </div>
-                                <div className="grid gap-2">
-                                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                                  <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={formData.confirmPassword}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        confirmPassword: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="••••••••"
-                                    required={!editingStaff}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        )}
-        
-                        <div className={!editingStaff ? "pt-4" : ""}>
-                          <h3 className="text-lg font-semibold mb-4">Staff Details</h3>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="employee_id">Employee ID *</Label>
-                              <Input
-                                id="employee_id"
-                                value={formData.employee_id}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    employee_id: e.target.value,
-                                  }))
-                                }
-                                placeholder="EMP-001"
-                                required
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="position">Position *</Label>
-                              <Input
-                                id="position"
-                                value={formData.position}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    position: e.target.value,
-                                  }))
-                                }
-                                placeholder="e.g., Senior Doctor, Head Nurse"
-                                required
-                              />
-                            </div>
-                          </div>
-        
-                          
-        
-                          <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="hire_date">Hire Date *</Label>
-                              <Input
-                                id="hire_date"
-                                type="date"
-                                value={formData.hire_date}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    hire_date: e.target.value,
-                                  }))
-                                }
-                                required
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="salary">Salary</Label>
-                              <Input
-                                id="salary"
-                                type="number"
-                                value={formData.salary}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    salary: parseFloat(e.target.value) || 0,
-                                  }))
-                                }
-                                placeholder="50000"
-                                min="0"
-                                step="0.01"
-                              />
-                            </div>
-                          </div>
-        
-                          <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="shift">Shift</Label>
-                              <Select
-                                value={formData.shift_schedule.shift}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    shift_schedule: {
-                                      ...prev.shift_schedule,
-                                      shift: value as any,
-                                    },
-                                  }))
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="morning">Morning</SelectItem>
-                                  <SelectItem value="evening">Evening</SelectItem>
-                                  <SelectItem value="night">Night</SelectItem>
-                                  <SelectItem value="rotating">Rotating</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="is_active">Status</Label>
-                              <Select
-                                value={formData.is_active.toString()}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    is_active: value === "true",
-                                  }))
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">Active</SelectItem>
-                                  <SelectItem value="false">Inactive</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-        
-                          {editingStaff && (
-                            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                              <p className="text-sm text-yellow-800">
-                                <strong>Note:</strong> Editing staff member details only. 
-                                To change user account information (email, password, name), 
-                                please use the user management section.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <DialogFooter>
-                        <Button type="button" variant="outline" onClick={resetForm}>
-                          Cancel
-                        </Button>
-                        <Button type="submit" disabled={isCreatingUser}>
-                          {isCreatingUser ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Creating...
-                            </>
-                          ) : (
-                            editingStaff ? "Update Staff Member" : "Create Staff Member"
-                          )}
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="facility-filter">Filter by Facility:</Label>
-          <Select value={selectedFacility} onValueChange={handleFacilityFilter}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Facilities</SelectItem>
-              {facilities.map((facility) => (
-                <SelectItem key={facility.id} value={facility.id}>
-                  {facility.facility_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="department-filter">Filter by Department:</Label>
-          <Select
-            value={selectedDepartment}
-            onValueChange={handleDepartmentFilter}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept.id} value={dept.id}>
-                  {dept.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Users className="mr-2 h-5 w-5" />
-            Staff Directory - {userFacility?.facility_name}
-          </CardTitle>
-          <CardDescription>
-            {filteredStaff.length} staff members in {userFacility?.facility_name}
-            {selectedDepartment !== "all" && ` in selected department`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredStaff.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No Staff Members</h3>
-              <p className="text-muted-foreground mt-2">
-                {selectedDepartment !== "all"
-                  ? "No staff found with the selected filters."
-                  : `Get started by adding your first staff member to ${userFacility?.facility_name}.`}
-              </p>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Staff Details</TableHead>
-                  <TableHead>Position & Department</TableHead>
-                  <TableHead>Experience</TableHead>
-                  <TableHead>Shift</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStaff.map((staffMember) => (
-                  <TableRow key={staffMember.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">
-                          {staffMember.profile?.first_name}{" "}
-                          {staffMember.profile?.last_name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {staffMember.employee_id}
-                        </p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {staffMember.profile?.phone_number || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Mail className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {staffMember.profile?.email || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <Badge
-                          className={getPositionColor(staffMember.position)}
-                          variant="outline"
-                        >
-                          {staffMember.position}
-                        </Badge>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {staffMember.department?.name || "N/A"}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Calendar className="mr-1 h-3 w-3" />
-                        <span className="text-sm">
-                          Hired: {formatDate(staffMember.hire_date)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {calculateExperience(staffMember.hire_date)}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {staffMember.shift_schedule?.shift || "N/A"}
-                      </Badge>
-                      {staffMember.shift_schedule?.start_time &&
-                        staffMember.shift_schedule?.end_time && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {staffMember.shift_schedule.start_time} -{" "}
-                            {staffMember.shift_schedule.end_time}
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isCreatingUser}>
+                {isCreatingUser ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating...
+                  </>
+                ) : (
+                  editingStaff ? "Update Staff Member" : "Create Staff Member"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+
+    {/* Filters – responsive grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="facility-filter">Filter by Facility:</Label>
+        <Select value={selectedFacility} onValueChange={handleFacilityFilter}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Facilities</SelectItem>
+            {facilities.map((facility) => (
+              <SelectItem key={facility.id} value={facility.id}>
+                {facility.facility_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="department-filter">Filter by Department:</Label>
+        <Select
+          value={selectedDepartment}
+          onValueChange={handleDepartmentFilter}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Departments</SelectItem>
+            {departments.map((dept) => (
+              <SelectItem key={dept.id} value={dept.id}>
+                {dept.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Users className="mr-2 h-5 w-5" />
+          Staff Directory - {userFacility?.facility_name}
+        </CardTitle>
+        <CardDescription>
+          {filteredStaff.length} staff members in {userFacility?.facility_name}
+          {selectedDepartment !== "all" && ` in selected department`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {filteredStaff.length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="h-12 w-12 mx-auto text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">No Staff Members</h3>
+            <p className="text-muted-foreground mt-2">
+              {selectedDepartment !== "all"
+                ? "No staff found with the selected filters."
+                : `Get started by adding your first staff member to ${userFacility?.facility_name}.`}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop table – hidden on mobile/tablet */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Staff Details</TableHead>
+                    <TableHead>Position & Department</TableHead>
+                    <TableHead>Experience</TableHead>
+                    <TableHead>Shift</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStaff.map((staffMember) => (
+                    <TableRow key={staffMember.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">
+                            {staffMember.profile?.first_name}{" "}
+                            {staffMember.profile?.last_name}
                           </p>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(staffMember.is_active)}>
-                        {staffMember.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
+                          <p className="text-sm text-muted-foreground">
+                            {staffMember.employee_id}
+                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Phone className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {staffMember.profile?.phone_number || "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {staffMember.profile?.email || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <Badge
+                            className={getPositionColor(staffMember.position)}
+                            variant="outline"
+                          >
+                            {staffMember.position}
+                          </Badge>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {staffMember.department?.name || "N/A"}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          <span className="text-sm">
+                            Hired: {formatDate(staffMember.hire_date)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {calculateExperience(staffMember.hire_date)}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {staffMember.shift_schedule?.shift || "N/A"}
+                        </Badge>
+                        {staffMember.shift_schedule?.start_time &&
+                          staffMember.shift_schedule?.end_time && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {staffMember.shift_schedule.start_time} -{" "}
+                              {staffMember.shift_schedule.end_time}
+                            </p>
+                          )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(staffMember.is_active)}>
+                          {staffMember.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -3563,17 +3378,6 @@ if (!editingStaff) {
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
-                        {/* ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            disabled
-                            title="You can only edit your own staff record"
-                          >
-                            <Edit className="h-3 w-3 opacity-50" />
-                          </Button>
-                        )} */}
-                        {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -3587,28 +3391,826 @@ if (!editingStaff) {
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
-                        {/* ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            disabled
-                            className="text-red-300"
-                            title="You can only delete your own staff record"
-                          >
-                            <Trash2 className="h-3 w-3 opacity-50" />
-                          </Button> */}
-                        {/* )} */}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile/Tablet card view – visible below md breakpoint */}
+            <div className="md:hidden space-y-4">
+              {filteredStaff.map((staffMember) => (
+                <div key={staffMember.id} className="border rounded-lg p-4 bg-white shadow-sm space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-base">
+                        {staffMember.profile?.first_name} {staffMember.profile?.last_name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{staffMember.employee_id}</p>
+                    </div>
+                    <Badge className={getStatusColor(staffMember.is_active)}>
+                      {staffMember.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Position:</span>{" "}
+                      <Badge className={getPositionColor(staffMember.position)} variant="outline">
+                        {staffMember.position}
+                      </Badge>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Department:</span>{" "}
+                      {staffMember.department?.name || "N/A"}
+                    </div>
+                    <div className="col-span-2 flex items-center">
+                      <Calendar className="mr-1 h-3 w-3 text-muted-foreground" />
+                      <span>Hired: {formatDate(staffMember.hire_date)}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({calculateExperience(staffMember.hire_date)})
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Shift:</span>{" "}
+                      {staffMember.shift_schedule?.shift || "N/A"}
+                    </div>
+                    {staffMember.shift_schedule?.start_time && staffMember.shift_schedule?.end_time && (
+                      <div>
+                        <span className="text-muted-foreground">Hours:</span>{" "}
+                        {staffMember.shift_schedule.start_time} - {staffMember.shift_schedule.end_time}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+                    )}
+                  </div>
+
+                  <div className="flex flex-col space-y-1 text-sm border-t pt-2">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      <span>{staffMember.profile?.phone_number || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-3 w-3 text-muted-foreground" />
+                      <span className="truncate">{staffMember.profile?.email || "N/A"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-2 pt-2 border-t">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(staffMember)}
+                      title={isMaintenance ? "Maintenance access - full edit rights" : "Edit your own record"}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this staff member?')) {
+                          handleDelete(staffMember.id);
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-700"
+                      title={isMaintenance ? "Maintenance access - full delete rights" : "Delete your own record"}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  </div>
+);
+  // return (
+  //   <div className="space-y-6">
+  //     <div className="flex items-center justify-between">
+  //       <div>
+  //         <h2 className="text-2xl font-bold">Staff Management</h2>
+  //         <p className="text-muted-foreground">
+  //           Manage staff for {userFacility?.facility_name || "your facility"}
+  //         </p>
+  //       </div>
+  //       {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+  //         <DialogTrigger asChild>
+  //           {(isMaintenance || !userHasStaff || editingStaff) ? (
+  //             <Button onClick={() => {
+  //               trackStaffAction('add_staff_click');
+  //               resetForm();
+  //               setIsAddDialogOpen(true);
+  //             }}>
+  //               <Plus className="mr-2 h-4 w-4" />
+  //               Add Staff Member
+  //             </Button>
+  //           ) : (
+  //             <Button 
+  //               disabled 
+  //               variant="outline"
+  //               title="Only maintenance staff can add multiple staff members"
+  //             >
+  //               <Plus className="mr-2 h-4 w-4" />
+  //               Add Staff Member
+  //             </Button>
+  //           )}
+  //         </DialogTrigger>
+  //         <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+  //           <DialogHeader>
+  //             <DialogTitle>
+  //               {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
+  //             </DialogTitle>
+  //             <DialogDescription>
+  //               {editingStaff
+  //                 ? "Update staff member information"
+  //                 : `Add a new team member to ${userFacility?.facility_name || "your facility"}`}
+  //             </DialogDescription>
+  //           </DialogHeader>
+  //           <form onSubmit={handleSubmit}>
+  //             <div className="grid gap-4 py-4">
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="employee_id">Employee ID</Label>
+  //                   <Input
+  //                     id="employee_id"
+  //                     value={formData.employee_id}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         employee_id: e.target.value,
+  //                       }))
+  //                     }
+  //                     placeholder="EMP-001"
+  //                     required
+  //                   />
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="position">Position</Label>
+  //                   <Input
+  //                     id="position"
+  //                     value={formData.position}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         position: e.target.value,
+  //                       }))
+  //                     }
+  //                     placeholder="e.g., Senior Doctor, Head Nurse"
+  //                     required
+  //                   />
+  //                 </div>
+  //               </div>
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="department_id">Department</Label>
+  //                   <Select
+  //                     value={formData.department_id}
+  //                     onValueChange={(value) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         department_id: value,
+  //                       }))
+  //                     }
+  //                     required
+  //                   >
+  //                     <SelectTrigger>
+  //                       <SelectValue placeholder="Select department" />
+  //                     </SelectTrigger>
+  //                     <SelectContent>
+  //                       {departments.map((dept) => (
+  //                         <SelectItem key={dept.id} value={dept.id}>
+  //                           {dept.type}{dept.name}
+  //                         </SelectItem>
+  //                       ))}
+  //                     </SelectContent>
+  //                   </Select>
+  //                 </div>
+  //               </div>
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="hire_date">Hire Date</Label>
+  //                   <Input
+  //                     id="hire_date"
+  //                     type="date"
+  //                     value={formData.hire_date}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         hire_date: e.target.value,
+  //                       }))
+  //                     }
+  //                     required
+  //                   />
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="salary">Salary</Label>
+  //                   <Input
+  //                     id="salary"
+  //                     type="number"
+  //                     value={formData.salary}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         salary: parseFloat(e.target.value) || 0,
+  //                       }))
+  //                     }
+  //                     placeholder="50000"
+  //                     min="0"
+  //                     step="0.01"
+  //                   />
+  //                 </div>
+  //               </div>
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="shift">Shift</Label>
+  //                   <Select
+  //                     value={formData.shift_schedule.shift}
+  //                     onValueChange={(value) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         shift_schedule: {
+  //                           ...prev.shift_schedule,
+  //                           shift: value as any,
+  //                         },
+  //                       }))
+  //                     }
+  //                   >
+  //                     <SelectTrigger>
+  //                       <SelectValue />
+  //                     </SelectTrigger>
+  //                     <SelectContent>
+  //                       <SelectItem value="morning">Morning</SelectItem>
+  //                       <SelectItem value="evening">Evening</SelectItem>
+  //                       <SelectItem value="night">Night</SelectItem>
+  //                       <SelectItem value="rotating">Rotating</SelectItem>
+  //                     </SelectContent>
+  //                   </Select>
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="is_active">Status</Label>
+  //                   <Select
+  //                     value={formData.is_active.toString()}
+  //                     onValueChange={(value) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         is_active: value === "true",
+  //                       }))
+  //                     }
+  //                   >
+  //                     <SelectTrigger>
+  //                       <SelectValue />
+  //                     </SelectTrigger>
+  //                     <SelectContent>
+  //                       <SelectItem value="true">Active</SelectItem>
+  //                       <SelectItem value="false">Inactive</SelectItem>
+  //                     </SelectContent>
+  //                   </Select>
+  //                 </div>
+  //               </div>
+  //             </div>
+  //             <DialogFooter>
+  //               <Button type="button" variant="outline" onClick={resetForm}>
+  //                 Cancel
+  //               </Button>
+  //               <Button type="submit">
+  //                 {editingStaff ? "Update Staff Member" : "Add Staff Member"}
+  //               </Button>
+  //             </DialogFooter>
+  //           </form>
+  //         </DialogContent>
+  //       </Dialog> */}
+  //        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+  //                 <DialogTrigger asChild>
+  //                   {(isMaintenance || !userHasStaff || editingStaff) ? (
+  //                     <Button onClick={() => {
+  //                       trackStaffAction('add_staff_click');
+  //                       resetForm();
+  //                       setIsAddDialogOpen(true);
+  //                     }}>
+  //                       <UserPlus className="mr-2 h-4 w-4" />
+  //                       Add Staff Member
+  //                     </Button>
+  //                   ) : (
+  //                     <Button 
+  //                       disabled 
+  //                       variant="outline"
+  //                       title="Only maintenance staff can add multiple staff members"
+  //                     >
+  //                       <UserPlus className="mr-2 h-4 w-4" />
+  //                       Add Staff Member
+  //                     </Button>
+  //                   )}
+  //                 </DialogTrigger>
+  //                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+  //                   <DialogHeader>
+  //                     <DialogTitle>
+  //                       {editingStaff ? "Edit Staff Member" : "Add New Staff Member"}
+  //                     </DialogTitle>
+  //                     <DialogDescription>
+  //                       {editingStaff
+  //                         ? "Update staff member information"
+  //                         : `Create a new user account and add them as staff to ${userFacility?.facility_name || "your facility"}`}
+  //                     </DialogDescription>
+  //                   </DialogHeader>
+  //                   <form onSubmit={handleSubmit}>
+  //                     <div className="grid gap-4 py-4">
+  //                        <div className="border-b pb-4">
+  //                       <h3 className="text-lg font-semibold mb-4">Department / Services </h3>
+  //                       <div className="grid grid-cols-2 gap-4 mt-4">
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="department_id">Department *</Label>
+  //                             <Select
+  //                               value={formData.department_id}
+  //                               onValueChange={(value) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   department_id: value,
+  //                                 }))
+  //                               }
+  //                               required
+  //                             >
+  //                               <SelectTrigger>
+  //                                 <SelectValue placeholder="Select department" />
+  //                               </SelectTrigger>
+  //                               <SelectContent>
+  //                                 {departments.map((dept) => (
+  //                                   <SelectItem key={dept.id} value={dept.id}>
+  //                                     {dept.type}{dept.name}
+  //                                   </SelectItem>
+  //                                 ))}
+  //                               </SelectContent>
+  //                             </Select>
+  //                           </div>
+  //                         </div>
+  //                         </div>
+  //                       {!editingStaff && (
+  //                         <>
+  //                           <div className="border-b pb-4">
+  //                             <h3 className="text-lg font-semibold mb-4">User / Services</h3>
+  //                             <div className="grid grid-cols-2 gap-4">
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="first_name">First Name *</Label>
+  //                                 <Input
+  //                                   id="first_name"
+  //                                   value={formData.first_name}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       first_name: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="John"
+  //                                   required
+  //                                 />
+  //                               </div>
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="last_name">Last Name *</Label>
+  //                                 <Input
+  //                                   id="last_name"
+  //                                   value={formData.last_name}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       last_name: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="Doe"
+  //                                   required
+  //                                 />
+  //                               </div>
+  //                             </div>
+        
+  //                             <div className="grid grid-cols-2 gap-4 mt-4">
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="email">Email *</Label>
+  //                                 <Input
+  //                                   id="email"
+  //                                   type="email"
+  //                                   value={formData.email}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       email: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="john.doe@hospital.com"
+  //                                   required
+  //                                 />
+  //                               </div>
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="phone_number">Phone Number</Label>
+  //                                 <Input
+  //                                   id="phone_number"
+  //                                   value={formData.phone_number}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       phone_number: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="+1234567890"
+  //                                 />
+  //                               </div>
+  //                             </div>
+        
+  //                             <div className="grid grid-cols-2 gap-4 mt-4">
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="password">Password *</Label>
+  //                                 <Input
+  //                                   id="password"
+  //                                   type="password"
+  //                                   value={formData.password}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       password: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="••••••••"
+  //                                   required={!editingStaff}
+  //                                   minLength={6}
+  //                                 />
+  //                                 <p className="text-xs text-muted-foreground">
+  //                                   Minimum 6 characters
+  //                                 </p>
+  //                               </div>
+  //                               <div className="grid gap-2">
+  //                                 <Label htmlFor="confirmPassword">Confirm Password *</Label>
+  //                                 <Input
+  //                                   id="confirmPassword"
+  //                                   type="password"
+  //                                   value={formData.confirmPassword}
+  //                                   onChange={(e) =>
+  //                                     setFormData((prev) => ({
+  //                                       ...prev,
+  //                                       confirmPassword: e.target.value,
+  //                                     }))
+  //                                   }
+  //                                   placeholder="••••••••"
+  //                                   required={!editingStaff}
+  //                                 />
+  //                               </div>
+  //                             </div>
+  //                           </div>
+  //                         </>
+  //                       )}
+        
+  //                       <div className={!editingStaff ? "pt-4" : ""}>
+  //                         <h3 className="text-lg font-semibold mb-4">Staff Details</h3>
+                          
+  //                         <div className="grid grid-cols-2 gap-4">
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="employee_id">Employee ID *</Label>
+  //                             <Input
+  //                               id="employee_id"
+  //                               value={formData.employee_id}
+  //                               onChange={(e) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   employee_id: e.target.value,
+  //                                 }))
+  //                               }
+  //                               placeholder="EMP-001"
+  //                               required
+  //                             />
+  //                           </div>
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="position">Position *</Label>
+  //                             <Input
+  //                               id="position"
+  //                               value={formData.position}
+  //                               onChange={(e) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   position: e.target.value,
+  //                                 }))
+  //                               }
+  //                               placeholder="e.g., Senior Doctor, Head Nurse"
+  //                               required
+  //                             />
+  //                           </div>
+  //                         </div>
+        
+                          
+        
+  //                         <div className="grid grid-cols-2 gap-4 mt-4">
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="hire_date">Hire Date *</Label>
+  //                             <Input
+  //                               id="hire_date"
+  //                               type="date"
+  //                               value={formData.hire_date}
+  //                               onChange={(e) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   hire_date: e.target.value,
+  //                                 }))
+  //                               }
+  //                               required
+  //                             />
+  //                           </div>
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="salary">Salary</Label>
+  //                             <Input
+  //                               id="salary"
+  //                               type="number"
+  //                               value={formData.salary}
+  //                               onChange={(e) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   salary: parseFloat(e.target.value) || 0,
+  //                                 }))
+  //                               }
+  //                               placeholder="50000"
+  //                               min="0"
+  //                               step="0.01"
+  //                             />
+  //                           </div>
+  //                         </div>
+        
+  //                         <div className="grid grid-cols-2 gap-4 mt-4">
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="shift">Shift</Label>
+  //                             <Select
+  //                               value={formData.shift_schedule.shift}
+  //                               onValueChange={(value) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   shift_schedule: {
+  //                                     ...prev.shift_schedule,
+  //                                     shift: value as any,
+  //                                   },
+  //                                 }))
+  //                               }
+  //                             >
+  //                               <SelectTrigger>
+  //                                 <SelectValue />
+  //                               </SelectTrigger>
+  //                               <SelectContent>
+  //                                 <SelectItem value="morning">Morning</SelectItem>
+  //                                 <SelectItem value="evening">Evening</SelectItem>
+  //                                 <SelectItem value="night">Night</SelectItem>
+  //                                 <SelectItem value="rotating">Rotating</SelectItem>
+  //                               </SelectContent>
+  //                             </Select>
+  //                           </div>
+  //                           <div className="grid gap-2">
+  //                             <Label htmlFor="is_active">Status</Label>
+  //                             <Select
+  //                               value={formData.is_active.toString()}
+  //                               onValueChange={(value) =>
+  //                                 setFormData((prev) => ({
+  //                                   ...prev,
+  //                                   is_active: value === "true",
+  //                                 }))
+  //                               }
+  //                             >
+  //                               <SelectTrigger>
+  //                                 <SelectValue />
+  //                               </SelectTrigger>
+  //                               <SelectContent>
+  //                                 <SelectItem value="true">Active</SelectItem>
+  //                                 <SelectItem value="false">Inactive</SelectItem>
+  //                               </SelectContent>
+  //                             </Select>
+  //                           </div>
+  //                         </div>
+        
+  //                         {editingStaff && (
+  //                           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+  //                             <p className="text-sm text-yellow-800">
+  //                               <strong>Note:</strong> Editing staff member details only. 
+  //                               To change user account information (email, password, name), 
+  //                               please use the user management section.
+  //                             </p>
+  //                           </div>
+  //                         )}
+  //                       </div>
+  //                     </div>
+                      
+  //                     <DialogFooter>
+  //                       <Button type="button" variant="outline" onClick={resetForm}>
+  //                         Cancel
+  //                       </Button>
+  //                       <Button type="submit" disabled={isCreatingUser}>
+  //                         {isCreatingUser ? (
+  //                           <>
+  //                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+  //                             Creating...
+  //                           </>
+  //                         ) : (
+  //                           editingStaff ? "Update Staff Member" : "Create Staff Member"
+  //                         )}
+  //                       </Button>
+  //                     </DialogFooter>
+  //                   </form>
+  //                 </DialogContent>
+  //               </Dialog>
+  //     </div>
+
+  //     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  //       <div className="space-y-2">
+  //         <Label htmlFor="facility-filter">Filter by Facility:</Label>
+  //         <Select value={selectedFacility} onValueChange={handleFacilityFilter}>
+  //           <SelectTrigger>
+  //             <SelectValue />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             <SelectItem value="all">All Facilities</SelectItem>
+  //             {facilities.map((facility) => (
+  //               <SelectItem key={facility.id} value={facility.id}>
+  //                 {facility.facility_name}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //       <div className="space-y-2">
+  //         <Label htmlFor="department-filter">Filter by Department:</Label>
+  //         <Select
+  //           value={selectedDepartment}
+  //           onValueChange={handleDepartmentFilter}
+  //         >
+  //           <SelectTrigger>
+  //             <SelectValue />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             <SelectItem value="all">All Departments</SelectItem>
+  //             {departments.map((dept) => (
+  //               <SelectItem key={dept.id} value={dept.id}>
+  //                 {dept.name}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //     </div>
+
+  //     <Card>
+  //       <CardHeader>
+  //         <CardTitle className="flex items-center">
+  //           <Users className="mr-2 h-5 w-5" />
+  //           Staff Directory - {userFacility?.facility_name}
+  //         </CardTitle>
+  //         <CardDescription>
+  //           {filteredStaff.length} staff members in {userFacility?.facility_name}
+  //           {selectedDepartment !== "all" && ` in selected department`}
+  //         </CardDescription>
+  //       </CardHeader>
+  //       <CardContent>
+  //         {filteredStaff.length === 0 ? (
+  //           <div className="text-center py-8">
+  //             <Users className="h-12 w-12 mx-auto text-muted-foreground" />
+  //             <h3 className="mt-4 text-lg font-semibold">No Staff Members</h3>
+  //             <p className="text-muted-foreground mt-2">
+  //               {selectedDepartment !== "all"
+  //                 ? "No staff found with the selected filters."
+  //                 : `Get started by adding your first staff member to ${userFacility?.facility_name}.`}
+  //             </p>
+  //           </div>
+  //         ) : (
+  //           <Table>
+  //             <TableHeader>
+  //               <TableRow>
+  //                 <TableHead>Staff Details</TableHead>
+  //                 <TableHead>Position & Department</TableHead>
+  //                 <TableHead>Experience</TableHead>
+  //                 <TableHead>Shift</TableHead>
+  //                 <TableHead>Status</TableHead>
+  //                 <TableHead>Actions</TableHead>
+  //               </TableRow>
+  //             </TableHeader>
+  //             <TableBody>
+  //               {filteredStaff.map((staffMember) => (
+  //                 <TableRow key={staffMember.id}>
+  //                   <TableCell>
+  //                     <div>
+  //                       <p className="font-medium">
+  //                         {staffMember.profile?.first_name}{" "}
+  //                         {staffMember.profile?.last_name}
+  //                       </p>
+  //                       <p className="text-sm text-muted-foreground">
+  //                         {staffMember.employee_id}
+  //                       </p>
+  //                       <div className="flex items-center space-x-2 mt-1">
+  //                         <Phone className="h-3 w-3 text-muted-foreground" />
+  //                         <span className="text-sm text-muted-foreground">
+  //                           {staffMember.profile?.phone_number || "N/A"}
+  //                         </span>
+  //                       </div>
+  //                       <div className="flex items-center space-x-2">
+  //                         <Mail className="h-3 w-3 text-muted-foreground" />
+  //                         <span className="text-sm text-muted-foreground">
+  //                           {staffMember.profile?.email || "N/A"}
+  //                         </span>
+  //                       </div>
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div>
+  //                       <Badge
+  //                         className={getPositionColor(staffMember.position)}
+  //                         variant="outline"
+  //                       >
+  //                         {staffMember.position}
+  //                       </Badge>
+  //                       <p className="text-sm text-muted-foreground mt-1">
+  //                         {staffMember.department?.name || "N/A"}
+  //                       </p>
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center">
+  //                       <Calendar className="mr-1 h-3 w-3" />
+  //                       <span className="text-sm">
+  //                         Hired: {formatDate(staffMember.hire_date)}
+  //                       </span>
+  //                     </div>
+  //                     <p className="text-xs text-muted-foreground">
+  //                       {calculateExperience(staffMember.hire_date)}
+  //                     </p>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <Badge variant="outline">
+  //                       {staffMember.shift_schedule?.shift || "N/A"}
+  //                     </Badge>
+  //                     {staffMember.shift_schedule?.start_time &&
+  //                       staffMember.shift_schedule?.end_time && (
+  //                         <p className="text-xs text-muted-foreground mt-1">
+  //                           {staffMember.shift_schedule.start_time} -{" "}
+  //                           {staffMember.shift_schedule.end_time}
+  //                         </p>
+  //                       )}
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <Badge className={getStatusColor(staffMember.is_active)}>
+  //                       {staffMember.is_active ? "Active" : "Inactive"}
+  //                     </Badge>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex space-x-2">
+  //                       {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => handleEdit(staffMember)}
+  //                           title={isMaintenance ? "Maintenance access - full edit rights" : "Edit your own record"}
+  //                         >
+  //                           <Edit className="h-3 w-3" />
+  //                         </Button>
+  //                       {/* ) : (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="ghost"
+  //                           disabled
+  //                           title="You can only edit your own staff record"
+  //                         >
+  //                           <Edit className="h-3 w-3 opacity-50" />
+  //                         </Button>
+  //                       )} */}
+  //                       {/* {(isMaintenance || staffMember.user_id === currentUserId) ? ( */}
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => {
+  //                             if (window.confirm('Are you sure you want to delete this staff member?')) {
+  //                               handleDelete(staffMember.id);
+  //                             }
+  //                           }}
+  //                           className="text-red-600 hover:text-red-700"
+  //                           title={isMaintenance ? "Maintenance access - full delete rights" : "Delete your own record"}
+  //                         >
+  //                           <Trash2 className="h-3 w-3" />
+  //                         </Button>
+  //                       {/* ) : (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="ghost"
+  //                           disabled
+  //                           className="text-red-300"
+  //                           title="You can only delete your own staff record"
+  //                         >
+  //                           <Trash2 className="h-3 w-3 opacity-50" />
+  //                         </Button> */}
+  //                       {/* )} */}
+  //                     </div>
+  //                   </TableCell>
+  //                 </TableRow>
+  //               ))}
+  //             </TableBody>
+  //           </Table>
+  //         )}
+  //       </CardContent>
+  //     </Card>
+  //   </div>
+  // );
 };
 
 export default StaffManagement;

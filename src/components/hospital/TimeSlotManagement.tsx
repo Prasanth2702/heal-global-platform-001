@@ -2660,19 +2660,19 @@ const TimeSlotManagement = () => {
       </div>
     );
   }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Time Slot Management</h2>
-          <p className="text-muted-foreground">
-            Configure appointment time slots for {userFacility?.facility_name || "your facility"}
-          </p>
-        </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+return (
+  <div className="space-y-6">
+    {/* Header – unchanged */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div className="flex-1 text-start sm:text-left">
+        <h2 className="text-2xl font-bold">Time Slot Management</h2>
+        <p className="text-muted-foreground">
+          Configure appointment time slots for {userFacility?.facility_name || "your facility"}
+        </p>
+      </div>
+     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
+           <Button onClick={() => {
               trackTimeSlotAction('add_time_slots_click');
               setEditingSlot(null);
               setIsAddDialogOpen(true);
@@ -2870,167 +2870,577 @@ const TimeSlotManagement = () => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+    </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="department-filter">Filter by Department:</Label>
-          <Select
-            value={selectedDepartment}
-            onValueChange={handleDepartmentFilter}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept.id} value={dept.id}>
-                  {dept.type}{dept.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="type-filter">Filter by Type:</Label>
-          <Select
-            value={selectedDepartmentType}
-            onValueChange={handleTypeFilter}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              {appointmentTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    {/* Filters – unchanged */}
+    <div className="flex flex-col sm:flex-row gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="department-filter">Filter by Department:</Label>
+        <Select value={selectedDepartment} onValueChange={handleDepartmentFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Departments</SelectItem>
+            {departments.map((dept) => (
+              <SelectItem key={dept.id} value={dept.id}>
+                {dept.type}{dept.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+      <div className="space-y-2">
+        <Label htmlFor="type-filter">Filter by Type:</Label>
+        <Select value={selectedDepartmentType} onValueChange={handleTypeFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {appointmentTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Clock className="mr-2 h-5 w-5" />
-            Time Slots Configuration - {userFacility?.facility_name}
-          </CardTitle>
-          <CardDescription>
-            {filteredSlotsByType.length} time slots configured
-            {selectedDepartment !== "all" && ` for selected department`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-             <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div> */}
-          <p className="mt-2 text-muted-foreground"><Loader3/></p>
-          {/* <p className="mt-2 text-muted-foreground">Loading staff data...</p> */}
-        </div>
-      </div>
-            // <div className="text-center py-8"><Loader3/></div>
-            // <div className="text-center py-8">Loading time slots...</div>
-          ) : filteredSlotsByType.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No time slots found. Click "Add Time Slots" to create new ones.
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Clock className="mr-2 h-5 w-5" />
+          Time Slots Configuration - {userFacility?.facility_name}
+        </CardTitle>
+        <CardDescription>
+          {filteredSlotsByType.length} time slots configured
+          {selectedDepartment !== "all" && ` for selected department`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="mt-2 text-muted-foreground"><Loader3 /></p>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Day</TableHead>
-                  <TableHead>Time Range</TableHead>
-                  <TableHead>Slot Duration</TableHead>
-                  <TableHead>Max Appointments</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSlotsByType.map((slot) => (
-                  <TableRow key={slot.id}>
-                    <TableCell className="font-medium">
-                      {slot.department}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
+          </div>
+        ) : filteredSlotsByType.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No time slots found. Click "Add Time Slots" to create new ones.
+          </div>
+        ) : (
+          <>
+            {/* Desktop table view – hidden on mobile */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Time Range</TableHead>
+                    <TableHead>Slot Duration</TableHead>
+                    <TableHead>Max Appointments</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSlotsByType.map((slot) => (
+                    <TableRow key={slot.id}>
+                      <TableCell className="font-medium">{slot.department}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {slot.dayOfWeek}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-3 w-3" />
+                          {slot.startTime} - {slot.endTime}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {slot.slotDuration} min
+                        {slot.breakTime > 0 && (
+                          <span className="text-muted-foreground text-xs ml-1">
+                            (+{slot.breakTime}min break)
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Users className="mr-1 h-3 w-3" />
+                          {slot.maxAppointments}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getTypeColor(slot.appointmentType)} variant="outline">
+                          {slot.appointmentType.charAt(0).toUpperCase() + slot.appointmentType.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant={slot.isActive ? "default" : "outline"}
+                          onClick={() => toggleSlotStatus(slot.id)}
+                          className="w-16"
+                        >
+                          {slot.isActive ? "Active" : "Inactive"}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(slot)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleDelete(slot.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile/Tablet card view – visible below md breakpoint */}
+            <div className="md:hidden space-y-4">
+              {filteredSlotsByType.map((slot) => (
+                <div key={slot.id} className="border rounded-lg p-4 bg-white shadow-sm space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-base">{slot.department}</h3>
+                      <div className="flex items-center text-sm text-muted-foreground mt-1">
                         <Calendar className="mr-1 h-3 w-3" />
                         {slot.dayOfWeek}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Clock className="mr-1 h-3 w-3" />
-                        {slot.startTime} - {slot.endTime}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {slot.slotDuration} min
+                    </div>
+                    <Badge className={getTypeColor(slot.appointmentType)} variant="outline">
+                      {slot.appointmentType.charAt(0).toUpperCase() + slot.appointmentType.slice(1)}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center">
+                      <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
+                      {slot.startTime} – {slot.endTime}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="mr-1 h-3 w-3 text-muted-foreground" />
+                      Max: {slot.maxAppointments}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Duration:</span> {slot.slotDuration} min
                       {slot.breakTime > 0 && (
                         <span className="text-muted-foreground text-xs ml-1">
-                          (+{slot.breakTime}min break)
+                          (+{slot.breakTime} break)
                         </span>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="mr-1 h-3 w-3" />
-                        {slot.maxAppointments}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getTypeColor(slot.appointmentType)}
-                        variant="outline"
-                      >
-                        {slot.appointmentType.charAt(0).toUpperCase() + slot.appointmentType.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        variant={slot.isActive ? "default" : "outline"}
-                        onClick={() => toggleSlotStatus(slot.id)}
-                        className="w-16"
-                      >
-                        {slot.isActive ? "Active" : "Inactive"}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <Button
+                      size="sm"
+                      variant={slot.isActive ? "default" : "outline"}
+                      onClick={() => toggleSlotStatus(slot.id)}
+                      className="w-20"
+                    >
+                      {slot.isActive ? "Active" : "Inactive"}
+                    </Button>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(slot)}>
+                        <Edit className="h-3 w-3" />
                       </Button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(slot)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(slot.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+                      <Button size="sm" variant="outline" onClick={() => handleDelete(slot.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  </div>
+);
+  // return (
+  //   <div className="space-y-6">
+  //     <div className="flex items-center justify-between">
+  //       <div>
+  //         <h2 className="text-2xl font-bold">Time Slot Management</h2>
+  //         <p className="text-muted-foreground">
+  //           Configure appointment time slots for {userFacility?.facility_name || "your facility"}
+  //         </p>
+  //       </div>
+  //       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+  //         <DialogTrigger asChild>
+  //           <Button onClick={() => {
+  //             trackTimeSlotAction('add_time_slots_click');
+  //             setEditingSlot(null);
+  //             setIsAddDialogOpen(true);
+  //           }}>
+  //             <Plus className="mr-2 h-4 w-4" />
+  //             Add Time Slots
+  //           </Button>
+  //         </DialogTrigger>
+  //         <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+  //           <DialogHeader>
+  //             <DialogTitle>
+  //               {editingSlot ? "Edit Time Slot" : "Add New Time Slots"}
+  //             </DialogTitle>
+  //             <DialogDescription>
+  //               {editingSlot
+  //                 ? "Update time slot configuration"
+  //                 : `Create new time slots for ${userFacility?.facility_name || "your facility"}`}
+  //             </DialogDescription>
+  //           </DialogHeader>
+  //           <form onSubmit={handleSubmit}>
+  //             <div className="grid gap-4 py-4">
+  //               <div className="grid gap-2">
+  //                 <Label htmlFor="department_id">Department / Services</Label>
+  //                 <Select
+  //                   value={formData.department_id}
+  //                   onValueChange={(value) => {
+  //                     const selectedDept = departments.find(dept => dept.id === value);
+  //                     setFormData((prev) => ({
+  //                       ...prev,
+  //                       department_id: value,
+  //                       department: selectedDept ? selectedDept.name : "",
+  //                     }));
+  //                   }}
+  //                   required
+  //                   disabled={!!editingSlot}
+  //                 >
+  //                   <SelectTrigger>
+  //                     <SelectValue placeholder="Select department" />
+  //                   </SelectTrigger>
+  //                   <SelectContent>
+  //                     {departments.map((dept) => (
+  //                       <SelectItem key={dept.id} value={dept.id}>
+  //                         {dept.type}{dept.name}
+  //                       </SelectItem>
+  //                     ))}
+  //                   </SelectContent>
+  //                 </Select>
+  //               </div>
+
+  //               {!editingSlot && (
+  //                 <div className="grid gap-2">
+  //                   <Label>Days of Week</Label>
+  //                   <div className="grid grid-cols-2 gap-2">
+  //                     {daysOfWeek.map((day) => (
+  //                       <div key={day} className="flex items-center space-x-2">
+  //                         <Checkbox
+  //                           id={day}
+  //                           checked={formData.selectedDays.includes(day)}
+  //                           onCheckedChange={(checked) =>
+  //                             handleDaySelection(day, !!checked)
+  //                           }
+  //                         />
+  //                         <Label htmlFor={day} className="text-sm">
+  //                           {day}
+  //                         </Label>
+  //                       </div>
+  //                     ))}
+  //                   </div>
+  //                 </div>
+  //               )}
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="startTime">Start Time</Label>
+  //                   <Input
+  //                     id="startTime"
+  //                     type="time"
+  //                     value={formData.startTime}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         startTime: e.target.value,
+  //                       }))
+  //                     }
+  //                     required
+  //                   />
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="endTime">End Time</Label>
+  //                   <Input
+  //                     id="endTime"
+  //                     type="time"
+  //                     value={formData.endTime}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         endTime: e.target.value,
+  //                       }))
+  //                     }
+  //                     required
+  //                   />
+  //                 </div>
+  //               </div>
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="slotDuration">
+  //                     Slot Duration (minutes)
+  //                   </Label>
+  //                   <Input
+  //                     id="slotDuration"
+  //                     type="number"
+  //                     value={formData.slotDuration}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         slotDuration: parseInt(e.target.value) || 30,
+  //                       }))
+  //                     }
+  //                     placeholder="30"
+  //                     min="15"
+  //                     step="15"
+  //                     required
+  //                   />
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="breakTime">Break Time (minutes)</Label>
+  //                   <Input
+  //                     id="breakTime"
+  //                     type="number"
+  //                     value={formData.breakTime}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         breakTime: parseInt(e.target.value) || 0,
+  //                       }))
+  //                     }
+  //                     placeholder="0"
+  //                     min="0"
+  //                     step="5"
+  //                     required
+  //                   />
+  //                 </div>
+  //               </div>
+
+  //               <div className="grid grid-cols-2 gap-4">
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="maxAppointments">Max Appointments</Label>
+  //                   <Input
+  //                     id="maxAppointments"
+  //                     type="number"
+  //                     value={formData.maxAppointments}
+  //                     onChange={(e) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         maxAppointments: parseInt(e.target.value) || 10,
+  //                       }))
+  //                     }
+  //                     placeholder="10"
+  //                     min="1"
+  //                     required
+  //                   />
+  //                 </div>
+  //                 <div className="grid gap-2">
+  //                   <Label htmlFor="appointmentType">Appointment Type</Label>
+  //                   <Select
+  //                     value={formData.appointmentType}
+  //                     onValueChange={(value) =>
+  //                       setFormData((prev) => ({
+  //                         ...prev,
+  //                         appointmentType: value as TimeSlot["appointmentType"],
+  //                       }))
+  //                     }
+  //                     required
+  //                   >
+  //                     <SelectTrigger>
+  //                       <SelectValue />
+  //                     </SelectTrigger>
+  //                     <SelectContent>
+  //                       {appointmentTypes.map((type) => (
+  //                         <SelectItem key={type} value={type}>
+  //                           {type.charAt(0).toUpperCase() + type.slice(1)}
+  //                         </SelectItem>
+  //                       ))}
+  //                     </SelectContent>
+  //                   </Select>
+  //                 </div>
+  //               </div>
+  //             </div>
+  //             <DialogFooter>
+  //               <Button type="submit">
+  //                 {editingSlot ? "Update Time Slot" : "Create Time Slots"}
+  //               </Button>
+  //             </DialogFooter>
+  //           </form>
+  //         </DialogContent>
+  //       </Dialog>
+  //     </div>
+
+  //     <div className="flex flex-col sm:flex-row gap-4">
+  //       <div className="space-y-2">
+  //         <Label htmlFor="department-filter">Filter by Department:</Label>
+  //         <Select
+  //           value={selectedDepartment}
+  //           onValueChange={handleDepartmentFilter}
+  //         >
+  //           <SelectTrigger className="w-[200px]">
+  //             <SelectValue />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             <SelectItem value="all">All Departments</SelectItem>
+  //             {departments.map((dept) => (
+  //               <SelectItem key={dept.id} value={dept.id}>
+  //                 {dept.type}{dept.name}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+        
+  //       <div className="space-y-2">
+  //         <Label htmlFor="type-filter">Filter by Type:</Label>
+  //         <Select
+  //           value={selectedDepartmentType}
+  //           onValueChange={handleTypeFilter}
+  //         >
+  //           <SelectTrigger className="w-[200px]">
+  //             <SelectValue />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             <SelectItem value="all">All Types</SelectItem>
+  //             {appointmentTypes.map((type) => (
+  //               <SelectItem key={type} value={type}>
+  //                 {type.charAt(0).toUpperCase() + type.slice(1)}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //     </div>
+
+  //     <Card>
+  //       <CardHeader>
+  //         <CardTitle className="flex items-center">
+  //           <Clock className="mr-2 h-5 w-5" />
+  //           Time Slots Configuration - {userFacility?.facility_name}
+  //         </CardTitle>
+  //         <CardDescription>
+  //           {filteredSlotsByType.length} time slots configured
+  //           {selectedDepartment !== "all" && ` for selected department`}
+  //         </CardDescription>
+  //       </CardHeader>
+  //       <CardContent>
+  //         {isLoading ? (
+  //            <div className="flex items-center justify-center h-64">
+  //       <div className="text-center">
+  //         {/* <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div> */}
+  //         <p className="mt-2 text-muted-foreground"><Loader3/></p>
+  //         {/* <p className="mt-2 text-muted-foreground">Loading staff data...</p> */}
+  //       </div>
+  //     </div>
+  //           // <div className="text-center py-8"><Loader3/></div>
+  //           // <div className="text-center py-8">Loading time slots...</div>
+  //         ) : filteredSlotsByType.length === 0 ? (
+  //           <div className="text-center py-8 text-muted-foreground">
+  //             No time slots found. Click "Add Time Slots" to create new ones.
+  //           </div>
+  //         ) : (
+  //           <Table>
+  //             <TableHeader>
+  //               <TableRow>
+  //                 <TableHead>Department</TableHead>
+  //                 <TableHead>Day</TableHead>
+  //                 <TableHead>Time Range</TableHead>
+  //                 <TableHead>Slot Duration</TableHead>
+  //                 <TableHead>Max Appointments</TableHead>
+  //                 <TableHead>Type</TableHead>
+  //                 <TableHead>Status</TableHead>
+  //                 <TableHead>Actions</TableHead>
+  //               </TableRow>
+  //             </TableHeader>
+  //             <TableBody>
+  //               {filteredSlotsByType.map((slot) => (
+  //                 <TableRow key={slot.id}>
+  //                   <TableCell className="font-medium">
+  //                     {slot.department}
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center">
+  //                       <Calendar className="mr-1 h-3 w-3" />
+  //                       {slot.dayOfWeek}
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center">
+  //                       <Clock className="mr-1 h-3 w-3" />
+  //                       {slot.startTime} - {slot.endTime}
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     {slot.slotDuration} min
+  //                     {slot.breakTime > 0 && (
+  //                       <span className="text-muted-foreground text-xs ml-1">
+  //                         (+{slot.breakTime}min break)
+  //                       </span>
+  //                     )}
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center">
+  //                       <Users className="mr-1 h-3 w-3" />
+  //                       {slot.maxAppointments}
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <Badge
+  //                       className={getTypeColor(slot.appointmentType)}
+  //                       variant="outline"
+  //                     >
+  //                       {slot.appointmentType.charAt(0).toUpperCase() + slot.appointmentType.slice(1)}
+  //                     </Badge>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <Button
+  //                       size="sm"
+  //                       variant={slot.isActive ? "default" : "outline"}
+  //                       onClick={() => toggleSlotStatus(slot.id)}
+  //                       className="w-16"
+  //                     >
+  //                       {slot.isActive ? "Active" : "Inactive"}
+  //                     </Button>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex space-x-2">
+  //                       <Button
+  //                         size="sm"
+  //                         variant="outline"
+  //                         onClick={() => handleEdit(slot)}
+  //                       >
+  //                         <Edit className="h-3 w-3" />
+  //                       </Button>
+  //                       <Button
+  //                         size="sm"
+  //                         variant="outline"
+  //                         onClick={() => handleDelete(slot.id)}
+  //                       >
+  //                         <Trash2 className="h-3 w-3" />
+  //                       </Button>
+  //                     </div>
+  //                   </TableCell>
+  //                 </TableRow>
+  //               ))}
+  //             </TableBody>
+  //           </Table>
+  //         )}
+  //       </CardContent>
+  //     </Card>
+  //   </div>
+  // );
 };
 
 export default TimeSlotManagement;

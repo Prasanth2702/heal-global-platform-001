@@ -1047,102 +1047,317 @@ const handleFetchError = (error: any) => {
     // return <div className="flex justify-center p-8">Loading appointments...</div>;
   }
 
+  // return (
+  //   <div className="space-y-6">
+  //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  //       <Card>
+  //         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  //           <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
+  //           <Calendar className="h-4 w-4 text-muted-foreground" />
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="text-2xl font-bold">{totalAppointments}</div>
+  //           <p className="text-xs text-muted-foreground">Today's schedule</p>
+  //         </CardContent>
+  //       </Card>
+
+  //       <Card>
+  //         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  //           <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+  //           <User className="h-4 w-4 text-muted-foreground" />
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="text-2xl font-bold">{checkedInCount}</div>
+  //           <p className="text-xs text-muted-foreground">Waiting for consultation</p>
+  //         </CardContent>
+  //       </Card>
+
+  //       <Card>
+  //         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  //           <CardTitle className="text-sm font-medium">In Consultation</CardTitle>
+  //           <AlertCircle className="h-4 w-4 text-muted-foreground" />
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="text-2xl font-bold">{inConsultationCount}</div>
+  //           <p className="text-xs text-muted-foreground">Currently with doctor</p>
+  //         </CardContent>
+  //       </Card>
+
+  //       <Card>
+  //         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  //           <CardTitle className="text-sm font-medium">Avg. Wait Time</CardTitle>
+  //           <Clock className="h-4 w-4 text-muted-foreground" />
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="text-2xl font-bold">{Math.round(averageWaitTime) || 0}min</div>
+  //           <p className="text-xs text-muted-foreground">Average waiting time</p>
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+
+  //     {/* Filters */}
+  //     <div className="flex items-center space-x-4">
+  //       <div className="flex items-center space-x-2">
+  //         <Search className="h-4 w-4 text-muted-foreground" />
+  //         <Input
+  //           placeholder="Search patients..."
+  //           value={searchTerm}
+  //           onChange={(e) => setSearchTerm(e.target.value)}
+  //           className="w-64"
+  //         />
+  //       </div>
+  //       <Select value={statusFilter} onValueChange={setStatusFilter}>
+  //         <SelectTrigger className="w-[150px]">
+  //           <SelectValue placeholder="All Status" />
+  //         </SelectTrigger>
+  //         <SelectContent>
+  //           <SelectItem value="all">All Status</SelectItem>
+  //           {statuses.map(status => (
+  //             <SelectItem key={status} value={status}>
+  //               {status.replace("_", " ")}
+  //             </SelectItem>
+  //           ))}
+  //         </SelectContent>
+  //       </Select>
+  //       <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+  //         <SelectTrigger className="w-[180px]">
+  //           <SelectValue placeholder="All Departments" />
+  //         </SelectTrigger>
+  //         <SelectContent>
+  //           <SelectItem value="all">All Departments</SelectItem>
+  //           {departments.map(dept => (
+  //             <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+  //           ))}
+  //         </SelectContent>
+  //       </Select>
+  //     </div>
+
+  //     <Card>
+  //       <CardHeader>
+  //         <CardTitle className="flex items-center">
+  //           <Calendar className="mr-2 h-5 w-5" />
+  //           Patient Flow & Check-ins
+  //         </CardTitle>
+  //         <CardDescription>
+  //           Real-time appointment tracking and patient flow management
+  //         </CardDescription>
+  //       </CardHeader>
+  //       <CardContent>
+  //         <Table>
+  //           <TableHeader>
+  //             <TableRow>
+  //               <TableHead>Patient Info</TableHead>
+  //               <TableHead>Department & Doctor</TableHead>
+  //               <TableHead>Appointment Time</TableHead>
+  //               <TableHead>Priority</TableHead>
+  //               <TableHead>Status</TableHead>
+  //               <TableHead>Timing</TableHead>
+  //               <TableHead>Actions</TableHead>
+  //             </TableRow>
+  //           </TableHeader>
+  //           <TableBody>
+  //             {filteredAppointments.length === 0 ? (
+  //               <TableRow>
+  //                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+  //                   No appointments found
+  //                 </TableCell>
+  //               </TableRow>
+  //             ) : (
+  //               filteredAppointments.map((appointment) => (
+  //                 <TableRow key={appointment.id}>
+  //                   <TableCell>
+  //                     <div>
+  //                       <p className="font-medium">{appointment.patientName}</p>
+  //                       <p className="text-sm text-muted-foreground">ID: {appointment.patientId}</p>
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div>
+  //                       <p className="font-medium">{appointment.department}</p>
+  //                       <p className="text-sm text-muted-foreground">{appointment.doctor}</p>
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center">
+  //                       <Clock className="mr-1 h-3 w-3" />
+  //                       {format(appointment.appointmentTime, "HH:mm")}
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <Badge className={getPriorityColor(appointment.priority)} variant="outline">
+  //                       {appointment.priority}
+  //                     </Badge>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex items-center space-x-2">
+  //                       {getStatusIcon(appointment.status)}
+  //                       <Badge className={getStatusColor(appointment.status)}>
+  //                         {appointment.status.replace("_", " ")}
+  //                       </Badge>
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="text-xs">
+  //                       {appointment.checkInTime && (
+  //                         <p>Check-in: {format(appointment.checkInTime, "HH:mm")}</p>
+  //                       )}
+  //                       {appointment.waitingTime && (
+  //                         <p>Wait: {appointment.waitingTime}min</p>
+  //                       )}
+  //                       {appointment.consultationDuration && (
+  //                         <p>Duration: {appointment.consultationDuration}min</p>
+  //                       )}
+  //                     </div>
+  //                   </TableCell>
+  //                   <TableCell>
+  //                     <div className="flex space-x-1">
+  //                       {appointment.status === "scheduled" && (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => handleStatusUpdate(appointment.id, "checked_in")}
+  //                         >
+  //                           Check In
+  //                         </Button>
+  //                       )}
+  //                       {appointment.status === "checked_in" && (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => handleStatusUpdate(appointment.id, "in_consultation")}
+  //                         >
+  //                           Start
+  //                         </Button>
+  //                       )}
+  //                       {appointment.status === "in_consultation" && (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => handleStatusUpdate(appointment.id, "completed")}
+  //                         >
+  //                           Complete
+  //                         </Button>
+  //                       )}
+  //                       {(appointment.status === "scheduled" || appointment.status === "checked_in") && (
+  //                         <Button
+  //                           size="sm"
+  //                           variant="outline"
+  //                           onClick={() => handleStatusUpdate(appointment.id, "cancelled")}
+  //                         >
+  //                           Cancel
+  //                         </Button>
+  //                       )}
+  //                     </div>
+  //                   </TableCell>
+  //                 </TableRow>
+  //               ))
+  //             )}
+  //           </TableBody>
+  //         </Table>
+  //       </CardContent>
+  //     </Card>
+  //   </div>
+  // );
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAppointments}</div>
-            <p className="text-xs text-muted-foreground">Today's schedule</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{checkedInCount}</div>
-            <p className="text-xs text-muted-foreground">Waiting for consultation</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Consultation</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inConsultationCount}</div>
-            <p className="text-xs text-muted-foreground">Currently with doctor</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Wait Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{Math.round(averageWaitTime) || 0}min</div>
-            <p className="text-xs text-muted-foreground">Average waiting time</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search patients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="All Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            {statuses.map(status => (
-              <SelectItem key={status} value={status}>
-                {status.replace("_", " ")}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Departments" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Departments</SelectItem>
-            {departments.map(dept => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
+  <div className="space-y-4 sm:space-y-6">
+    {/* Stats Cards - responsive grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="mr-2 h-5 w-5" />
-            Patient Flow & Check-ins
-          </CardTitle>
-          <CardDescription>
-            Real-time appointment tracking and patient flow management
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xs sm:text-sm font-medium">Total Appointments</CardTitle>
+          <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
+          <div className="text-xl sm:text-2xl font-bold">{totalAppointments}</div>
+          <p className="text-xs text-muted-foreground">Today's schedule</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xs sm:text-sm font-medium">Checked In</CardTitle>
+          <User className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-xl sm:text-2xl font-bold">{checkedInCount}</div>
+          <p className="text-xs text-muted-foreground">Waiting for consultation</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xs sm:text-sm font-medium">In Consultation</CardTitle>
+          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-xl sm:text-2xl font-bold">{inConsultationCount}</div>
+          <p className="text-xs text-muted-foreground">Currently with doctor</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xs sm:text-sm font-medium">Avg. Wait Time</CardTitle>
+          <Clock className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-xl sm:text-2xl font-bold">{Math.round(averageWaitTime) || 0}min</div>
+          <p className="text-xs text-muted-foreground">Average waiting time</p>
+        </CardContent>
+      </Card>
+    </div>
+
+    {/* Filters - responsive wrap */}
+    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+      <div className="flex items-center space-x-2 flex-1 sm:flex-none">
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search patients..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full sm:w-64"
+        />
+      </div>
+      <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <SelectTrigger className="w-[140px] sm:w-[150px]">
+          <SelectValue placeholder="All Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Status</SelectItem>
+          {statuses.map(status => (
+            <SelectItem key={status} value={status}>
+              {status.replace("_", " ")}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+        <SelectTrigger className="w-[160px] sm:w-[180px]">
+          <SelectValue placeholder="All Departments" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Departments</SelectItem>
+          {departments.map(dept => (
+            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center text-base sm:text-lg">
+          <Calendar className="mr-2 h-5 w-5" />
+          Patient Flow & Check-ins
+        </CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
+          Real-time appointment tracking and patient flow management
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-0 sm:p-6">
+        {/* Desktop table view - hidden on mobile/tablet */}
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -1254,10 +1469,109 @@ const handleFetchError = (error: any) => {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+
+        {/* Mobile/Tablet card view - visible below md breakpoint */}
+        <div className="md:hidden space-y-3 p-3 sm:p-4">
+          {filteredAppointments.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No appointments found
+            </div>
+          ) : (
+            filteredAppointments.map((appointment) => (
+              <div key={appointment.id} className="border rounded-lg p-4 bg-white shadow-sm space-y-3">
+                {/* Patient & time row */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold text-base">{appointment.patientName}</p>
+                    <p className="text-xs text-muted-foreground">ID: {appointment.patientId}</p>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Clock className="mr-1 h-3 w-3" />
+                    {format(appointment.appointmentTime, "HH:mm")}
+                  </div>
+                </div>
+
+                {/* Department & doctor */}
+                <div className="text-sm">
+                  <span className="font-medium">{appointment.department}</span>
+                  <span className="text-muted-foreground"> • </span>
+                  <span>{appointment.doctor}</span>
+                </div>
+
+                {/* Priority & Status badges */}
+                <div className="flex flex-wrap gap-2">
+                  <Badge className={getPriorityColor(appointment.priority)} variant="outline">
+                    {appointment.priority}
+                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(appointment.status)}
+                    <Badge className={getStatusColor(appointment.status)}>
+                      {appointment.status.replace("_", " ")}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Timing details */}
+                <div className="text-xs text-muted-foreground space-y-1">
+                  {appointment.checkInTime && (
+                    <p>Check-in: {format(appointment.checkInTime, "HH:mm")}</p>
+                  )}
+                  {appointment.waitingTime && (
+                    <p>Wait: {appointment.waitingTime}min</p>
+                  )}
+                  {appointment.consultationDuration && (
+                    <p>Duration: {appointment.consultationDuration}min</p>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                  {appointment.status === "scheduled" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStatusUpdate(appointment.id, "checked_in")}
+                    >
+                      Check In
+                    </Button>
+                  )}
+                  {appointment.status === "checked_in" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStatusUpdate(appointment.id, "in_consultation")}
+                    >
+                      Start
+                    </Button>
+                  )}
+                  {appointment.status === "in_consultation" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStatusUpdate(appointment.id, "completed")}
+                    >
+                      Complete
+                    </Button>
+                  )}
+                  {(appointment.status === "scheduled" || appointment.status === "checked_in") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStatusUpdate(appointment.id, "cancelled")}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
 };
 
 export default AppointmentFlow;

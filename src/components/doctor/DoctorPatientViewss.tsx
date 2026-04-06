@@ -2,7 +2,7 @@ import React from 'react'
 import DashboardLayout from '../layouts/DashboardLayout'
 import FacilityPatientView from '../facility/FacilityPatientView'
 
-const DoctorPatientViews = () => {
+const DoctorPatientViewss = () => {
   return (
     <div>
       <DashboardLayout userType="doctor">
@@ -12,4 +12,4 @@ const DoctorPatientViews = () => {
   )
 }
 
-export default DoctorPatientViews
+export default DoctorPatientViewss

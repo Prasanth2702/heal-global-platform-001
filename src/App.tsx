@@ -79,7 +79,8 @@ import DoctorHospitalsPagess from "./components/patient/DoctorHospitalsPagess";
 import PatientFacilitiesPages from "./components/patient/PatientFacilitiesPages";
 import PatientFacilitiesPagess from "./components/patient/PatientFacilitiesPagess";
 import FacilityPatientViews from "./components/facility/FacilityPatientViews";
-import DoctorPatientViews from "./components/doctor/doctorPatientViews";
+// import DoctorPatientViews from "./components/doctor/doctorPatientViews";
+import DoctorPatientViewss from "./components/doctor/DoctorPatientViewss";
 import PatientViews from "./components/patient/PatientViews";
 
 const queryClient = new QueryClient();
@@ -367,7 +368,7 @@ const App = () => {
 <Route path="/appointment/beds/:slug/:id" element={<PatientFacilitiesPages />} />
 {/* <Route path="/dashboard/facility/staffId" element={<StaffManagementDetails/>}/> */}
   <Route path="/facility/appointment-patient/:Id/:appointmentId" element={<FacilityPatientViews />} />
-  <Route path="/doctor/appointment-patient/:Id/:appointmentId" element={<DoctorPatientViews />} />
+  <Route path="/doctor/appointment-patient/:Id/:appointmentId" element={<DoctorPatientViewss />} />
   <Route path="/patient/appointment-doctor/:Id/:appointmentId" element={<PatientViews />} />
   <Route path="/patient/appointment-facility/:Id/:appointmentId" element={<PatientViews />} />
 

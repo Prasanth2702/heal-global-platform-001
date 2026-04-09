@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Home -->
+  <url><loc>https://www.cloudhospitals.ai/</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Authentication -->
+  <url><loc>https://www.cloudhospitals.ai/register/patient</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/register/doctor</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/register/facility</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/login/patient</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/login/doctor</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/login/facility</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/forgot-password/patient</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/forgot-password/doctor</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/forgot-password/facility</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Onboarding -->
+  <url><loc>https://www.cloudhospitals.ai/onboarding/patient</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/onboarding/doctor</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/onboarding/facility</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Dashboards (base paths) -->
+  <url><loc>https://www.cloudhospitals.ai/dashboard/patient</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/doctor</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/hospital</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/facility</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/staff</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/super-admin</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/sub-admin</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/dashboard/admin</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Core features -->
+  <url><loc>https://www.cloudhospitals.ai/appointments</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/vault</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/payments</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/api-setup</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/qa-testing</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/book-appointment</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Public / info pages -->
+  <url><loc>https://www.cloudhospitals.ai/about</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/contact</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/privacy</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/refund-policy</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/terms</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/faqs</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/cookies</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/blog</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/doctors</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/hospitals</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Appointment hub (static variants) -->
+  <url><loc>https://www.cloudhospitals.ai/appointment</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/appointment/doctors</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/appointment/hospitals</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  <!-- Payment callbacks -->
+  <url><loc>https://www.cloudhospitals.ai/payment-success</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+  <url><loc>https://www.cloudhospitals.ai/payment-cancelled</loc><lastmod>2026-04-09T00:00:00+00:00</lastmod></url>
+
+  
+</urlset>

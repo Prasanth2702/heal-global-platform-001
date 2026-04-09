@@ -647,7 +647,7 @@
 // ========================================
 
 import React, { useEffect, useState } from "react";
-import { Calendar, MapPin, Clock, FileText, Upload, Building2, Building } from "lucide-react";
+import { Calendar, MapPin, Clock, FileText, Upload, Building2, Building, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
@@ -775,7 +775,7 @@ export default function AppointmentDepartmentsCard({
         </div>
 
         {/* Date & Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar size={16} className="text-blue-500" />
             <span className="font-medium">{appointment.date}</span>
@@ -784,7 +784,17 @@ export default function AppointmentDepartmentsCard({
             <Clock size={16} className="text-blue-500" />
             <span className="font-medium">{appointment.time}</span>
           </div>
-        </div>
+        </div> */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar size={16} className="text-blue-500" />
+                    <span className="font-medium">Appointment Date : {appointment.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock size={16} className="text-blue-500" />
+                    <span className="font-medium">Appointment Time : {appointment.time}</span>
+                  </div>
+                </div>
 
         {/* Chief Complaint */}
         {appointment.chiefComplaint && (
@@ -811,15 +821,18 @@ export default function AppointmentDepartmentsCard({
               Online Department Consultation
             </>
           ) : (
-            <>
-              <MapPin size={14} />
-              In-Person at {appointment.facilityName}
-            </>
+             <>
+                  <MapPin size={14} />
+                  <span>
+                    <strong>Type :</strong>  In-Person at {appointment.facilityName}
+                  </span>
+                </>
+           
           )}
         </div>
 
         {/* Documents Button - conditional */}
-        {showDocuments && (
+        {/* {showDocuments && (
           <Button
             variant="ghost"
             size="sm"
@@ -829,7 +842,9 @@ export default function AppointmentDepartmentsCard({
             <FileText className="h-4 w-4" />
             <span className="text-sm font-medium">Documents</span>
           </Button>
-        )}
+        )} */}
+
+
 
         <AppointmentDocumentsModal
           open={showDocsModal}
@@ -839,7 +854,7 @@ export default function AppointmentDepartmentsCard({
         />
 
         {/* Hospital Profile Button - conditional */}
-        {showHospitalDetail && appointment.facilityId && (
+        {/* {showHospitalDetail && appointment.facilityId && (
           <Button
             size="sm"
             variant="outline"
@@ -847,7 +862,14 @@ export default function AppointmentDepartmentsCard({
           >
             <Building className="h-4 w-4 mr-1" /> Hospital Profile
           </Button>
-        )}
+        )} */}
+         <button
+                          className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+
+            onClick={() => navigate(`/patient/appointment-facility/${appointment.facilityId}/${appointment.id}`)}
+          >
+            <User className="h-4 w-4 mr-1" /> Appointment Details Page
+          </button>
 
         {/* Cancellation Reason */}
         {appointment.status === "cancelled" && appointment.cancellationReason && (
@@ -892,7 +914,7 @@ export default function AppointmentDepartmentsCard({
         )}
 
         {/* Documents Section - conditional */}
-        {showDocuments && appointment.documents && appointment.documents.length > 0 && (
+        {/* {showDocuments && appointment.documents && appointment.documents.length > 0 && (
           <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/40 p-4 max-h-52 overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-blue-700 font-semibold">
@@ -935,7 +957,7 @@ export default function AppointmentDepartmentsCard({
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Upload Medical Document Button - conditional */}
         {showUploadButton &&
@@ -943,13 +965,13 @@ export default function AppointmentDepartmentsCard({
           appointment.status === "confirmed" &&
           !appointment.isPast && (
             <>
-              <button
+              {/* <button
                 onClick={() => setShowUploadModal(true)}
                 className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
               >
                 <Upload size={16} />
                 Upload Medical Document
-              </button>
+              </button> */}
               {showUploadModal && (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                   <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative animate-in fade-in zoom-in duration-200">

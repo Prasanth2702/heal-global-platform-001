@@ -14,6 +14,8 @@ import PatientDetailsPage from "@/pages/patient/PatientDetailsPage";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { supabase } from "@/integrations/supabase/client";
 import Loader1 from "../ui/Loader1";
+import PaymentHistoryviews from "../patient/PaymentHistoryviews";
+import PaymentHistory from "../patient/PaymentHistory";
 
 interface Doctor {
   id: string;
@@ -287,7 +289,8 @@ useEffect(() => {
       case 'documents': navigate(`${basePath}/records`); break;
       case 'sharing': navigate(`${basePath}/sharing`); break;
       case 'bookings': navigate(`${basePath}/my_bed_bookings`); break;
-      case 'payments': navigate(`${basePath}/payments`); break;
+      case 'payments': navigate(`${basePath}/payments-history`); break;
+      // case 'payments': navigate(`${basePath}/payments`); break;
     }
   };
      const trackButtonClick = (buttonName: string, additionalData = {}) => {
@@ -429,6 +432,15 @@ const recentReports = [
               <Bed className="h-4 w-4 mr-1" />
               My Bed Bookings
             </Button>
+            <Button
+              variant={activeTab === "payments" ? "default" : "ghost"}
+              size="sm"
+              onClick={() =>{trackButtonClick("Payments Tab"); handleTabChange("payments")}}
+              className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Payments
+            </Button>
             {/* <Button
               variant={activeTab === "documents" ? "default" : "ghost"}
               size="sm"
@@ -466,7 +478,8 @@ const recentReports = [
         {activeTab === "bookings" && <PatientDetailsPage />}
         {activeTab === "documents" && <DocumentVault />}
         {activeTab === "sharing" && <RecordSharing />}
-        {activeTab === "payments" && <PaymentManagement />}
+        {activeTab === "payments" && <PaymentHistory />}
+        {/* {activeTab === "payments" && <PaymentManagement />} */}
       </div>
     );
   }
@@ -616,6 +629,15 @@ const recentReports = [
               <DollarSign className="h-4 w-4 mr-1" />
               Payments
             </Button> */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>{trackButtonClick("Payments Tab"); handleTabChange("payments")}}
+              className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Payments
+            </Button>
           </div>
 
       {/* Quick Stats */}
@@ -928,6 +950,13 @@ const recentReports = [
             >
               <Shield className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">My Bed Bookings</span>
+            </Button>
+            <Button
+              className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => { trackButtonClick("Payments Tab"); handleTabChange("payments"); }}
+            >
+              <DollarSign className="h-8 w-8 mb-2" />
+              <span className="text-sm font-semibold">Payments</span>
             </Button>
  
             {/* <Button

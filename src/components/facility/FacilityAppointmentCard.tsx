@@ -2916,7 +2916,7 @@ export default function FacilityAppointmentCard({
         {/* ============================================ */}
         {/* UPCOMING SECTION: Upload + Documents + Detail Button */}
         {/* ============================================ */}
-        {isUpcoming && (
+        {/* {isUpcoming && (
           <div className="mt-4 border-t pt-4">
             <div className="flex flex-wrap gap-2">
               {canUploadPrescription && (
@@ -2931,27 +2931,26 @@ export default function FacilityAppointmentCard({
                   <span className="text-sm">Documents ({documents.length})</span>
                 </Button>
               )}
-              {/* View Full Details button for upcoming */}
               <Button onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`)}>
                 View Full Details
               </Button>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* ============================================ */}
         {/* PAST SECTION: Only View Full Details button */}
         {/* ============================================ */}
-        {isPastConfirmed && (
+        {/* {isPastConfirmed && (
           <div className="mt-4 border-t pt-4">
             <Button onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`)}>
               View Full Details
             </Button>
           </div>
-        )}
+        )} */}
 
         {/* Action buttons for upcoming (Start Video, Cancel, Complete) */}
-        {!enhancedAppointment.isPast && enhancedAppointment.status !== "cancelled" && (
+        {/* {!enhancedAppointment.isPast && enhancedAppointment.status !== "cancelled" && (
           <div className="flex justify-end gap-2 flex-wrap">
             {enhancedAppointment.type === "teleconsultation" && canStartVideo && (
               <Button size="sm" onClick={startTeleconsultation} disabled={isCompleted || isCancelled}>
@@ -2972,7 +2971,16 @@ export default function FacilityAppointmentCard({
               <span className="text-xs text-gray-500 italic">View only access - Not your assigned appointment</span>
             )}
           </div>
-        )}
+        )} */}
+
+                  <button
+                                  className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+        
+                    onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`)}
+                  >
+                    <User className="h-4 w-4 mr-1" /> Appointment Details Page
+                  </button>
+              
 
         {/* Documents list (reusable for both upcoming & past – but we already show it inside upcoming block; however if you want to keep it also here, you can, but per requirements it's only for upcoming. So removed from bottom.) */}
       </div>

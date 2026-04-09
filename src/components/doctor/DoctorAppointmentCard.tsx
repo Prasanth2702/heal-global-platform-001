@@ -1024,7 +1024,7 @@
 // ========================================
 
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Video, FileText, MapPin } from "lucide-react";
+import { Calendar, Clock, Video, FileText, MapPin, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DoctorAppointment } from "./DoctorAppointmentManagement";
 import { useState, useEffect } from "react";
@@ -1210,13 +1210,22 @@ export default function DoctorAppointmentCard({
       </div>
 
       {/* Date & Time */}
-      <div className="flex items-center gap-3 text-sm text-gray-700">
+      {/* <div className="flex items-center gap-3 text-sm text-gray-700">
         <Calendar size={16} />
         {enhancedAppointment.date}
         <Clock size={16} className="ml-3" />
         {enhancedAppointment.time}
-      </div>
-
+      </div> */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Calendar size={16} className="text-blue-500" />
+            <span className="font-medium">Appointment Date :  {enhancedAppointment.date}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Clock size={16} className="text-blue-500" />
+            <span className="font-medium">Appointment Time : {enhancedAppointment.time}</span>
+          </div>
+        </div>
       {/* Type badge */}
       <div
         className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium
@@ -1228,14 +1237,18 @@ export default function DoctorAppointmentCard({
       >
         {enhancedAppointment.type === "teleconsultation" ? (
           <>
-            <Video size={14} />
-            Online Consultation
-          </>
-        ) : (
-          <>
-            <MapPin size={14} />
-            Clinic Visit
-          </>
+          <Video size={14} />
+                <span>
+                  <strong>Type :</strong> Teleconsultation — Online Consultation
+                </span>
+              </>
+            ) : (
+              <>
+                <MapPin size={14} />
+                <span>
+                  <strong>Type :</strong> In-Person — Clinic Consultation
+                </span>
+              </>
         )}
       </div>
 
@@ -1251,7 +1264,7 @@ export default function DoctorAppointmentCard({
       )}
 
       {/* Action Buttons for Upcoming (Start Video, Cancel, Mark Completed) */}
-      {!enhancedAppointment.isPast && enhancedAppointment.status !== "cancelled" && (
+      {/* {!enhancedAppointment.isPast && enhancedAppointment.status !== "cancelled" && (
         <div className="flex justify-end gap-2">
           {enhancedAppointment.type === "teleconsultation" && (
             <Button size="sm" onClick={startTeleconsultation} disabled={isCompleted || isCancelled}>
@@ -1266,12 +1279,12 @@ export default function DoctorAppointmentCard({
             Mark as Completed
           </Button>
         </div>
-      )}
+      )} */}
 
       {/* ============================================ */}
       {/* DOCTOR DETAIL BUTTON – SHOWN FOR BOTH UPCOMING & PAST (confirmed only) */}
       {/* ============================================ */}
-      {(isUpcoming || isPastConfirmed) && (
+      {/* {(isUpcoming || isPastConfirmed) && (
         <div className="mt-2">
           <Button
             onClick={() => navigate(`/doctor/appointment-patient/${appointment.patientId}/${appointment.id}`)}
@@ -1280,12 +1293,12 @@ export default function DoctorAppointmentCard({
             View Full Details
           </Button>
         </div>
-      )}
+      )} */}
 
       {/* ============================================ */}
       {/* UPLOAD & DOCUMENTS – ONLY FOR UPCOMING (confirmed & not past) */}
       {/* ============================================ */}
-      {isUpcoming && (
+      {/* {isUpcoming && (
         <div className="mt-4 border-t pt-4">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -1308,7 +1321,15 @@ export default function DoctorAppointmentCard({
             )}
           </div>
         </div>
-      )}
+      )} */}
+      
+                        <button
+                                        className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+              
+                          onClick={() => navigate(`/doctor/appointment-patient/${appointment.patientId}/${appointment.id}`)}
+                        >
+                          <User className="h-4 w-4 mr-1" /> Appointment Details Page
+                        </button>
 
       {/* Upload Modal */}
       {showUploadModal && (

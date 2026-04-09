@@ -89,7 +89,8 @@ const DepartmentDetailsFacility = () => {
 const [confirmOpen, setConfirmOpen] = useState(false);
 const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
 const [notes, setNotes] = useState("");
-
+const [bookingLoading, setBookingLoading] = useState(false);
+const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [user, setUser] = useState<any>(null);
 const createSlug = (text: string) => {
   return text
@@ -287,13 +288,14 @@ const handleConfirmBooking = async () => {
       setSelectedDay(0);
       return;
     }
-
+setLoadingAvailability(true); 
     setExpandedTimeSlotId(department.id);
     setSelectedSlot(null);
     setTimeSlots([]);
     setBookings([]);
     setSelectedDay(0);
     await fetchTimeSlotsAndDepartmentBookings(department);
+     setLoadingAvailability(false);
   };
 
   const formatDayLabel = (date: Date, index: number) => {
@@ -575,13 +577,28 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
   </Button>
 ) : (
   <Button
-    variant="default"
-    size="sm"
-    className="bg-green-600 hover:bg-green-700"
-    onClick={() => toggleExpandDepartment(department)}
-  >
-    View Availability
-  </Button>
+  variant="default"
+  size="sm"
+  disabled={loadingAvailability}
+  className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+  onClick={() => toggleExpandDepartment(department)}
+>
+  {loadingAvailability ? (
+    <>
+      Loading...
+    </>
+  ) : (
+    "View Availability"
+  )}
+</Button>
+  // <Button
+  //   variant="default"
+  //   size="sm"
+  //   className="bg-green-600 hover:bg-green-700"
+  //   onClick={() => toggleExpandDepartment(department)}
+  // >
+  //   View Availability
+  // </Button>
 )}
 
                                {expandedTimeSlotId === department.id && (
@@ -837,12 +854,25 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                         Cancel
                                                                       </Button>
                                                           
-                                                                      <Button
+                                                                      {/* <Button
                                                                         className="bg-blue-600 hover:bg-blue-700 text-white"
                                                                         onClick={handleConfirmBooking}
                                                                       >
                                                                         Confirm Booking
-                                                                      </Button>
+                                                                      </Button> */}
+                                                                      <Button
+  className="bg-blue-600 hover:bg-blue-700 text-white"
+  disabled={bookingLoading}
+  onClick={handleConfirmBooking}
+>
+  {bookingLoading ? (
+    <>
+      Booking...
+    </>
+  ) : (
+    "Confirm Booking"
+  )}
+</Button>
                                                                     </DialogFooter>
                                                                   </DialogContent>
                                                                 </Dialog>

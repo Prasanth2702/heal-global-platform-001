@@ -1509,6 +1509,7 @@ export interface FacilityAppointment {
   time_slot_id?: string;
   start_time?: string;
   end_time?: string;
+  rawDate?: string;
 }
 
 interface VideoMeetingState {
@@ -1557,7 +1558,8 @@ export default function FacilityAppointmentManagement() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentFacilityId, setCurrentFacilityId] = useState<string | null>(null);
   const [facilityName, setFacilityName] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   // UI state
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed">("all");
@@ -2006,7 +2008,8 @@ export default function FacilityAppointmentManagement() {
           notes: apt.notes,
           videoRoomId: apt.video_room_id,
           patientAvatar: patient.avatar,
-          time_slot_id: apt.time_slot_id
+          time_slot_id: apt.time_slot_id,
+          rawDate: apt.appointment_date.split('T')[0],
         });
       }
 
@@ -2151,11 +2154,16 @@ export default function FacilityAppointmentManagement() {
   const filteredAppointments = filterByDepartment(filterByStatus(appointments));
   // const upcoming = filteredAppointments.filter((a) => !a.isPast);
   // const past = filteredAppointments.filter((a) => a.isPast);
+// const selectedDateString = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
+
+// // Apply date filter to appointments
+// const dateFilteredAppointments = filteredAppointments.filter((a) => 
+//   !selectedDateString || a.date.includes(selectedDateString)
+// );
 const selectedDateString = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
 
-// Apply date filter to appointments
 const dateFilteredAppointments = filteredAppointments.filter((a) => 
-  !selectedDateString || a.date.includes(selectedDateString)
+  !selectedDateString || a.rawDate === selectedDateString
 );
 
 const upcoming = dateFilteredAppointments.filter((a) => !a.isPast);

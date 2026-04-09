@@ -12,6 +12,7 @@ import { mixpanelInstance } from "@/utils/mixpanel";
 import { supabase } from "@/integrations/supabase/client";
 import PatientAttendDetails from "../doctor/PatientAttendDetails";
 import Loader1 from "../ui/Loader1";
+import PaymentDetails from "../doctor/PaymentDetails";
 
 const DoctorDashboard = () => {
 
@@ -22,7 +23,9 @@ const DoctorDashboard = () => {
 const [appointments, setAppointments] = useState([]);
 const [patients, setPatients] = useState([]);
 const [loading, setLoading] = useState(true);
-
+const [totalEarnings, setTotalEarnings] = useState<number>(0);
+const [monthlyPatientsCount, setMonthlyPatientsCount] = useState<number>(0);
+const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -54,6 +57,8 @@ useEffect(() => {
       
       // Step 3: Fetch patients separately
       await fetchPatients(doctorData.id);
+await fetchTotalEarnings(user.id);   // user.id is the doctor's user_id
+await fetchMonthlyStats(user.id);   // <-- add this line
 
     } catch (error) {
       console.error("Error fetching doctor data:", error);
@@ -64,13 +69,17 @@ useEffect(() => {
 
   const fetchAppointments = async (doctorId: string) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
       const { data: { user } } = await supabase.auth.getUser();
       // First get all appointments for today
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from("appointments")
         .select("*")
         .eq("doctor_id", user.id)
+        .gte("appointment_date", startOfDay)
+      .lte("appointment_date", endOfDay)
         .order("appointment_date", { ascending: true });
         
 
@@ -271,6 +280,7 @@ const transformedAppointments = appointmentsData.map(app => {
       else if (path.includes('/analytics')) setActiveTab('analytics');
       else if (path.includes('/profile')) setActiveTab('profile');
       else if (path.includes('/schedule')) setActiveTab('schedule');
+      else if (path.includes('/payments')) setActiveTab('payments');
       else setActiveTab('overview');
     }, [location.pathname]);
   
@@ -292,6 +302,7 @@ const transformedAppointments = appointmentsData.map(app => {
         case 'profile': navigate(`${basePath}/profile`); break;
         case 'schedule': navigate(`${basePath}/schedule`); break;
         case 'patients': navigate(`${basePath}/patients`); break;
+        case 'payments': navigate(`${basePath}/payments-details`); break;
       }
     };
      const trackButtonClick = (buttonName: string, additionalData = {}) => {
@@ -332,6 +343,89 @@ const transformedAppointments = appointmentsData.map(app => {
     { id: 3, name: "Lisa Garcia", lastVisit: "2024-01-10", condition: "Routine Checkup" }
   ];
 
+  const fetchTotalEarnings = async (doctorUserId: string) => {
+  try {
+    // 1. Get all appointments for this doctor
+    const { data: appointments, error: aptError } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('doctor_id', doctorUserId);
+
+    if (aptError || !appointments?.length) {
+      setTotalEarnings(0);
+      return;
+    }
+
+    const appointmentIds = appointments.map(a => a.id);
+
+    // 2. Get completed payments for those appointments
+    const { data: payments, error: payError } = await supabase
+      .from('payments')
+      .select('amount')
+      .in('appointment_id', appointmentIds)
+      .eq('status', 'completed');
+
+    if (payError) throw payError;
+
+    // 3. Sum the amounts
+    const total = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    setTotalEarnings(total);
+  } catch (err) {
+    console.error('Error fetching total earnings:', err);
+    setTotalEarnings(0);
+  }
+};
+
+const fetchMonthlyStats = async (doctorUserId: string) => {
+  try {
+    // Get first and last day of current month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+
+    const startISO = startOfMonth.toISOString();
+    const endISO = endOfMonth.toISOString();
+
+    // 1. Fetch appointments for this doctor within the month
+    const { data: appointments, error: aptError } = await supabase
+      .from('appointments')
+      .select('id, patient_id')
+      .eq('doctor_id', doctorUserId)
+      .gte('appointment_date', startISO)
+      .lte('appointment_date', endISO);
+
+    if (aptError) throw aptError;
+
+    // ✅ Set monthly patients count as TOTAL appointments (not unique patients)
+    const totalAppointments = appointments?.length || 0;
+    setMonthlyPatientsCount(totalAppointments);
+
+    if (!appointments?.length) {
+      setMonthlyRevenue(0);
+      return;
+    }
+
+    const appointmentIds = appointments.map(a => a.id);
+
+    // 2. Get completed payments for those appointments
+    const { data: payments, error: payError } = await supabase
+      .from('payments')
+      .select('amount')
+      .in('appointment_id', appointmentIds)
+      .eq('status', 'completed');
+
+    if (payError) throw payError;
+
+    const total = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    setMonthlyRevenue(total);
+  } catch (err) {
+    console.error('Error fetching monthly stats:', err);
+    setMonthlyPatientsCount(0);
+    setMonthlyRevenue(0);
+  }
+};
   //  if (activeTab === "profile") {
   //   console.log("Rendering DoctorProfile");
   //     return <DoctorProfile onBack={() => handleTabChange("overview")} />;
@@ -404,7 +498,7 @@ if (activeTab !== "overview") {
               <FileText className="h-4 w-4 mr-1" />
               My Profile
             </Button>
-            {/* <Button
+            <Button
               variant={activeTab === "payments" ? "default" : "ghost"}
               size="sm"
               onClick={() => {handleTabChange("payments"); trackButtonClick("Payments Tab")}}
@@ -412,7 +506,7 @@ if (activeTab !== "overview") {
             >
               <DollarSign className="h-4 w-4 mr-1" />
               Payments
-            </Button> */}
+            </Button>
           </div>
         </div>
 
@@ -422,6 +516,7 @@ if (activeTab !== "overview") {
         {activeTab === "profile" && <DoctorProfile />}
         {activeTab === "patients" && <PatientAttendDetails />}
         {/* {activeTab === "payments" && <PaymentManagement />} */}
+        {activeTab === "payments" && <PaymentDetails />}
       </div>
     );
   }
@@ -508,7 +603,7 @@ if (activeTab !== "overview") {
               <File className="h-4 w-4 mr-1" />
               My Profile
             </Button>
-            {/* <Button
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => {handleTabChange("payments"); trackButtonClick("Payments Tab")}}
@@ -516,7 +611,7 @@ if (activeTab !== "overview") {
             >
               <DollarSign className="h-4 w-4 mr-1" />
               Payments
-            </Button> */}
+            </Button>
           </div>
 
       {/* Quick Stats */}
@@ -534,23 +629,36 @@ if (activeTab !== "overview") {
         <Card variant="doctor">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">This Month's Patients</CardTitle>
-            <CardDescription className="text-2xl font-bold text-doctor">0</CardDescription>
+            <CardDescription className="text-2xl font-bold text-doctor">      {loading ? "..." : monthlyPatientsCount}
+</CardDescription>
           </CardHeader>
         </Card>
         
         <Card variant="doctor">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (This Month)</CardTitle>
-            <CardDescription className="text-2xl font-bold text-doctor">₹0</CardDescription>
+            <CardDescription className="text-2xl font-bold text-doctor">      ₹{loading ? "..." : monthlyRevenue.toLocaleString('en-IN')}
+</CardDescription>
           </CardHeader>
         </Card>
         
-        <Card variant="doctor">
+        {/* <Card variant="doctor">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Patient Rating</CardTitle>
             <CardDescription className="text-2xl font-bold text-doctor">0</CardDescription>
           </CardHeader>
-        </Card>
+        </Card> */}
+
+        <Card variant="doctor">
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium text-muted-foreground">
+      Total Earnings
+    </CardTitle>
+    <CardDescription className="text-2xl font-bold text-doctor">
+      ₹{totalEarnings.toLocaleString('en-IN')}
+    </CardDescription>
+  </CardHeader>
+</Card>
       </div>
 
       {/* Main Content Grid */}

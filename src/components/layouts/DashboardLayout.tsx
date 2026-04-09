@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -223,6 +223,11 @@ const checkBedManagementDepartment = async () => {
           label: "Find Bed",
           icon: Bed,
         },
+        {
+          path: "/dashboard/patient/payments-history",
+          label: "Payment History",
+          icon: CreditCard,
+        },
       ],
   //     routes1: [
   //     {
@@ -257,6 +262,11 @@ const checkBedManagementDepartment = async () => {
         //   icon: FileText,
         // },
         { path: "/dashboard/doctor/profile", label: "My Profile", icon: User },
+        {
+          path: "/dashboard/doctor/payments-details",
+          label: "Payment details",
+          icon: CreditCard,
+        },
       ],
   //     routes1: [
   //     {

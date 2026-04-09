@@ -2504,7 +2504,7 @@ import AppointmentCard from "./AppointmentCard";
 import AppointmentDepartmentsCard from "./AppointmentDepartmentsCard";
 import VideoMeeting from "../VideoMeeting";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Card,
@@ -2629,11 +2629,12 @@ export default function AppointmentManagement() {
     doctorName: "",
     appointmentId: "",
   });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [doctorUserId, setDoctorUserId] = useState<string>("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const apiKey = import.meta.env.VITE_VIDEOSDK_API_KEY;
-
+const [doctorLoading, setDoctorLoading] = useState(false);
+const [hospitalLoading, setHospitalLoading] = useState(false);
   useEffect(() => {
     const getDoctorId = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -2648,6 +2649,8 @@ export default function AppointmentManagement() {
 
   const fetchDoctorAppointments = async () => {
     setIsLoading(true);
+    setDoctorLoading(true);
+    setHospitalLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -2670,7 +2673,7 @@ export default function AppointmentManagement() {
       }
       const enriched = await Promise.all(data.map(async (apt) => {
         const { data: slot } = await supabase.from("time_slots").select("start_time, end_time, slot_type").eq("id", apt.time_slot_id).single();
-        const { data: doctorVerification } = await supabase.from("medical_professionals").select("is_verified").eq("user_id", apt.doctor_id).single();
+        const { data: doctorVerification } = await supabase.from("medical_professionals").select("is_verified,consultation_fee").eq("user_id", apt.doctor_id).maybeSingle();
         const { data: doctorProfile } = await supabase.from("profiles").select("email,phone_number,avatar_url").eq("user_id", apt.doctor_id).single();
         const { data: documents } = await supabase.from("documents").select("*").eq("appointment_id", apt.id).order("created_at", { ascending: false });
         const dateOnly = apt.appointment_date?.split("T")[0] || "";
@@ -2708,6 +2711,8 @@ export default function AppointmentManagement() {
       console.error(err);
     } finally {
       setIsLoading(false);
+      setDoctorLoading(false);
+      setHospitalLoading(false);
     }
   };
 
@@ -2784,23 +2789,66 @@ export default function AppointmentManagement() {
     if (!a.appointmentDateTime || !b.appointmentDateTime) return 0;
     return a.appointmentDateTime.getTime() - b.appointmentDateTime.getTime();
   };
+  const filterBySelectedDate = <T extends { date: string }>(list: T[]) => {
+  if (!selectedDateString) return list;
+  return list.filter(item => item.date === selectedDateString);
+};
+const upcomingDoctorAppointments = filterDoctorByStatus(
+  filterBySelectedDate(
+    doctorAppointments.filter(a => !a.isPast)
+  )
+).sort(sortByDateTime);
+const pastDoctorAppointments = filterDoctorByStatus(
+  filterBySelectedDate(
+    doctorAppointments.filter(a => a.isPast)
+  )
+).sort((a, b) => 
+  (b.appointmentDateTime?.getTime() || 0) - 
+  (a.appointmentDateTime?.getTime() || 0)
+);
+const upcomingHospitalAppointments = filterHospitalByStatus(
+  filterBySelectedDate(
+    hospitalAppointments.filter(a => !a.isPast)
+  )
+).sort(sortByDateTime);
+const pastHospitalAppointments = filterHospitalByStatus(
+  filterBySelectedDate(
+    hospitalAppointments.filter(a => a.isPast)
+  )
+).sort((a, b) => 
+  (b.appointmentDateTime?.getTime() || 0) - 
+  (a.appointmentDateTime?.getTime() || 0)
+);
 
-  const upcomingDoctorAppointments = filterDoctorByStatus(
-    doctorAppointments.filter(a => !a.isPast && (!selectedDateString || a.date === selectedDateString))
-  ).sort(sortByDateTime);
-  const pastDoctorAppointments = filterDoctorByStatus(
-    doctorAppointments.filter(a => a.isPast && (!selectedDateString || a.date === selectedDateString))
-  ).sort((a, b) => (b.appointmentDateTime?.getTime() || 0) - (a.appointmentDateTime?.getTime() || 0));
-  const upcomingHospitalAppointments = filterHospitalByStatus(
-    hospitalAppointments.filter(a => !a.isPast && (!selectedDateString || a.date === selectedDateString))
-  ).sort(sortByDateTime);
-  const pastHospitalAppointments = filterHospitalByStatus(
-    hospitalAppointments.filter(a => a.isPast && (!selectedDateString || a.date === selectedDateString))
-  ).sort((a, b) => (b.appointmentDateTime?.getTime() || 0) - (a.appointmentDateTime?.getTime() || 0));
+  // const upcomingDoctorAppointments = filterDoctorByStatus(
+  //   doctorAppointments.filter(a => !a.isPast && (!selectedDateString || a.date === selectedDateString))
+  // ).sort(sortByDateTime);
+  // const pastDoctorAppointments = filterDoctorByStatus(
+  //   doctorAppointments.filter(a => a.isPast && (!selectedDateString || a.date === selectedDateString))
+  // ).sort((a, b) => (b.appointmentDateTime?.getTime() || 0) - (a.appointmentDateTime?.getTime() || 0));
+  // const upcomingHospitalAppointments = filterHospitalByStatus(
+  //   hospitalAppointments.filter(a => !a.isPast && (!selectedDateString || a.date === selectedDateString))
+  // ).sort(sortByDateTime);
+  // const pastHospitalAppointments = filterHospitalByStatus(
+  //   hospitalAppointments.filter(a => a.isPast && (!selectedDateString || a.date === selectedDateString))
+  // ).sort((a, b) => (b.appointmentDateTime?.getTime() || 0) - (a.appointmentDateTime?.getTime() || 0));
 
   const allUpcoming = [...upcomingDoctorAppointments, ...upcomingHospitalAppointments].sort(sortByDateTime);
   const allPast = [...pastDoctorAppointments, ...pastHospitalAppointments].sort((a, b) => (b.appointmentDateTime?.getTime() || 0) - (a.appointmentDateTime?.getTime() || 0));
-  const today = new Date().toISOString().split('T')[0];
+  // const today = new Date().toISOString().split('T')[0];
+ 
+
+const today = new Date().toISOString().split("T")[0];
+
+useEffect(() => {
+  if (!selectedDateString) return;
+
+  if (selectedDateString < today) {
+    setActiveTab("past");
+  } else {
+    setActiveTab("upcoming");
+  }
+}, [selectedDateString]);
 
   const handleJoinVideo = (appointmentId: string) => {
     const appointment = doctorAppointments.find(apt => apt.id === appointmentId);
@@ -2908,10 +2956,12 @@ export default function AppointmentManagement() {
                   Past ({allPast.length})
                 </Button>
                 <Button variant={activeTab === "doctor" ? "default" : "outline"} onClick={() => setActiveTab("doctor")} className={`w-full md:w-auto transition-all duration-200 ${activeTab === "doctor" ? "bg-gradient-to-r from-green-600 to-green-500 shadow-md text-white" : "border-green-200 text-green-700 hover:bg-green-50"}`}>
-                  👨‍⚕️ Doctor ({doctorAppointments.length})
+                  👨‍⚕️ Professional
+                  {/* 👨‍⚕️ Doctor ({doctorAppointments.length}) */}
                 </Button>
                 <Button variant={activeTab === "hospital" ? "default" : "outline"} onClick={() => setActiveTab("hospital")} className={`w-full md:w-auto transition-all duration-200 ${activeTab === "hospital" ? "bg-gradient-to-r from-blue-600 to-blue-500 shadow-md text-white" : "border-blue-200 text-blue-700 hover:bg-blue-50"}`}>
-                  🏥 Hospital ({hospitalAppointments.length})
+                  🏥 Facility
+                  {/* 🏥 Hospital ({hospitalAppointments.length}) */}
                 </Button>
               </div>
             </div>
@@ -2928,14 +2978,23 @@ export default function AppointmentManagement() {
             {/* UPCOMING TAB */}
             {activeTab === "upcoming" && (
               <div className="space-y-6">
-                {isLoading ? <div className="flex justify-center py-12"><Loader /></div> : allUpcoming.length === 0 ? (
+                {doctorLoading ? (
+  <div className="flex justify-center py-8">
+    <Loader />
+  </div>
+) : allUpcoming.length === 0 ? (
+                // {isLoading ? <div className="flex justify-center py-12"><Loader /></div> : allUpcoming.length === 0 ? (
                   <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
                     <div className="text-gray-400 text-5xl mb-4">📅</div>
                     <p className="text-muted-foreground">No upcoming appointments found</p>
                   </div>
                 ) : (
                   <>
-                    {upcomingDoctorAppointments.length > 0 && (
+                    {doctorLoading ? (
+  <div className="flex justify-center py-8">
+    <Loader />
+  </div>
+) :upcomingDoctorAppointments.length > 0 && (
                       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="bg-gradient-to-r from-green-50 to-transparent px-5 py-3 border-b border-green-100">
                           <h3 className="text-lg font-semibold text-green-700 flex items-center gap-2">
@@ -3060,7 +3119,18 @@ export default function AppointmentManagement() {
                   </h3>
                 </div>
                 <div className="divide-y divide-gray-100">
-                  {upcomingDoctorAppointments.length > 0 && (
+                  {doctorLoading ? (
+  <div className="flex justify-center py-8">
+    <Loader />
+  </div>
+): upcomingDoctorAppointments.length === 0 ? (
+  <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+    <div className="text-gray-400 text-5xl mb-4">📅</div>
+    <p className="text-muted-foreground">
+      No upcoming Doctor Appointments found
+    </p>
+  </div>
+) : (
                     <div className="p-4">
                       <h4 className="text-md font-medium mb-3 text-gray-600 flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
@@ -3119,7 +3189,18 @@ export default function AppointmentManagement() {
                   </h3>
                 </div>
                 <div className="divide-y divide-gray-100 mt-2">
-                  {upcomingHospitalAppointments.length > 0 && (
+                       {hospitalLoading ? (
+  <div className="flex justify-center py-8">
+    <Loader />
+  </div>
+): upcomingHospitalAppointments.length === 0 ? (
+  <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+    <div className="text-gray-400 text-5xl mb-4">📅</div>
+    <p className="text-muted-foreground">
+      No upcoming Hospital Appointments found
+    </p>
+  </div>
+) : upcomingHospitalAppointments.length > 0 && (
                     <div className="p-4">
                       <h4 className="text-md font-medium mb-3 text-gray-600 flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>

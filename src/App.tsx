@@ -82,6 +82,10 @@ import FacilityPatientViews from "./components/facility/FacilityPatientViews";
 // import DoctorPatientViews from "./components/doctor/doctorPatientViews";
 import DoctorPatientViewss from "./components/doctor/DoctorPatientViewss";
 import PatientViews from "./components/patient/PatientViews";
+import PatientPayment from "./payment/PatientPayment";
+import PaymentSuccess from "./payment/PaymentSuccess";
+import PaymentCancelled from "./payment/PaymentCancelled";
+import PaymentHistoryviews from "./components/patient/PaymentHistoryviews";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -371,7 +375,10 @@ const App = () => {
   <Route path="/doctor/appointment-patient/:Id/:appointmentId" element={<DoctorPatientViewss />} />
   <Route path="/patient/appointment-doctor/:Id/:appointmentId" element={<PatientViews />} />
   <Route path="/patient/appointment-facility/:Id/:appointmentId" element={<PatientViews />} />
-
+<Route path="/patient/appointment-payment/:appointmentId" element={<PatientPayment />} />
+<Route path="/payment-success" element={<PaymentSuccess />} />
+<Route path="/payment-cancelled" element={<PaymentCancelled />} />
+{/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}
                   {/* If you want to access BedBookingView directly (not through PatientBookBedPage) */}

@@ -814,7 +814,7 @@ import { Calendar, MapPin, Video, Clock, FileText, User, Upload, Building } from
 import { supabase } from "@/integrations/supabase/client";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import { useEffect, useState } from "react";
-import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
+// import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -968,11 +968,11 @@ export default function AppointmentCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar size={16} className="text-blue-500" />
-            <span className="font-medium">{appointment.date}</span>
+            <span className="font-medium">Appointment Date : {appointment.date}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock size={16} className="text-blue-500" />
-            <span className="font-medium">{appointment.time}</span>
+            <span className="font-medium">Appointment Time : {appointment.time}</span>
           </div>
         </div>
 
@@ -987,19 +987,23 @@ export default function AppointmentCard({
         >
           {appointment.type === "teleconsultation" ? (
             <>
-              <Video size={14} />
-              Online Consultation
-            </>
-          ) : (
-            <>
-              <MapPin size={14} />
-              Clinic Consultation
-            </>
+      <Video size={14} />
+      <span>
+        <strong>Type :</strong> Teleconsultation — Online Consultation
+      </span>
+    </>
+  ) : (
+    <>
+      <MapPin size={14} />
+      <span>
+        <strong>Type :</strong> In-Person — Clinic Consultation
+      </span>
+    </>
           )}
         </div>
 
         {/* Documents Button - conditional */}
-        {showDocuments && (
+        {/* {showDocuments && (
           <Button
             variant="ghost"
             size="sm"
@@ -1007,7 +1011,7 @@ export default function AppointmentCard({
             className="mt-2 flex items-center gap-2 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
           >
             <FileText className="h-4 w-4" />
-            <span className="text-sm font-medium">Documents</span>
+            <span className="text-sm font-medium"> View Documents</span>
           </Button>
         )}
 
@@ -1016,29 +1020,29 @@ export default function AppointmentCard({
           onClose={() => setShowDocsModal(false)}
           appointmentId={appointment.id}
           role="patient"
-        />
+        /> */}
 
         {/* Doctor Profile Button - conditional */}
-        {showDoctorDetail && appointment.doctorId && (
+        {/* {showDoctorDetail && appointment.doctorId && (
           <Button
             size="sm"
             variant="outline"
             onClick={() => navigate(`/patient/appointment-doctor/${appointment.doctorId}/${appointment.id}`)}
           >
-            <User className="h-4 w-4 mr-1" /> Doctor Profile
+            <User className="h-4 w-4 mr-1" /> Appointment Doctor view
           </Button>
-        )}
+        )} */}
 
-        {/* Hospital Profile Button - unconditional (but will be hidden via parent when not needed) */}
-        {appointment.facilityId && (
+      
+        {/* <br />
           <Button
             size="sm"
             variant="outline"
-            onClick={() => navigate(`/patient/appointment-facility/${appointment.facilityId}/${appointment.id}`)}
+            className="bg-blue-500 rounded-lg p-4 text-white space-y-2 border border-blue-200"
+            onClick={() => navigate(`/patient/appointment-payment/${appointment.id}`)}
           >
-            <Building className="h-4 w-4 mr-1" /> Hospital Profile
-          </Button>
-        )}
+            Payment to {appointment.consultationFee ? `₹${appointment.consultationFee}` : "consultation Fee"}
+          </Button> */}
 
         {/* Cancellation Reason */}
         {appointment.status === "cancelled" && appointment.cancellationReason && (
@@ -1074,15 +1078,15 @@ export default function AppointmentCard({
         )}
 
         {/* Doctor Notes */}
-        {appointment.isPast && appointment.doctorNotes && appointment.status === "confirmed" && (
+        {/* {appointment.isPast && appointment.doctorNotes && appointment.status === "confirmed" && (
           <div className="bg-gray-100 p-3 rounded-lg text-sm flex gap-2 border border-gray-200">
             <FileText size={16} className="text-gray-600" />
             <p className="text-gray-700">{appointment.doctorNotes}</p>
           </div>
-        )}
+        )} */}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2 mt-3">
+        {/* <div className="flex justify-end gap-2 mt-3">
           {isUpcoming &&
             appointment.type === "teleconsultation" &&
             appointment.videoRoomId &&
@@ -1095,10 +1099,11 @@ export default function AppointmentCard({
                 Join Video
               </button>
             )}
-        </div>
+        </div> */}
+
 
         {/* Documents Section (list of files) - conditional */}
-        {showDocuments && appointment.documents && appointment.documents.length > 0 && (
+        {/* {showDocuments && appointment.documents && appointment.documents.length > 0 && (
           <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 max-h-96 overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-emerald-700 font-semibold">
@@ -1167,10 +1172,10 @@ export default function AppointmentCard({
               })}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Upload Medical Document Button - conditional */}
-        {showUploadButton &&
+        {/* {showUploadButton &&
           userRole === "patient" &&
           appointment.status === "confirmed" &&
           !appointment.isPast && (
@@ -1181,10 +1186,22 @@ export default function AppointmentCard({
               <Upload size={16} />
               Upload Medical Document
             </button>
-          )}
+          )} */}
+        {
+          userRole === "patient" &&
+          appointment.status === "confirmed"&&(
+          <button
+                          className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+
+            onClick={() => navigate(`/patient/appointment-doctor/${appointment.doctorId}/${appointment.id}`)}
+          >
+            <User className="h-4 w-4 mr-1" /> Appointment Details Page
+          </button>
+        )}
+          
 
         {/* Upload Modal */}
-        {showUploadModal && (
+        {/* {showUploadModal && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50 rounded-t-2xl">
@@ -1208,7 +1225,7 @@ export default function AppointmentCard({
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

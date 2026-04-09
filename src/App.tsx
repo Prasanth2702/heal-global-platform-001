@@ -547,8 +547,6 @@ const App = () => {
 
                   {/* Redirect from /dashboard to a default dashboard (patient) */}
                   <Route path="/dashboard" element={<Navigate to="/dashboard/patient" replace />} />
-                  <Route path="/dashboard" element={<Navigate to="/dashboard/doctor" replace />} />
-                  <Route path="/dashboard" element={<Navigate to="/dashboard/facility" replace />} />
 
                   {/* Authentication Routes */}
                   <Route path="/register/patient" element={<PatientRegistration />} />

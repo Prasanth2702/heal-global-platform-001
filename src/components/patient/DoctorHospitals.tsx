@@ -217,7 +217,7 @@ const DoctorHospitals = () => {
 const [departmentDialogOpen, setDepartmentDialogOpen] = useState(false);
 const [departmentDoctors, setDepartmentDoctors] = useState<Doctor[]>([]);
    const [departmentStaff, setDepartmentStaff] = useState<any[]>([]);
-
+const [isBooking, setIsBooking] = useState(false);
 const [shareDialogOpen, setShareDialogOpen] = useState(false);
 const [copied, setCopied] = useState(false);
    const toggleExpand = async (doctorId: string) => {
@@ -352,6 +352,7 @@ useEffect(() => {
       if (!bookingInfo) return;
   
       try {
+        setIsBooking(true);
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         // if (userError || !user) {
@@ -449,7 +450,10 @@ useEffect(() => {
           description: err?.message || "Unable to book appointment. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsBooking(false);
       }
+
     };
   
 
@@ -1794,8 +1798,9 @@ const handleBookAppointmentClick = () => {
                   <Button
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={handleConfirmBooking}
+                    disabled={isBooking || !bookingInfo}
                   >
-                    Confirm Booking
+                  {isBooking ? "Confirming..." : "Confirm Booking"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

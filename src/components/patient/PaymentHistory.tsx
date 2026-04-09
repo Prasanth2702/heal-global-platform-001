@@ -130,7 +130,7 @@ const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'INR' }).format(amount);
   };
 
   const formatDate = (dateStr: string) => {

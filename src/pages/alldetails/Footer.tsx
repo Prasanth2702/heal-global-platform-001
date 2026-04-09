@@ -283,6 +283,12 @@ const Footer = () => {
       // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
       // { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
     ];
+    const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+};
 
     return (
       <footer className="bg-dark text-white pt-5 pb-4 mt-5">
@@ -290,7 +296,7 @@ const Footer = () => {
           <div className="row g-4">
             {/* About Section */}
             <div className="col-lg-4 col-md-6">
-               <Link to="/" className="flex items-center space-x-2">
+               <Link to="/" onClick={scrollToTop} className="flex items-center space-x-2">
                 <img
                   src={logoFootor}
                   alt="Cloud Hospitals"
@@ -329,6 +335,7 @@ const Footer = () => {
                   <li key={index} className="mb-2">
                     <Link 
                       to={link.path} 
+                      onClick={scrollToTop}
                       className="text-white-50 text-decoration-none hover-text-primary d-inline-flex align-items-center"
                     >
                       <ChevronRight size={14} className="me-1" />
@@ -349,6 +356,7 @@ const Footer = () => {
                     <li key={index} className="mb-2">
                       <Link 
                         to={service.path} 
+                        onClick={scrollToTop}
                         className="text-white-50 text-decoration-none hover-text-primary d-inline-flex align-items-center"
                       >
                         <Icon size={14} className="me-2" />
@@ -398,13 +406,13 @@ const Footer = () => {
               </p>
             </div>
             <div className="col-md-6 text-center text-md-end">
-              <Link to="/privacy" className="text-white-50 text-decoration-none small me-3">
+              <Link to="/privacy" onClick={scrollToTop} className="text-white-50 text-decoration-none small me-3">
                 Privacy Policy
               </Link>
-              <Link to="/terms" className="text-white-50 text-decoration-none small me-3">
+              <Link to="/terms" onClick={scrollToTop} className="text-white-50 text-decoration-none small me-3">
                 Terms of Service
               </Link>
-              <Link to="/cookies" className="text-white-50 text-decoration-none small">
+              <Link to="/cookies"onClick={scrollToTop} className="text-white-50 text-decoration-none small">
                 Cookie Policy
               </Link>
             </div>

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings, Bed, Factory, DockIcon } from "lucide-react";
+import { Calendar, User, Search, Clock, FileText, Star, Heart, Shield, Plus, DollarSign, Settings, Bed, Factory, DockIcon, IndianRupee } from "lucide-react";
 import DoctorSearch from "@/components/patient/DoctorSearch";
 import AppointmentManagement from "@/components/patient/AppointmentManagement";
 import DocumentVault from "@/components/patient/DocumentVault";
@@ -438,7 +438,7 @@ const recentReports = [
               onClick={() =>{trackButtonClick("Payments Tab"); handleTabChange("payments")}}
               className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
             >
-              <DollarSign className="h-4 w-4 mr-1" />
+              <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
             {/* <Button
@@ -635,7 +635,7 @@ const recentReports = [
               onClick={() =>{trackButtonClick("Payments Tab"); handleTabChange("payments")}}
               className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
             >
-              <DollarSign className="h-4 w-4 mr-1" />
+              <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
           </div>
@@ -955,7 +955,7 @@ const recentReports = [
               className="h-24 flex-col bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => { trackButtonClick("Payments Tab"); handleTabChange("payments"); }}
             >
-              <DollarSign className="h-8 w-8 mb-2" />
+              <IndianRupee className="h-8 w-8 mb-2" />
               <span className="text-sm font-semibold">Payments</span>
             </Button>
  

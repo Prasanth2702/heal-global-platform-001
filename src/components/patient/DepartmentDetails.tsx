@@ -87,6 +87,7 @@ const DepartmentDetails = () => {
 const [confirmOpen, setConfirmOpen] = useState(false);
 const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
 const [notes, setNotes] = useState("");
+const [isBooking, setIsBooking] = useState(false);
 const createSlug = (text: string) => {
   return text
     .toLowerCase()
@@ -99,6 +100,7 @@ const handleConfirmBooking = async () => {
   if (!bookingInfo) return;
 
   try {
+    setIsBooking(true);
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -167,6 +169,8 @@ const handleConfirmBooking = async () => {
       description: err?.message || "Unable to book appointment",
       variant: "destructive",
     });
+  } finally {
+    setIsBooking(false);
   }
 };
   useEffect(() => {
@@ -777,8 +781,9 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                       <Button
                                                                         className="bg-blue-600 hover:bg-blue-700 text-white"
                                                                         onClick={handleConfirmBooking}
+                                                                        disabled={isBooking || !bookingInfo}
                                                                       >
-                                                                        Confirm Booking
+                                                                        {isBooking ? "Confirming..." : "Confirm Booking"}
                                                                       </Button>
                                                                     </DialogFooter>
                                                                   </DialogContent>

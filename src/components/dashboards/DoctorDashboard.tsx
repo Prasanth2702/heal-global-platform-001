@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File} from "lucide-react";
+import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File, IndianRupee} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
@@ -504,7 +504,7 @@ if (activeTab !== "overview") {
               onClick={() => {handleTabChange("payments"); trackButtonClick("Payments Tab")}}
               className={activeTab === "payments" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
             >
-              <DollarSign className="h-4 w-4 mr-1" />
+              <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
           </div>
@@ -609,7 +609,7 @@ if (activeTab !== "overview") {
               onClick={() => {handleTabChange("payments"); trackButtonClick("Payments Tab")}}
               className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
             >
-              <DollarSign className="h-4 w-4 mr-1" />
+              <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
           </div>

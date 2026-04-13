@@ -678,7 +678,7 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
       </div>
 
       {/* Search Section */}
-      <div className="container mt-5 mb-4">
+      {/* <div className="container mt-5 mb-4">
         <div className="row justify-content-center">
           <div className="col-md-8">
             <div className="input-group shadow-sm rounded-pill overflow-hidden">
@@ -704,7 +704,7 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Your Personal Health Portal Section - Image Left + Text Right + Alphabet Tabs */}
       <div className="container my-5">

@@ -2883,6 +2883,11 @@ export default function FacilityAppointmentCard({
           <Clock size={16} className="ml-3" /> {enhancedAppointment.time}
         </div>
 
+          {/* <div className="flex-1 min-w-0">
+          <h6 className="text-gray-500">Email : {enhancedAppointment.email}</h6>
+          <h6 className="text-gray-500">Phone : {enhancedAppointment.phoneNumber}</h6>
+        </div> */}
+
         {/* Department info */}
         {department && (
           <div className="text-sm text-blue-900 bg-blue-50 border border-blue-100 rounded px-3 py-2 my-2">

@@ -1216,6 +1216,12 @@ export default function DoctorAppointmentCard({
         <Clock size={16} className="ml-3" />
         {enhancedAppointment.time}
       </div> */}
+
+       <div className="flex-1 min-w-0">
+          <h6 className="text-gray-500">Email : {enhancedAppointment.email}</h6>
+          <h6 className="text-gray-500">Phone : {enhancedAppointment.phoneNumber}</h6>
+        </div>
+        
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/60 rounded-lg">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar size={16} className="text-blue-500" />

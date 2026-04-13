@@ -1015,6 +1015,8 @@ export interface DoctorAppointment {
   isPast: boolean;
   status: "confirmed" | "cancelled" | "completed";
   notes?: string;
+  email?: string | null;
+  phoneNumber?: string | null;
   videoRoomId?: string;
   patientAvatar?: string | null;
   patientId: string;
@@ -1105,11 +1107,18 @@ export default function DoctorAppointmentManagement() {
       const patientIds = [...new Set(appts.map((a) => a.patient_id))];
       const { data: patients } = await supabase
         .from("profiles")
-        .select("user_id, first_name, last_name, avatar_url")
+        .select("user_id, first_name, last_name,email,phone_number, avatar_url")
         .in("user_id", patientIds);
 
       const patientMap = new Map(patients?.map((p) => [p.user_id, `${p.first_name} ${p.last_name}`]));
       const patientAvatarMap = new Map(patients?.map((p) => [p.user_id, p.avatar_url]));
+      const patientEmailMap = new Map(
+  patients?.map((p) => [p.user_id, p.email])
+);
+
+const patientPhoneMap = new Map(
+  patients?.map((p) => [p.user_id, p.phone_number])
+);
 
       const enriched: DoctorAppointment[] = [];
       for (const apt of appts) {
@@ -1137,6 +1146,8 @@ export default function DoctorAppointmentManagement() {
           notes: apt.notes,
           videoRoomId: apt.video_room_id,
           patientAvatar: patientAvatarMap.get(apt.patient_id) ?? null,
+          email: patientEmailMap.get(apt.patient_id) ?? null,
+          phoneNumber: patientPhoneMap.get(apt.patient_id) ?? null,
         });
       }
       setAppointments(enriched);

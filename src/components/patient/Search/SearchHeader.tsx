@@ -2411,7 +2411,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             </div>
             
             {/* Date Filter */}
-            <div className="col-span-1">
+            {/* <div className="col-span-1">
               <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
                 📅 Select Date
               </Label>
@@ -2421,7 +2421,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
                 onChange={(e) => setSelectedDate?.(e.target.value)}
                 className="h-9 sm:h-10 text-sm"
               />
-            </div>
+            </div> */}
 
             {/* City/Location Filter */}
             <div className="col-span-1 xs:col-span-2 lg:col-span-1">

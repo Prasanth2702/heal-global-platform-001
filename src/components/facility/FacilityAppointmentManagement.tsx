@@ -1510,6 +1510,8 @@ export interface FacilityAppointment {
   start_time?: string;
   end_time?: string;
   rawDate?: string;
+  email?: string;
+  phoneNumber?: string;
 }
 
 interface VideoMeetingState {
@@ -1914,7 +1916,7 @@ export default function FacilityAppointmentManagement() {
         // Fetch doctors
         doctorIds.length > 0 ? supabase
           .from("profiles")
-          .select("user_id, first_name, last_name, avatar_url")
+          .select("user_id, first_name, last_name,email,phone_number, avatar_url")
           .in("user_id", doctorIds) : { data: [] },
         
         // Fetch time slots
@@ -1962,6 +1964,14 @@ export default function FacilityAppointmentManagement() {
         departments_list.map((d) => [d.id, d.name])
       );
 
+      const emailMap = new Map(
+        doctors.map((p) => [p.user_id, p.email])
+      );
+
+      const phoneMap = new Map(
+        doctors.map((p) => [p.user_id, p.phone_number])
+      );
+
       const enriched: FacilityAppointment[] = [];
 
       for (const apt of appts) {
@@ -1972,6 +1982,8 @@ export default function FacilityAppointmentManagement() {
           name: "Unknown Patient",
           firstName: "",
           lastName: "",
+          email: "",
+          phoneNumber: "",
           avatar: null
         };
 
@@ -2010,6 +2022,8 @@ export default function FacilityAppointmentManagement() {
           patientAvatar: patient.avatar,
           time_slot_id: apt.time_slot_id,
           rawDate: apt.appointment_date.split('T')[0],
+          email: emailMap.get(apt.patient_id) || '',
+          phoneNumber: phoneMap.get(apt.patient_id) || ''
         });
       }
 

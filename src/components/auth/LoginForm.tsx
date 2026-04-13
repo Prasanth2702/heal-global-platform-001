@@ -331,6 +331,9 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 setIsLoading(true);
+
+
+  try {
     mixpanelInstance.track('Login Attempt', {
       email: formData.email,
       userType: userType,
@@ -416,8 +419,9 @@ setIsLoading(true);
         reason: 'email_not_registered'
       });
     }
+    } finally {
     setIsLoading(false);
-return;
+  }
   };
 
   const handleLoginSuccess = async () => {

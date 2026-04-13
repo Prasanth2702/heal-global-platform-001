@@ -495,13 +495,13 @@ setIsLoading(true);
         <TabsContent value="email" className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email or Phone</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder="Enter your email or phone number"
+                placeholder="Enter your email "
                 required
               />
             </div>

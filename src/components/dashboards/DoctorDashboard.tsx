@@ -540,7 +540,7 @@ if (activeTab !== "overview") {
           </Button>
           <Button variant="doctor" size="lg" onClick={() => {handleTabChange("calendar"); trackButtonClick("View Calendar Button")}}>
             <Calendar className="mr-2 h-4 w-4" />
-            View Calendar
+            Time Slots
           </Button>
           {/* <Button variant="outline" size="lg" onClick={() => {trackButtonClick("Add Patient Button")}}>
             <User className="mr-2 h-4 w-4" />

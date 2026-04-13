@@ -675,14 +675,14 @@ useEffect(() => {
     phone_number: doctorData.phone_number || "",  // Added phone_number
 
       image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
-      qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
-      languages: ["English", "Hindi", "Marathi"],
-      about: "Dr. Sharma is a highly experienced cardiologist with over 15 years of clinical practice. He specializes in interventional cardiology and has performed over 1000 successful angioplasties.",
+      // qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
+      // languages: "",
+      about: "",
       specializations: ["Interventional Cardiology", "Heart Failure", "Preventive Cardiology"],
       education: [
-        { degree: "DM - Cardiology", institution: "AIIMS, Delhi", year: "2010" },
-        { degree: "MD - Internal Medicine", institution: "KEM Hospital, Mumbai", year: "2005" },
-        { degree: "MBBS", institution: "Grant Medical College, Mumbai", year: "2002" },
+        // { degree: "DM - Cardiology", institution: "AIIMS, Delhi", year: "2010" },
+        // { degree: "MD - Internal Medicine", institution: "KEM Hospital, Mumbai", year: "2005" },
+        // { degree: "MBBS", institution: "Grant Medical College, Mumbai", year: "2002" },
       ],
       workExperience: [
         { position: "Senior Consultant Cardiologist", hospital: "City General Hospital", duration: "2015 - Present" },
@@ -1351,14 +1351,14 @@ const handleBookAppointmentClick = () => {
                     <p className="text-gray-700 leading-relaxed">{doctor.about}</p>
                     
                     <div className="grid grid-cols-2 gap-4 mt-6">
-                      <div className="flex items-center text-gray-600">
+                      {/* <div className="flex items-center text-gray-600">
                         <Languages className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.languages?.join(", ")}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
+                      </div> */}
+                      {/* <div className="flex items-center text-gray-600">
                         <Award className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.qualifications?.join(", ")}</span>
-                      </div>
+                      </div> */}
                       <div className="flex items-center text-gray-600">
                         <Building2 className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.hospital}</span>
@@ -1371,7 +1371,7 @@ const handleBookAppointmentClick = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                {/* <Card>
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
                       <GraduationCap className="h-5 w-5 mr-2 text-blue-600" /> Education & Training
@@ -1388,8 +1388,8 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card>
-
+                </Card> */}
+{/* 
                 <Card>
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
@@ -1404,12 +1404,12 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
 
               {/* Right Column - Quick Info */}
               <div className="space-y-6">
-                <Card>
+                {/* <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Specializations</h2>
                     <div className="space-y-2">
@@ -1420,8 +1420,8 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card>
-
+                </Card> */}
+{/* 
                 <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Professional Memberships</h2>
@@ -1434,9 +1434,9 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </ul>
                   </CardContent>
-                </Card>
+                </Card> */}
 
-                <Card>
+                {/* <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Consultation Options</h2>
                     <div className="space-y-3">
@@ -1460,14 +1460,14 @@ const handleBookAppointmentClick = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
           </TabsContent>
 
           {/* Experience Tab */}
           <TabsContent value="experience" className="space-y-6">
-            <Card>
+            {/* <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <Briefcase className="h-5 w-5 mr-2 text-blue-600" /> Work Experience
@@ -1483,9 +1483,9 @@ const handleBookAppointmentClick = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card>
+            {/* <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <Award className="h-5 w-5 mr-2 text-blue-600" /> Awards & Recognition
@@ -1501,12 +1501,12 @@ const handleBookAppointmentClick = () => {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </TabsContent>
 
           {/* Availability Tab */}
           <TabsContent value="availability" className="space-y-6">
-            <Card>
+            {/* <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <CalendarClock className="h-5 w-5 mr-2 text-blue-600" /> Clinic Hours
@@ -1524,7 +1524,7 @@ const handleBookAppointmentClick = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
             <Card ref={bookingSectionRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold flex items-center">

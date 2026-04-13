@@ -455,7 +455,7 @@ const verifyPayment = async () => {
 
         <div className="mt-8 flex gap-4">
           <button
-            onClick={() => navigate(`/dashboard/patient/appointments/${appointmentDetails.doctor_id}/${appointmentDetails.id}`)}
+            onClick={() => navigate(`/patient/appointment-doctor/${appointmentDetails.doctor_id}/${appointmentDetails.id}`)}
             className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             View My Appointments

@@ -257,7 +257,9 @@ import {
   MapPin as MapPinIcon,
   ArrowRight,
   Pill,
-  Ambulance
+  Ambulance,
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoFootor from "@/image/image.png";
@@ -279,6 +281,8 @@ const Footer = () => {
       { name: 'Find Doctors', path: '/appointment/doctors', icon: PersonStanding },
       { name: 'Find Hospitals', path: '/appointment/facility', icon: Building2 },
       { name: 'Book Appointment', path: '/appointment/beds', icon: CalendarCheck },
+      { name: 'Help & Support', path: '/help', icon: HelpCircle},
+      { name: 'Medical Library', path: '/conditions', icon: BookOpen},
       // { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
       // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
       // { name: 'Ambulance', path: '/ambulance', icon: Ambulance },

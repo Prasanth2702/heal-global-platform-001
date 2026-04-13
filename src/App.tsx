@@ -86,6 +86,9 @@ import PatientPayment from "./payment/PatientPayment";
 import PaymentSuccess from "./payment/PaymentSuccess";
 import PaymentCancelled from "./payment/PaymentCancelled";
 import PaymentHistoryviews from "./components/patient/PaymentHistoryviews";
+import Help from "./components/help/Help";
+import MedicalLibrary from "./components/medicallibrary/MedicalLibrary";
+import Conditions from "./components/medicallibrary/Conditions";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -364,6 +367,10 @@ const App = () => {
 <Route path="/blog" element={<Blog />} />
 <Route path="/doctors" element={<DoctorPage />} />
 <Route path="/hospitals" element={<HospitalsPage />} />
+<Route path="/help" element={<Help />} />
+<Route path="/help/:username" element={<Help />} />
+<Route path="/conditions" element={<MedicalLibrary />} />
+<Route path="/conditions/:slug" element={<Conditions />} />
 {/* <Route path="/appointment" element={<BookAppointment />} /> */}
 {/* <Route path="/appointment" element={<HomeLogin />} /> */}
 <Route path="/appointment" element={<HomeLoginPage />} />

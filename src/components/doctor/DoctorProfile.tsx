@@ -812,7 +812,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File } from 'lucide-react';
+import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File, GraduationCap, Award, IndianRupee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
@@ -857,6 +857,18 @@ export interface MedicalProfessional {
   
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
+   education?: Array<{
+    institution: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  }>;
+  certifications?: Array<{
+    title: string;
+    message: string;
+    link: string;
+  }>;
 }
 
 interface UploadedDocument {
@@ -914,6 +926,8 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
 const [pendingDocs, setPendingDocs] = useState<File[]>([]);
 const [showUploadPopup, setShowUploadPopup] = useState(false);
 const [savingDocs, setSavingDocs] = useState(false);
+const [educationList, setEducationList] = useState<MedicalProfessional['education']>([]);
+const [certificationsList, setCertificationsList] = useState<MedicalProfessional['certifications']>([]);
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -991,6 +1005,9 @@ const [savingDocs, setSavingDocs] = useState(false);
           country_code: medicalData?.country_code || '',
           address: medicalData?.address || '',
         });
+        // After setting profileData from medicalData
+setEducationList(medicalData?.education || []);
+setCertificationsList(medicalData?.certifications || []);
 
         // Check for outdated profile
         if (profilesData?.updated_at) {
@@ -1066,7 +1083,45 @@ const [savingDocs, setSavingDocs] = useState(false);
       navigate(-1);
     }
   };
+// Education handlers
+const addEducation = () => {
+  setEducationList(prev => [...prev, {
+    institution: '',
+    city: '',
+    state: '',
+    country: '',
+    pincode: ''
+  }]);
+};
 
+const updateEducation = (index: number, field: string, value: string) => {
+  const updated = [...educationList];
+  updated[index] = { ...updated[index], [field]: value };
+  setEducationList(updated);
+};
+
+const removeEducation = (index: number) => {
+  setEducationList(prev => prev.filter((_, i) => i !== index));
+};
+
+// Certifications handlers
+const addCertification = () => {
+  setCertificationsList(prev => [...prev, {
+    title: '',
+    message: '',
+    link: ''
+  }]);
+};
+
+const updateCertification = (index: number, field: string, value: string) => {
+  const updated = [...certificationsList];
+  updated[index] = { ...updated[index], [field]: value };
+  setCertificationsList(updated);
+};
+
+const removeCertification = (index: number) => {
+  setCertificationsList(prev => prev.filter((_, i) => i !== index));
+};
   // Validation function customized for doctor profile
   const validateForm = (formData: MedicalProfessional) => {
     const errors: { [key: string]: string } = {};
@@ -1113,8 +1168,12 @@ const [savingDocs, setSavingDocs] = useState(false);
       valid = false;
     }
     
-    if (formData.consultationFees < 0) {
-      errors.consultationFees = 'Consultation fees cannot be negative';
+    // if (formData.consultationFees < 0) {
+    //   errors.consultationFees = 'Consultation fees cannot be negative';
+    //   valid = false;
+    // }
+      if (formData.consultationFees < Number(import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE)) {
+      errors.consultationFees = `Consultation fees cannot be less than ₹${import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE}`;
       valid = false;
     }
     
@@ -1124,7 +1183,6 @@ const [savingDocs, setSavingDocs] = useState(false);
     }
 
     setErrors(errors);
-
     const firstErrorKey = Object.keys(errors)[0];
     if (firstErrorKey) {
       toast({
@@ -1134,17 +1192,32 @@ const [savingDocs, setSavingDocs] = useState(false);
         className: 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-0',
       });
     }
+    
     return valid;
   };
 
   const handleSave = async () => {
       setSavingDocs(true);
+      
 
   try {
 
     if (!validateForm(profileData)) return;
     if (!user) return;
+const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
+    const MIN_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE );
 
+    let finalFee = Number(profileData.consultationFees) + ADD_FEE;
+
+    // Minimum Fee Condition
+    if (finalFee < MIN_FEE) {
+      finalFee = MIN_FEE;
+
+      toast({
+        title: 'Consultation fee adjusted',
+        description: `Minimum fee is ₹${MIN_FEE}. Your fee has been set to ₹${MIN_FEE}.`,
+      });
+    }
     try {
       mixpanelInstance.track("Doctor Profile Update", {
         userId: user.id,
@@ -1171,7 +1244,7 @@ const [savingDocs, setSavingDocs] = useState(false);
         graduation_year: profileData.graduationYear,
         medical_school: profileData.medicalSchool,
         years_experience: profileData.yearsOfExperience,
-        consultation_fee: profileData.consultationFees,
+        // consultation_fee: profileData.consultationFees,
         about_yourself: profileData.aboutYourself,
         // kyc_verified: profileData.kycVerified || false,
         languages_known: profileData.languagesKnown,
@@ -1180,6 +1253,9 @@ const [savingDocs, setSavingDocs] = useState(false);
         state: profileData.state,
         pincode: profileData.pincode,
         country_code: profileData.country_code,
+          consultation_fee: finalFee,
+  education: educationList,
+  certifications: certificationsList,
       };
 
       const { error: profilesUpdateError } = await supabase
@@ -2080,7 +2156,7 @@ if (pendingDocs.length > 0 && user) {
               )}
             </div>
 
-            <div>
+            {/* <div>
               <Label htmlFor="consultationFees" className="text-sm font-semibold text-gray-700">
                 Consultation Fees
               </Label>
@@ -2095,7 +2171,33 @@ if (pendingDocs.length > 0 && user) {
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">${profileData.consultationFees}</p>
               )}
-            </div>
+            </div> */}
+            <div>
+  <Label htmlFor="consultationFees" className="text-sm font-semibold text-gray-700">
+    Consultation Fees
+  </Label>
+  {isEditing ? (
+    <>
+      <Input
+        id="consultationFees"
+        type="number"
+        min={import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE } // Enforce minimum fee
+        value={profileData.consultationFees}
+        onChange={e => setProfileData(prev => ({ ...prev, consultationFees: parseFloat(e.target.value) || 0 }))}
+        className="mt-2 border-2 focus:border-blue-500 transition-colors"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        {/* 💡 Minimum fee is Rs 100. It will be added with Platform Fee of Rs 150  automatically.(ex Consultation Fee Rs.100 and Platform Fee Rs.150 total = Rs 250 / per appointment) */}
+        💡 Minimum fee is Rs {import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE }. It will be added with Platform Fee of Rs {import.meta.env.VITE_DOCTOR_PROFILE_FEE}  automatically.(ex Consultation Fee Rs.{import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE } and Platform Fee Rs.{import.meta.env.VITE_DOCTOR_PROFILE_FEE } total = Rs {parseInt(import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE ) + parseInt(import.meta.env.VITE_DOCTOR_PROFILE_FEE )} / per appointment)
+      </p>
+    </>
+  ) : (
+    <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium flex items-center gap-2">
+  <IndianRupee size={16} />
+  {profileData.consultationFees}
+</p>
+  )}
+</div>
 
             <div className="md:col-span-2">
               <Label htmlFor="additionalQualifications" className="text-sm font-semibold text-gray-700">
@@ -2149,6 +2251,167 @@ if (pendingDocs.length > 0 && user) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Education Card */}
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <GraduationCap className="h-5 w-5 mr-2" />
+        Education
+      </CardTitle>
+      {isEditing && (
+        <Button 
+          type="button" 
+          size="sm" 
+          onClick={addEducation} 
+          variant="secondary"
+          className="bg-white/20 hover:bg-white/30 text-white border-0"
+        >
+          + Add Education
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-6">
+    {educationList.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">
+        {isEditing ? "Click 'Add Education' to start" : "No education added"}
+      </p>
+    ) : (
+      educationList.map((edu, idx) => (
+        <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+          {isEditing ? (
+            <div className="space-y-3">
+              <Input
+                placeholder="Institution / School / College"
+                value={edu.institution}
+                onChange={e => updateEducation(idx, 'institution', e.target.value)}
+                className="border-2 focus:border-blue-500"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input
+                  placeholder="City"
+                  value={edu.city}
+                  onChange={e => updateEducation(idx, 'city', e.target.value)}
+                />
+                <Input
+                  placeholder="State"
+                  value={edu.state}
+                  onChange={e => updateEducation(idx, 'state', e.target.value)}
+                />
+                <Input
+                  placeholder="Country"
+                  value={edu.country}
+                  onChange={e => updateEducation(idx, 'country', e.target.value)}
+                />
+                <Input
+                  placeholder="Pincode"
+                  value={edu.pincode}
+                  onChange={e => updateEducation(idx, 'pincode', e.target.value)}
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeEducation(idx)}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-gray-800">{edu.institution}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {[edu.city, edu.state, edu.country].filter(Boolean).join(', ')}
+                {edu.pincode && ` - ${edu.pincode}`}
+              </p>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+
+{/* Certifications Card */}
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <Award className="h-5 w-5 mr-2" />
+        Certifications
+      </CardTitle>
+      {isEditing && (
+        <Button
+          type="button"
+          size="sm"
+          onClick={addCertification}
+          variant="secondary"
+          className="bg-white/20 hover:bg-white/30 text-white border-0"
+        >
+          + Add Certification
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-6">
+    {certificationsList.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">
+        {isEditing ? "Click 'Add Certification' to start" : "No certifications added"}
+      </p>
+    ) : (
+      certificationsList.map((cert, idx) => (
+        <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+          {isEditing ? (
+            <div className="space-y-3">
+              <Input
+                placeholder="Title"
+                value={cert.title}
+                onChange={e => updateCertification(idx, 'title', e.target.value)}
+                className="border-2 focus:border-blue-500"
+              />
+              <Input
+                placeholder="Message / Description"
+                value={cert.message}
+                onChange={e => updateCertification(idx, 'message', e.target.value)}
+              />
+              <Input
+                placeholder="Link (URL)"
+                value={cert.link}
+                onChange={e => updateCertification(idx, 'link', e.target.value)}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeCertification(idx)}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-gray-800">{cert.title}</p>
+              {cert.message && <p className="text-sm text-gray-600 mt-1">{cert.message}</p>}
+              {cert.link && (
+                <a
+                  href={cert.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 text-sm mt-2 inline-flex items-center gap-1 hover:underline"
+                >
+                  View credential →
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
       {/* Continue with the rest of your cards... */}
       {/* Personal details, Address details, Professional information cards remain the same */}
     </div>

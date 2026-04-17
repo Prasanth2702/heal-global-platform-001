@@ -2320,16 +2320,31 @@ const Hometab: React.FC = () => {
                   <div className="card-body p-4">
                     <div className="position-relative mb-4">
                       <div className="avatar-wrapper mx-auto">
-                        <img 
-                          src={doctor.image} 
-                          alt={doctor.name}
-                          className="rounded-circle border border-3 border-primary p-1"
-                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://via.placeholder.com/100";
-                          }}
-                        />
-                      </div>
+  {doctor.image ? (
+    <img 
+      src={doctor.image}
+      alt={doctor.name}
+      loading="lazy"
+      className="rounded-circle border border-3 border-primary p-1"
+      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src =
+          `https://ui-avatars.com/api/?name=${doctor.name}`;
+      }}
+    />
+  ) : (
+    <div 
+      className="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto"
+      style={{ width: '100px', height: '100px', backgroundColor: '#6c757d' }}
+    >
+      {doctor.name?.split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()}
+    </div>
+  )}
+</div>
                     </div>
                     <h5 className={`card-title text-center mb-1 ${getTextSizeClass('h5', 'text-base', 'text-md')}`}>{doctor.name}</h5>
                     <p className={`text-primary text-center mb-2 ${getTextSizeClass('', 'text-xs', 'text-sm')}`}>{doctor.specialty}</p>

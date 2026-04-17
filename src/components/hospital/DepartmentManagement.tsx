@@ -615,6 +615,8 @@ const [timeCreated, setTimeCreated] = useState(false);
     ...additionalData
   });
 };
+const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
+const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   useEffect(() => {
   // If we're in edit mode (editingDepartment exists), we want the field to be editable
   setIsEditMode(!!editingDepartment);
@@ -1625,7 +1627,37 @@ const handleEdit = (department: Department) => {
       trackDepartmentAction('delete_failure', { id }, { error: (error as any).message });
     }
   };
+const validateField = (field: string, value: any): string => {
+  switch (field) {
+    case 'salary':
+      if (value < 0) return "Salary cannot be negative";
+      return "";
+    default:
+      return "";
+  }
+};
 
+const getFieldValue = (field: string): any => {
+  switch (field) {
+    case 'salary':
+      return formData.salary;
+    default:
+      return "";
+  }
+};
+
+const handleBlur = (field: string) => {
+  setTouchedFields(prev => ({ ...prev, [field]: true }));
+  const error = validateField(field, getFieldValue(field));
+  setFieldErrors(prev => ({ ...prev, [field]: error }));
+};
+
+const renderFieldError = (field: string) => {
+  if (touchedFields[field] && fieldErrors[field]) {
+    return <p className="text-red-500 text-sm mt-1">{fieldErrors[field]}</p>;
+  }
+  return null;
+};
   const resetForm = () => {
     setFormData({
       name: "",
@@ -2457,7 +2489,7 @@ const getSubmitHandler = () => {
                             </div>
                             <div className="grid gap-2">
                               <Label htmlFor="salary">Salary</Label>
-                              <Input
+                              {/* <Input
                                 id="salary"
                                 type="number"
                                 value={formData.salary}
@@ -2470,7 +2502,24 @@ const getSubmitHandler = () => {
                                 placeholder="50000"
                                 min="0"
                                 step="0.01"
-                              />
+                              /> */}
+                              <Input
+  id="salary"
+  type="number"
+  value={formData.salary || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, salary: value }));
+    if (touchedFields.salary) {
+      const error = validateField('salary', value);
+      setFieldErrors(prev => ({ ...prev, salary: error }));
+    }
+  }}
+  onBlur={() => handleBlur('salary')}
+  className={touchedFields.salary && fieldErrors.salary ? "border-red-500" : ""}
+  placeholder="Enter salary"
+/>
+{renderFieldError('salary')}
                             </div>
                           </div>
         

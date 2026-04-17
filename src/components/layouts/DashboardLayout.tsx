@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -340,6 +340,21 @@ const checkBedManagementDepartment = async () => {
         path: "/dashboard/facility/ward-management",
         label: "Ward Management",
         icon: WalletCards,
+      },
+      {
+        path: "/dashboard/facility/patient-registration",
+        label: "Patient Registration",
+        icon: Refrigerator,
+      },
+      {
+        path: "/dashboard/facility/billing",
+        label: "Billing",
+        icon: BrickWallIcon,
+      },
+      {
+        path: "/dashboard/facility/reports",
+        label: "Billing Reports",
+        icon: ReplyIcon,
       },
       // ]
       // : []),

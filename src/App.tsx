@@ -91,6 +91,9 @@ import MedicalLibrary from "./components/medicallibrary/MedicalLibrary";
 import Conditions from "./components/medicallibrary/Conditions";
 import BannerDoctorView from "./components/doctor/BannerDoctorView";
 import DoctorPendingViewPage from "./components/doctor/DoctorPendingViewPage";
+import FacilityPatientManagementview from "./components/facility/FacilityPatientManagementview";
+import FacilityBillingPageView from "./components/facility/FacilityBillingPageView";
+import CashFlowReportsView from "./components/reports/CashFlowReportsView";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -389,6 +392,9 @@ const App = () => {
 <Route path="/payment-cancelled" element={<PaymentCancelled />} />
 <Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} />
 <Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} />
+<Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
+<Route path="/dashboard/facility/billing" element={<FacilityBillingPageView />} />
+<Route path="/dashboard/facility/reports" element={<CashFlowReportsView />} />
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}

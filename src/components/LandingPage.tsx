@@ -497,7 +497,7 @@ const LandingPage = () => {
         // Check based on the actual role from database
         if (profile.role === "patient") {
           const { data: patient } = await supabase
-            .from("patient")
+            .from("patients")
             .select("id")
             .eq("user_id", session.user.id)
             .maybeSingle();

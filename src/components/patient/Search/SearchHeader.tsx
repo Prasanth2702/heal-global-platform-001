@@ -2136,17 +2136,30 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   
   // Fetch facility types from database dynamically
   useEffect(() => {
-    const fetchFacilityTypes = async () => {
-      const { data, error } = await supabase
-        .from("facilities")
-        .select("facility_type")
-        .not("facility_type", "is", null);
+    // const fetchFacilityTypes = async () => {
+    //   const { data, error } = await supabase
+    //     .from("facilities")
+    //     .select("facility_type")
+    //     .not("facility_type", "is", null);
       
-      if (data && !error) {
-        const uniqueTypes = [...new Set(data.map(f => f.facility_type))];
-        setDynamicFacilityTypes(uniqueTypes);
-      }
-    };
+    //   if (data && !error) {
+    //     const uniqueTypes = [...new Set(data.map(f => f.facility_type))];
+    //     setDynamicFacilityTypes(uniqueTypes);
+    //   }
+    // };
+   const fetchFacilityTypes = async () => {
+  const { data, error } = await supabase
+    .from("facilities")
+    .select("facility_type")
+    .not("facility_type", "is", null);
+  
+  if (data && !error) {
+    const uniqueTypes = [...new Set(data.map(f => f.facility_type))]
+      .filter(type => type && type.trim() !== "");
+    setDynamicFacilityTypes(uniqueTypes);
+  }
+};
+   
     fetchFacilityTypes();
   }, []);
 
@@ -2183,16 +2196,26 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   }, []);
 
   // Get the appropriate cities based on active tab
-  const getAvailableCities = () => {
-    if (activeFilterTab === "doctors") {
-      return doctorCities.length > 0 ? doctorCities : [];
-    } else if (activeFilterTab === "hospitals") {
-      return facilityCities.length > 0 ? facilityCities : [];
-    }
-    // For "all" tab, combine both
-    return [...new Set([...doctorCities, ...facilityCities])].sort();
-  };
-
+  // const getAvailableCities = () => {
+  //   if (activeFilterTab === "doctors") {
+  //     return doctorCities.length > 0 ? doctorCities : [];
+  //   } else if (activeFilterTab === "hospitals") {
+  //     return facilityCities.length > 0 ? facilityCities : [];
+  //   }
+  //   // For "all" tab, combine both
+  //   return [...new Set([...doctorCities, ...facilityCities])].sort();
+  // };
+const getAvailableCities = () => {
+  if (activeFilterTab === "doctors") {
+    return doctorCities.filter(city => city && city.trim() !== "");
+  } else if (activeFilterTab === "hospitals") {
+    return facilityCities.filter(city => city && city.trim() !== "");
+  }
+  // For "all" tab, combine both
+  return [...new Set([...doctorCities, ...facilityCities])]
+    .filter(city => city && city.trim() !== "")
+    .sort();
+};
   const filteredCities = getAvailableCities().filter((city) =>
     city?.toLowerCase().includes(search.toLowerCase())
   );

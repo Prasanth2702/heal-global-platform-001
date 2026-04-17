@@ -337,7 +337,7 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
         .from("time_slots")
         .select("*")
         .eq("department_id", department.id)
-        .eq("slot_type", "booking")
+        // .eq("slot_type", "booking")
         .eq("is_available", true);
 
       if (slotsError) {

@@ -1675,7 +1675,8 @@ const StaffManagement = () => {
   // Track if current user already has a staff record
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userHasStaff, setUserHasStaff] = useState<boolean>(false);
-  
+  const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
+const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   // Add tracking functions
   const trackStaffAction = (action: string, staffData?: any, additionalData = {}) => {
     mixpanelInstance.track('Staff Management Action', {
@@ -2608,6 +2609,7 @@ if (!editingStaff) {
         start_time: formData.shift_schedule.start_time,
         end_time: formData.shift_schedule.end_time,
       },
+      salary:formData.salary,
       is_active: formData.is_active,
       updated_at: new Date().toISOString(),
     };
@@ -2698,7 +2700,7 @@ if (!editingStaff) {
       department_id: staffMember.department_id,
       facility_id: staffMember.facility_id,
       hire_date: staffMember.hire_date,
-      salary: staffMember.salary,
+      salary: staffMember.salary ,
       shift_schedule: {
         shift: staffMember.shift_schedule.shift,
         start_time: staffMember.shift_schedule.start_time,
@@ -2829,7 +2831,37 @@ if (!editingStaff) {
       day: "numeric",
     });
   };
+const validateField = (field: string, value: any): string => {
+  switch (field) {
+    case 'salary':
+      if (value < 0) return "Salary cannot be negative";
+      return "";
+    default:
+      return "";
+  }
+};
 
+const getFieldValue = (field: string): any => {
+  switch (field) {
+    case 'salary':
+      return formData.salary;
+    default:
+      return "";
+  }
+};
+
+const handleBlur = (field: string) => {
+  setTouchedFields(prev => ({ ...prev, [field]: true }));
+  const error = validateField(field, getFieldValue(field));
+  setFieldErrors(prev => ({ ...prev, [field]: error }));
+};
+
+const renderFieldError = (field: string) => {
+  if (touchedFields[field] && fieldErrors[field]) {
+    return <p className="text-red-500 text-sm mt-1">{fieldErrors[field]}</p>;
+  }
+  return null;
+};
   // Add to filter changes
   const handleFacilityFilter = (value: string) => {
     trackStaffAction('filter_by_facility', undefined, { 
@@ -3128,7 +3160,7 @@ return (
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="salary">Salary</Label>
-                    <Input
+                    {/* <Input
                       id="salary"
                       type="number"
                       value={formData.salary}
@@ -3138,10 +3170,25 @@ return (
                           salary: parseFloat(e.target.value) || 0,
                         }))
                       }
-                      placeholder="50000"
-                      min="0"
-                      step="0.01"
-                    />
+                      placeholder="Enter salary"
+                    /> */}
+                    <Input
+  id="salary"
+  type="number"
+  value={formData.salary || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, salary: value }));
+    if (touchedFields.salary) {
+      const error = validateField('salary', value);
+      setFieldErrors(prev => ({ ...prev, salary: error }));
+    }
+  }}
+  onBlur={() => handleBlur('salary')}
+  className={touchedFields.salary && fieldErrors.salary ? "border-red-500" : ""}
+  placeholder="Enter salary"
+/>
+{renderFieldError('salary')}
                   </div>
                 </div>
 

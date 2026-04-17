@@ -130,11 +130,37 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
       <CardContent className="p-5">
         {/* Doctor Header */}
         <div className="flex gap-4">
-          <img
+          {/* <img
             src={doctor.image || "https://via.placeholder.com/150"}
             alt={doctor.name}
             className="w-20 h-20 rounded-full object-cover flex-shrink-0 border-2 border-blue-100"
-          />
+          /> */}
+          <div className="avatar-wrapper mx-auto">
+  {doctor.image ? (
+    <img 
+      src={doctor.image}
+      alt={doctor.name}
+      loading="lazy"
+      className="rounded-circle border border-3 border-primary p-1"
+      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src =
+          `https://ui-avatars.com/api/?name=${doctor.name}`;
+      }}
+    />
+  ) : (
+    <div 
+      className="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto"
+      style={{ width: '100px', height: '100px', backgroundColor: '#6c757d' }}
+    >
+      {doctor.name?.split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()}
+    </div>
+  )}
+</div>
 
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start gap-2">

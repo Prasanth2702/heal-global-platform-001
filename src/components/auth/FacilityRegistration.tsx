@@ -2695,7 +2695,7 @@ const FacilityRegistration = () => {
         facility_type: formData.facilityType,
         license_number: formData.licenseNumber,
         established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
-        is_verified: false,
+        is_verified: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -3892,9 +3892,9 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const fieldsToValidate: string[] = [];
     
     if (step === 1) {
-      fieldsToValidate.push('facilityName', 'facilityType', 'emailAddress', 'phoneNumber', 'password', 'repeatPassword', 'terms', 'kyc');
+      fieldsToValidate.push('facilityName', 'facilityType', 'emailAddress', 'phoneNumber', 'password', 'repeatPassword', 'terms', 'kyc','licenseNumber', 'establishedYear');
     } else if (step === 2) {
-      fieldsToValidate.push('address', 'city', 'state', 'country_code', 'pincode', 'licenseNumber', 'establishedYear', 'departments');
+      fieldsToValidate.push('address', 'city', 'state', 'country_code', 'pincode',  'departments');
     } else if (step === 3) {
       fieldsToValidate.push('operatingHours');
     } else if (step === 4) {

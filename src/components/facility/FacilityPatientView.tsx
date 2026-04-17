@@ -2383,6 +2383,8 @@ import {
   IndianRupee,
   Trash2,
   DockIcon,
+  LucideAppWindow,
+  Telescope,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
@@ -3770,6 +3772,12 @@ const handleConfirmCompletion = () => {
               {/* Teleconsultation Card */}
               {currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="bg-sky-50/40 border-sky-100 sm:col-span-2">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+  <CardTitle className="text-white flex items-center gap-2">
+    <Telescope className="h-5 w-5" />
+   Start Tele Consultation Meeting
+  </CardTitle>
+</div>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center text-base"><Video className="mr-2 h-5 w-5 text-sky-600" /> Upcoming Teleconsultation</CardTitle>
                     <CardDescription>Scheduled on {new Date(currentAppointment.appointment_date).toLocaleDateString()}</CardDescription>
@@ -3789,6 +3797,12 @@ const handleConfirmCompletion = () => {
               {/* Non-teleconsultation action buttons */}
               {userRole === "doctor" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="bg-rose-50/40 border-rose-100">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+  <CardTitle className="text-white flex items-center gap-2">
+    <LucideAppWindow className="h-5 w-5" />
+    Appointment Actions
+  </CardTitle>
+</div>
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
                   <CardContent className="flex gap-2">
                     <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
@@ -3798,6 +3812,12 @@ const handleConfirmCompletion = () => {
               )}
               {userRole === "facility" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="bg-rose-50/40 border-rose-100">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+  <CardTitle className="text-white flex items-center gap-2">
+    <LucideAppWindow className="h-5 w-5" />
+    Appointment Actions
+  </CardTitle>
+</div>
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
                   <CardContent>
                     <Button variant="doctor" onClick={() => setOpenComplete(true)} disabled={isCompleted || isCancelled}>Mark as Completed</Button>
@@ -4307,6 +4327,12 @@ const handleConfirmCompletion = () => {
 
                 {currentAppointment?.type === "teleconsultation" && currentAppointment?.status === "confirmed" && (
                   <Card className="bg-sky-50/40 border-sky-100 sm:col-span-2">
+                               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+  <CardTitle className="text-white flex items-center gap-2">
+    <Telescope className="h-5 w-5" />
+    Join Tele Consultation Meeting
+  </CardTitle>
+</div>
                     <CardContent className="p-4 flex flex-col items-center text-center">
                       <Video className="h-8 w-8 text-sky-600 mb-2" />
                       <h3 className="font-semibold">Tele Consultation</h3>

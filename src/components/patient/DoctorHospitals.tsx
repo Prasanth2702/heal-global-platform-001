@@ -1287,11 +1287,37 @@ const handleBookAppointmentClick = () => {
           <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32"></div>
           <CardContent className="relative pt-0">
             <div className="flex flex-col md:flex-row gap-6 -mt-16">
-              <img
+              {/* <img
                 src={doctor.image || "https://via.placeholder.com/150"}
                 alt={doctor.name}
                 className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
-              />
+              /> */}
+              <div className="avatar-wrapper mx-auto">
+  {doctor.image ? (
+    <img 
+      src={doctor.image}
+      alt={doctor.name}
+      loading="lazy"
+      className="rounded-circle border border-3 border-primary p-1"
+      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src =
+          `https://ui-avatars.com/api/?name=${doctor.name}`;
+      }}
+    />
+  ) : (
+    <div 
+      className="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto"
+      style={{ width: '100px', height: '100px', backgroundColor: '#6c757d' }}
+    >
+      {doctor.name?.split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()}
+    </div>
+  )}
+</div>
               <div className="flex-1 mt-4 md:mt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
@@ -1833,11 +1859,37 @@ const handleBookAppointmentClick = () => {
                 <Card key={doc.id} className="hover:shadow-lg transition cursor-pointer" onClick={() => handleViewDoctor(doc.id)}>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <img
+                      {/* <img
                         src={doc.image || "https://via.placeholder.com/150"}
                         alt={doc.name}
                         className="w-16 h-16 rounded-full object-cover"
-                      />
+                      /> */}
+                      <div className="avatar-wrapper mx-auto">
+  {doc.image ? (
+    <img 
+      src={doc.image}
+      alt={doc.name}
+      loading="lazy"
+      className="rounded-circle border border-3 border-primary p-1"
+      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src =
+          `https://ui-avatars.com/api/?name=${doc.name}`;
+      }}
+    />
+  ) : (
+    <div 
+      className="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto"
+      style={{ width: '100px', height: '100px', backgroundColor: '#6c757d' }}
+    >
+      {doc.name?.split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()}
+    </div>
+  )}
+</div>
                       <div>
                         <h3 className="font-semibold">{doc.name}</h3>
                         <p className="text-sm text-gray-600">{doc.specialty}</p>
@@ -2122,11 +2174,37 @@ const handleBookAppointmentClick = () => {
       <Card key={staff.id} className="hover:shadow-lg transition cursor-pointer">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <img
+            {/* <img
               src={staff.image || "https://via.placeholder.com/150"}
               alt={staff.name}
               className="w-16 h-16 rounded-full object-cover"
-            />
+            /> */}
+            <div className="avatar-wrapper mx-auto">
+  {staff.image ? (
+    <img 
+      src={staff.image}
+      alt={staff.name}
+      loading="lazy"
+      className="rounded-circle border border-3 border-primary p-1"
+      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src =
+          `https://ui-avatars.com/api/?name=${staff.name}`;
+      }}
+    />
+  ) : (
+    <div 
+      className="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto"
+      style={{ width: '100px', height: '100px', backgroundColor: '#6c757d' }}
+    >
+      {staff.name?.split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()}
+    </div>
+  )}
+</div>
             <div>
               <h3 className="font-semibold">{staff.name}</h3>
               <p className="text-sm text-gray-600">{staff.position}</p>

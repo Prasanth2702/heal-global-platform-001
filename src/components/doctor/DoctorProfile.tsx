@@ -812,7 +812,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File, GraduationCap, Award, IndianRupee } from 'lucide-react';
+import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File, GraduationCap, Award, IndianRupee, Briefcase, Star, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
@@ -928,6 +928,11 @@ const [showUploadPopup, setShowUploadPopup] = useState(false);
 const [savingDocs, setSavingDocs] = useState(false);
 const [educationList, setEducationList] = useState<MedicalProfessional['education']>([]);
 const [certificationsList, setCertificationsList] = useState<MedicalProfessional['certifications']>([]);
+const [qualifications, setQualifications] = useState<string[]>([]);
+const [specializations, setSpecializations] = useState<string[]>([]);
+const [workExperience, setWorkExperience] = useState<Array<{position: string; hospital: string; duration: string}>>([]);
+const [publications, setPublications] = useState<Array<{title: string; journal: string; year: string}>>([]);
+const [memberships, setMemberships] = useState<string[]>([]);
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -1008,6 +1013,11 @@ const [certificationsList, setCertificationsList] = useState<MedicalProfessional
         // After setting profileData from medicalData
 setEducationList(medicalData?.education || []);
 setCertificationsList(medicalData?.certifications || []);
+setQualifications(medicalData?.qualifications || []);
+setSpecializations(medicalData?.specializations || []);
+setWorkExperience(medicalData?.work_experience || []);
+setPublications(medicalData?.publications || []);
+setMemberships(medicalData?.memberships || []);
 
         // Check for outdated profile
         if (profilesData?.updated_at) {
@@ -1121,6 +1131,71 @@ const updateCertification = (index: number, field: string, value: string) => {
 
 const removeCertification = (index: number) => {
   setCertificationsList(prev => prev.filter((_, i) => i !== index));
+};
+
+// ========== Qualifications ==========
+const addQualification = () => {
+  setQualifications(prev => [...prev, '']);
+};
+const updateQualification = (index: number, value: string) => {
+  const updated = [...qualifications];
+  updated[index] = value;
+  setQualifications(updated);
+};
+const removeQualification = (index: number) => {
+  setQualifications(prev => prev.filter((_, i) => i !== index));
+};
+
+// ========== Specializations ==========
+const addSpecialization = () => {
+  setSpecializations(prev => [...prev, '']);
+};
+const updateSpecialization = (index: number, value: string) => {
+  const updated = [...specializations];
+  updated[index] = value;
+  setSpecializations(updated);
+};
+const removeSpecialization = (index: number) => {
+  setSpecializations(prev => prev.filter((_, i) => i !== index));
+};
+
+// ========== Work Experience ==========
+const addWorkExperience = () => {
+  setWorkExperience(prev => [...prev, { position: '', hospital: '', duration: '' }]);
+};
+const updateWorkExperience = (index: number, field: string, value: string) => {
+  const updated = [...workExperience];
+  updated[index] = { ...updated[index], [field]: value };
+  setWorkExperience(updated);
+};
+const removeWorkExperience = (index: number) => {
+  setWorkExperience(prev => prev.filter((_, i) => i !== index));
+};
+
+// ========== Publications ==========
+const addPublication = () => {
+  setPublications(prev => [...prev, { title: '', journal: '', year: '' }]);
+};
+const updatePublication = (index: number, field: string, value: string) => {
+  const updated = [...publications];
+  updated[index] = { ...updated[index], [field]: value };
+  setPublications(updated);
+};
+const removePublication = (index: number) => {
+  setPublications(prev => prev.filter((_, i) => i !== index));
+};
+
+// ========== Memberships ==========
+const addMembership = () => {
+  setMemberships(prev => [...prev, '']);
+};
+const updateMembership = (index: number, value: string) => {
+  const updated = [...memberships];
+  updated[index] = value;
+  setMemberships(updated);
+};
+const removeMembership = (index: number) => {
+  setMemberships(prev => prev.filter((_, i) => i !== index));
 };
   // Validation function customized for doctor profile
   const validateForm = (formData: MedicalProfessional) => {
@@ -1256,6 +1331,11 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
           consultation_fee: finalFee,
   education: educationList,
   certifications: certificationsList,
+  qualifications: qualifications,
+  specializations: specializations,
+  work_experience: workExperience,
+  publications: publications,
+  memberships: memberships,
       };
 
       const { error: profilesUpdateError } = await supabase
@@ -2406,6 +2486,184 @@ if (pendingDocs.length > 0 && user) {
                 </a>
               )}
             </div>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <Award className="h-5 w-5 mr-2" />
+        Qualifications
+      </CardTitle>
+      {isEditing && (
+        <Button type="button" size="sm" onClick={addQualification} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
+          + Add Qualification
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-3">
+    {qualifications.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">{isEditing ? "Click 'Add Qualification' to start" : "No qualifications listed"}</p>
+    ) : (
+      qualifications.map((qual, idx) => (
+        <div key={idx} className="border rounded-lg p-3 bg-gray-50">
+          {isEditing ? (
+            <div className="flex gap-2 items-center">
+              <Input value={qual} onChange={e => updateQualification(idx, e.target.value)} className="flex-1" />
+              <Button variant="ghost" size="sm" onClick={() => removeQualification(idx)} className="text-red-500">Remove</Button>
+            </div>
+          ) : (
+            <p className="text-gray-800">{qual}</p>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <Star className="h-5 w-5 mr-2" />
+        Specializations
+      </CardTitle>
+      {isEditing && (
+        <Button type="button" size="sm" onClick={addSpecialization} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
+          + Add Specialization
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-3">
+    {specializations.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">{isEditing ? "Click 'Add Specialization' to start" : "No specializations listed"}</p>
+    ) : (
+      specializations.map((spec, idx) => (
+        <div key={idx} className="border rounded-lg p-3 bg-gray-50">
+          {isEditing ? (
+            <div className="flex gap-2 items-center">
+              <Input value={spec} onChange={e => updateSpecialization(idx, e.target.value)} className="flex-1" />
+              <Button variant="ghost" size="sm" onClick={() => removeSpecialization(idx)} className="text-red-500">Remove</Button>
+            </div>
+          ) : (
+            <p className="text-gray-800">{spec}</p>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <Briefcase className="h-5 w-5 mr-2" />
+        Work Experience
+      </CardTitle>
+      {isEditing && (
+        <Button type="button" size="sm" onClick={addWorkExperience} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
+          + Add Experience
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-4">
+    {workExperience.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">{isEditing ? "Click 'Add Experience' to start" : "No work experience listed"}</p>
+    ) : (
+      workExperience.map((exp, idx) => (
+        <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+          {isEditing ? (
+            <div className="space-y-3">
+              <Input placeholder="Position" value={exp.position} onChange={e => updateWorkExperience(idx, 'position', e.target.value)} />
+              <Input placeholder="Hospital / Organization" value={exp.hospital} onChange={e => updateWorkExperience(idx, 'hospital', e.target.value)} />
+              <Input placeholder="Duration (e.g., 2015 - Present)" value={exp.duration} onChange={e => updateWorkExperience(idx, 'duration', e.target.value)} />
+              <Button variant="ghost" size="sm" onClick={() => removeWorkExperience(idx)} className="text-red-500">Remove</Button>
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-gray-800">{exp.position}</p>
+              <p className="text-sm text-gray-600">{exp.hospital}</p>
+              <p className="text-xs text-gray-500 mt-1">{exp.duration}</p>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <FileText className="h-5 w-5 mr-2" />
+        Publications
+      </CardTitle>
+      {isEditing && (
+        <Button type="button" size="sm" onClick={addPublication} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
+          + Add Publication
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-4">
+    {publications.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">{isEditing ? "Click 'Add Publication' to start" : "No publications listed"}</p>
+    ) : (
+      publications.map((pub, idx) => (
+        <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+          {isEditing ? (
+            <div className="space-y-3">
+              <Input placeholder="Title" value={pub.title} onChange={e => updatePublication(idx, 'title', e.target.value)} />
+              <Input placeholder="Journal / Conference" value={pub.journal} onChange={e => updatePublication(idx, 'journal', e.target.value)} />
+              <Input placeholder="Year" value={pub.year} onChange={e => updatePublication(idx, 'year', e.target.value)} />
+              <Button variant="ghost" size="sm" onClick={() => removePublication(idx)} className="text-red-500">Remove</Button>
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-gray-800">{pub.title}</p>
+              <p className="text-sm text-gray-600">{pub.journal}</p>
+              <p className="text-xs text-gray-500">{pub.year}</p>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+<Card className="border-0 shadow-lg mt-6">
+  <CardHeader className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+    <div className="flex justify-between items-center w-full">
+      <CardTitle className="flex items-center text-xl">
+        <Users className="h-5 w-5 mr-2" />
+        Memberships
+      </CardTitle>
+      {isEditing && (
+        <Button type="button" size="sm" onClick={addMembership} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
+          + Add Membership
+        </Button>
+      )}
+    </div>
+  </CardHeader>
+  <CardContent className="p-6 space-y-3">
+    {memberships.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">{isEditing ? "Click 'Add Membership' to start" : "No memberships listed"}</p>
+    ) : (
+      memberships.map((mem, idx) => (
+        <div key={idx} className="border rounded-lg p-3 bg-gray-50">
+          {isEditing ? (
+            <div className="flex gap-2 items-center">
+              <Input value={mem} onChange={e => updateMembership(idx, e.target.value)} className="flex-1" />
+              <Button variant="ghost" size="sm" onClick={() => removeMembership(idx)} className="text-red-500">Remove</Button>
+            </div>
+          ) : (
+            <p className="text-gray-800">{mem}</p>
           )}
         </div>
       ))

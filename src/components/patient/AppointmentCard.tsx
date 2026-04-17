@@ -1392,7 +1392,7 @@ const TimerDisplay = ({ seconds }: { seconds: number }) => {
         {/* Doctor Details with Avatar */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-3 flex-1">
-            {appointment.doctorAvatar ? (
+            {/* {appointment.doctorAvatar ? (
               <img
                 src={appointment.doctorAvatar}
                 alt={appointment.doctorName}
@@ -1416,7 +1416,39 @@ const TimerDisplay = ({ seconds }: { seconds: number }) => {
                   .slice(0, 2)
                   .toUpperCase()}
               </div>
-            )}
+            )} */}
+            {appointment?.doctorAvatar ? (
+  <img
+    src={appointment.doctorAvatar}
+    alt={appointment?.doctorName || "Doctor"}
+    loading="lazy"
+    onError={(e) => {
+      (e.currentTarget as HTMLImageElement).src =
+        `https://ui-avatars.com/api/?name=${appointment?.doctorName || "Doctor"}`;
+    }}
+    className="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-md"
+  />
+) : appointment?.doctorImage ? (
+  <img
+    src={appointment.doctorImage}
+    alt={appointment?.doctorName || "Doctor"}
+    loading="lazy"
+    onError={(e) => {
+      (e.currentTarget as HTMLImageElement).src =
+        `https://ui-avatars.com/api/?name=${appointment?.doctorName || "Doctor"}`;
+    }}
+    className="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-md"
+  />
+) : (
+  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+    {(appointment?.doctorName || "Doctor")
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()}
+  </div>
+)}
 
             <div className="flex-1 min-w-0">
               <h3 className="text-base md:text-lg font-semibold text-gray-800 truncate">

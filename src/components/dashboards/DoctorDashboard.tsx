@@ -705,10 +705,32 @@ if (activeTab !== "overview") {
     <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
 
       <div>
-        <img
+        {/* <img
     src={appointment.avatar || "/placeholder-avatar.png"}
     className="w-10 h-10 rounded-full object-cover"
-  />
+  /> */}
+        {appointment?.avatar ? (
+        <img
+          src={appointment.avatar}
+          alt={appointment?.patient || "User"}
+          loading="lazy"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src =
+              `https://ui-avatars.com/api/?name=${appointment?.patient || "User"}`;
+          }}
+          className="w-10 h-10 rounded-full object-cover"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold">
+          {(appointment?.patient || "U")
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()}
+        </div>
+      )}
+
         <p className="font-medium">{appointment.patient}</p>
         <p className="text-sm text-muted-foreground">
           {appointment.time} • {appointment.type}

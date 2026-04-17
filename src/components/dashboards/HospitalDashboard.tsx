@@ -17,6 +17,7 @@ import { useLocation, useNavigate } from "react-router";
 import FacilityAppointmentManagement from "@/components/facility/FacilityAppointmentManagement";
 import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import CreateBilling from "../facility/CreateBilling";
 
 interface Appointment {
   id: string;
@@ -48,6 +49,7 @@ const HospitalDashboard = () => {
     | "facilitics"
     | "profile"
     | "appointments"
+    |"new-billing"
   >("overview");
   // const location = window.location;
   const location = useLocation();
@@ -144,11 +146,16 @@ useEffect(() => {
       }
 
       const facilityId = facilityData.id;
-
+ const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
       // Fetch appointments using facilityId (not user.id)
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from("appointments")
         .select("*")// Use facilityId here
+        .eq("facility_id", user.id)
+           .gte("appointment_date", startOfDay)
+      .lte("appointment_date", endOfDay)
         .order("appointment_date", { ascending: true });
 
       if (appointmentsError) {
@@ -221,6 +228,7 @@ useEffect(() => {
   else if (path.includes('/inventory')) setActiveTab('inventory');
   else if (path.includes('/facilitics')) setActiveTab('facilitics');
   else if (path.includes('/appointments')) setActiveTab('appointments');
+  else if (path.includes('/new-billing')) setActiveTab('new-billing');
   else setActiveTab('overview');
 }, [location.pathname]);
 
@@ -264,6 +272,9 @@ useEffect(() => {
     case 'appointments':
       navigate(`${basePath}/appointments`);
       break;
+    case 'new-billing':
+      navigate(`${basePath}/new-billing`);
+      break;
     default:
       navigate(basePath);
   }
@@ -290,7 +301,7 @@ return (
     <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
       {/* Desktop/Tablet tab bar - hidden on mobile */}
       <div className="hidden md:block">
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
           <TabsTrigger value="overview" className="flex items-center space-x-2" onClick={() => trackButtonClick("Overview Tab")}>
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -310,6 +321,10 @@ return (
           <TabsTrigger value="appointments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Appointments</span>
+          </TabsTrigger>
+          <TabsTrigger value="new-billing" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
+            <Calendar1 className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Billing</span>
           </TabsTrigger>
           <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
@@ -365,6 +380,15 @@ return (
           >
             <Calendar1 className="h-4 w-4 mr-1" />
             <span>Appointments</span>
+          </Button>
+          <Button
+            variant={activeTab === "new-billing" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("new-billing")}
+          >
+            <Calendar1 className="h-4 w-4 mr-1" />
+            <span>New Billing</span>
           </Button>
           <Button
             variant={activeTab === "profile" ? "default" : "outline"}
@@ -462,6 +486,9 @@ return (
         {/* Appointments Tab */}
         <TabsContent value="appointments">
           <FacilityAppointmentManagement />
+        </TabsContent>
+        <TabsContent value="new-billing">
+          <CreateBilling />
         </TabsContent>
 
         {/* Time Slots Tab */}

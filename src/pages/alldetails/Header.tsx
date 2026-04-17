@@ -521,7 +521,7 @@ const Header = () => {
       if (profile) {
         if (profile.role === "patient") {
           const { data: patient } = await supabase
-            .from("patient")
+            .from("patients")
             .select("id")
             .eq("user_id", session.user.id)
             .maybeSingle();

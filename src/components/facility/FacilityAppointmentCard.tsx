@@ -2978,13 +2978,25 @@ export default function FacilityAppointmentCard({
           </div>
         )} */}
 
-                  <button
+                  {/* <button
                                   className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
         
                     onClick={() => navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`)}
                   >
                     <User className="h-4 w-4 mr-1" /> Appointment Details Page
-                  </button>
+                  </button> */}
+                  <button
+  className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+  onClick={() => {
+    if (userRole === 'staff' || userRole === 'department_staff') {
+      navigate(`/staff/appointment-patient/${appointment.patientId}/${appointment.id}`);
+    } else {
+      navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`);
+    }
+  }}
+>
+  <User className="h-4 w-4 mr-1" /> Appointment Details Page
+</button>
               
 
         {/* Documents list (reusable for both upcoming & past – but we already show it inside upcoming block; however if you want to keep it also here, you can, but per requirements it's only for upcoming. So removed from bottom.) */}

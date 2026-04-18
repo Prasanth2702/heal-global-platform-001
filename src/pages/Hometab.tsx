@@ -1886,7 +1886,7 @@ interface BedBooking {
   patientAge?: number;
   doctor?: string;
   department?: string;
-  pricePerDay?: number;
+  price?: number;
   bookingDate?: string;
   dischargeDate?: string;
 }
@@ -2243,7 +2243,7 @@ const Hometab: React.FC = () => {
             patientAge: Math.floor(Math.random() * 60) + 18,
             doctor: ['Dr. Smith', 'Dr. Johnson', 'Dr. Williams', 'Dr. Brown', 'Dr. Davis'][Math.floor(Math.random() * 5)],
             department: ward.ward_type || 'General',
-            pricePerDay: Math.floor(Math.random() * 500) + 100,
+            price: bed.price,
             bookingDate: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000).toLocaleDateString(),
             dischargeDate: Math.random() > 0.6 ? new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString() : null
           })
@@ -2487,7 +2487,7 @@ const Hometab: React.FC = () => {
     const totalBookings = bedBookings.length;
     const availableBeds = bedBookings.filter(b => b.availability === 'Available').length;
     const occupiedBeds = bedBookings.filter(b => b.availability === 'Occupied').length;
-    const totalRevenue = bedBookings.reduce((sum, b) => sum + (b.pricePerDay || 0), 0);
+    // const totalRevenue = bedBookings.reduce((sum, b) => sum + (b.pricePerDay || 0), 0);
     return (
       <div className="bed-bookings-tab">
         {/* Stats Cards - responsive text */}
@@ -2610,9 +2610,9 @@ const Hometab: React.FC = () => {
                                   <small className={`${getAvailabilityColor(booking.availability)} ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>
                                     {booking.availability}
                                   </small>
-                                  {booking.pricePerDay && (
+                                  {booking.price && (
                                     <div className="mt-1">
-                                      <small className={`text-muted ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>${booking.pricePerDay}/day</small>
+                                      <small className={`text-muted ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>${booking.price}/day</small>
                                     </div>
                                   )}
                                 </td>
@@ -2699,10 +2699,10 @@ const Hometab: React.FC = () => {
                                 <p className={`${getTextSizeClass('', 'text-sm', 'text-sm')}`}>Dr. {booking.doctor}</p>
                               </div>
                             )}
-                            {booking.pricePerDay && (
+                            {booking.price && (
                               <div className="mb-3">
                                 <p className={`text-muted mb-1 ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>Price</p>
-                                <p className={`font-semibold ${getTextSizeClass('', 'text-sm', 'text-sm')}`}>${booking.pricePerDay}/day</p>
+                                <p className={`font-semibold ${getTextSizeClass('', 'text-sm', 'text-sm')}`}>${booking.price}/day</p>
                               </div>
                             )}
                             <PatientProtectedButton 
@@ -2770,8 +2770,8 @@ const Hometab: React.FC = () => {
                             {booking.doctor && (
                               <p className="text-xs text-muted mb-2">Dr. {booking.doctor}</p>
                             )}
-                            {booking.pricePerDay && (
-                              <p className="text-xs font-semibold mb-2">${booking.pricePerDay}/day</p>
+                            {booking.price && (
+                              <p className="text-xs font-semibold mb-2">${booking.price}/day</p>
                             )}
                             <PatientProtectedButton 
                               className="btn btn-outline-primary w-full flex justify-center items-center gap-2 text-sm py-1.5"

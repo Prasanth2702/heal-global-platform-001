@@ -386,7 +386,7 @@ const FacilityPatientManagement: React.FC = () => {
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [tempPassword, setTempPassword] = useState('');
-
+const [userRole, setUserRole] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -407,23 +407,88 @@ const FacilityPatientManagement: React.FC = () => {
   });
 
   // Fetch facility ID for the logged-in admin (unchanged)
+  // useEffect(() => {
+  //   const getFacility = async () => {
+  //     if (!user) return;
+  //     const { data, error } = await supabase
+  //       .from('facilities')
+  //       .select('id')
+  //       .eq('admin_user_id', user.id)
+  //       .single();
+  //     if (error) {
+  //       console.error('Error fetching facility:', error);
+  //       toast({ title: 'Error', description: 'Facility not found', variant: 'destructive' });
+  //     } else if (data) {
+  //       setFacilityId(data.id);
+  //     }
+  //   };
+  //   getFacility();
+  // }, [user, toast]);
   useEffect(() => {
-    const getFacility = async () => {
-      if (!user) return;
+  const getFacilityAndRole = async () => {
+    if (!user) return;
+
+    // 1. Get user role from profiles
+    const { data: profile, error: roleError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+
+    if (roleError || !profile) {
+      console.error("Role fetch error:", roleError);
+      toast({ title: "Error", description: "Unable to fetch user role", variant: "destructive" });
+      return;
+    }
+
+    setUserRole(profile.role);
+
+    // 2. Get facility ID based on role
+    let facilityData = null;
+
+    if (profile.role === "hospital_admin") {
       const { data, error } = await supabase
-        .from('facilities')
-        .select('id')
-        .eq('admin_user_id', user.id)
+        .from("facilities")
+        .select("id")
+        .eq("admin_user_id", user.id)
         .single();
+
       if (error) {
-        console.error('Error fetching facility:', error);
-        toast({ title: 'Error', description: 'Facility not found', variant: 'destructive' });
-      } else if (data) {
-        setFacilityId(data.id);
+        toast({ title: "Error", description: "Facility not found for this admin", variant: "destructive" });
+        return;
       }
-    };
-    getFacility();
-  }, [user, toast]);
+      facilityData = data;
+    } 
+    else if (profile.role === "hospital_staff") {
+      const { data, error } = await supabase
+        .from("staff")
+        .select("facility_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (error) {
+        toast({ title: "Error", description: "No active facility found for this staff member", variant: "destructive" });
+        return;
+      }
+      facilityData = { id: data.facility_id };
+    }
+    else {
+      toast({
+        title: "Access Denied",
+        description: "Only hospital admins and staff can manage patients",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (facilityData) {
+      setFacilityId(facilityData.id);
+    }
+  };
+
+  getFacilityAndRole();
+}, [user, toast]);
 
   // Fetch patients linked to this facility (unchanged)
   useEffect(() => {
@@ -452,108 +517,330 @@ const FacilityPatientManagement: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!facilityId) {
-      toast({ title: 'Error', description: 'Facility not identified', variant: 'destructive' });
+// const handleRegister = async (e: React.FormEvent) => {
+//   e.preventDefault();
+//   if (!facilityId) {
+//     toast({ title: 'Error', description: 'Facility not identified', variant: 'destructive' });
+//     return;
+//   }
+
+//   if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone) {
+//     toast({ title: 'Missing Fields', description: 'Please fill all required fields', variant: 'destructive' });
+//     return;
+//   }
+
+//   setSubmitting(true);
+//   try {
+//     // Check if email already exists in profiles table
+//     const { data: existingProfile, error: checkError } = await supabase
+//       .from("profiles")
+//       .select("id")
+//       .eq("email", formData.email)
+//       .maybeSingle();
+
+//     if (existingProfile) {
+//       toast({
+//         title: "Patient Already Exists",
+//         description: "This email is already registered. Please use a different email.",
+//         variant: "destructive",
+//       });
+//       setSubmitting(false);
+//       return;
+//     }
+
+//     const { data: { session } } = await supabase.auth.getSession();
+//     const token = session?.access_token;
+//     if (!token) throw new Error('Authentication token missing');
+
+//     const payload = {
+//       email: formData.email,
+//       name: `${formData.first_name} ${formData.last_name}`.trim(),
+//       phone_number: formData.phone,
+//       date_of_birth: formData.date_of_birth || undefined,
+//       gender: formData.gender || undefined,
+//       emergency_contact_name: formData.emergency_contact_name || undefined,
+//       emergency_contact_number: formData.emergency_contact_phone || undefined,
+//       blood_group: formData.blood_group || undefined,
+//       known_allergies: formData.known_allergies || undefined,
+//       current_medications: formData.current_medications || undefined,
+//       address: formData.address || undefined,
+//       city: formData.city || undefined,
+//       state: formData.state || undefined,
+//       pincode: formData.pincode ? parseInt(formData.pincode) : undefined,
+//       country_code: formData.country_code || undefined,
+//     };
+
+//     const response = await fetch(
+//       'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/register-patient',
+//       {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       if (response.status === 409 && result.existing_user) {
+//         toast({
+//           title: '⚠️ Patient Already Registered',
+//           description: `${formData.email} is already associated with a patient. Please check the patient list or use a different email address.`,
+//           variant: 'destructive',
+//         });
+//       } 
+//       return;
+//     }
+
+//     toast({ title: 'Success', description: result.message || 'Patient registered successfully' });
+
+//     if (result.temporary_password) {
+//       setTempPassword(result.temporary_password);
+//       setShowPasswordModal(true);
+//     }
+
+//     // Link the patient to the current facility
+//     if (result.user_id) {
+//       const { error: updateError } = await supabase
+//         .from('patients')
+//         .update({ facility_id: facilityId })
+//         .eq('user_id', result.user_id);
+//       if (updateError) {
+//         console.error('Failed to link patient to facility:', updateError);
+//         toast({
+//           title: 'Warning',
+//           description: 'Patient created but not linked to facility. Please contact support.',
+//         });
+//       }
+//     }
+
+//     // Reset form
+//     setFormData({
+//       first_name: '', last_name: '', email: '', phone: '', date_of_birth: '',
+//       gender: '', address: '', emergency_contact_name: '', emergency_contact_phone: '',
+//       blood_group: '', known_allergies: '', current_medications: '',
+//       city: '', state: '', pincode: '', country_code: 'KR',
+//     });
+
+//     await fetchPatients(); // refresh list
+//     setActiveView('list');
+//   } catch (err: any) {
+//     console.error(err);
+//     toast({ title: 'Registration Failed', description: err.message, variant: 'destructive' });
+//   } finally {
+//     setSubmitting(false);
+//   }
+// };
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!facilityId) {
+    toast({
+      title: 'Error',
+      description: 'Facility not identified',
+      variant: 'destructive'
+    });
+    return;
+  }
+
+  if (
+    !formData.first_name ||
+    !formData.last_name ||
+    !formData.email ||
+    !formData.phone
+  ) {
+    toast({
+      title: 'Missing Fields',
+      description: 'Please fill all required fields',
+      variant: 'destructive'
+    });
+    return;
+  }
+
+  // Email validation
+  const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    toast({
+      title: 'Invalid Email',
+      description: 'Please enter a valid email address',
+      variant: 'destructive',
+    });
+    return;
+  }
+
+  setSubmitting(true);
+
+  let response: Response | undefined;
+  let result: any = null;
+
+  try {
+    // Check existing email (optional, but avoids unnecessary edge function call)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", formData.email)
+      .maybeSingle();
+
+    if (existingProfile) {
+      toast({
+        title: "Patient Already Exists",
+        description: "This email is already registered. Please use a different email.",
+        variant: "destructive",
+      });
+      setSubmitting(false);
       return;
     }
 
-    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone) {
-      toast({ title: 'Missing Fields', description: 'Please fill all required fields', variant: 'destructive' });
-      return;
-    }
+    // Get access token
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) throw new Error("Authentication token missing");
 
-    setSubmitting(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Authentication token missing');
+    // Prepare payload
+    const payload = {
+      email: formData.email,
+      name: `${formData.first_name} ${formData.last_name}`.trim(),
+      phone_number: formData.phone,
+      date_of_birth: formData.date_of_birth,
+      gender: formData.gender,
+      emergency_contact_name: formData.emergency_contact_name,
+      emergency_contact_number: formData.emergency_contact_phone,
+      blood_group: formData.blood_group,
+      known_allergies: formData.known_allergies,
+      current_medications: formData.current_medications,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.pincode ? parseInt(formData.pincode, 10) : null,
+      country_code: formData.country_code,
+    };
 
-      const payload = {
-        email: formData.email,
-        name: `${formData.first_name} ${formData.last_name}`.trim(),
-        phone_number: formData.phone,
-        date_of_birth: formData.date_of_birth || undefined,
-        gender: formData.gender || undefined,
-        emergency_contact_name: formData.emergency_contact_name || undefined,
-        emergency_contact_number: formData.emergency_contact_phone || undefined,
-        blood_group: formData.blood_group || undefined,
-        known_allergies: formData.known_allergies || undefined,
-        current_medications: formData.current_medications || undefined,
-        address: formData.address || undefined,
-        city: formData.city || undefined,
-        state: formData.state || undefined,
-        pincode: formData.pincode ? parseInt(formData.pincode) : undefined,
-        country_code: formData.country_code || undefined,
-      };
+    // Call edge function
+    response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/register-patient",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
-      const response = await fetch(
-        'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/register-patient',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+    // Safely parse JSON response (edge function always returns JSON, but be defensive)
+    const text = await response.text();
+    result = text ? JSON.parse(text) : null;
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 409 && result.existing_user) {
-  toast({
-    title: '⚠️ Patient Already Registered',
-    description: `${formData.email} is already associated with a patient. Please check the patient list or use a different email address.`,
-    variant: 'destructive', // optional: red styling
-  });
-} else {
-          throw new Error(result.message || 'Registration failed');
-        }
+    // ---- Handle HTTP errors (including 409 Conflict) ----
+    if (!response.ok) {
+      // 409 means email already exists in auth.users
+      if (response.status === 409) {
+        toast({
+          title: "⚠️ Patient Already Registered",
+          description: result?.message || `${formData.email} already exists`,
+          variant: "destructive",
+        });
         return;
       }
 
-      toast({ title: 'Success', description: result.message || 'Patient registered successfully' });
-      
-      if (result.temporary_password) {
-        setTempPassword(result.temporary_password);
-        setShowPasswordModal(true);
-      }
-
-      // Link the patient to the current facility
-      if (result.user_id) {
-        const { error: updateError } = await supabase
-          .from('patients')
-          .update({ facility_id: facilityId })
-          .eq('user_id', result.user_id);
-        if (updateError) {
-          console.error('Failed to link patient to facility:', updateError);
-          toast({
-            title: 'Warning',
-            description: 'Patient created but not linked to facility. Please contact support.',
-          });
-        }
-      }
-
-      // Reset form
-      setFormData({
-        first_name: '', last_name: '', email: '', phone: '', date_of_birth: '',
-        gender: '', address: '', emergency_contact_name: '', emergency_contact_phone: '',
-        blood_group: '', known_allergies: '', current_medications: '',
-        city: '', state: '', pincode: '', country_code: 'KR',
-      });
-      
-      await fetchPatients(); // refresh list
-      setActiveView('list');
-    } catch (err: any) {
-      console.error(err);
-      toast({ title: 'Registration Failed', description: err.message, variant: 'destructive' });
-    } finally {
-      setSubmitting(false);
+      // Other error statuses (4xx, 5xx)
+      throw new Error(result?.message || `Registration failed (HTTP ${response.status})`);
     }
-  };
+
+    // ---- SUCCESS: status 200 or 201 ----
+    // Explicitly confirm that 201 Created is a success (though response.ok already covers it)
+    const isSuccessStatus = response.status === 200 || response.status === 201;
+    if (!isSuccessStatus) {
+      // This should never happen because !response.ok would have been caught above,
+      // but we keep it for safety.
+      throw new Error(`Unexpected success status: ${response.status}`);
+    }
+
+    // Show success toast (use the message from the edge function)
+    toast({
+      title: "Success",
+      description: result?.message || "Patient registered successfully",
+    });
+
+    // If a temporary password was returned, show it in a modal
+    if (result?.temporary_password) {
+      setTempPassword(result.temporary_password);
+      setShowPasswordModal(true);
+    }
+
+    // ---- Link patient to the current facility ----
+    // if (result?.user_id) {
+    //   const { error: updateError } = await supabase
+    //     .from("patients")
+    //     .update({ facility_id: facilityId })
+    //     .eq("user_id", result.user_id);
+
+    //   if (updateError) {
+    //     // Non‑critical error – the patient was created but not linked.
+    //     // Log it and show a warning, but do not block the flow.
+    //     console.warn("Facility linking failed:", updateError);
+    //     toast({
+    //       title: "Warning",
+    //       description: "Patient created but not linked to facility. Please contact support.",
+    //       variant: "default",
+    //     });
+    //   }
+    // } else {
+    //   console.warn("No user_id returned from registration endpoint");
+    // }
+
+    // ---- Log any non‑critical database errors (profiles/patients) ----
+    if (result?.profile_error) {
+      console.warn("Profile insert warning:", result.profile_error);
+    }
+    if (result?.patients_error) {
+      console.warn("Patients insert warning:", result.patients_error);
+    }
+
+    // Reset form and refresh patient list
+    setFormData({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      date_of_birth: "",
+      gender: "",
+      address: "",
+      emergency_contact_name: "",
+      emergency_contact_phone: "",
+      blood_group: "",
+      known_allergies: "",
+      current_medications: "",
+      city: "",
+      state: "",
+      pincode: "",
+      country_code: "",
+    });
+
+    await fetchPatients();
+
+  } catch (err: any) {
+    console.error("Registration error:", err);
+
+    // Determine if the error occurred after a successful HTTP response
+    const isSuccessStatus = response?.status === 200 || response?.status === 201;
+    const errorMessage = result?.message || err?.message || "Something went wrong";
+
+    toast({
+      title: isSuccessStatus ? "Partial Success" : "Registration Failed",
+      description: errorMessage,
+      variant: isSuccessStatus ? "default" : "destructive",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleConfirmPatient = async (patientId: string, currentStatus: boolean) => {
     const { error } = await supabase
@@ -841,8 +1128,8 @@ const FacilityPatientManagement: React.FC = () => {
                 </Col>
               </Row>
               <Button type="submit" variant="success" disabled={submitting} className="rounded-pill px-4 py-2 fw-semibold">
-                {submitting ? <Spinner size="sm" className="me-2" /> : <UserPlus className="me-2" size={18} />}
-                Register Patient
+                {submitting ? "Register ...": "Register Patient"}
+                
               </Button>
             </Form>
           </Card.Body>
@@ -861,7 +1148,7 @@ const FacilityPatientManagement: React.FC = () => {
       )}
 
       {/* Password Modal (unchanged except for styling) */}
-      <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered>
+      {/* <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered>
         <Modal.Header closeButton className="bg-success text-white">
           <Modal.Title>Patient Account Created</Modal.Title>
         </Modal.Header>
@@ -878,7 +1165,7 @@ const FacilityPatientManagement: React.FC = () => {
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowPasswordModal(false)}>Close</Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
     </Container>
   );
 };

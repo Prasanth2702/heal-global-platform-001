@@ -239,6 +239,20 @@ const [copied, setCopied] = useState(false);
     setSelectedDay(0);
     await fetchTimeSlotsAndBookings(doctorId);
   };
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  const fetchRole = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    if (data) setUserRole(data.role);
+  };
+  fetchRole();
+}, [user]);
     useEffect(() => {
       const checkUser = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -1579,7 +1593,7 @@ const handleBookAppointmentClick = () => {
     <Bed size={16} className="mr-2" />
     <span>Login to View Availability</span>
   </Button>
-) : (
+) : userRole === "patient" ? (
   <Button
     variant="default"
     size="sm"
@@ -1588,6 +1602,18 @@ const handleBookAppointmentClick = () => {
   >
     View Availability
   </Button>
+) : (
+ <>
+  <p>Don't have a patient account yet? Create one to get started.</p>
+  <Button
+    variant="outline"
+    size="sm"
+    className="border-orange-500 text-orange-600 hover:bg-orange-50"
+    onClick={() => navigate("/register/patient")}
+  >
+    Create Patient Account
+  </Button>
+</>
 )}
                           {expandedDoctorId === doctor.user_id && (
                                                 <div className="mt-4 p-4 rounded-xl border shadow bg-white">

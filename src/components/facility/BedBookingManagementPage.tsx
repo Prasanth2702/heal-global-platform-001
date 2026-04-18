@@ -895,7 +895,7 @@ const fetchData = async (date: Date) => {
                       </strong>
                       . Try selecting a different date or view today's updates.
                     </p>
-                    <Button
+                    {/* <Button
                       variant="default"
                       size="sm"
                       onClick={() => {
@@ -907,7 +907,7 @@ const fetchData = async (date: Date) => {
 }}
                     >
                       View Today's Updates
-                    </Button>
+                    </Button> */}
                   </div>
                 </CardContent>
               </Card>

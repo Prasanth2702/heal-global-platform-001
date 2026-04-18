@@ -81,7 +81,7 @@ interface Bed {
   has_oxygen: boolean;
   has_ventilator: boolean;
   is_isolation: boolean;
-  price_per_day?: number;
+  price?: number;
   ward_id: string;
   created_at: string;
   wardName?: string;
@@ -220,7 +220,7 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
             has_oxygen: bed.has_oxygen,
             has_ventilator: bed.has_ventilator,
             is_isolation: bed.is_isolation,
-            price_per_day: Math.floor(Math.random() * 500) + 100
+            price: bed.price,
           });
         });
 
@@ -866,8 +866,8 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
 
                                 <div className="flex justify-between items-center pt-2 border-t">
                                   <div>
-                                    {bed.price_per_day && bed.price_per_day > 0 ? (
-                                      <p className="text-sm font-semibold text-green-600">${bed.price_per_day}/day</p>
+                                    {bed.price && bed.price > 0 ? (
+                                      <p className="text-sm font-semibold text-green-600">${bed.price}/day</p>
                                     ) : (
                                       <p className="text-sm font-semibold text-blue-600">Contact for Facilities</p>
                                     )}
@@ -888,7 +888,7 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
                                             bedNumber: bed.bed_number,
                                             wardName: bed.wardName,
                                             bedType: bed.bed_type,
-                                            pricePerDay: bed.price_per_day
+                                            pricePerDay: bed.price
                                           }
                                         } 
                                       })}

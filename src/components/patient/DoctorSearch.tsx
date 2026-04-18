@@ -2896,7 +2896,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const DOCTORS_PER_PAGE = 8;
   const HOSPITALS_PER_PAGE = 8;
 // Add this state if not already present
-
+const [userRole, setUserRole] = useState<string | null>(null);
 // Add this function
 const handleDateChange = (doctorId: string, newDate: string) => {
   setSelectedDate(newDate);
@@ -2905,6 +2905,21 @@ const handleDateChange = (doctorId: string, newDate: string) => {
     fetchTimeSlotsAndBookings(doctorId);
   }
 };
+
+useEffect(() => {
+  const fetchUserRole = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    if (!error && data) {
+      setUserRole(data.role);
+    }
+  };
+  fetchUserRole();
+}, [user]);
   // Data Arrays
   const doctorSpecialties = [
     "General Physician",
@@ -3634,8 +3649,15 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
 
   const handleViewDoctorProfile = (doctorId: string) => {
     const doctor = doctors.find(d => d.id === doctorId);
-    
-    if (user) {
+      
+    if (!user) {
+    navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, {
+      state: { doctorData: doctor }
+    });
+    return;
+  }
+
+    if (userRole === "patient") {
       navigate(`/dashboard/patient/doctor/${createSlug(doctor?.name || "")}/${doctorId}`);
     } else {
       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, {

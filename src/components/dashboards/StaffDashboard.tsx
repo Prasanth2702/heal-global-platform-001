@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1, User } from "lucide-react";
+import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1, User, BikeIcon, BinaryIcon, UserCheck } from "lucide-react";
 import DepartmentManagement from "@/components/hospital/DepartmentManagement";
 import StaffManagement from "@/components/hospital/StaffManagement";
 import TimeSlotManagement from "@/components/hospital/TimeSlotManagement";
@@ -18,6 +18,8 @@ import FacilityAppointmentManagement from "@/components/facility/FacilityAppoint
 import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import StaffProfile from "../hospital/StaffProfile";
+import FacilityBillingPage from "../facility/FacilityBillingPage";
+import FacilityPatientManagement from "../facility/FacilityPatientManagement";
 
 interface Appointment {
   id: string;
@@ -49,13 +51,16 @@ const StaffDashboard = () => {
     | "facilitics"
     | "profile"
     | "appointments"
+    |"billing"
+    |"patient-register"
   >("overview");
   // const location = window.location;
   const location = useLocation();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [facilityName, setFacilityName] = useState("");
     const [loading, setLoading] = useState(true);
-    const[UserRole,setUserRole]=useState();
+    // const[UserRole,setUserRole]=useState();
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [overviewStats, setOverviewStats] = useState({
   totalDepartments: 0,
   totalStaff: 0,
@@ -482,21 +487,39 @@ useEffect(() => {
 
   fetchDashboardData();
 }, []);
-  useEffect(() => {
+useEffect(() => {
   const path = location.pathname;
-//   if (path.includes('/profile')) setActiveTab('profile');
-//   else if (path.includes('/departments')) setActiveTab('departments');
-//   else if (path.includes('/staff')) setActiveTab('staff');
-//   else if (path.includes('/timeslots')) setActiveTab('timeslots');
-//   else if (path.includes('/payments')) setActiveTab('payments');
-//   else if (path.includes('/analytics')) setActiveTab('earnings');
-//   else if (path.includes('/inventory')) setActiveTab('inventory');
-//   else if (path.includes('/facilitics')) setActiveTab('facilitics');
-//   else 
-    if (path.includes('/appointments')) setActiveTab('appointments');
-    else  if (path.includes('/profile')) setActiveTab('profile');
-  else setActiveTab('overview');
+
+  if (path.includes('/appointments')) {
+    setActiveTab('appointments');
+  } else if (path.includes('/billing')) {
+    setActiveTab('billing');
+  } else if (path.includes('/patient-register')) {
+    setActiveTab('patient-register');
+  } else if (path.includes('/profile')) {
+    setActiveTab('profile');
+  } else {
+    setActiveTab('overview');
+  }
+
 }, [location.pathname]);
+//   useEffect(() => {
+//   const path = location.pathname;
+// //   if (path.includes('/profile')) setActiveTab('profile');
+// //   else if (path.includes('/departments')) setActiveTab('departments');
+// //   else if (path.includes('/staff')) setActiveTab('staff');
+// //   else if (path.includes('/timeslots')) setActiveTab('timeslots');
+// //   else if (path.includes('/payments')) setActiveTab('payments');
+// //   else if (path.includes('/analytics')) setActiveTab('earnings');
+// //   else if (path.includes('/inventory')) setActiveTab('inventory');
+// //   else if (path.includes('/facilitics')) setActiveTab('facilitics');
+// //   else 
+//     if (path.includes('/appointments')) setActiveTab('appointments');
+//     if (path.includes('/billing')) setActiveTab('billing');
+//     if (path.includes('/patient-register')) setActiveTab('patient-register');
+//     else  if (path.includes('/profile')) setActiveTab('profile');
+//   else setActiveTab('overview');
+// }, [location.pathname]);
 
     // Update URL when tab changes
    const handleTabChange = (tab: typeof activeTab) => {
@@ -537,6 +560,12 @@ useEffect(() => {
       break;
     case 'appointments':
       navigate(`${basePath}/appointments`);
+      break;
+    case 'billing':
+      navigate(`${basePath}/billing`);
+      break;
+    case 'patient-register':
+      navigate(`${basePath}/patient-register`);
       break;
     default:
       navigate(basePath);
@@ -609,6 +638,14 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
             </TabsTrigger> */}
+            <TabsTrigger value="billing" className="flex items-center space-x-2" onClick={() => trackButtonClick("profile")}>
+              <BinaryIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+            <TabsTrigger value="patient-register" className="flex items-center space-x-2" onClick={() => trackButtonClick("profile")}>
+              <UserCheck className="h-4 w-4" />
+              <span className="hidden sm:inline">Patient Register</span>
+            </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("profile")}>
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">My Profile</span>
@@ -705,6 +742,12 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
         </TabsContent>
         <TabsContent value="appointments">
           <FacilityAppointmentManagement />
+        </TabsContent>
+        <TabsContent value="billing">
+          <FacilityBillingPage />
+        </TabsContent>
+        <TabsContent value="patient-register">
+          <FacilityPatientManagement />
         </TabsContent>
 
         <TabsContent value="timeslots">

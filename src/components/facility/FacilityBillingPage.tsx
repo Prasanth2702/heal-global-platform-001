@@ -1291,11 +1291,55 @@ const FacilityBillingPage = () => {
   const [billNumber, setBillNumber] = useState("");
   const [isPaid, setIsPaid] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
-
+const [userRole, setUserRole] = useState<string | null>(null);
   // 1. Get facility ID from admin_user_id
+  // useEffect(() => {
+  //   const getFacility = async () => {
+  //     if (!user) return;
+  //     const { data, error } = await supabase
+  //       .from("facilities")
+  //       .select("id")
+  //       .eq("admin_user_id", user.id)
+  //       .single();
+
+  //     if (error) {
+  //       toast({
+  //         title: "Error",
+  //         description: "Facility not found for this admin.",
+  //         variant: "destructive",
+  //       });
+  //     } else if (data) {
+  //       setFacilityId(data.id);
+  //     }
+  //   };
+  //   getFacility();
+  // }, [user, toast]);
   useEffect(() => {
-    const getFacility = async () => {
-      if (!user) return;
+  const getUserAndFacility = async () => {
+    if (!user) return;
+
+    // 1. Get user role from profiles
+    const { data: profile, error: roleError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+if (profile) setUserRole(profile.role); 
+    if (roleError || !profile) {
+      toast({
+        title: "Error",
+        description: "Unable to fetch user role.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUserRole(profile.role);
+
+    // 2. Get facility ID based on role
+    let facilityData = null;
+
+    if (profile.role === "hospital_admin") {
       const { data, error } = await supabase
         .from("facilities")
         .select("id")
@@ -1308,12 +1352,44 @@ const FacilityBillingPage = () => {
           description: "Facility not found for this admin.",
           variant: "destructive",
         });
-      } else if (data) {
-        setFacilityId(data.id);
+        return;
       }
-    };
-    getFacility();
-  }, [user, toast]);
+      facilityData = data;
+    } 
+    else if (profile.role === "hospital_staff") {
+      const { data, error } = await supabase
+        .from("staff")
+        .select("facility_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No active facility found for this staff member.",
+          variant: "destructive",
+        });
+        return;
+      }
+      facilityData = { id: data.facility_id };
+    }
+    else {
+      toast({
+        title: "Access Denied",
+        description: "Only hospital admins and staff can access billing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (facilityData) {
+      setFacilityId(facilityData.id);
+    }
+  };
+
+  getUserAndFacility();
+}, [user, toast]);
 
   // 2. Fetch departments once facilityId is known
   useEffect(() => {
@@ -1324,11 +1400,16 @@ const FacilityBillingPage = () => {
   }, [facilityId]);
 
   // 3. When patients list changes, fetch their total billed amounts
-  useEffect(() => {
-    if (patients.length > 0 && facilityId) {
-      fetchPatientsTotalBilled();
-    }
-  }, [patients, facilityId]);
+  // useEffect(() => {
+  //   if (patients.length > 0 && facilityId) {
+  //     fetchPatientsTotalBilled();
+  //   }
+  // }, [patients, facilityId]);
+useEffect(() => {
+  if (facilityId && patients.length > 0 && userRole) {
+    fetchPatientsTotalBilled();
+  }
+}, [facilityId, patients, userRole, user]);
 
   const fetchDepartments = async () => {
     const { data, error } = await supabase
@@ -1360,44 +1441,90 @@ const FacilityBillingPage = () => {
     setLoadingPatients(false);
   };
 
-  const fetchPatientsTotalBilled = async () => {
-    if (!facilityId) return;
-    setLoadingTotals(true);
-    try {
-      const { data: bills, error } = await supabase
-        .from("facility_billed_items")
-        .select("*")
-        .eq("facility_id", facilityId)
-        .order("created_at", { ascending: false });
+  // const fetchPatientsTotalBilled = async () => {
+  //   if (!facilityId) return;
+  //   setLoadingTotals(true);
+  //   try {
+  //     const { data: bills, error } = await supabase
+  //       .from("facility_billed_items")
+  //       .select("*")
+  //       .eq("facility_id", facilityId)
+  //       .order("created_at", { ascending: false });
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      const itemIds = bills.map(b => b.item_id);
-      const { data: items } = await supabase
-        .from("facility_items_master")
-        .select("id, item_name, item_price")
-        .in("id", itemIds);
+  //     const itemIds = bills.map(b => b.item_id);
+  //     const { data: items } = await supabase
+  //       .from("facility_items_master")
+  //       .select("id, item_name, item_price")
+  //       .in("id", itemIds);
 
-      const merged = bills.map(bill => {
-        const item = items?.find(i => i.id === bill.item_id);
-        const patient = patients.find(p => p.id === bill.patient_id);
-        return {
-          ...patient,
-          id: bill.id,
-          item_name: item?.item_name || "",
-          total_billed: item?.item_price || 0,
-          bill_number: bill.bill_number || "",
-          isPaid: bill.ispaid || false,
-          payment_method: bill.payment_method || "",
-        };
-      });
-      setPatientsWithTotal(merged);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingTotals(false);
+  //     const merged = bills.map(bill => {
+  //       const item = items?.find(i => i.id === bill.item_id);
+  //       const patient = patients.find(p => p.id === bill.patient_id);
+  //       return {
+  //         ...patient,
+  //         id: bill.id,
+  //         item_name: item?.item_name || "",
+  //         total_billed: item?.item_price || 0,
+  //         bill_number: bill.bill_number || "",
+  //         isPaid: bill.ispaid || false,
+  //         payment_method: bill.payment_method || "",
+  //       };
+  //     });
+  //     setPatientsWithTotal(merged);
+  //   } catch (err) {
+  //     console.error(err);
+  //   } finally {
+  //     setLoadingTotals(false);
+  //   }
+  // };
+const fetchPatientsTotalBilled = async () => {
+  if (!facilityId) return;
+  setLoadingTotals(true);
+  try {
+    let query = supabase
+      .from("facility_billed_items")
+      .select("*")
+      .eq("facility_id", facilityId)
+      .order("created_at", { ascending: false });
+
+    // ✅ Ensure userId is a string, not an object
+    const staffUserId = user?.id; // user.id from Supabase auth is a string
+    if (userRole === "hospital_staff" && staffUserId) {
+      query = query.eq("added_by", staffUserId);
     }
-  };
+
+    const { data: bills, error } = await query;
+
+    if (error) throw error;
+
+    const itemIds = bills.map(b => b.item_id);
+    const { data: items } = await supabase
+      .from("facility_items_master")
+      .select("id, item_name, item_price")
+      .in("id", itemIds);
+
+    const merged = bills.map(bill => {
+      const item = items?.find(i => i.id === bill.item_id);
+      const patient = patients.find(p => p.id === bill.patient_id);
+      return {
+        ...patient,
+        id: bill.id,
+        item_name: item?.item_name || "",
+        total_billed: item?.item_price || 0,
+        bill_number: bill.bill_number || "",
+        isPaid: bill.ispaid || false,
+        payment_method: bill.payment_method || "",
+      };
+    });
+    setPatientsWithTotal(merged);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingTotals(false);
+  }
+};
 
   const fetchFacilityItems = async (deptId: string) => {
     if (!facilityId) return;
@@ -1416,37 +1543,75 @@ const FacilityBillingPage = () => {
     }
   };
 
-  const fetchPatientBills = async (patientId: string) => {
-    if (!facilityId) return;
-    setLoadingBills(true);
-    const { data: bills, error } = await supabase
-      .from("facility_billed_items")
-      .select("*")
-      .eq("patient_id", patientId)
-      .eq("facility_id", facilityId)
-      .order("created_at", { ascending: false });
+  // const fetchPatientBills = async (patientId: string) => {
+  //   if (!facilityId) return;
+  //   setLoadingBills(true);
+  //   const { data: bills, error } = await supabase
+  //     .from("facility_billed_items")
+  //     .select("*")
+  //     .eq("patient_id", patientId)
+  //     .eq("facility_id", facilityId)
+  //     .order("created_at", { ascending: false });
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to load billing history", variant: "destructive" });
-      setPatientBills([]);
-      setLoadingBills(false);
-      return;
-    }
+  //   if (error) {
+  //     toast({ title: "Error", description: "Failed to load billing history", variant: "destructive" });
+  //     setPatientBills([]);
+  //     setLoadingBills(false);
+  //     return;
+  //   }
 
-    const itemIds = bills.map(b => b.item_id);
-    const { data: items } = await supabase
-      .from("facility_items_master")
-      .select("id, item_name, item_price")
-      .in("id", itemIds);
+  //   const itemIds = bills.map(b => b.item_id);
+  //   const { data: items } = await supabase
+  //     .from("facility_items_master")
+  //     .select("id, item_name, item_price")
+  //     .in("id", itemIds);
 
-    const merged = bills.map(bill => ({
-      ...bill,
-      facility_items_master: items?.find(i => i.id === bill.item_id)
-    }));
-    setPatientBills(merged || []);
+  //   const merged = bills.map(bill => ({
+  //     ...bill,
+  //     facility_items_master: items?.find(i => i.id === bill.item_id)
+  //   }));
+  //   setPatientBills(merged || []);
+  //   setLoadingBills(false);
+  // };
+const fetchPatientBills = async (patientId: string) => {
+  if (!facilityId) return;
+  setLoadingBills(true);
+  
+    let query = supabase
+    .from("facility_billed_items")
+    .select("*")
+    .eq("patient_id", patientId)
+    .eq("facility_id", facilityId)
+    .order("created_at", { ascending: false });
+
+  // ✅ Same fix: use user.id directly
+  const staffUserId = user?.id;
+  if (userRole === "hospital_staff" && staffUserId) {
+    query = query.eq("added_by", staffUserId);
+  }
+
+  const { data: bills, error } = await query;
+
+  if (error) {
+    toast({ title: "Error", description: "Failed to load billing history", variant: "destructive" });
+    setPatientBills([]);
     setLoadingBills(false);
-  };
+    return;
+  }
 
+  const itemIds = bills.map(b => b.item_id);
+  const { data: items } = await supabase
+    .from("facility_items_master")
+    .select("id, item_name, item_price")
+    .in("id", itemIds);
+
+  const merged = bills.map(bill => ({
+    ...bill,
+    facility_items_master: items?.find(i => i.id === bill.item_id)
+  }));
+  setPatientBills(merged || []);
+  setLoadingBills(false);
+};
   const handleItemChange = (e) => {
     const itemId = e.target.value;
     setSelectedItem(itemId);
@@ -1517,7 +1682,7 @@ const FacilityBillingPage = () => {
     added_by: user?.id,
     bill_number: billNumber,
     ispaid: isPaid,
-    payment_method: paymentMethod,
+    payment_method: paymentMethod||"offline",
     created_at: new Date().toISOString(),
   }]);
 
@@ -1603,7 +1768,7 @@ const FacilityBillingPage = () => {
                         <span className="badge bg-danger px-3 py-2 rounded-pill">Unpaid</span>
                       )}
                     </td>
-                    <td className="pe-3">{p.payment_method || "—"}</td>
+                    <td className="pe-3">{p.payment_method || ""}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1643,7 +1808,8 @@ const FacilityBillingPage = () => {
                     filteredPatients.map((p) => (
                       <div key={p.id} className="d-flex justify-content-between align-items-center p-2 border-bottom">
                         <div>
-                          <strong>{p.first_name} {p.last_name}</strong><br />
+                          <strong> {p.email} </strong><br />
+                          {/* <strong>{p.first_name} {p.last_name} {p.email} {p.phone_number}</strong><br /> */}
                           <small className="text-muted">{p.email} | {p.phone_number}</small>
                         </div>
                         <Button size="sm" variant="outline-primary" onClick={() => handleSelectPatient(p)}>
@@ -1656,7 +1822,8 @@ const FacilityBillingPage = () => {
               )}
               {selectedPatient && (
                 <Alert variant="success" className="mt-3">
-                  <strong>Selected Patient:</strong> {selectedPatient.first_name} {selectedPatient.last_name} ({selectedPatient.email})
+                  <strong>Selected Patient:</strong> ({selectedPatient.email})
+                  {/* <strong>Selected Patient:</strong> {selectedPatient.first_name} {selectedPatient.last_name} ({selectedPatient.email}) */}
                 </Alert>
               )}
             </Form.Group>

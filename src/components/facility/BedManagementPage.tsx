@@ -33,9 +33,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useNavigate } from "react-router-dom";
 
 const BedManagementPage: React.FC = () => {
- 
+  const navigate = useNavigate();
   const [beds, setBeds] = useState<Bed[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -134,6 +135,12 @@ const BedManagementPage: React.FC = () => {
       setSelectedDate(date);
     }
   };
+const handleAddWard = () => {
+    // Navigate with beds data
+  navigate("/dashboard/facility/ward-management", {
+    state: { beds }
+  });
+};
 
   const bedStats = {
     total: beds.length,
@@ -282,11 +289,14 @@ const BedManagementPage: React.FC = () => {
                     </p>
                     <Button
                       variant="default"
+                      // onClick={() => {
+                      //   handleDateSelect(new Date());
+                      // }}
                       onClick={() => {
-                        handleDateSelect(new Date());
+                          handleAddWard () 
                       }}
                     >
-                      View Today's Beds
+                      View Beds
                     </Button>
                   </div>
                 </CardContent>

@@ -62,6 +62,10 @@ export default {
 					DEFAULT: 'hsl(var(--accent-facility))',
 					foreground: 'hsl(var(--accent-facility-foreground))'
 				},
+				staff: {
+					DEFAULT: 'hsl(var(--accent-staff))',
+					foreground: 'hsl(var(--accent-staff-foreground))'
+				},
 				admin: {
 					DEFAULT: 'hsl(var(--accent-admin))',
 					foreground: 'hsl(var(--accent-admin-foreground))'
@@ -87,6 +91,7 @@ export default {
 				'gradient-patient': 'var(--gradient-patient)',
 				'gradient-doctor': 'var(--gradient-doctor)',
 				'gradient-facility': 'var(--gradient-facility)',
+				'gradient-staff': 'var(--gradient-staff)',
 				'gradient-admin': 'var(--gradient-admin)'
 			},
 			boxShadow: {

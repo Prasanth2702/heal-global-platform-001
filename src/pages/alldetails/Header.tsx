@@ -441,7 +441,7 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userRole, setUserRole] = useState<"patient" | "doctor" | "facility" | null>(null);
+  const [userRole, setUserRole] = useState<"patient" | "doctor" | "facility" |"staff"| null>(null);
 
   const checkUser = async () => {
     try {
@@ -462,7 +462,10 @@ const Header = () => {
         if (profile) {
           if (profile.role === "hospital_admin") {
             setUserRole("facility");
-          } else {
+          } else if (profile.role === "hospital_staff") {
+            setUserRole("staff");
+          }
+          else {
             setUserRole(profile.role || null);
           }
         }

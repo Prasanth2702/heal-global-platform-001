@@ -116,8 +116,21 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
   const [bedBookingsData, setBedBookingsData] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("availability");
-
+const [isPatient, setIsPatient] = useState<boolean | null>(null);
   // Get facility from location state or fetch by ID
+
+useEffect(() => {
+  const checkPatientStatus = async () => {
+    if (!user) {
+      setIsPatient(false);
+      return;
+    }
+    const patient = await checkIfPatient(user.id);
+    setIsPatient(patient);
+  };
+  checkPatientStatus();
+}, [user]);
+
   useEffect(() => {
     if (location.state?.facility) {
       setSelectedFacility(location.state.facility);
@@ -873,7 +886,7 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
                                     )}
                                   </div>
                                   
-                                  {!user ? (
+                                  {/* {!user ? (
                                     <Button
                                       variant="default"
                                       size="sm"
@@ -914,7 +927,66 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
                                         </Button>
                                       )}
                                     </>
-                                  )}
+                                  )} */}
+                                   {!user ? (
+    <Button
+      variant="default"
+      size="sm"
+      onClick={() => navigate("/login/patient", { 
+        state: { 
+          from: `/dashboard/patient/bookregister/${createSlug(bed.facilityName || '')}/${bed.facilityId}/${bed.ward_id}/${bed.id}`,
+          bedData: {
+            facilityName: bed.facilityName,
+            facilityId: bed.facilityId,
+            wardId: bed.ward_id,
+            bedId: bed.id,
+            bedNumber: bed.bed_number,
+            wardName: bed.wardName,
+            bedType: bed.bed_type,
+            pricePerDay: bed.price
+          }
+        } 
+      })}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+    >
+      <Bed size={16} className="mr-2" />
+      <span>Login to Book</span>
+    </Button>
+  ) : (
+    <>
+      {canBook ? (
+        isPatient === true ? (
+          <PatientProtectedButton 
+            className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(bed.facilityName || '')}/${bed.facilityId}/${bed.ward_id}/${bed.id}?date=${selectedDate.toISOString()}`, true)}
+            path="/appointment"
+          >
+            <Bed size={16} className="mr-2" />
+            <span>Book Now</span>
+          </PatientProtectedButton>
+        ) : isPatient === false ? (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => navigate("/register/patient", { 
+              state: { returnTo: window.location.pathname }
+            })}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Register as Patient
+          </Button>
+        ) : (
+         <Button disabled className="bg-gray-300 text-gray-500">
+                                          Can you try later
+                                        </Button>
+        )
+      ) : (
+        <Button disabled className="bg-gray-300 text-gray-500">
+          Not Available
+        </Button>
+      )}
+    </>
+  )}
                                 </div>
                               </div>
                             </div>

@@ -3822,6 +3822,7 @@ const handleConfirmCompletion = () => {
                   <CardContent>
                     <Button variant="doctor" onClick={() => setOpenComplete(true)} disabled={isCompleted || isCancelled}>Mark as Completed</Button>
                   </CardContent>
+                  
                 </Card>
               )}
             </div>
@@ -4308,7 +4309,7 @@ const handleConfirmCompletion = () => {
                       </div>
                     </CardContent>
                     {/* {isPending && <PendingOverlay />} */}
-       {(isPending || !currentAppointment?.document_requested) && (
+       {(isPending || !currentAppointment?.payment_requested) && (
   <div className="absolute inset-0 bg-gray-500/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
     <div className="bg-gray-50 rounded-lg px-4 py-2 shadow-md text-center font-medium">
       

@@ -358,6 +358,7 @@ import { UserPlus, Users, CheckCircle, XCircle, Copy, Building2, Mail, Phone, Ca
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/hooks/useUser';
+import { useNavigate } from 'react-router-dom';
 
 interface Patient {
   id: string;
@@ -405,7 +406,9 @@ const [userRole, setUserRole] = useState<string | null>(null);
     pincode: '',
     country_code: '',
   });
-
+  const navigate = useNavigate();
+const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [autoEmail, setAutoEmail] = useState("");
   // Fetch facility ID for the logged-in admin (unchanged)
   // useEffect(() => {
   //   const getFacility = async () => {
@@ -634,14 +637,259 @@ const [userRole, setUserRole] = useState<string | null>(null);
 //     setSubmitting(false);
 //   }
 // };
+// const handleRegister = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (!facilityId) {
+//     toast({
+//       title: 'Error',
+//       description: 'Facility not identified',
+//       variant: 'destructive'
+//     });
+//     return;
+//   }
+
+//   if (
+//     !formData.first_name ||
+//     !formData.last_name ||
+//     !formData.email ||
+//     !formData.phone
+//   ) {
+//     toast({
+//       title: 'Missing Fields',
+//       description: 'Please fill all required fields',
+//       variant: 'destructive'
+//     });
+//     return;
+//   }
+
+//   // Email validation
+//   const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+//   if (!emailRegex.test(formData.email)) {
+//     toast({
+//       title: 'Invalid Email',
+//       description: 'Please enter a valid email address',
+//       variant: 'destructive',
+//     });
+//     return;
+//   }
+
+//   setSubmitting(true);
+
+//   let response: Response | undefined;
+//   let result: any = null;
+
+//   try {
+//     // Check existing email (optional, but avoids unnecessary edge function call)
+//     const { data: existingProfile } = await supabase
+//       .from("profiles")
+//       .select("id")
+//       .eq("email", formData.email)
+//       .maybeSingle();
+
+//     if (existingProfile) {
+//       toast({
+//         title: "Patient Already Exists",
+//         description: "This email is already registered. Please use a different email.",
+//         variant: "destructive",
+//       });
+//       setSubmitting(false);
+//       return;
+//     }
+
+//     // Get access token
+//     const {
+//       data: { session },
+//     } = await supabase.auth.getSession();
+//     const token = session?.access_token;
+//     if (!token) throw new Error("Authentication token missing");
+
+//     // Prepare payload
+//     const payload = {
+//       email: formData.email,
+//       name: `${formData.first_name} ${formData.last_name}`.trim(),
+//       phone_number: formData.phone,
+//       date_of_birth: formData.date_of_birth,
+//       gender: formData.gender,
+//       emergency_contact_name: formData.emergency_contact_name,
+//       emergency_contact_number: formData.emergency_contact_phone,
+//       blood_group: formData.blood_group,
+//       known_allergies: formData.known_allergies,
+//       current_medications: formData.current_medications,
+//       address: formData.address,
+//       city: formData.city,
+//       state: formData.state,
+//       pincode: formData.pincode ? parseInt(formData.pincode, 10) : null,
+//       country_code: formData.country_code,
+//     };
+
+//     // Call edge function
+//     response = await fetch(
+//       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/register-patient",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     // Safely parse JSON response (edge function always returns JSON, but be defensive)
+//     const text = await response.text();
+//     result = text ? JSON.parse(text) : null;
+
+ 
+//     // ---- Handle HTTP errors (including 409 Conflict) ----
+//     if (!response.ok) {
+//       // 409 means email already exists in auth.users
+//       if (response.status === 409) {
+//         toast({
+//           title: "⚠️ Patient Already Registered",
+//           description: result?.message || `${formData.email} already exists`,
+//           variant: "destructive",
+//         });
+//         return;
+//       }
+
+//       // Other error statuses (4xx, 5xx)
+//       throw new Error(result?.message || `Registration failed (HTTP ${response.status})`);
+//     }
+
+//     // ---- SUCCESS: status 200 or 201 ----
+//     // Explicitly confirm that 201 Created is a success (though response.ok already covers it)
+//     // ---- SUCCESS: status 200 or 201 ----
+// const isSuccessStatus = response.status === 200 || response.status === 201;
+
+// if (!isSuccessStatus) {
+//   throw new Error(`Unexpected success status: ${response.status}`);
+// }
+
+// // ---- Update Profile After Register Success ----
+// const { data, error: checkError } = await supabase
+//   .from('profiles')
+//   .select('id, email')
+//   .eq('email', formData.email)
+//   .maybeSingle();
+
+// if (checkError) {
+//   console.error('Profile check error:', checkError);
+// }
+
+// // If profile found → update automatically
+// if (data) {
+//   const { data, error:profileError } = await supabase
+//   .from('profiles')
+//   .update({
+//     first_name: formData.first_name,
+//     last_name: formData.last_name,
+//     phone_number: formData.phone,
+//     role: 'patient',
+//   })
+//   .eq('email', formData.email);
+
+//   if (profileError) {
+//     console.error('Error updating profile:', profileError);
+//   } else {
+//     console.log("Profile updated successfully");
+//   }
+// }
+//     // if (!isSuccessStatus) {
+//     //   // This should never happen because !response.ok would have been caught above,
+//     //   // but we keep it for safety.
+//     //   throw new Error(`Unexpected success status: ${response.status}`);
+//     // }
+
+//     // Show success toast (use the message from the edge function)
+//     toast({
+//       title: "Success",
+//       description: result?.message || "Patient registered successfully",
+//     });
+
+//     setShowSuccessModal(true);
+
+//     // If a temporary password was returned, show it in a modal
+//     if (result?.temporary_password) {
+//       setTempPassword(result.temporary_password);
+//       setShowPasswordModal(true);
+//     }
+
+//     // ---- Link patient to the current facility ----
+//     // if (result?.user_id) {
+//     //   const { error: updateError } = await supabase
+//     //     .from("patients")
+//     //     .update({ facility_id: facilityId })
+//     //     .eq("user_id", result.user_id);
+
+//     //   if (updateError) {
+//     //     // Non‑critical error – the patient was created but not linked.
+//     //     // Log it and show a warning, but do not block the flow.
+//     //     console.warn("Facility linking failed:", updateError);
+//     //     toast({
+//     //       title: "Warning",
+//     //       description: "Patient created but not linked to facility. Please contact support.",
+//     //       variant: "default",
+//     //     });
+//     //   }
+//     // } else {
+//     //   console.warn("No user_id returned from registration endpoint");
+//     // }
+
+//     // ---- Log any non‑critical database errors (profiles/patients) ----
+//     if (result?.profile_error) {
+//       console.warn("Profile insert warning:", result.profile_error);
+//     }
+//     if (result?.patients_error) {
+//       console.warn("Patients insert warning:", result.patients_error);
+//     }
+
+//     // Reset form and refresh patient list
+//     setFormData({
+//       first_name: "",
+//       last_name: "",
+//       email: "",
+//       phone: "",
+//       date_of_birth: "",
+//       gender: "",
+//       address: "",
+//       emergency_contact_name: "",
+//       emergency_contact_phone: "",
+//       blood_group: "",
+//       known_allergies: "",
+//       current_medications: "",
+//       city: "",
+//       state: "",
+//       pincode: "",
+//       country_code: "",
+//     });
+
+//     await fetchPatients();
+
+//   } catch (err: any) {
+//     console.error("Registration error:", err);
+
+//     // Determine if the error occurred after a successful HTTP response
+//     const isSuccessStatus = response?.status === 200 || response?.status === 201;
+//     const errorMessage = result?.message || err?.message || "Something went wrong";
+
+//     toast({
+//       title: isSuccessStatus ? "Partial Success" : "Registration Failed",
+//       description: errorMessage,
+//       variant: isSuccessStatus ? "default" : "destructive",
+//     });
+//   } finally {
+//     setSubmitting(false);
+//   }
+// };
 const handleRegister = async (e: React.FormEvent) => {
   e.preventDefault();
 
   if (!facilityId) {
     toast({
-      title: 'Error',
-      description: 'Facility not identified',
-      variant: 'destructive'
+      title: "Error",
+      description: "Facility not identified",
+      variant: "destructive",
     });
     return;
   }
@@ -653,9 +901,9 @@ const handleRegister = async (e: React.FormEvent) => {
     !formData.phone
   ) {
     toast({
-      title: 'Missing Fields',
-      description: 'Please fill all required fields',
-      variant: 'destructive'
+      title: "Missing Fields",
+      description: "Please fill all required fields",
+      variant: "destructive",
     });
     return;
   }
@@ -664,9 +912,9 @@ const handleRegister = async (e: React.FormEvent) => {
   const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
   if (!emailRegex.test(formData.email)) {
     toast({
-      title: 'Invalid Email',
-      description: 'Please enter a valid email address',
-      variant: 'destructive',
+      title: "Invalid Email",
+      description: "Please enter a valid email address",
+      variant: "destructive",
     });
     return;
   }
@@ -677,27 +925,11 @@ const handleRegister = async (e: React.FormEvent) => {
   let result: any = null;
 
   try {
-    // Check existing email (optional, but avoids unnecessary edge function call)
-    const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", formData.email)
-      .maybeSingle();
-
-    if (existingProfile) {
-      toast({
-        title: "Patient Already Exists",
-        description: "This email is already registered. Please use a different email.",
-        variant: "destructive",
-      });
-      setSubmitting(false);
-      return;
-    }
-
     // Get access token
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
     const token = session?.access_token;
     if (!token) throw new Error("Authentication token missing");
 
@@ -716,11 +948,13 @@ const handleRegister = async (e: React.FormEvent) => {
       address: formData.address,
       city: formData.city,
       state: formData.state,
-      pincode: formData.pincode ? parseInt(formData.pincode, 10) : null,
+      pincode: formData.pincode
+        ? parseInt(formData.pincode, 10)
+        : null,
       country_code: formData.country_code,
     };
 
-    // Call edge function
+    // Call register-patient Edge Function
     response = await fetch(
       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/register-patient",
       {
@@ -733,77 +967,117 @@ const handleRegister = async (e: React.FormEvent) => {
       }
     );
 
-    // Safely parse JSON response (edge function always returns JSON, but be defensive)
     const text = await response.text();
     result = text ? JSON.parse(text) : null;
 
-    // ---- Handle HTTP errors (including 409 Conflict) ----
+    // ---- Handle 409 Existing User ----
+    if (response.status === 409) {
+      toast({
+        title: "⚠️ Patient Already Registered",
+        description:
+          result?.message ||
+          `${formData.email} already exists`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // ---- Other Errors ----
     if (!response.ok) {
-      // 409 means email already exists in auth.users
-      if (response.status === 409) {
-        toast({
-          title: "⚠️ Patient Already Registered",
-          description: result?.message || `${formData.email} already exists`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Other error statuses (4xx, 5xx)
-      throw new Error(result?.message || `Registration failed (HTTP ${response.status})`);
+      throw new Error(
+        result?.message ||
+          `Registration failed (${response.status})`
+      );
     }
 
-    // ---- SUCCESS: status 200 or 201 ----
-    // Explicitly confirm that 201 Created is a success (though response.ok already covers it)
-    const isSuccessStatus = response.status === 200 || response.status === 201;
+    // ---- SUCCESS 200 / 201 ----
+    const isSuccessStatus =
+      response.status === 200 || response.status === 201;
+
     if (!isSuccessStatus) {
-      // This should never happen because !response.ok would have been caught above,
-      // but we keep it for safety.
-      throw new Error(`Unexpected success status: ${response.status}`);
+      throw new Error(
+        `Unexpected success status: ${response.status}`
+      );
     }
 
-    // Show success toast (use the message from the edge function)
+    // ------------------------------------
+    // Update Profile using user_id
+    // ------------------------------------
+
+    if (result?.user_id) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone_number: formData.phone,
+          role: "patient",
+        })
+        .eq("id", result.user_id);
+
+      if (profileError) {
+        console.error(
+          "Profile update error:",
+          profileError
+        );
+
+        toast({
+          title: "Warning",
+          description:
+            "Patient created but profile update failed",
+          variant: "default",
+        });
+      } else {
+        console.log(
+          "Profile updated successfully"
+        );
+      }
+    }
+
+    // ------------------------------------
+    // Success Toast
+    // ------------------------------------
+
     toast({
       title: "Success",
-      description: result?.message || "Patient registered successfully",
+      description:
+        result?.message ||
+        "Patient registered successfully",
     });
 
-    // If a temporary password was returned, show it in a modal
+    setShowSuccessModal(true);
+setAutoEmail(result?.email);
+    // ------------------------------------
+    // Show Temporary Password
+    // ------------------------------------
+
     if (result?.temporary_password) {
       setTempPassword(result.temporary_password);
       setShowPasswordModal(true);
     }
 
-    // ---- Link patient to the current facility ----
-    // if (result?.user_id) {
-    //   const { error: updateError } = await supabase
-    //     .from("patients")
-    //     .update({ facility_id: facilityId })
-    //     .eq("user_id", result.user_id);
+    // ------------------------------------
+    // Log non-critical errors
+    // ------------------------------------
 
-    //   if (updateError) {
-    //     // Non‑critical error – the patient was created but not linked.
-    //     // Log it and show a warning, but do not block the flow.
-    //     console.warn("Facility linking failed:", updateError);
-    //     toast({
-    //       title: "Warning",
-    //       description: "Patient created but not linked to facility. Please contact support.",
-    //       variant: "default",
-    //     });
-    //   }
-    // } else {
-    //   console.warn("No user_id returned from registration endpoint");
-    // }
-
-    // ---- Log any non‑critical database errors (profiles/patients) ----
     if (result?.profile_error) {
-      console.warn("Profile insert warning:", result.profile_error);
-    }
-    if (result?.patients_error) {
-      console.warn("Patients insert warning:", result.patients_error);
+      console.warn(
+        "Profile insert warning:",
+        result.profile_error
+      );
     }
 
-    // Reset form and refresh patient list
+    if (result?.patients_error) {
+      console.warn(
+        "Patients insert warning:",
+        result.patients_error
+      );
+    }
+
+    // ------------------------------------
+    // Reset Form
+    // ------------------------------------
+
     setFormData({
       first_name: "",
       last_name: "",
@@ -828,14 +1102,23 @@ const handleRegister = async (e: React.FormEvent) => {
   } catch (err: any) {
     console.error("Registration error:", err);
 
-    // Determine if the error occurred after a successful HTTP response
-    const isSuccessStatus = response?.status === 200 || response?.status === 201;
-    const errorMessage = result?.message || err?.message || "Something went wrong";
+    const isSuccessStatus =
+      response?.status === 200 ||
+      response?.status === 201;
+
+    const errorMessage =
+      result?.message ||
+      err?.message ||
+      "Something went wrong";
 
     toast({
-      title: isSuccessStatus ? "Partial Success" : "Registration Failed",
+      title: isSuccessStatus
+        ? "Partial Success"
+        : "Registration Failed",
       description: errorMessage,
-      variant: isSuccessStatus ? "default" : "destructive",
+      variant: isSuccessStatus
+        ? "default"
+        : "destructive",
     });
   } finally {
     setSubmitting(false);
@@ -1131,6 +1414,7 @@ const handleRegister = async (e: React.FormEvent) => {
                 {submitting ? "Register ...": "Register Patient"}
                 
               </Button>
+              
             </Form>
           </Card.Body>
         </Card>
@@ -1166,6 +1450,46 @@ const handleRegister = async (e: React.FormEvent) => {
           <Button variant="primary" onClick={() => setShowPasswordModal(false)}>Close</Button>
         </Modal.Footer>
       </Modal> */}
+      <Modal
+  show={showSuccessModal}
+  onHide={() => setShowSuccessModal(false)}
+  centered
+>
+  <Modal.Header closeButton className="bg-success text-white">
+    <Modal.Title>Patient Registered Successfully</Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body className="text-center">
+    <CheckCircle size={60} className="text-success mb-3" />
+    <h5>Patient registered successfully</h5>
+    <p className="text-muted">
+      Would you like to proceed to create bills?
+    </p>
+  </Modal.Body>
+
+  <Modal.Footer className="justify-content-center">
+    <Button
+      variant="secondary"
+      className="rounded-pill px-4"
+      onClick={() => setShowSuccessModal(false)}
+    >
+      No, Close this window.
+    </Button>
+
+    <Button
+  variant="success"
+  className="rounded-pill px-4"
+  onClick={() => {
+    setShowSuccessModal(false);
+    navigate("/dashboard/facility/my-bills", {
+      state: { email: autoEmail  }
+    });
+  }}
+>
+  Yes. Proceed to create bill.
+</Button>
+  </Modal.Footer>
+</Modal>
     </Container>
   );
 };

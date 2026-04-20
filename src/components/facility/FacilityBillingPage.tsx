@@ -1212,6 +1212,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/useUser";
+import { Modal } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 
 // ======================== TYPES (unchanged) ========================
 interface Patient {
@@ -1271,13 +1273,14 @@ const FacilityBillingPage = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [patientBills, setPatientBills] = useState<BilledItem[]>([]);
   const [patientsWithTotal, setPatientsWithTotal] = useState<PatientWithTotal[]>([]);
-
+const [showSuccessModal, setShowSuccessModal] = useState(false);
   // Form selections
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<string>("");
   const [amount, setAmount] = useState("");
-
+const location = useLocation();
+const passedEmail = location.state?.email;
   // UI state
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingPatients, setLoadingPatients] = useState(false);
@@ -1292,7 +1295,8 @@ const FacilityBillingPage = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
 const [userRole, setUserRole] = useState<string | null>(null);
-  // 1. Get facility ID from admin_user_id
+const [autoSelecting, setAutoSelecting] = useState(false);
+// 1. Get facility ID from admin_user_id
   // useEffect(() => {
   //   const getFacility = async () => {
   //     if (!user) return;
@@ -1399,6 +1403,29 @@ if (profile) setUserRole(profile.role);
     }
   }, [facilityId]);
 
+useEffect(() => {
+if (passedEmail) {
+setSearchTerm(passedEmail);
+}
+}, [passedEmail]);
+
+console.log("eehh",passedEmail)
+
+// Auto-select patient when email is passed from navigation
+useEffect(() => {
+if (!passedEmail || patients.length === 0) return;
+
+const matched = patients.find(
+(p) => p.email?.toLowerCase() === passedEmail.toLowerCase()
+);
+
+if (matched) {
+setSelectedPatient(matched);
+fetchPatientBills(matched.id);
+}
+
+}, [passedEmail, patients]);
+
   // 3. When patients list changes, fetch their total billed amounts
   // useEffect(() => {
   //   if (patients.length > 0 && facilityId) {
@@ -1429,9 +1456,11 @@ useEffect(() => {
     setLoadingPatients(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, email, phone_number")
+      .select("id, email")
+      // .select("id, first_name, last_name, email, phone_number")
       .eq("role", "patient")
-      .order("first_name");
+      .order("email");
+      // .order("first_name");
 
     if (error) {
       toast({ title: "Error", description: "Failed to load patients", variant: "destructive" });
@@ -1694,6 +1723,7 @@ const fetchPatientBills = async (patientId: string) => {
     // Refresh data for the selected patient
     await fetchPatientBills(selectedPatient.id);
     await fetchPatientsTotalBilled();
+  setShowSuccessModal(true);
 
     // Reset entire form
     setSelectedDepartment("");
@@ -1728,13 +1758,24 @@ const fetchPatientBills = async (patientId: string) => {
     (sum, bill) => sum + (bill.facility_items_master?.item_price || 0),
     0
   );
+  const resetBillingForm = () => {
+  setSelectedDepartment("");
+  setSelectedItem("");
+  setFacilityItems([]);
+  setBillNumber("");
+  setIsPaid(false);
+  setPaymentMethod("");
+  setAmount("");
+  setSearchTerm("");
+  setSelectedPatient(null);
+};
 
   // ======================== RENDER VIEWS (Redesigned) ========================
 
   const renderHistoryView = () => (
     <Card className="shadow-lg border-0 rounded-4 overflow-hidden">
       <Card.Header className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 d-flex align-items-center gap-2">
-        <Users size={20} /> Patient Billing History
+        <Users size={20} /> Past Bill(s)
       </Card.Header>
       <Card.Body className="p-0">
         {loadingTotals ? (
@@ -1780,8 +1821,9 @@ const fetchPatientBills = async (patientId: string) => {
   );
 
   const renderCreateView = () => (
-    <Row className="g-4">
-      <Col lg={7}>
+
+    // <Row className="g-4">
+    //   <Col lg={7}>
         <Card className="shadow-lg border-0 rounded-4">
           <Card.Header className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-3 d-flex align-items-center gap-2">
             <PlusCircle size={20} /> Create New Billing
@@ -1912,48 +1954,49 @@ const fetchPatientBills = async (patientId: string) => {
             </Button>
           </Card.Body>
         </Card>
-      </Col>
+    //    </Col>
 
-      <Col lg={5}>
-        <Card className="shadow-lg border-0 rounded-4 h-100">
-          <Card.Header className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 d-flex align-items-center gap-2">
-            <Receipt size={20} /> Billing Items for Department
-          </Card.Header>
-          <Card.Body>
-            {!selectedDepartment ? (
-              <div className="text-center text-muted py-5">
-                <Building2 size={48} className="mb-3 opacity-25" />
-                <p>Select a department to see available items.</p>
-              </div>
-            ) : (
-              <div className="table-responsive">
-                <Table className="table-sm">
-                  <thead>
-                    <tr className="border-0">
-                      <th>Item</th>
-                      <th className="text-end">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {facilityItems.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.item_name}</td>
-                        <td className="text-end fw-bold text-primary">₹{item.item_price.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                    {facilityItems.length === 0 && (
-                      <tr>
-                        <td colSpan={2} className="text-center text-muted">No items yet.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </div>
-            )}
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+    //   <Col lg={5}>
+    //     <Card className="shadow-lg border-0 rounded-4 h-100">
+    //       <Card.Header className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 d-flex align-items-center gap-2">
+    //         <Receipt size={20} /> Billing Items for Department
+    //       </Card.Header>
+    //       <Card.Body>
+    //         {!selectedDepartment ? (
+    //           <div className="text-center text-muted py-5">
+    //             <Building2 size={48} className="mb-3 opacity-25" />
+    //             <p>Select a department to see available items.</p>
+    //           </div>
+    //         ) : (
+    //           <div className="table-responsive">
+    //             <Table className="table-sm">
+    //               <thead>
+    //                 <tr className="border-0">
+    //                   <th>Item</th>
+    //                   <th className="text-end">Price</th>
+    //                 </tr>
+    //               </thead>
+    //               <tbody>
+    //                 {facilityItems.map((item) => (
+    //                   <tr key={item.id}>
+    //                     <td>{item.item_name}</td>
+    //                     <td className="text-end fw-bold text-primary">₹{item.item_price.toFixed(2)}</td>
+    //                   </tr>
+    //                 ))}
+    //                 {facilityItems.length === 0 && (
+    //                   <tr>
+    //                     <td colSpan={2} className="text-center text-muted">No items yet.</td>
+    //                   </tr>
+    //                 )}
+    //               </tbody>
+    //             </Table>
+    //           </div>
+    //         )}
+    //       </Card.Body>
+    //     </Card>
+    //   </Col>
+    // </Row> 
+    
   );
 
   // ======================== MAIN RENDER ========================
@@ -1984,11 +2027,63 @@ const fetchPatientBills = async (patientId: string) => {
               onClick={() => setActiveView("history")}
               className="rounded-pill px-4"
             >
-              <History size={18} className="me-2" /> History
+              <History size={18} className="me-2" /> View Bill(s)
             </Button>
           </div>
         </div>
       </div>
+      <Modal
+show={showSuccessModal}
+onHide={() => setShowSuccessModal(false)}
+centered
+>
+<Modal.Header closeButton>
+<Modal.Title>Billing Created Successfully</Modal.Title>
+</Modal.Header>
+
+<Modal.Body className="text-center">
+
+<div className="mb-3">
+<CreditCard size={40} className="text-success" />
+</div>
+
+<h5 className="fw-bold">Billing Saved Successfully</h5>
+
+<p className="text-muted">
+What would you like to do next?
+</p>
+
+</Modal.Body>
+
+<Modal.Footer className="justify-content-center gap-3">
+
+<Button
+variant="primary"
+className="px-4"
+onClick={() => {
+resetBillingForm();
+setShowSuccessModal(false);
+setActiveView("create");
+}}
+>
+Create New Billing
+</Button>
+
+<Button
+variant="success"
+className="px-4"
+onClick={() => {
+setShowSuccessModal(false);
+setActiveView("history");
+}}
+>
+Go to History
+</Button>
+
+</Modal.Footer>
+
+</Modal>
+      
 
       {/* Dynamic Views */}
       {activeView === "create" && renderCreateView()}

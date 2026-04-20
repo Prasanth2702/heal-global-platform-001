@@ -395,8 +395,8 @@ const App = () => {
 <Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} />
 <Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} />
 <Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
-<Route path="/dashboard/facility/billing" element={<FacilityBillingPageView />} />
-<Route path="/dashboard/facility/reports" element={<CashFlowReportsView />} />
+<Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} />
+<Route path="/dashboard/facility/cash-flow-reports" element={<CashFlowReportsView />} />
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}

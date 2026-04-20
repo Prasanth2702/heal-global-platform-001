@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -309,6 +309,11 @@ const checkBedManagementDepartment = async () => {
           label: "My Appointments",
           icon: Calendar,
         },
+        {
+          path: "/dashboard/facility/billing-item",
+          label: "Billing Item",
+          icon: BrickWall,
+        },
         // {
         //   path: "/dashboard/facility/analytics",
         //   label: "Analytics",
@@ -347,13 +352,13 @@ const checkBedManagementDepartment = async () => {
         icon: Refrigerator,
       },
       {
-        path: "/dashboard/facility/billing",
-        label: "Billing",
+        path: "/dashboard/facility/my-bills",
+        label: "My Bills",
         icon: BrickWallIcon,
       },
       {
-        path: "/dashboard/facility/reports",
-        label: "Billing Reports",
+        path: "/dashboard/facility/cash-flow-reports",
+        label: "Cash Flow Reports",
         icon: ReplyIcon,
       },
       // ]

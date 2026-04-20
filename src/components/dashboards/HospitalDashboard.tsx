@@ -228,7 +228,7 @@ useEffect(() => {
   else if (path.includes('/inventory')) setActiveTab('inventory');
   else if (path.includes('/facilitics')) setActiveTab('facilitics');
   else if (path.includes('/appointments')) setActiveTab('appointments');
-  else if (path.includes('/new-billing')) setActiveTab('new-billing');
+  else if (path.includes('/billing-item')) setActiveTab('new-billing');
   else setActiveTab('overview');
 }, [location.pathname]);
 
@@ -273,7 +273,7 @@ useEffect(() => {
       navigate(`${basePath}/appointments`);
       break;
     case 'new-billing':
-      navigate(`${basePath}/new-billing`);
+      navigate(`${basePath}/billing-item`);
       break;
     default:
       navigate(basePath);
@@ -324,7 +324,7 @@ return (
           </TabsTrigger>
           <TabsTrigger value="new-billing" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
             <Calendar1 className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Billing</span>
+            <span className="hidden sm:inline">My Billing Item</span>
           </TabsTrigger>
           <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />

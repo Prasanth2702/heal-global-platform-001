@@ -67,6 +67,15 @@ export const CashFlowReports: React.FC = () => {
   }, []);
 
   useEffect(() => {
+  if (facilities.length > 0 && !filters.facility_id) {
+    setFilters({
+      ...filters,
+      facility_id: facilities[0].id
+    });
+  }
+}, [facilities]);
+
+  useEffect(() => {
     if (filters.facility_id) {
       fetchDepartments();
     }
@@ -537,7 +546,7 @@ export const CashFlowReports: React.FC = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Cash Flow Analysis Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Cash Flow Analysis Dashboard (Based on the bills that you created)</h1>
         <p className="text-gray-600 mt-2">Monitor and analyze your facility's cash inflow projections</p>
       </div>
 
@@ -548,20 +557,26 @@ export const CashFlowReports: React.FC = () => {
           <h2 className="text-lg font-semibold">Report Filters</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Facility *</label>
-            <select
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={filters.facility_id}
-              onChange={(e) => setFilters({ ...filters, facility_id: e.target.value })}
-            >
-              <option value="">Select Facility</option>
-              {facilities.map((facility) => (
-                <option key={facility.id} value={facility.id}>{facility.facility_name}</option>
-              ))}
-            </select>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* <div>
+            
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+  Facility *
+</label>
+
+<select
+  className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+  value={filters.facility_id}
+  disabled
+>
+  <option value="">Select Facility</option>
+  {facilities.map((facility) => (
+    <option key={facility.id} value={facility.id}>
+      {facility.facility_name}
+    </option>
+  ))}
+</select>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
@@ -613,7 +628,7 @@ export const CashFlowReports: React.FC = () => {
               )}
             </button>
             
-            {reportData && (
+            {/* {reportData && (
               <button
                 onClick={exportToCSV}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
@@ -621,7 +636,7 @@ export const CashFlowReports: React.FC = () => {
                 <Download className="w-4 h-4" />
                 <span>Export</span>
               </button>
-            )}
+            )} */}
           </div>
         </div>
 

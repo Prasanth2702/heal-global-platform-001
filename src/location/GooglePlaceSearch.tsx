@@ -1,45 +1,68 @@
-import React, { useRef } from "react";
-import { LoadScript, Autocomplete } from "@react-google-maps/api";
+import React, { useEffect, useRef, useState } from "react";
+import { useGoogleMapsApi } from "./useGoogleMapsApi";
 
-const libraries: any = ["places"];
+interface LatLng {
+  lat: number;
+  lng: number;
+}
 
-const GooglePlaceSearch = () => {
-  const autocompleteRef = useRef<any>(null);
+interface SearchLocationInputProps {
+  setSelectedLocation: (location: LatLng) => void;
+}
 
-  const onLoad = (autocomplete: any) => {
-    autocompleteRef.current = autocomplete;
-  };
-  const location = import.meta.env.VITE_PUBLIC_LOCATION_ANON_KEY;
+const GooglePlaceSearch: React.FC<SearchLocationInputProps> = ({ setSelectedLocation }) => {
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
 
-  const onPlaceChanged = () => {
-    const place = autocompleteRef.current.getPlace();
-    console.log("Selected Place:", place);
+  const apiKey = import.meta.env.VITE_PUBLIC_LOCATION_ANON_KEY;
+  const { isLoaded, loadError } = useGoogleMapsApi(apiKey, ["places"]);
 
-    console.log("Address:", place.formatted_address);
-    console.log("Latitude:", place.geometry.location.lat());
-    console.log("Longitude:", place.geometry.location.lng());
-  };
+  // Initialize Autocomplete when API is ready
+  useEffect(() => {
+    if (!isLoaded || !inputRef.current) return;
+
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+      componentRestrictions: { country: "IN" },
+    });
+
+    listenerRef.current = autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current?.getPlace();
+      if (!place?.geometry?.location) {
+        alert("Please select a valid place from the list.");
+        return;
+      }
+
+      const formatted = place.formatted_address || "";
+      setQuery(formatted);
+
+      const latLng = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      };
+      setSelectedLocation(latLng);
+    });
+
+    return () => {
+      if (listenerRef.current) listenerRef.current.remove();
+    };
+  }, [isLoaded, setSelectedLocation]);
+
+  if (loadError) return <div>Error loading Google Places API</div>;
 
   return (
-    <LoadScript
-      googleMapsApiKey={location}
-      libraries={libraries}
-    >
-      <Autocomplete
-        onLoad={onLoad}
-        onPlaceChanged={onPlaceChanged}
-      >
-        <input
-          type="text"
-          placeholder="Search hospital, city, address..."
-          style={{
-            width: "100%",
-            height: "40px",
-            padding: "10px"
-          }}
-        />
-      </Autocomplete>
-    </LoadScript>
+    <div className="search-location-input">
+      <label>Search Location</label>
+      <input
+        ref={inputRef}
+        className="form-control"
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search Places ..."
+        value={query}
+        disabled={!isLoaded}
+      />
+    </div>
   );
 };
 

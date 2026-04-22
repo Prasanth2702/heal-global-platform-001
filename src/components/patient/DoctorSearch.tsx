@@ -3325,7 +3325,6 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
       .from("time_slots")
       .select("*")
       .eq("department_id", department.id)
-      // .eq("slot_type", "booking")
       .eq("is_available", true)
       .eq("day_of_week", selectedDayName); // Added: filter by day
 

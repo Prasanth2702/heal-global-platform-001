@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import StaffProfile from "../hospital/StaffProfile";
 import FacilityBillingPage from "../facility/FacilityBillingPage";
 import FacilityPatientManagement from "../facility/FacilityPatientManagement";
+import { BillingSystem } from "../facility/BillingSystem";
 
 interface Appointment {
   id: string;
@@ -744,7 +745,8 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
           <FacilityAppointmentManagement />
         </TabsContent>
         <TabsContent value="billing">
-          <FacilityBillingPage />
+          {/* <FacilityBillingPage /> */}
+          <BillingSystem/>
         </TabsContent>
         <TabsContent value="patient-register">
           <FacilityPatientManagement />

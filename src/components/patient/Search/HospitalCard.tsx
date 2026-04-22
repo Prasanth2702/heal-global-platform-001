@@ -152,11 +152,11 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
             <span className="text-green-100 text-sm font-medium">{facility.facility_type}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-white">
+            {/* <div className="flex items-center gap-1 text-white">
               <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
               <span className="font-semibold">{facility.rating}</span>
               <span className="text-xs text-green-100">({facility.total_reviews})</span>
-            </div>
+            </div> */}
             {facility.is_verified && (
               <Badge className="bg-green-500 text-white">Verified</Badge>
             )}
@@ -235,10 +235,10 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                       <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
                         ₹{dept.price_per_day}/day
                       </div>
-                    ) : (
-                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        Contact for Price
-                      </div>
+                    ) : (""
+                      // <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      //   Contact for Price
+                      // </div>
                     )}
                   </div>
                 </div>
@@ -295,8 +295,11 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                       <>
                         <div className="flex gap-3 overflow-x-auto py-2">
                           {Array.from({ length: 14 }).map((_, index) => {
-                            const date = new Date();
-                            date.setDate(date.getDate() + index);
+                            // const date = new Date();
+                            // date.setDate(date.getDate() + index);
+                            const dayOffset = index + 1;        // 1 = tomorrow, 2 = day after, ...
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
 
                             const label = formatDayLabel(date, index);
                             const dayNumber = formatDateNumber(date);

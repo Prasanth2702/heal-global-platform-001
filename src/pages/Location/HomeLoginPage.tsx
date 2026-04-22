@@ -1466,7 +1466,7 @@ const Sidebar = () => (
               </div>
               <h5 className="fw-bold mb-2">Emergency</h5>
               <p className="text-muted mb-2">24/7 Helpline</p>
-              <h4 className="text-primary">+1 800-123-4567</h4>
+              <h4 className="text-primary">+91 98868 81149</h4>
             </div>
           </div>
           
@@ -1477,7 +1477,7 @@ const Sidebar = () => (
               </div>
               <h5 className="fw-bold mb-2">Email Us</h5>
               <p className="text-muted mb-2">Get support via email</p>
-              <h6 className="text-success">support@healthcare.com</h6>
+              <h6 className="text-success">support@cloudhospitals.ai</h6>
             </div>
           </div>
           
@@ -1488,7 +1488,7 @@ const Sidebar = () => (
               </div>
               <h5 className="fw-bold mb-2">Visit Us</h5>
               <p className="text-muted mb-2">Head Office</p>
-              <h6 className="text-info">123 Healthcare Ave, Medical City</h6>
+              <h6 className="text-info">98/11, Wheeler Rd Ext, Opposite Music Central, D Costa Layout, Cooke Town, Bengaluru, Karnataka 560005.</h6>
             </div>
           </div>
         </div>

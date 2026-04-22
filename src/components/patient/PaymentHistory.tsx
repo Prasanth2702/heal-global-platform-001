@@ -50,9 +50,11 @@ const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
       setLoading(false);
       return;
     }
-
+const appointmentIds = paymentsData
+  .map(p => p.appointment_id)
+  .filter((id): id is string => !!id);
     // 2. Fetch appointments (with doctor_id)
-    const appointmentIds = paymentsData.map(p => p.appointment_id);
+    // const appointmentIds = paymentsData.map(p => p.appointment_id);
     const { data: appointmentsData, error: appointmentsError } = await supabase
       .from('appointments')
       .select('id, appointment_date, type, doctor_id')

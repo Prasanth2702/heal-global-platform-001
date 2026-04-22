@@ -2798,7 +2798,7 @@ return (
                       required
                     />
                   </div>
-                  <div className="grid gap-2">
+                  {/* <div className="grid gap-2">
                     <Label htmlFor="breakTime">Break Time (minutes)</Label>
                     <Input
                       id="breakTime"
@@ -2815,7 +2815,7 @@ return (
                       step="5"
                       required
                     />
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

@@ -95,13 +95,18 @@ import FacilityPatientManagementview from "./components/facility/FacilityPatient
 import FacilityBillingPageView from "./components/facility/FacilityBillingPageView";
 import CashFlowReportsView from "./components/reports/CashFlowReportsView";
 import FacilityPatientViewsStaff from "./components/facility/FacilityPatientViewsStaff";
+import { BillList } from "./components/facility/BillList";
+import { BillingSystem } from "./components/facility/BillingSystem";
+import BillingSystemView from "./components/facility/BillingSystemView";
+import { useToast } from "./hooks/use-toast";
+import SetPasswordPage from "./components/auth/SetPasswordPage";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
 
 const useAutoLogout = () => {
   const navigate = useNavigate();
-
+const { toast } = useToast()
   useEffect(() => {
     const checkSession = async () => {
       const loginTime = localStorage.getItem("loginTime");
@@ -115,7 +120,11 @@ const useAutoLogout = () => {
 
         localStorage.clear();
 
-        alert("Session expired");
+        toast({
+  title: "Session Expired",
+  description: "Your session has expired. Please login again.",
+  variant: "destructive"
+})
 
         navigate("/login/patient");
       }
@@ -395,8 +404,12 @@ const App = () => {
 <Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} />
 <Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} />
 <Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
-<Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} />
+{/* <Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} /> */}
 <Route path="/dashboard/facility/cash-flow-reports" element={<CashFlowReportsView />} />
+<Route path="/set-password" element={<SetPasswordPage />} />
+<Route path="/dashboard/facility/my-bills" element={<BillingSystemView />} />
+{/* <Route path="/dashboard/facility/billing-system" element={<BillingSystemView />} /> */}
+{/* <Route path="/dashboard/facility/billing-system/:userId/:facilityId" element={<BillingSystem />} /> */}
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}
 
                   {/* ✅ ADD THIS ROUTE FOR BedBookingView IF NEEDED SEPARATELY */}

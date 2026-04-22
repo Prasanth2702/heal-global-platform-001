@@ -114,11 +114,16 @@ const PatientFacilitiesId: React.FC<DoctorProfileProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [bedBookingsData, setBedBookingsData] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("availability");
 const [isPatient, setIsPatient] = useState<boolean | null>(null);
   // Get facility from location state or fetch by ID
-
+const [selectedDate, setSelectedDate] = useState<Date>(() => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0,0,0,0);
+  return tomorrow;
+});
 useEffect(() => {
   const checkPatientStatus = async () => {
     if (!user) {
@@ -668,7 +673,7 @@ useEffect(() => {
                   <div className="space-y-2">
                     <Label>Selected Date</Label>
                     <div className="border rounded-md p-2">
-                      <CalendarComponent
+                      {/* <CalendarComponent
                         mode="single"
                         selected={selectedDate}
                         onSelect={(date) => date && setSelectedDate(date)}
@@ -676,7 +681,16 @@ useEffect(() => {
                           isBefore(date, startOfDay(new Date()))
                         }
                         className="rounded-md"
-                      />
+                      /> */}
+                      <CalendarComponent
+  mode="single"
+  selected={selectedDate}
+  onSelect={(date) => date && setSelectedDate(date)}
+  disabled={(date) => {
+    const tomorrow = addDays(startOfDay(new Date()), 1);
+    return isBefore(date, tomorrow);
+  }}
+/>
                     </div>
                   </div>
                 </CardContent>

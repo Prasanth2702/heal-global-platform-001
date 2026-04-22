@@ -309,11 +309,11 @@ const checkBedManagementDepartment = async () => {
           label: "My Appointments",
           icon: Calendar,
         },
-        {
-          path: "/dashboard/facility/billing-item",
-          label: "Billing Item",
-          icon: BrickWall,
-        },
+        // {
+        //   path: "/dashboard/facility/billing-item",
+        //   label: "Billing Item",
+        //   icon: BrickWall,
+        // },
         // {
         //   path: "/dashboard/facility/analytics",
         //   label: "Analytics",
@@ -356,11 +356,11 @@ const checkBedManagementDepartment = async () => {
         label: "My Bills",
         icon: BrickWallIcon,
       },
-      {
-        path: "/dashboard/facility/cash-flow-reports",
-        label: "Cash Flow Reports",
-        icon: ReplyIcon,
-      },
+      // {
+      //   path: "/dashboard/facility/cash-flow-reports",
+      //   label: "Cash Flow Reports",
+      //   icon: ReplyIcon,
+      // },
       // ]
       // : []),
       // {

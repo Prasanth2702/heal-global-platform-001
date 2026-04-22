@@ -271,13 +271,19 @@ const handleSubmit = async (e: React.FormEvent) => {
           `${uploadedDocuments.length - failedIndexing.length} document(s) indexed successfully. ` +
           `Failed to index ${failedIndexing.length} document(s).`
         );
+            setIsUploading(false);
+
       } else {
         setStatus("success");
         setMessage(`Uploaded and indexed ${uploadedDocuments.length} document(s)`);
+            setIsUploading(false);
+
       }
     } else {
       setStatus("success");
       setMessage(`Uploaded ${result.uploaded_documents.length} document(s)`);
+          setIsUploading(false);
+
     }
 
     // Clear form

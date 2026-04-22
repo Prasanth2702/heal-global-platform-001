@@ -2252,7 +2252,7 @@ const getSubmitHandler = () => {
             required
           />
         </div>
-        <div className="grid gap-2">
+        {/* <div className="grid gap-2">
           <Label htmlFor="breakTime">Break Time (minutes)</Label>
           <Input
             id="breakTime"
@@ -2269,7 +2269,7 @@ const getSubmitHandler = () => {
             step="5"
             required
           />
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

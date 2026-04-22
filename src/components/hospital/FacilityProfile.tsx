@@ -611,6 +611,7 @@ export interface MedicalFacility {
   avatarUrl?: string;
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
+  bannerUrl?: string;
 }
 
 interface UploadedDocument {
@@ -669,6 +670,7 @@ const FacilityProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
 const [pendingDocs, setPendingDocs] = useState<File[]>([]);
 const [showUploadPopup, setShowUploadPopup] = useState(false);
 const [saving, setSaving] = useState(false);
+const [bannerUrl, setBannerUrl] = useState('');
 
   useEffect(() => {
     async function fetchFacilityProfile() {
@@ -743,7 +745,8 @@ const [saving, setSaving] = useState(false);
           insurancePartners: facilitiesData.insurance_partners,
           operatingHours: facilitiesData.operating_hours,
           website: facilitiesData.website,
-          aboutFacility: facilitiesData.about_facility
+          aboutFacility: facilitiesData.about_facility,
+          bannerUrl: facilitiesData.banner_url || '',
         }));
       }
        await fetchUserDocuments(user.id);
@@ -917,7 +920,8 @@ const fetchUserDocuments = async (userId: string) => {
       insurance_partners: profileData.insurancePartners,
       operating_hours: profileData.operatingHours,
       website: profileData.website,
-      about_facility: profileData.aboutFacility
+      about_facility: profileData.aboutFacility,
+       banner_url: bannerUrl,
     };
 
     const { error: profilesUpdateError } = await supabase
@@ -1038,6 +1042,37 @@ const fetchUserDocuments = async (userId: string) => {
     });
     setUploading(false);
   };
+
+  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    toast({ title: 'Invalid file', description: 'Please upload an image.', variant: 'destructive' });
+    return;
+  }
+
+  setUploading(true);
+  const filePath = `${user.id}/${Date.now()}_${file.name}`;
+  const { error } = await supabase.storage
+    .from('facilities_public_images')
+    .upload(filePath, file);
+
+  if (error) {
+    toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    setUploading(false);
+    return;
+  }
+
+  const { data: urlData } = supabase.storage
+    .from('facilities_public_images')
+    .getPublicUrl(filePath);
+
+  setBannerUrl(urlData.publicUrl);
+  setProfileData(prev => ({ ...prev, bannerUrl: urlData.publicUrl }));
+  toast({ title: 'Banner uploaded', description: 'Facility banner updated.' });
+  setUploading(false);
+};
 
 //  const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: 'patient' | 'doctor' | 'facility'}>>([]);
 
@@ -1605,6 +1640,61 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
 
   </DialogContent>
 </Dialog>
+
+<Card className="border-0 shadow-lg">
+  <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <CardTitle className="text-xl">Facility Banner</CardTitle>
+  </CardHeader>
+  <CardContent className="p-6 space-y-6">
+    <div className="grid grid-cols-1 gap-6">
+      <div>
+        <Label className="text-sm font-semibold text-gray-700">Banner Image</Label>
+        <div className="relative mt-2">
+          {bannerUrl ? (
+            <div className="relative rounded-lg overflow-hidden border">
+              <img
+                src={bannerUrl}
+                alt="Facility Banner"
+                className="w-full h-48 object-cover"
+              />
+              {isEditing && (
+                <div
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer"
+                  onClick={() => document.getElementById('bannerUpload')?.click()}
+                >
+                  <Camera className="h-8 w-8 text-white" />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition"
+              onClick={() => isEditing && document.getElementById('bannerUpload')?.click()}
+            >
+              <Camera className="h-10 w-10 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500">
+                {isEditing ? 'Click to upload banner image' : 'No banner uploaded'}
+              </p>
+            </div>
+          )}
+          <input
+            id="bannerUpload"
+            type="file"
+            accept="image/*"
+            onChange={handleBannerUpload}
+            className="hidden"
+            disabled={!isEditing || uploading}
+          />
+        </div>
+        {isEditing && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Recommended size: 1200×400px. Max 5MB.
+          </p>
+        )}
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
       {/* Facility Information */}
       <Card className="border-0 shadow-lg">

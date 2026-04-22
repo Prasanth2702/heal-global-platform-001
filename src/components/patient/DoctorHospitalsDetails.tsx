@@ -140,6 +140,7 @@ interface Facility {
   pharmacy?: boolean;
   cafeteria?: boolean;
   visitingHours?: string;
+  image?:string;
 }
 
 interface Department {
@@ -367,8 +368,8 @@ useEffect(() => {
       }
     };
      const formatDayLabel = (date: Date, index: number) => {
-    if (index === 0) return "Today";
-    if (index === 1) return "Tomorrow";
+    // if (index === 0) return "Today";
+    if (index === 0) return "Tomorrow";
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
@@ -494,8 +495,9 @@ useEffect(() => {
     console.log("handleBookNow called", { slot, dateIndex, doctor });
     
     const newDate = new Date();
-    newDate.setDate(newDate.getDate() + dateIndex);
-
+    // newDate.setDate(newDate.getDate() + dateIndex);
+const dayOffset = dateIndex + 1;
+newDate.setDate(newDate.getDate() + dayOffset);
     const bookingData: BookingInfo = {
       slot_id: slot.id,
       start_time: slot.start_time,
@@ -657,98 +659,337 @@ useEffect(() => {
   //   }
   // };
 
-  const fetchDoctorDetails = async (doctorData: any) => {
-    const fullName = doctorData.medical_professionals_user_id_fkey
-      ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
-          doctorData.medical_professionals_user_id_fkey.last_name || ""
-        }`.trim()
-      : "Unknown Doctor";
+  // const fetchDoctorDetails = async (doctorData: any) => {
+  //   const fullName = doctorData.medical_professionals_user_id_fkey
+  //     ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
+  //         doctorData.medical_professionals_user_id_fkey.last_name || ""
+  //       }`.trim()
+  //     : "Unknown Doctor";
 
-    // Fetch doctor's availability
-    const { data: availabilityData } = await supabase
-      .from("time_slots")
-      .select("*")
-      .eq("doctor_id", doctorData.id)
-      .eq("is_available", true);
+  //   // Fetch doctor's availability
+  //   const { data: availabilityData } = await supabase
+  //     .from("time_slots")
+  //     .select("*")
+  //     .eq("doctor_id", doctorData.id)
+  //     .eq("is_available", true);
 
-    setAvailability(availabilityData || []);
+  //   setAvailability(availabilityData || []);
 
-    // Mock additional doctor data (in real app, fetch from separate tables)
-    const mockDoctor: Doctor = {
-      id: doctorData.id,
-      user_id: doctorData.medical_professionals_user_id_fkey?.user_id || "",
-      name: fullName,
-      specialty: doctorData.medical_speciality,
-      rating: doctorData.rating || 4.5,
-      experience: doctorData.years_experience ? `${doctorData.years_experience} years` : "15+ years",
-      consultationFee: doctorData.consultation_fee || 500,
-      availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
-      hospital: doctorData.medical_school || "City General Hospital",
-      location: doctorData.about_yourself || "Mumbai, Maharashtra",
-          email: doctorData.email || "",  // Added email
-    phone_number: doctorData.phone_number || "",  // Added phone_number
+  //   // Mock additional doctor data (in real app, fetch from separate tables)
+  //   const mockDoctor: Doctor = {
+  //     id: doctorData.id,
+  //     user_id: doctorData.medical_professionals_user_id_fkey?.user_id || "",
+  //     name: fullName,
+  //     specialty: doctorData.medical_speciality,
+  //     rating: doctorData.rating || 4.5,
+  //     experience: doctorData.years_experience ? `${doctorData.years_experience} years` : "15+ years",
+  //     consultationFee: doctorData.consultation_fee || 500,
+  //     availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
+  //     hospital: doctorData.medical_school || "City General Hospital",
+  //     location: doctorData.about_yourself || "Mumbai, Maharashtra",
+  //         email: doctorData.email || "",  // Added email
+  //   phone_number: doctorData.phone_number || "",  // Added phone_number
 
-      image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
-      // qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
-      // languages: "",
-      about: "",
-      specializations: ["Interventional Cardiology", "Heart Failure", "Preventive Cardiology"],
-      education: [
-        // { degree: "DM - Cardiology", institution: "AIIMS, Delhi", year: "2010" },
-        // { degree: "MD - Internal Medicine", institution: "KEM Hospital, Mumbai", year: "2005" },
-        // { degree: "MBBS", institution: "Grant Medical College, Mumbai", year: "2002" },
-      ],
-      workExperience: [
-        { position: "Senior Consultant Cardiologist", hospital: "City General Hospital", duration: "2015 - Present" },
-        { position: "Consultant Cardiologist", hospital: "Apollo Hospitals", duration: "2010 - 2015" },
-      ],
-      publications: [
-        { title: "Advances in Interventional Cardiology", journal: "Indian Heart Journal", year: "2023" },
-        { title: "Prevention of Heart Disease in Asian Population", journal: "Journal of Cardiology", year: "2021" },
-      ],
-      memberships: ["Cardiological Society of India", "American College of Cardiology", "European Society of Cardiology"],
-      telemedicineAvailable: true,
-      videoConsultationFee: 400,
-      clinicVisits: [
-        { day: "Monday - Wednesday", time: "10:00 AM - 2:00 PM", location: "City General Hospital" },
-        { day: "Thursday - Saturday", time: "4:00 PM - 8:00 PM", location: "Heart Care Clinic" },
-      ],
-    };
+  //     image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
+  //     qualifications: ["MBBS", "MD - Internal Medicine", "DM - Cardiology"],
+  //     // languages: "",
+  //     about: "",
+  //     specializations: ["Interventional Cardiology", "Heart Failure", "Preventive Cardiology"],
+  //     education: [
+  //       { degree: "DM - Cardiology", institution: "AIIMS, Delhi", year: "2010" },
+  //       { degree: "MD - Internal Medicine", institution: "KEM Hospital, Mumbai", year: "2005" },
+  //       { degree: "MBBS", institution: "Grant Medical College, Mumbai", year: "2002" },
+  //     ],
+  //     workExperience: [
+  //       { position: "Senior Consultant Cardiologist", hospital: "City General Hospital", duration: "2015 - Present" },
+  //       { position: "Consultant Cardiologist", hospital: "Apollo Hospitals", duration: "2010 - 2015" },
+  //     ],
+  //     publications: [
+  //       { title: "Advances in Interventional Cardiology", journal: "Indian Heart Journal", year: "2023" },
+  //       { title: "Prevention of Heart Disease in Asian Population", journal: "Journal of Cardiology", year: "2021" },
+  //     ],
+  //     memberships: ["Cardiological Society of India", "American College of Cardiology", "European Society of Cardiology"],
+  //     telemedicineAvailable: true,
+  //     videoConsultationFee: 400,
+  //     clinicVisits: [
+  //       { day: "Monday - Wednesday", time: "10:00 AM - 2:00 PM", location: "City General Hospital" },
+  //       { day: "Thursday - Saturday", time: "4:00 PM - 8:00 PM", location: "Heart Care Clinic" },
+  //     ],
+  //   };
 
-    setDoctor(mockDoctor);
+  //   setDoctor(mockDoctor);
 
-    // Fetch similar doctors
-    const { data: similarData } = await supabase
-      .from("medical_professionals")
-      .select(`
-        *,
-        medical_professionals_user_id_fkey (
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .eq("medical_speciality", doctorData.medical_speciality)
-      .neq("id", doctorData.id)
-      .limit(3);
+  //   // Fetch similar doctors
+  //   const { data: similarData } = await supabase
+  //     .from("medical_professionals")
+  //     .select(`
+  //       *,
+  //       medical_professionals_user_id_fkey (
+  //         first_name,
+  //         last_name,
+  //         avatar_url
+  //       )
+  //     `)
+  //     .eq("medical_speciality", doctorData.medical_speciality)
+  //     .neq("id", doctorData.id)
+  //     .limit(3);
 
-    if (similarData) {
-      const mapped = similarData.map((item: any) => ({
-        id: item.id,
-        user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-        name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
-          item.medical_professionals_user_id_fkey?.last_name || ""
-        }`.trim() || "Unknown Doctor",
-        specialty: item.medical_speciality,
-        rating: item.rating || 4.5,
-        experience: `${item.years_experience || 10} years`,
-        consultationFee: item.consultation_fee || 500,
-        availability: "Available",
-        image: item.medical_professionals_user_id_fkey?.avatar_url || "",
-      }));
-      setSimilarDoctors(mapped);
+  //   if (similarData) {
+  //     const mapped = similarData.map((item: any) => ({
+  //       id: item.id,
+  //       user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+  //       name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+  //         item.medical_professionals_user_id_fkey?.last_name || ""
+  //       }`.trim() || "Unknown Doctor",
+  //       specialty: item.medical_speciality,
+  //       rating: item.rating || 4.5,
+  //       experience: `${item.years_experience || 10} years`,
+  //       consultationFee: item.consultation_fee || 500,
+  //       availability: "Available",
+  //       image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+  //     }));
+  //     setSimilarDoctors(mapped);
+  //   }
+  // };
+//   const fetchDoctorDetails = async (doctorData: any) => {
+//   const fullName = doctorData.medical_professionals_user_id_fkey
+//     ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
+//         doctorData.medical_professionals_user_id_fkey.last_name || ""
+//       }`.trim()
+//     : "Unknown Doctor";
+
+//   // Fetch doctor's availability from time_slots
+//   const { data: availabilityData } = await supabase
+//     .from("time_slots")
+//     .select("*")
+//     .eq("doctor_id", doctorData.id)
+//     .eq("is_available", true);
+
+//   setAvailability(availabilityData || []);
+
+//   // Build hospital name from facility_id if exists
+//   let hospitalName = doctorData.medical_school || "Not specified";
+//   if (doctorData.facility_id) {
+//     const { data: facility } = await supabase
+//       .from("facilities")
+//       .select("facility_name")
+//       .eq("id", doctorData.facility_id)
+//       .single();
+//     if (facility) hospitalName = facility.facility_name;
+//   }
+
+//   // Build location string from address fields
+//   const locationParts = [
+//     doctorData.address,
+//     doctorData.city,
+//     doctorData.state,
+//     doctorData.pincode,
+//   ].filter(Boolean);
+//   const location = locationParts.length ? locationParts.join(", ") : "Location not specified";
+
+//   // Parse JSONB fields safely
+//   const parseJsonArray = (value: any) => {
+//     if (!value) return [];
+//     if (Array.isArray(value)) return value;
+//     try {
+//       const parsed = JSON.parse(value);
+//       return Array.isArray(parsed) ? parsed : [];
+//     } catch {
+//       return [];
+//     }
+//   };
+
+//   const doctor: Doctor = {
+//     id: doctorData.id,
+//     user_id: doctorData.user_id,
+//     name: fullName,
+//     specialty: doctorData.medical_speciality || "General Physician",
+//     rating: doctorData.rating || 4.5,
+//     experience: doctorData.years_experience ? `${doctorData.years_experience} years` : "Experience not specified",
+//     consultationFee: doctorData.consultation_fee || 500,
+//     availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
+//     hospital: hospitalName,
+//     location: location,
+//     email: doctorData.email || "",
+//     phone_number: doctorData.phone_number || "",
+//     image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
+//     qualifications: parseJsonArray(doctorData.qualifications),
+//     languages: parseJsonArray(doctorData.languages_known),
+//     about: doctorData.about_yourself || "No bio provided.",
+//     specializations: parseJsonArray(doctorData.specializations),
+//     education: parseJsonArray(doctorData.education),
+//     workExperience: parseJsonArray(doctorData.work_experience),
+//     publications: parseJsonArray(doctorData.publications),
+//     memberships: parseJsonArray(doctorData.memberships),
+//     // These fields are not in the table – either add columns or keep defaults
+//     telemedicineAvailable: false,
+//     videoConsultationFee: 0,
+//     clinicVisits: [], // Will be derived from time_slots later
+//     awards: [], // Not in schema, keep empty
+//   };
+
+//   setDoctor(doctor);
+
+//   // Fetch similar doctors based on specialty
+//   const { data: similarData } = await supabase
+//     .from("medical_professionals")
+//     .select(`
+//       *,
+//       medical_professionals_user_id_fkey (
+//         first_name,
+//         last_name,
+//         avatar_url
+//       )
+//     `)
+//     .eq("medical_speciality", doctorData.medical_speciality)
+//     .neq("id", doctorData.id)
+//     .limit(3);
+
+//   if (similarData) {
+//     const mapped = similarData.map((item: any) => ({
+//       id: item.id,
+//       user_id: item.user_id,
+//       name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+//         item.medical_professionals_user_id_fkey?.last_name || ""
+//       }`.trim() || "Unknown Doctor",
+//       specialty: item.medical_speciality,
+//       rating: item.rating || 4.5,
+//       experience: `${item.years_experience || 10} years`,
+//       consultationFee: item.consultation_fee || 500,
+//       availability: "Available",
+//       image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+//     }));
+//     setSimilarDoctors(mapped);
+//   }
+// };
+const fetchDoctorDetails = async (doctorData: any) => {
+  const fullName = doctorData.medical_professionals_user_id_fkey
+    ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
+        doctorData.medical_professionals_user_id_fkey.last_name || ""
+      }`.trim()
+    : "Unknown Doctor";
+
+  // Fetch doctor's availability from time_slots
+  const { data: availabilityData } = await supabase
+    .from("time_slots")
+    .select("*")
+    .eq("doctor_id", doctorData.user_id)
+    .eq("is_available", true);
+
+  setAvailability(availabilityData || []);
+
+  // Build hospital name from facility_id if exists
+  let hospitalName = doctorData.medical_school || "Not specified";
+  if (doctorData.facility_id) {
+    const { data: facility } = await supabase
+      .from("facilities")
+      .select("facility_name")
+      .eq("id", doctorData.facility_id)
+      .single();
+    if (facility) hospitalName = facility.facility_name;
+  }
+
+  // Build location string from address fields
+  const locationParts = [
+    doctorData.address,
+    doctorData.city,
+    doctorData.state,
+    doctorData.pincode,
+  ].filter(Boolean);
+  const location = locationParts.length ? locationParts.join(", ") : "Location not specified";
+
+  // Helper: convert any value to an array (handles already-parsed arrays, JSON strings, null)
+  const toArray = (value: any): any[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        // Not a JSON string, treat as single string
+        return [value];
+      }
     }
+    return [value];
   };
+
+  // Special handling for languages_known: could be a comma-separated string or array
+  const getLanguages = (lang: any): string[] => {
+    if (!lang) return [];
+    if (Array.isArray(lang)) return lang;
+    if (typeof lang === "string") {
+      // If it contains commas, split
+      if (lang.includes(",")) return lang.split(",").map(s => s.trim());
+      return [lang];
+    }
+    return [];
+  };
+
+  // Prepare doctor object with real data
+  const doctor: Doctor = {
+    id: doctorData.id,
+    user_id: doctorData.user_id,
+    name: fullName,
+    specialty: doctorData.medical_speciality || "General Physician",
+    rating: doctorData.rating || 4.5,
+    experience: doctorData.years_experience ? `${doctorData.years_experience} years` : "Experience not specified",
+    consultationFee: doctorData.consultation_fee || 500,
+    availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
+    hospital: hospitalName,
+    location: location,
+    email: doctorData.email || "",
+    phone_number: doctorData.phone_number || "",
+    image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
+    qualifications: toArray(doctorData.qualifications),
+    languages: getLanguages(doctorData.languages_known),
+    about: doctorData.about_yourself || "No bio provided.",
+    specializations: toArray(doctorData.specializations),
+    education: toArray(doctorData.education),
+    workExperience: toArray(doctorData.work_experience),
+    publications: toArray(doctorData.publications),
+    memberships: toArray(doctorData.memberships),
+    // Optional fields (not present in table, keep defaults)
+    telemedicineAvailable: false,
+    videoConsultationFee: 0,
+    clinicVisits: [], // Will be derived from time_slots later
+    awards: [],
+  };
+
+  setDoctor(doctor);
+
+  // Fetch similar doctors based on specialty
+  const { data: similarData } = await supabase
+    .from("medical_professionals")
+    .select(`
+      *,
+      medical_professionals_user_id_fkey (
+        first_name,
+        last_name,
+        avatar_url
+      )
+    `)
+    .eq("medical_speciality", doctorData.medical_speciality)
+    .neq("id", doctorData.id)
+    .limit(3);
+
+  if (similarData) {
+    const mapped = similarData.map((item: any) => ({
+      id: item.id,
+      user_id: item.user_id,
+      name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+        item.medical_professionals_user_id_fkey?.last_name || ""
+      }`.trim() || "Unknown Doctor",
+      specialty: item.medical_speciality,
+      rating: item.rating || 4.5,
+      experience: `${item.years_experience || 10} years`,
+      consultationFee: item.consultation_fee || 500,
+      availability: "Available",
+      image: item.medical_professionals_user_id_fkey?.avatar_url || "",
+    }));
+    setSimilarDoctors(mapped);
+  }
+};
 
   // const fetchFacilityDetails = async (facilityData: any) => {
   //   // Fetch departments
@@ -811,9 +1052,22 @@ useEffect(() => {
   //   setFacility(mockFacility);
   // };
 const fetchFacilityDetails = async (facilityData: any) => {
+
+   let adminAvatar = "";
+  if (facilityData.admin_user_id) {
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("user_id", facilityData.admin_user_id)
+      .single();
+    if (!profileError && profileData) {
+      adminAvatar = profileData.avatar_url || "";
+    }
+  }
   // Set facility first
   const mockFacility: Facility = {
     ...facilityData,
+     image: facilityData.banner_url,
     contact_number: facilityData.contact_number || "+91 22 1234 5678",
     email: facilityData.email || `info@${facilityData.facility_name.toLowerCase().replace(/\s+/g, '')}.com`,
     facilities: ["24/7 Emergency", "ICU", "Operation Theaters", "Diagnostic Center", "Pharmacy", "Cafeteria", "Parking"],
@@ -1333,7 +1587,13 @@ const handleBookAppointmentClick = () => {
               <div className="flex-1 mt-4 md:mt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
+                    {/* <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1> */}
+<h1 
+  className="text-3xl font-bold"
+  style={{ color: window.innerWidth >= 768 ? 'white' : 'black' }}
+>
+  {doctor.name}
+</h1>
                     <p className="text-xl text-blue-600 mt-1">{doctor.specialty}</p>
                     {doctor.email && (
       <div className="flex items-center gap-2 mt-1">
@@ -1391,14 +1651,14 @@ const handleBookAppointmentClick = () => {
                     <p className="text-gray-700 leading-relaxed">{doctor.about}</p>
                     
                     <div className="grid grid-cols-2 gap-4 mt-6">
-                      {/* <div className="flex items-center text-gray-600">
+                      <div className="flex items-center text-gray-600">
                         <Languages className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.languages?.join(", ")}</span>
-                      </div> */}
-                      {/* <div className="flex items-center text-gray-600">
+                      </div>
+                      <div className="flex items-center text-gray-600">
                         <Award className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.qualifications?.join(", ")}</span>
-                      </div> */}
+                      </div>
                       <div className="flex items-center text-gray-600">
                         <Building2 className="h-4 w-4 mr-2 text-blue-600" />
                         <span>{doctor.hospital}</span>
@@ -1411,7 +1671,7 @@ const handleBookAppointmentClick = () => {
                   </CardContent>
                 </Card>
 
-                {/* <Card>
+                <Card>
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
                       <GraduationCap className="h-5 w-5 mr-2 text-blue-600" /> Education & Training
@@ -1428,8 +1688,8 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card> */}
-{/* 
+                </Card>
+
                 <Card>
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
@@ -1444,12 +1704,12 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card> */}
+                </Card>
               </div>
 
               {/* Right Column - Quick Info */}
               <div className="space-y-6">
-                {/* <Card>
+                <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Specializations</h2>
                     <div className="space-y-2">
@@ -1460,8 +1720,8 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </div>
                   </CardContent>
-                </Card> */}
-{/* 
+                </Card>
+
                 <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Professional Memberships</h2>
@@ -1474,18 +1734,20 @@ const handleBookAppointmentClick = () => {
                       ))}
                     </ul>
                   </CardContent>
-                </Card> */}
+                </Card>
 
-                {/* <Card>
+                <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Consultation Options</h2>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                         <div>
                           <p className="font-medium">Video Consultation</p>
-                          <p className="text-sm text-gray-600">₹{doctor.videoConsultationFee}</p>
+                          <p className="text-sm text-gray-600">₹{doctor.consultationFee}</p>
+                          {/* <p className="text-sm text-gray-600">₹{doctor.videoConsultationFee}</p> */}
                         </div>
-                        {doctor.telemedicineAvailable ? (
+                        {/* {doctor.telemedicineAvailable ? ( */}
+                        {doctor.consultationFee ? (
                           <Badge className="bg-green-500">Available</Badge>
                         ) : (
                           <Badge variant="outline">Unavailable</Badge>
@@ -1496,18 +1758,24 @@ const handleBookAppointmentClick = () => {
                           <p className="font-medium">Clinic Visit</p>
                           <p className="text-sm text-gray-600">₹{doctor.consultationFee}</p>
                         </div>
-                        <Badge className="bg-blue-500">Available</Badge>
+                        {/* <Badge className="bg-blue-500">Available</Badge> */}
+                           {doctor.consultationFee ? (
+                                                // {doctor.telemedicineAvailable ? (
+                                                  <Badge className="bg-green-500">Available</Badge>
+                                                ) : (
+                                                  <Badge variant="outline">Unavailable</Badge>
+                                                )}
                       </div>
                     </div>
                   </CardContent>
-                </Card> */}
+                </Card>
               </div>
             </div>
           </TabsContent>
 
           {/* Experience Tab */}
           <TabsContent value="experience" className="space-y-6">
-            {/* <Card>
+            <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <Briefcase className="h-5 w-5 mr-2 text-blue-600" /> Work Experience
@@ -1523,9 +1791,9 @@ const handleBookAppointmentClick = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card> */}
+            </Card>
 
-            {/* <Card>
+            <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <Award className="h-5 w-5 mr-2 text-blue-600" /> Awards & Recognition
@@ -1541,12 +1809,12 @@ const handleBookAppointmentClick = () => {
                   )}
                 </div>
               </CardContent>
-            </Card> */}
+            </Card>
           </TabsContent>
 
           {/* Availability Tab */}
           <TabsContent value="availability" className="space-y-6">
-            {/* <Card>
+            <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                   <CalendarClock className="h-5 w-5 mr-2 text-blue-600" /> Clinic Hours
@@ -1564,7 +1832,7 @@ const handleBookAppointmentClick = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card> */}
+            </Card>
             <Card ref={bookingSectionRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold flex items-center">
@@ -1629,9 +1897,11 @@ const handleBookAppointmentClick = () => {
                                                     <>
                                                       <div className="flex gap-3 overflow-x-auto py-2">
                                                         {Array.from({ length: 14 }).map((_, index) => {
-                                                          const date = new Date();
-                                                          date.setDate(date.getDate() + index);
-                          
+                                                          // const date = new Date();
+                                                          // date.setDate(date.getDate() + index);
+                          const dayOffset = index + 1;        // 1 = tomorrow, 2 = day after, ...
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
                                                           const label = formatDayLabel(date, index);
                                                           const dayNumber = formatDateNumber(date);
                                                           const dayOfWeek = date.toLocaleDateString(
@@ -1705,9 +1975,13 @@ const handleBookAppointmentClick = () => {
                                                       <div className="mt-4">
                                                         {(() => {
                                                           const selectedDate = new Date();
-                                                          selectedDate.setDate(
-                                                            selectedDate.getDate() + selectedDay
-                                                          );
+                                                          // selectedDate.setDate(
+                                                          //   selectedDate.getDate() + selectedDay
+                                                          // );
+                                                          const dayOffset = selectedDay + 1;
+selectedDate.setDate(
+  selectedDate.getDate() + dayOffset
+);
                                                           const selectedISO = selectedDate
                                                             .toISOString()
                                                             .split("T")[0];
@@ -1961,13 +2235,29 @@ const handleBookAppointmentClick = () => {
 
         {/* Hospital Header */}
         <Card className="mb-8 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-600 to-green-800 h-48 relative">
+          {/* <div className="bg-gradient-to-r from-green-600 to-green-800 h-48 relative">
             {facility.is_verified && (
               <Badge className="absolute top-4 right-4 bg-white text-green-600">
                 <CheckCircle className="h-4 w-4 mr-1" /> Verified
               </Badge>
             )}
-          </div>
+          </div> */}
+          <div className="h-48 relative">
+  {facility.image ? (
+    <img 
+      src={facility.image}
+      alt={facility.facility_name}
+      className="w-full h-full object-cover rounded-t-lg"
+    />
+  ) : (
+    <div className="bg-gradient-to-r from-green-600 to-green-800 h-full w-full rounded-t-lg"></div>
+  )}
+  {facility.is_verified && (
+    <Badge className="absolute top-4 right-4 bg-white text-green-600 z-10">
+      <CheckCircle className="h-4 w-4 mr-1" /> Verified
+    </Badge>
+  )}
+</div>
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div>
@@ -2128,7 +2418,10 @@ const handleBookAppointmentClick = () => {
           {/* Departments Tab */}
 <TabsContent value="departments" className="space-y-6">
   <div className="grid md:grid-cols-2 gap-6">
-    {departments.map((dept) => (
+    {/* {departments.map((dept) => ( */}
+    {departments
+  .filter(dept => dept.name?.toLowerCase() !== "bed management")
+  .map((dept) => (
       <Card
         key={dept.id}
         className="hover:shadow-lg transition cursor-pointer border-2 hover:border-green-300"

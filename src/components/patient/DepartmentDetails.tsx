@@ -88,6 +88,7 @@ const [confirmOpen, setConfirmOpen] = useState(false);
 const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
 const [notes, setNotes] = useState("");
 const [isBooking, setIsBooking] = useState(false);
+const [hasTimeSlots, setHasTimeSlots] = useState<boolean | null>(null);
 const createSlug = (text: string) => {
   return text
     .toLowerCase()
@@ -272,6 +273,18 @@ const fetchDepartmentDetails = async () => {
       }));
       setDepartmentDoctors(mapped);
     }
+    const { data: slotCheck, error: slotError } = await supabase
+  .from("time_slots")
+  .select("id")
+  .eq("department_id", deptData.id)
+  .limit(1);
+
+if (slotError) {
+  console.error("Slot check error:", slotError);
+  setHasTimeSlots(false);
+} else {
+  setHasTimeSlots((slotCheck?.length || 0) > 0);
+}
   } catch (error) {
     console.error("Error fetching department details:", error);
   } finally {
@@ -314,8 +327,8 @@ const fetchDepartmentDetails = async () => {
   };
 
   const formatDayLabel = (date: Date, index: number) => {
-    if (index === 0) return "Today";
-    if (index === 1) return "Tomorrow";
+    // if (index === 0) return "Today";
+    if (index === 0) return "Tomorrow";
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
@@ -367,8 +380,9 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
 
     const handleDepartmentBookNow = (slot: TimeSlot, dateIndex: number, department: Department) => {
     const newDate = new Date();
-    newDate.setDate(newDate.getDate() + dateIndex);
-
+    // newDate.setDate(newDate.getDate() + dateIndex);
+const dayOffset = dateIndex + 1;
+newDate.setDate(newDate.getDate() + dayOffset);
     const bookingData: BookingInfo = {
       slot_id: slot.id,
       start_time: slot.start_time,
@@ -441,13 +455,13 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900">{department.name}</h1>
-                    <div className="flex items-center gap-2 mt-2">
+                    {/* <div className="flex items-center gap-2 mt-2">
                       {department.is_active ? (
                         <Badge className="bg-green-500">Active Department</Badge>
                       ) : (
                         <Badge variant="outline">Inactive Department</Badge>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -501,9 +515,10 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
         </div> */}
 
         {/* Department Info */}
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* <div className="grid md:grid-cols-3 gap-6"> */}
           {/* Left Column - Description & Services */}
           <div className="md:col-span-2 space-y-6">
+          {/* <div className="md:col-span-2 space-y-6"> */}
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">About Department</h2>
@@ -516,14 +531,38 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
             <Card ref={bookingSectionRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Book Appointment</h2>
-                 <Button
+                 {/* <Button
                                 variant="default"
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => toggleExpandDepartment(department)}
                               >
                                 View Availability
-                              </Button>
+                              </Button> */}
+                              <div className="space-y-3">
+
+{hasTimeSlots === false && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <p className="text-sm text-yellow-700 font-medium">
+      ⏳ Appointment slots are not available.
+    </p>
+    <p className="text-xs text-yellow-600 mt-1">
+      Please contact the hospital or try again later.
+    </p>
+  </div>
+)}
+
+<Button
+  variant="default"
+  size="sm"
+  className="bg-green-600 hover:bg-green-700"
+  onClick={() => toggleExpandDepartment(department)}
+  disabled={!hasTimeSlots}
+>
+  View Availability
+</Button>
+
+</div>
 
                                {expandedTimeSlotId === department.id && (
                                                             <div className="mt-4 p-4 rounded-xl border shadow bg-white">
@@ -539,9 +578,12 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                 <>
                                                                   <div className="flex gap-3 overflow-x-auto py-2">
                                                                     {Array.from({ length: 14 }).map((_, index) => {
-                                                                      const date = new Date();
-                                                                      date.setDate(date.getDate() + index);
-                              
+                                                                      // const date = new Date();
+                                                                      // date.setDate(date.getDate() + index);
+                              const dayOffset = index + 1;        // 1 = tomorrow, 2 = day after, ...
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
+
                                                                       const label = formatDayLabel(date, index);
                                                                       const dayNumber = formatDateNumber(date);
                                                                       const dayOfWeek = date.toLocaleDateString(
@@ -615,9 +657,13 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                   <div className="mt-4">
                                                                     {(() => {
                                                                       const selectedDate = new Date();
-                                                                      selectedDate.setDate(
-                                                                        selectedDate.getDate() + selectedDay
-                                                                      );
+                                                                      // selectedDate.setDate(
+                                                                      //   selectedDate.getDate() + selectedDay
+                                                                      // );
+                                                                      const dayOffset = selectedDay + 1;
+selectedDate.setDate(
+  selectedDate.getDate() + dayOffset
+);
                                                                       const selectedISO = selectedDate
                                                                         .toISOString()
                                                                         .split("T")[0];
@@ -873,7 +919,7 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
               </CardContent>
             </Card>
           </div> */}
-          <div className="space-y-6">
+          {/* <div className="space-y-6">
   <Card>
     <CardContent className="p-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -894,13 +940,13 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
               />
               <div className="flex-1">
                 <p className="font-medium">{staff.name}</p>
-                {/* <p className="text-sm text-gray-600">{staff.position || staff.role}</p> */}
+                <p className="text-sm text-gray-600">{staff.position || staff.role}</p>
                 <div className="flex items-center mt-1">
                   <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
                   <span className="text-xs ml-1">{staff.rating}</span>
                 </div>
               </div>
-              {/* <ChevronRight className="h-4 w-4 text-gray-400" /> */}
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </div>
           ))}
         </div>
@@ -911,8 +957,8 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
       )}
     </CardContent>
   </Card>
-</div>
-        </div>
+</div> */}
+        {/* </div> */}
       </div>
     </DashboardLayout>
   );

@@ -2385,6 +2385,7 @@ import {
   DockIcon,
   LucideAppWindow,
   Telescope,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
@@ -2557,7 +2558,7 @@ const FacilityPatientView: React.FC = () => {
   
   // Facility specific state
   const [facility, setFacility] = useState<FacilityProfile | null>(null);
-  
+  const [departmentInfo, setDepartmentInfo] = useState<Department | null>(null);
   const [completedWithoutDoc, setCompletedWithoutDoc] = useState(false);
   // Common state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -2602,6 +2603,7 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
     userRole: "patient",
   });
   const [pendingCompletion, setPendingCompletion] = useState(false);
+const [joiningVideo, setJoiningVideo] = useState(false);
 
   const startCompleteWithUpload = () => {
     setPendingCompletion(true);
@@ -2967,61 +2969,95 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
       console.error("Error in loadDoctorData:", error);
     }
   };
-
-  const loadFacilityData = async (facilityRecord: any) => {
+const loadFacilityData = async (facilityRecord: any) => {
+  try {
+    // 1. Set base facility
     setFacility(facilityRecord);
+
+    // 2. Load admin profile (optional)
     const { data: profileData } = await supabase
       .from("profiles")
       .select("*")
-      .eq("user_id", facilityRecord.user_id)
+      .eq("user_id", facilityRecord.admin_user_id)
       .single();
-    setDoctorProfile(profileData);
+    if (profileData) setDoctorProfile(profileData);
 
-    if (facilityRecord.facility_id) {
-      const { data: facilityData } = await supabase
-        .from("facilities")
-        .select(`
-          id, facility_name, facility_type, address, rating, total_reviews, about_facility,
-          number_of_staffs, number_of_departments, is_verified,
-          departments (id, facility_id, name, description, head_doctor_id, services, equipment, bed_capacity, available_beds, is_active)
-        `)
-        .eq("id", facilityRecord.facility_id)
-        .single();
-      if (facilityData) {
-        setFacility({
-          ...facilityData,
-          departments: facilityData.departments || [],
-        } as FacilityProfile);
-      }
-    }
+    // 3. Load facility details (without departments – fetched separately)
+    const { data: facilityData } = await supabase
+      .from("facilities")
+      .select(`
+        id,
+        facility_name,
+        facility_type,
+        address,
+        rating,
+        license_number,
+        total_reviews,
+        about_facility,
+        number_of_staffs,
+        number_of_departments,
+        is_verified
+      `)
+      .eq("id", facilityRecord.id)
+      .single();
+    if (facilityData) setFacility(facilityData as FacilityProfile);
 
+    // 4. Load departments for this facility
+    const { data: departmentsData } = await supabase
+      .from("departments")
+      .select(`
+        id,
+        facility_id,
+        name,
+        description,
+        head_doctor_id,
+        services,
+        equipment,
+        bed_capacity,
+        available_beds,
+        is_active
+      `)
+      .eq("facility_id", facilityRecord.id);
+
+    // 5. Load appointments with necessary fields
     const { data: appointmentsData } = await supabase
       .from("appointments")
-      .select(`id, appointment_date, appointment_time, type, status, patient_id`)
-      .eq("facility_id", facilityRecord.facility_id)
+      .select(`
+        id,
+        type,
+        status,
+        patient_id,
+        department_id
+      `)
+      .eq("facility_id", facilityRecord.id)
+      .order("appointment_date", { ascending: false })
       .limit(10);
 
-    const { data: docsData } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("appointment_id", appointmentId)
-      .order("created_at", { ascending: false });
-    if (docsData) setDocuments(docsData);
-
-    if (appointmentsData) {
-      const formatted = appointmentsData.map((apt: any) => ({
+    // 6. Enrich appointments with department names
+    const formattedAppointments: Appointment[] = (appointmentsData || []).map((apt: any) => {
+      const department = departmentsData?.find((d: any) => d.id === apt.department_id);
+      return {
         id: apt.id,
         appointment_date: apt.appointment_date,
         appointment_time: apt.appointment_time,
         type: apt.type,
         status: apt.status,
-        department: "N/A",
+        department_id: apt.department_id,
+        department_name: department?.name || "N/A",
         doctor_name: "N/A",
-        doctor_specialty: facilityRecord.medical_speciality,
-      }));
-      setAppointments(formatted);
-    }
+        doctor_specialty: "General",
+      };
+    });
 
+    // 7. Load documents (optional)
+    const { data: docsData } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("owner_id", facilityRecord.id)
+      .order("created_at", { ascending: false });
+    if (docsData) setDocuments(docsData);
+
+    // 8. Get ward and bed counts for stats
     const { count: wardCount } = await supabase
       .from("wards")
       .select("*", { count: "exact", head: true })
@@ -3030,18 +3066,256 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
       .from("beds")
       .select("*", { count: "exact", head: true })
       .eq("facility_id", facilityRecord.id);
-    setAppointments([{
-      id: "stats",
-      appointment_date: "",
-      appointment_time: "",
-      type: "stats",
-      status: "",
-      department: `Wards: ${wardCount || 0}`,
-      doctor_name: `Beds: ${bedCount || 0}`,
-      doctor_specialty: "",
-    }] as any);
-  };
 
+    // 9. Set appointments including a stats row (using a placeholder appointment)
+    setAppointments([
+      ...formattedAppointments,
+      {
+        id: "stats",
+        appointment_date: "",
+        type: "stats",
+        status: "",
+        department_id: undefined,
+        department_name: `Wards: ${wardCount || 0}`,
+        doctor_name: `Beds: ${bedCount || 0}`,
+        doctor_specialty: "",
+      } as any, // cast to any because it's not a real appointment
+    ]);
+
+  } catch (error) {
+    console.error("Facility Load Error:", error);
+  }
+};
+
+  // const loadFacilityData = async (facilityRecord: any) => {
+  //   setFacility(facilityRecord);
+  //   const { data: profileData } = await supabase
+  //     .from("profiles")
+  //     .select("*")
+  //     .eq("user_id", facilityRecord.user_id)
+  //     .single();
+  //   setDoctorProfile(profileData);
+
+  //   if (facilityRecord.facility_id) {
+  //     const { data: facilityData } = await supabase
+  //       .from("facilities")
+  //       .select(`
+  //         id, facility_name, facility_type, address, rating, total_reviews, about_facility,
+  //         number_of_staffs, number_of_departments, is_verified,
+  //         departments (id, facility_id, name, description, head_doctor_id, services, equipment, bed_capacity, available_beds, is_active)
+  //       `)
+  //       .eq("id", facilityRecord.facility_id)
+  //       .single();
+  //     if (facilityData) {
+  //       setFacility({
+  //         ...facilityData,
+  //         departments: facilityData.departments || [],
+  //       } as FacilityProfile);
+  //     }
+  //   }
+
+  //   const { data: appointmentsData } = await supabase
+  //     .from("appointments")
+  //     .select(`id, appointment_date, appointment_time, type, status, patient_id`)
+  //     .eq("facility_id", facilityRecord.facility_id)
+  //     .limit(10);
+
+  //   const { data: docsData } = await supabase
+  //     .from("documents")
+  //     .select("*")
+  //     .eq("appointment_id", appointmentId)
+  //     .order("created_at", { ascending: false });
+  //   if (docsData) setDocuments(docsData);
+
+  //   if (appointmentsData) {
+  //     const formatted = appointmentsData.map((apt: any) => ({
+  //       id: apt.id,
+  //       appointment_date: apt.appointment_date,
+  //       appointment_time: apt.appointment_time,
+  //       type: apt.type,
+  //       status: apt.status,
+  //       department: "N/A",
+  //       doctor_name: "N/A",
+  //       doctor_specialty: facilityRecord.medical_speciality,
+  //     }));
+  //     setAppointments(formatted);
+  //   }
+
+  //   const { count: wardCount } = await supabase
+  //     .from("wards")
+  //     .select("*", { count: "exact", head: true })
+  //     .eq("facility_id", facilityRecord.id);
+  //   const { count: bedCount } = await supabase
+  //     .from("beds")
+  //     .select("*", { count: "exact", head: true })
+  //     .eq("facility_id", facilityRecord.id);
+  //   setAppointments([{
+  //     id: "stats",
+  //     appointment_date: "",
+  //     appointment_time: "",
+  //     type: "stats",
+  //     status: "",
+  //     department: `Wards: ${wardCount || 0}`,
+  //     doctor_name: `Beds: ${bedCount || 0}`,
+  //     doctor_specialty: "",
+  //   }] as any);
+  // };
+// const loadFacilityData = async (facilityRecord: any) => {
+//   try {
+//     // -------------------------
+//     // 1. Set Base Facility
+//     // -------------------------
+//     setFacility(facilityRecord);
+
+//     // -------------------------
+//     // 2. Load Admin Profile
+//     // -------------------------
+//     const { data: profileData } = await supabase
+//       .from("profiles")
+//       .select("*")
+//       .eq("user_id", facilityRecord.admin_user_id)
+//       .single();
+
+//     if (profileData) setDoctorProfile(profileData);
+
+
+//     // -------------------------
+//     // 3. Load Facility Details
+//     // -------------------------
+//     const { data: facilityData } = await supabase
+//       .from("facilities")
+//       .select(`
+//         id,
+//         facility_name,
+//         facility_type,
+//         address,
+//         rating,
+//         license_number,
+//         total_reviews,
+//         about_facility,
+//         number_of_staffs,
+//         number_of_departments,
+//         is_verified
+//       `)
+//       .eq("id", facilityRecord.id)
+//       .single();
+
+//     if (facilityData) {
+//       setFacility(facilityData as FacilityProfile);
+//     }
+
+
+//     // -------------------------
+//     // 4. Load Departments
+//     // -------------------------
+//     const { data: departmentData } = await supabase
+//       .from("departments")
+//       .select(`
+//         id,
+//         facility_id,
+//         name,
+//         description,
+//         head_doctor_id,
+//         services,
+//         equipment,
+//         bed_capacity,
+//         available_beds,
+//         is_active
+//       `)
+//       .eq("facility_id", facilityRecord.id);
+
+
+//     // -------------------------
+//     // 5. Load Appointments
+//     // -------------------------
+//     const { data: appointmentsData } = await supabase
+//       .from("appointments")
+//       .select(`
+//         id,
+//         type,
+//         status,
+//         patient_id,
+//         department_id
+//       `)
+//       .eq("facility_id", facilityRecord.id)
+//       .limit(10);
+
+
+//     let formattedAppointments: any[] = [];
+
+//     if (appointmentsData) {
+//       formattedAppointments = appointmentsData.map((apt: any) => {
+
+//         const department =
+//           departmentData?.find(
+//             (dept: any) => dept.id === apt.department_id
+//           ) || null;
+
+//         return {
+//           id: apt.id,
+//           appointment_date: apt.appointment_date,
+//           appointment_time: apt.appointment_time,
+//           type: apt.type,
+//           status: apt.status,
+//           department: department, // FIXED
+//           doctor_name: "N/A",
+//           doctor_specialty: facilityRecord.medical_speciality || "General",
+//         };
+//       });
+//     }
+
+
+//     // -------------------------
+//     // 6. Load Documents
+//     // -------------------------
+//     const { data: docsData } = await supabase
+//       .from("documents")
+//       .select("*")
+//       .eq("facility_id", facilityRecord.id)
+//       .order("created_at", { ascending: false });
+
+//     if (docsData) setDocuments(docsData);
+
+
+//     // -------------------------
+//     // 7. Load Ward Count
+//     // -------------------------
+//     const { count: wardCount } = await supabase
+//       .from("wards")
+//       .select("*", { count: "exact", head: true })
+//       .eq("facility_id", facilityRecord.id);
+
+
+//     // -------------------------
+//     // 8. Load Bed Count
+//     // -------------------------
+//     const { count: bedCount } = await supabase
+//       .from("beds")
+//       .select("*", { count: "exact", head: true })
+//       .eq("facility_id", facilityRecord.id);
+
+
+//     // -------------------------
+//     // 9. Set Appointments
+//     // -------------------------
+//     setAppointments([
+//       ...formattedAppointments,
+//       {
+//         id: "stats",
+//         appointment_date: "",
+//         appointment_time: "",
+//         type: "stats",
+//         status: "",
+//         department: null,
+//         doctor_name: `Beds: ${bedCount || 0}`,
+//         doctor_specialty: `Wards: ${wardCount || 0}`,
+//       }
+//     ]);
+
+//   } catch (error) {
+//     console.error("Facility Load Error:", error);
+//   }
+// };
   const fetchData = async () => {
     if (!Id) return;
     try {
@@ -3137,7 +3411,25 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
-
+useEffect(() => {
+  const fetchDepartmentInfo = async () => {
+    if (currentAppointment?.department_id) {
+      const { data, error } = await supabase
+        .from("departments")
+        .select("*")
+        .eq("id", currentAppointment.department_id)
+        .single();
+      if (!error && data) {
+        setDepartmentInfo(data);
+      } else {
+        setDepartmentInfo(null);
+      }
+    } else {
+      setDepartmentInfo(null);
+    }
+  };
+  fetchDepartmentInfo();
+}, [currentAppointment?.department_id]);
   useEffect(() => {
     const checkPayment = async () => {
       if (!appointmentId) return;
@@ -3191,11 +3483,18 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
       toast({ title: "Not a Teleconsultation", description: "Video is only available for teleconsultation appointments", variant: "destructive" });
       return;
     }
+      setJoiningVideo(true);
+  try {
+
     const participantName = userRole === "patient" && patient
       ? `${patient.first_name} ${patient.last_name}`
       : userRole === "doctor" && doctorProfile
       ? `Dr. ${doctorProfile.first_name} ${doctorProfile.last_name}`
-      : "Participant";
+      : "";
+      
+       if (userRole === "doctor") {
+      handleJoinMeeting(); // fire-and-forget
+    }
     setVideoMeeting({
       showMeeting: true,
       meetingId: appointment.video_room_id,
@@ -3203,6 +3502,12 @@ const [consultationFee, setConsultationFee] = useState<string>("false");
       appointmentId: appointment.id,
       userRole,
     });
+    } catch (error) {
+    console.error("Error joining video meeting:", error);
+    toast({ title: "Error", description: "Failed to start video meeting", variant: "destructive" });
+  } finally {
+    setJoiningVideo(false);
+  }
   };
 
   if (videoMeeting.showMeeting) {
@@ -3621,11 +3926,12 @@ const handleConfirmCompletion = () => {
               <TimerDisplay seconds={timeLeft} />
             </div>
           )}
+          {userRole === "doctor"&&(
           <Button variant="doctor" 
           onClick={() => setIsDialogOpen(true)} 
             disabled={isCompleted || isCancelled}>
             Confired your Appointment
-          </Button>
+          </Button>)}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -3701,7 +4007,7 @@ const handleConfirmCompletion = () => {
     <p className="text-xs text-muted-foreground mb-2">Add medical reports, prescriptions, lab reports, or other documents</p>
     <p className="text-[11px] text-gray-500">Supported formats: PDF, PNG, JPG, JPEG</p>
     {/* {isPending && <PendingOverlay />} */}
-    {(isPending || !currentAppointment?.document_requested) && <PatientPendingOverlay />}
+    {(isPending || !currentAppointment?.document_requested)  && userRole === "doctor" &&  <PatientPendingOverlay />}
   </CardContent>
 </Card>
 
@@ -3734,7 +4040,7 @@ const handleConfirmCompletion = () => {
                 </Card>
               )} */}
 {/* Request Payment Card - always shown for doctor, overlay when pending */}
-{userRole === "doctor" && (
+{userRole === "doctor" &&(
   <Card className="relative bg-amber-50/40 border-amber-100">
    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
@@ -3783,8 +4089,10 @@ const handleConfirmCompletion = () => {
                     <CardDescription>Scheduled on {new Date(currentAppointment.appointment_date).toLocaleDateString()}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button onClick={() => { handleJoinVideo(currentAppointment, "doctor"); handleJoinMeeting(); }} className="w-full">
-                      <Video className="mr-2 h-4 w-4" /> Start Tele Consultation
+                    <Button onClick={() => { handleJoinVideo(currentAppointment, "doctor"); handleJoinMeeting(); }} disabled={joiningVideo} className="w-full">
+                      {/* <Video className="mr-2 h-4 w-4" /> Start Tele Consultation */}
+                      {joiningVideo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
+  {joiningVideo ? "Starting..." : "Start Tele Consultation"}
                     </Button>
                     <div className="flex gap-2">
                       <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
@@ -3874,7 +4182,7 @@ const handleConfirmCompletion = () => {
                   )}
                 </CardContent>
                    {/* {isPending && <PendingOverlay />} */}
-                       {(isPending || !currentAppointment?.document_requested) && <PatientPendingOverlay />}
+                       {isPending }
 
               </Card>
             {/* )} */}
@@ -4431,32 +4739,160 @@ const handleConfirmCompletion = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-6">
-            <Card className="border-0 shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3"><CardTitle className="text-white flex items-center gap-2"><Calendar className="h-5 w-5" /> Facility Information</CardTitle></div>
-              <CardContent className="p-6 space-y-3 bg-white dark:bg-slate-800">
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Facility Name</span><span className="text-gray-900">{facility.facility_name}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Type</span><span className="text-gray-900 capitalize">{facility.facility_type}</span></div>
-                <div className="flex justify-between items-center"><span className="font-medium text-gray-600">Reviews</span><Badge variant="outline" className="capitalize bg-green-50 text-green-700">{facility.rating} ⭐ ({facility.total_reviews} reviews)</Badge></div>
-                {facility.is_verified && <Badge variant="outline" className="bg-purple-50 text-purple-700">✓ Verified</Badge>}
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Building className="h-5 w-5" /> Facility Information
+              </CardTitle>
+            </div>
+            <CardContent className="p-6 space-y-3 bg-white dark:bg-slate-800">
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Facility Name</span>
+                <span className="text-gray-900">{facility.facility_name}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Type</span>
+                <span className="text-gray-900 capitalize">{facility.facility_type}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-600">Reviews</span>
+                <Badge variant="outline" className="bg-green-50 text-green-700">
+                  {facility.rating} ⭐ ({facility.total_reviews} reviews)
+                </Badge>
+              </div>
+              {facility.is_verified && (
+                <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                  ✓ Verified
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Building className="h-5 w-5" /> Facility Details
+              </CardTitle>
+            </div>
+            <CardContent className="p-6 space-y-3 bg-white dark:bg-slate-800">
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">License Number</span>
+                <span className="text-gray-900">{facility.license_number}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Email</span>
+                <span className="text-gray-900">{doctorProfile?.email || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Phone</span>
+                <span className="text-gray-900">{doctorProfile?.phone_number || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Staff Count</span>
+                <span className="text-gray-900">{facility.number_of_staffs || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Departments</span>
+                <span className="text-gray-900">{facility.number_of_departments || "N/A"}</span>
+              </div>
+              {facility.address && (
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-600">Address</span>
+                  <span className="text-gray-900 text-right">
+                    {facility.address}, {facility.city}, {facility.state}, {facility.country_code} {facility.pin_code}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {facility.about_facility && (
+            <Card>
+              <CardHeader>
+                <CardTitle>About</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{facility.about_facility}</p>
               </CardContent>
             </Card>
+          )}
 
+          {/* Department Information Card - only if department exists for this appointment */}
+          {departmentInfo && (
+  <Card className="border-0 shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <ClipboardList className="h-5 w-5" /> Department Information
+      </CardTitle>
+      <CardDescription className="text-amber-100">
+        Details of the department handling this appointment
+      </CardDescription>
+    </div>
+    <CardContent className="p-6 space-y-3 bg-white dark:bg-slate-800">
+      <div className="flex justify-between border-b pb-2">
+        <span className="font-medium text-gray-600">Department Name</span>
+        <span className="text-gray-900">{departmentInfo.name}</span>
+      </div>
+      {departmentInfo.description && (
+        <div className="flex justify-between border-b pb-2">
+          <span className="font-medium text-gray-600">Description</span>
+          <span className="text-gray-900 text-right">{departmentInfo.description}</span>
+        </div>
+      )}
+      {departmentInfo.head_doctor_id && (
+        <div className="flex justify-between border-b pb-2">
+          <span className="font-medium text-gray-600">Head Doctor ID</span>
+          <span className="text-gray-900">{departmentInfo.head_doctor_id}</span>
+        </div>
+      )}
+      <div className="flex justify-between border-b pb-2">
+        <span className="font-medium text-gray-600">Bed Capacity</span>
+        <span className="text-gray-900">{departmentInfo.bed_capacity ?? "N/A"}</span>
+      </div>
+      <div className="flex justify-between border-b pb-2">
+        <span className="font-medium text-gray-600">Available Beds</span>
+        <span className="text-gray-900">{departmentInfo.available_beds ?? "N/A"}</span>
+      </div>
+      <div className="flex justify-between">
+        <span className="font-medium text-gray-600">Staff Count</span>
+        <span className="text-gray-900">{departmentInfo.staff_count ?? "N/A"}</span>
+      </div>
+    </CardContent>
+  </Card>
+)}
+          {currentAppointment && (
             <Card className="border-0 shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3"><CardTitle className="text-white flex items-center gap-2"><Stethoscope className="h-5 w-5" /> Facility Details</CardTitle></div>
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Calendar className="h-5 w-5" /> Appointment Summary
+                </CardTitle>
+              </div>
               <CardContent className="p-6 space-y-3 bg-white dark:bg-slate-800">
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">License Number</span><span className="text-gray-900">{facility.license_number}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Email</span><span className="text-gray-900">{facility.email}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Phone</span><span className="text-gray-900">{facility.phone_number}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Staff Count:</span><span className="text-gray-900">{facility.number_of_staffs || "N/A"}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="font-medium text-gray-600">Departments:</span><span className="text-gray-900">{facility.number_of_departments || "N/A"}</span></div>
-                {facility.address && <div className="flex justify-between"><span className="font-medium text-gray-600">Address</span><span className="text-gray-900 text-right">{facility.address}, {facility.city}, {facility.state},{facility.country_code} {facility.pin_code}</span></div>}
+                <div className="flex justify-between border-b pb-2">
+                  <span className="font-medium text-gray-600">Date & Time</span>
+                  <span className="text-gray-900">{new Date(currentAppointment.appointment_date).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="font-medium text-gray-600">Type</span>
+                  <span className="text-gray-900 capitalize">{currentAppointment.type}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="font-medium text-gray-600">Status</span>
+                  <Badge variant="outline" className="capitalize bg-green-50 text-green-700">
+                    {currentAppointment.status}
+                  </Badge>
+                </div>
+                {currentAppointment.doctor_name && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="font-medium text-gray-600">Doctor</span>
+                    <span className="text-gray-900">{currentAppointment.doctor_name}</span>
+                  </div>
+                )}
+                
               </CardContent>
             </Card>
-
-            {facility.about_facility && (
-              <Card><CardHeader><CardTitle>About</CardTitle></CardHeader><CardContent><p>{facility.about_facility}</p></CardContent></Card>
-            )}
-          </div>
+          )}
+        </div>
 
           <div className="space-y-6">
             {/* {currentAppointment?.document_requested === true && !isPending && ( */}

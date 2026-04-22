@@ -1479,10 +1479,23 @@ setAutoEmail(result?.email);
     <Button
   variant="success"
   className="rounded-pill px-4"
-  onClick={() => {
+  // onClick={() => {
+  //   setShowSuccessModal(false);
+  //   navigate("/dashboard/facility/my-bills", {
+  //     state: { email: autoEmail  }
+  //   });
+  // }}
+
+    onClick={() => {
     setShowSuccessModal(false);
-    navigate("/dashboard/facility/my-bills", {
-      state: { email: autoEmail  }
+
+    const route =
+      userRole === "hospital_admin"
+        ? "/dashboard/facility/my-bills"
+        : "/dashboard/staff/billing";
+
+    navigate(route, {
+      state: { email: autoEmail }
     });
   }}
 >

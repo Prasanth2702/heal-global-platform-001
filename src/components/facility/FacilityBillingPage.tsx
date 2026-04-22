@@ -1207,13 +1207,14 @@ import {
   Building2,
   CreditCard,
   CalendarDays,
+  Eye,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/useUser";
 import { Modal } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // ======================== TYPES (unchanged) ========================
 interface Patient {
@@ -1265,7 +1266,7 @@ interface PatientWithTotal extends Patient {
 const FacilityBillingPage = () => {
   const { user } = useUser();
   const { toast } = useToast();
-
+const navigate =useNavigate();
   // Core state (exactly as before)
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -1769,7 +1770,23 @@ const fetchPatientBills = async (patientId: string) => {
   setSearchTerm("");
   setSelectedPatient(null);
 };
+const onView = (patient: PatientWithTotal) => {
+  console.log("Patient ID:", patient.id);
+  console.log("Facility ID:", facilityId);
 
+  // Example navigation
+  navigate("/dashboard/facility/billing-system", {
+  state: {
+    userId: patient.id,
+    facilityId: facilityId,
+  },
+});
+
+  toast({
+    title: "View Bill",
+    description: `Patient ID: ${patient.id}`,
+  });
+};
   // ======================== RENDER VIEWS (Redesigned) ========================
 
   const renderHistoryView = () => (
@@ -1794,6 +1811,7 @@ const fetchPatientBills = async (patientId: string) => {
                   <th>Amount (₹)</th>
                   <th>Status</th>
                   <th className="pe-3">Payment Method</th>
+                  <th className="pe-3">View</th>
                 </tr>
               </thead>
               <tbody>
@@ -1810,6 +1828,16 @@ const fetchPatientBills = async (patientId: string) => {
                       )}
                     </td>
                     <td className="pe-3">{p.payment_method || ""}</td>
+                    <td>
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={() => onView(p)}
+              >
+                <Eye className="me-1" />
+                View Details
+              </Button>
+            </td>
                   </tr>
                 ))}
               </tbody>

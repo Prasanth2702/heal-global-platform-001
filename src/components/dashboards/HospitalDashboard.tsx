@@ -228,7 +228,7 @@ useEffect(() => {
   else if (path.includes('/inventory')) setActiveTab('inventory');
   else if (path.includes('/facilitics')) setActiveTab('facilitics');
   else if (path.includes('/appointments')) setActiveTab('appointments');
-  else if (path.includes('/billing-item')) setActiveTab('new-billing');
+  // else if (path.includes('/billing-item')) setActiveTab('new-billing');
   else setActiveTab('overview');
 }, [location.pathname]);
 
@@ -322,10 +322,10 @@ return (
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Appointments</span>
           </TabsTrigger>
-          <TabsTrigger value="new-billing" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
+          {/* <TabsTrigger value="new-billing" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Billing Item</span>
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
@@ -381,7 +381,7 @@ return (
             <Calendar1 className="h-4 w-4 mr-1" />
             <span>Appointments</span>
           </Button>
-          <Button
+          {/* <Button
             variant={activeTab === "new-billing" ? "default" : "outline"}
             size="sm"
             className="w-full py-2"
@@ -389,7 +389,7 @@ return (
           >
             <Calendar1 className="h-4 w-4 mr-1" />
             <span>New Billing</span>
-          </Button>
+          </Button> */}
           <Button
             variant={activeTab === "profile" ? "default" : "outline"}
             size="sm"
@@ -487,9 +487,9 @@ return (
         <TabsContent value="appointments">
           <FacilityAppointmentManagement />
         </TabsContent>
-        <TabsContent value="new-billing">
+        {/* <TabsContent value="new-billing">
           <CreateBilling />
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Time Slots Tab */}
         <TabsContent value="timeslots">

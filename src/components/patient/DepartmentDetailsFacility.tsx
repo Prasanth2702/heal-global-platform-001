@@ -299,8 +299,8 @@ setLoadingAvailability(true);
   };
 
   const formatDayLabel = (date: Date, index: number) => {
-    if (index === 0) return "Today";
-    if (index === 1) return "Tomorrow";
+    // if (index === 0) return "Today";
+    if (index === 0) return "Tomorrow";
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
@@ -352,8 +352,9 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
 
     const handleDepartmentBookNow = (slot: TimeSlot, dateIndex: number, department: Department) => {
     const newDate = new Date();
-    newDate.setDate(newDate.getDate() + dateIndex);
-
+    // newDate.setDate(newDate.getDate() + dateIndex);
+const dayOffset = dateIndex + 1;
+newDate.setDate(newDate.getDate() + dayOffset);
     const bookingData: BookingInfo = {
       slot_id: slot.id,
       start_time: slot.start_time,
@@ -615,9 +616,11 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                 <>
                                                                   <div className="flex gap-3 overflow-x-auto py-2">
                                                                     {Array.from({ length: 14 }).map((_, index) => {
-                                                                      const date = new Date();
-                                                                      date.setDate(date.getDate() + index);
-                              
+                                                                      // const date = new Date();
+                                                                      // date.setDate(date.getDate() + index);
+                              const dayOffset = index + 1;        // 1 = tomorrow, 2 = day after, ...
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
                                                                       const label = formatDayLabel(date, index);
                                                                       const dayNumber = formatDateNumber(date);
                                                                       const dayOfWeek = date.toLocaleDateString(
@@ -691,9 +694,13 @@ const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
                                                                   <div className="mt-4">
                                                                     {(() => {
                                                                       const selectedDate = new Date();
-                                                                      selectedDate.setDate(
-                                                                        selectedDate.getDate() + selectedDay
-                                                                      );
+                                                                      // selectedDate.setDate(
+                                                                      //   selectedDate.getDate() + selectedDay
+                                                                      // );
+                                                                      const dayOffset = selectedDay + 1;
+selectedDate.setDate(
+  selectedDate.getDate() + dayOffset
+);
                                                                       const selectedISO = selectedDate
                                                                         .toISOString()
                                                                         .split("T")[0];

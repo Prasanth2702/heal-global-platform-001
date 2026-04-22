@@ -27,6 +27,10 @@ const BedBookingRegister = () => {
     special_requirements: [] as string[],
   });
 
+  const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const tomorrowDate = tomorrow.toISOString().split("T")[0];
+
   const specialRequirementsOptions = [
     "Oxygen Required",
     "Ventilator Required",
@@ -486,7 +490,8 @@ const BedBookingRegister = () => {
                   type="date"
                   name="expected_admission_date"
                   required
-                  min={new Date().toISOString().split("T")[0]}
+                  min={tomorrowDate}
+                  // min={new Date().toISOString().split("T")[0]}
                   onChange={handleChange}
                   value={formData.expected_admission_date}
                   className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -500,7 +505,8 @@ const BedBookingRegister = () => {
                 <input
                   type="date"
                   name="expected_discharge_date"
-                  min={formData.expected_admission_date}
+                  // min={formData.expected_admission_date}
+                  min={tomorrowDate}
                   onChange={handleChange}
                   value={formData.expected_discharge_date}
                   className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

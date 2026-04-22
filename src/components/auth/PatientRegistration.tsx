@@ -3474,7 +3474,7 @@ const saveStep1Data = async () => {
               </SelectContent>
             </Select>
             <div className="relative flex-1">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              {/* <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" /> */}
               <Input
                 type="tel"
                 value={emergencyPhoneNumber}

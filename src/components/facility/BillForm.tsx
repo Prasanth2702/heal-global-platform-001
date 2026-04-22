@@ -617,9 +617,6 @@ useEffect(() => {
   discount_reason: discountReason,
   notes,
   created_by: userId,
-   ...(role === "hospital_staff" && {
-    added_by: userId
-  }),
   ...(collectPayment && total > 0 && {
     payment: {
       payment_method: paymentMethod,

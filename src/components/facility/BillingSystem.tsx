@@ -101,9 +101,14 @@ const getUserAndFacility = async () => {
     console.error("Error fetching facility:", error)
   }
 }
-  useEffect(() => {
+//   useEffect(() => {
+//     loadBills()
+//   }, [facilityId])
+useEffect(() => {
+  if (facilityId && role) {
     loadBills()
-  }, [facilityId])
+  }
+}, [facilityId, role])
 
   useEffect(() => {
     loadItems()
@@ -129,11 +134,33 @@ const getUserAndFacility = async () => {
 
   
 
-  const loadBills = async () => {
-      const data = await billingService.getBills(facilityId)
-      setBills(data)
-  }
+//   const loadBills = async () => {
+//       const data = await billingService.getBills(facilityId)
+//       setBills(data)
+//   }
+ const loadBills = async () => {
+  setLoading(true)
 
+  try {
+    let data
+
+    if (role === 'hospital_staff') {
+      data = await billingService.getBillsStaff(
+        facilityId,
+        userId,
+        role
+      )
+    } else {
+      data = await billingService.getBills(facilityId)
+    }
+
+    setBills(data)
+  } catch (error) {
+    console.error('Error loading bills:', error)
+  } finally {
+    setLoading(false)
+  }
+}
   const handleCreateBill = async (billData: any) => {
     setLoading(true)
     try {
@@ -237,7 +264,7 @@ const getUserAndFacility = async () => {
           </div>
 
           <div className="p-6">
-            {activeTab === 'bills' && <BillList facilityId={facilityId} userId={userId}/>}
+            {activeTab === 'bills' && <BillList facilityId={facilityId} userId={userId}  userRole={role}/>}
             {activeTab === 'create' && (
             //   <BillForm 
             //     items={items} 

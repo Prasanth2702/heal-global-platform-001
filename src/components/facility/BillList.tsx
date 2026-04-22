@@ -10,9 +10,10 @@ import { toast, useToast } from '@/hooks/use-toast'
 interface BillListProps {
   facilityId: string
   userId: string
+userRole: string | null
 }
 
-export const BillList: React.FC<BillListProps> = ({ facilityId, userId }) => {
+export const BillList: React.FC<BillListProps> = ({ facilityId, userId , userRole}) => {
   const { toast } = useToast()
     const [bills, setBills] = useState<Bill[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,29 +22,55 @@ export const BillList: React.FC<BillListProps> = ({ facilityId, userId }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-
-  useEffect(() => {
+const [role, setRole] = useState<string | null>(null);
+//   useEffect(() => {
+//     loadBills()
+//   }, [facilityId])
+useEffect(() => {
+  if (facilityId && userRole) {
     loadBills()
-  }, [facilityId])
-
-  const loadBills = async () => {
-    setLoading(true)
-    try {
-      const data = await billingService.getBills(facilityId)
-      setBills(data)
-    } catch (error) {
-    console.error('Error loading bills:', error)
-
-    // toast({
-    //   title: "Error Loading Bills",
-    //   description: error?.message || "Failed to load bills",
-    //   variant: "destructive"
-    // })
-    } finally {
-      setLoading(false)
-    }
   }
+}, [facilityId, userRole])
+//   const loadBills = async () => {
+//     setLoading(true)
+//     try {
+//       const data = await billingService.getBills(facilityId)
+//       setBills(data)
+//     } catch (error) {
+//     console.error('Error loading bills:', error)
 
+//     // toast({
+//     //   title: "Error Loading Bills",
+//     //   description: error?.message || "Failed to load bills",
+//     //   variant: "destructive"
+//     // })
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+const loadBills = async () => {
+  setLoading(true)
+
+  try {
+    let data
+
+    if (userRole === 'hospital_staff') {
+      data = await billingService.getBillsStaff(
+        facilityId,
+        userId,
+        userRole
+      )
+    } else {
+      data = await billingService.getBills(facilityId)
+    }
+
+    setBills(data)
+  } catch (error) {
+    console.error('Error loading bills:', error)
+  } finally {
+    setLoading(false)
+  }
+}
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid': return 'bg-green-100 text-green-800'

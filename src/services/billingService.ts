@@ -918,6 +918,7 @@ export interface Bill {
   payments: PaymentDetail[]
   created_at: string
   updated_at: string
+  created_by: string
 }
 
 export interface CreateBillInput {
@@ -1070,6 +1071,71 @@ private async callEdgeFunction(url: string, body: any) {
     
     return { ...data, patient_info: patientInfo, facility_info: facilityInfo }
   }
+
+//   async getBillsStaff(facilityId: string, userId?: string, userRole?: string): Promise<Bill[]> {
+//   let query = supabase
+//     .from('facility_bill_details_view')
+//     .select('*')
+//     .eq('facility_id', facilityId)
+//     .order('created_at', { ascending: false });
+
+//   // For hospital staff, only show bills they added
+//   if (userRole === 'hospital_staff' && userId) {
+//     query = query.eq('created_by', userId);
+//   }
+
+//   const { data, error } = await query;
+//   if (error) throw error;
+
+//   // Enrich bills with patient and facility info
+//   const enrichedBills = await Promise.all(
+//     (data || []).map(async (bill) => {
+//       const [patientInfo, facilityInfo] = await Promise.all([
+//         this.getPatientInfo(bill.patient_id),
+//         this.getFacilityInfo(bill.facility_id)
+//       ]);
+//       return { ...bill, patient_info: patientInfo, facility_info: facilityInfo };
+//     })
+//   );
+//   return enrichedBills;
+// }
+async getBillsStaff(
+  facilityId: string,
+  userId?: string,
+  userRole?: string
+): Promise<Bill[]> {
+
+  let query = supabase
+    .from('facility_bill_details_view')
+    .select('*')
+    .eq('facility_id', facilityId)
+    .order('created_at', { ascending: false });
+
+  if (userRole === 'hospital_staff' && userId) {
+    query = query.eq('created_by', userId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  const enrichedBills = await Promise.all(
+    (data || []).map(async (bill) => {
+      const [patientInfo, facilityInfo] = await Promise.all([
+        this.getPatientInfo(bill.patient_id),
+        this.getFacilityInfo(bill.facility_id)
+      ]);
+
+      return {
+        ...bill,
+        patient_info: patientInfo,
+        facility_info: facilityInfo
+      };
+    })
+  );
+
+  return enrichedBills;
+}
   async searchPatients(searchTerm: string): Promise<PatientInfo[]> {
   let query = supabase
     .from('profiles')
@@ -1142,6 +1208,7 @@ private async callEdgeFunction(url: string, body: any) {
     if (error) throw error
     return data
   }
+  
 }
 
 export const billingService = new BillingService()

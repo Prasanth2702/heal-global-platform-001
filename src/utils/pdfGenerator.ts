@@ -375,7 +375,7 @@ License : ${facilityInfo?.license_number || ""}
 </div>
 
 <div class="bill-title">
-TAX INVOICE / BILL
+BILL
 </div>
 
 <div class="info-section">
@@ -573,4 +573,8 @@ Computer generated bill — No signature required
 // <div class="info-value">
 // ${patientInfo?.user_id || bill.patient_id}
 // </div>
+// </div>
+
+// <div class="bill-title">
+// TAX INVOICE / BILL
 // </div>

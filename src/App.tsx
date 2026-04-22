@@ -100,6 +100,7 @@ import { BillingSystem } from "./components/facility/BillingSystem";
 import BillingSystemView from "./components/facility/BillingSystemView";
 import { useToast } from "./hooks/use-toast";
 import SetPasswordPage from "./components/auth/SetPasswordPage";
+import LocationPage from "./location/LocationPage";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -408,6 +409,7 @@ const App = () => {
 <Route path="/dashboard/facility/cash-flow-reports" element={<CashFlowReportsView />} />
 <Route path="/set-password" element={<SetPasswordPage />} />
 <Route path="/dashboard/facility/my-bills" element={<BillingSystemView />} />
+<Route path="/location" element={<LocationPage />} />
 {/* <Route path="/dashboard/facility/billing-system" element={<BillingSystemView />} /> */}
 {/* <Route path="/dashboard/facility/billing-system/:userId/:facilityId" element={<BillingSystem />} /> */}
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}

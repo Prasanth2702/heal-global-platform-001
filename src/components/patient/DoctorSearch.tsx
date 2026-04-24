@@ -4130,7 +4130,7 @@
 
 // export default DoctorSearch;
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight, Building2, Users, Search as SearchIcon } from "lucide-react";
@@ -4150,6 +4150,7 @@ import SearchHeader from "./Search/SearchHeader";
 import { Label } from "../ui/label";
 import GooglePlaceSearch from "@/location/GooglePlaceSearch";
 import MapComponent from "@/location/MapComponent";
+import { useGoogleMapsApi } from "@/location/useGoogleMapsApi";
 
 export interface Doctor {
   id: string;
@@ -4256,7 +4257,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [locationFilter, setLocationFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilterTab, setActiveFilterTab] = useState<"doctors" | "hospitals" | "all">("doctors");
-const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
+// const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
   // Data States
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -4284,13 +4285,14 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
   const [hospitalPage, setHospitalPage] = useState(1);
   const DOCTORS_PER_PAGE = 8;
   const HOSPITALS_PER_PAGE = 8;
-
+const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
   // Map & Location States
   const [selectedLocation, setSelectedLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [nearbyHospitals, setNearbyHospitals] = useState<any[]>([]);
   const [showNearby, setShowNearby] = useState(false);
+
 
   // Data Arrays for SearchHeader
   const doctorSpecialties = [
@@ -4334,22 +4336,56 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
   };
 
   // Geolocation & Places API
+  // const detectCurrentLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         setSelectedLocation({
+  //           lat: position.coords.latitude,
+  //           lng: position.coords.longitude,
+  //         });
+  //          setSelectedLocation(newLocation); // ✅ correct
+  //       setHasSelectedLocation(true); // ✅ important
+  //         toast({ title: "Location Updated", description: "Map centered on your current location" });
+  //       },
+  //       () => toast({ title: "Location Access Denied", description: "Please enable location services", variant: "destructive" })
+  //     );
+  //   } else {
+  //     toast({ title: "Not Supported", description: "Geolocation not supported", variant: "destructive" });
+  //   }
+  // };
   const detectCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setSelectedLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          toast({ title: "Location Updated", description: "Map centered on your current location" });
-        },
-        () => toast({ title: "Location Access Denied", description: "Please enable location services", variant: "destructive" })
-      );
-    } else {
-      toast({ title: "Not Supported", description: "Geolocation not supported", variant: "destructive" });
-    }
-  };
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+
+        setSelectedLocation(newLocation); // ✅ correct
+        setHasSelectedLocation(true);     // ✅ keep this
+
+        toast({
+          title: "Location Updated",
+          description: "Map centered on your current location",
+        });
+      },
+      () =>
+        toast({
+          title: "Location Access Denied",
+          description: "Please enable location services",
+          variant: "destructive",
+        })
+    );
+  } else {
+    toast({
+      title: "Not Supported",
+      description: "Geolocation not supported",
+      variant: "destructive",
+    });
+  }
+};
 
   const searchNearbyHospitalsWithPlaces = () => {
     const mapDiv = document.createElement("div");
@@ -4371,6 +4407,7 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
       }
     });
   };
+
 
   // Data Fetching
   const fetchDoctors = async () => {
@@ -4450,6 +4487,11 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
       console.error("Error fetching facilities:", error);
     }
   };
+
+  const handleLocationChange = (location: LatLng) => {
+  setSelectedLocation(location);
+  setHasSelectedLocation(true);
+};
 
   // Filtered data
   const filteredDoctors = doctors.filter((doctor) => {
@@ -4937,10 +4979,10 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
           </Button>
         )}
       </div>
-      <div className="w-full mb-6">
+
+      {/* <div className="w-full mb-6">
   <div className="grid grid-cols-2 border rounded-lg overflow-hidden">
     
-    {/* Search Form Tab */}
     <button
       onClick={() => setTab("search-form")}
       className={`py-3 text-center font-semibold transition ${
@@ -4952,7 +4994,6 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
       🔍 Search Form
     </button>
 
-    {/* Google Map Tab */}
     <button
       onClick={() => setTab("search-google")}
       className={`py-3 text-center font-semibold transition ${
@@ -4965,10 +5006,11 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
     </button>
 
   </div>
-</div>
+</div> */}
 
     
-{tab ==="search-form" &&(    <SearchHeader
+{/* {tab ==="search-form" &&( */}
+      {/* <SearchHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         locationFilter={locationFilter}
@@ -4976,7 +5018,7 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
         selectedSpecialty={selectedSpecialty}
         setSelectedSpecialty={setSelectedSpecialty}
         activeFilterTab={activeFilterTab}
-        // setActiveFilterTab={setActiveFilterTab}
+        setActiveFilterTab={setActiveFilterTab}
         setActiveFilterTab={handleSetActiveFilterTab}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
@@ -4989,37 +5031,73 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
         setFacilityType={setFacilityType}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-      />
-)}
-{tab === "search-google" && (
-  <>
+        setSelectedLocation={setSelectedLocation} 
+      /> */}
+{/* )} */}
+{/* {tab === "search-google" && (
+  <> */}
+      {/* <label className="block text-sm font-medium mb-1">Search Google Map Location  ({activeFilterTab === "doctors" ? "please search Doctor Location " :
+           activeFilterTab === "hospitals" ? "please Search Facility name " : ""})
+           </label>*/}
 
-      <GooglePlaceSearch setSelectedLocation={setSelectedLocation} />
+     <GooglePlaceSearch setSelectedLocation={setSelectedLocation} />
 
-      {/* Map Section */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold">Location Map</h3>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={detectCurrentLocation}>
-              📍 My Location
-            </Button>
-            {activeFilterTab === "hospitals" && (
-              <Button variant="outline" size="sm" onClick={searchNearbyHospitalsWithPlaces}>
-                🏥 Nearby Hospitals (Google)
-              </Button>
-            )}
-          </div>
-        </div>
-        <MapComponent
-          selectedLocation={selectedLocation}
-          doctors={filteredDoctors}
-          facilities={combinedFacilities}
-          activeTab={activeFilterTab}
-        />
-      </div>
-      </>
-)}
+<div className="mb-6">
+
+  {/* ✅ CONDITION TEXT */}
+  {/* <div className="mb-3">
+    {selectedLocation && (
+      <p className="text-sm text-gray-600">
+        📍 Showing results near selected location
+      </p>
+    )}
+
+    {activeFilterTab === "doctors" && (
+      <p className="text-blue-600 font-medium">
+        👨‍⚕️ Doctors near selected location
+      </p>
+    )}
+
+    {activeFilterTab === "hospitals" && (
+      <p className="text-green-600 font-medium">
+        🏥 Hospitals near selected location
+      </p>
+    )}
+
+    {showNearby && (
+      <p className="text-purple-600 font-medium">
+        🔍 Showing nearby hospitals from Google Places
+      </p>
+    )}
+  </div> */}
+  {/* HEADER */}
+  <div className="flex justify-between items-center mb-3">
+    <h3 className="text-lg font-semibold">Location Map</h3>
+
+    <div className="flex gap-2">
+      {/* <Button variant="outline" size="sm" onClick={detectCurrentLocation}>
+        📍 My Location
+      </Button> */}
+
+      {activeFilterTab === "hospitals" && (
+        <Button variant="outline" size="sm" onClick={searchNearbyHospitalsWithPlaces}>
+          🏥 Nearby Hospitals (Google)
+        </Button>
+      )}
+    </div>
+  </div>
+
+  {/* MAP */}
+  
+  <MapComponent
+    selectedLocation={selectedLocation}
+    doctors={filteredDoctors}
+    facilities={combinedFacilities}
+    activeTab={activeFilterTab}
+  />
+</div>
+      {/* </> */}
+{/* // )} */}
       {/* Results Count */}
       <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
         <h3 className="text-lg font-semibold">
@@ -5129,6 +5207,7 @@ const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
     )}
   </div>
 )} */}
+
        {activeFilterTab !== "hospitals" && renderDoctorsSection()}
      {activeFilterTab !== "doctors" && renderHospitalsSection()}
 

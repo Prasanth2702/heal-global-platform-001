@@ -36,7 +36,7 @@ const LocationPage = () => {
   return (
     <div>
       <GooglePlaceSearch setSelectedLocation={setSelectedLocation} />
-      <MapComponent selectedLocation={selectedLocation} />
+      {/* <MapComponent selectedLocation={selectedLocation} /> */}
     </div>
   );
 };

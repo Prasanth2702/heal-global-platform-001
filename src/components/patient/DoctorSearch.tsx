@@ -4256,7 +4256,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [locationFilter, setLocationFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilterTab, setActiveFilterTab] = useState<"doctors" | "hospitals" | "all">("doctors");
-
+const [tab, setTab] = useState<"search-form" | "search-google">("search-form");
   // Data States
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -4937,8 +4937,38 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
           </Button>
         )}
       </div>
+      <div className="w-full mb-6">
+  <div className="grid grid-cols-2 border rounded-lg overflow-hidden">
+    
+    {/* Search Form Tab */}
+    <button
+      onClick={() => setTab("search-form")}
+      className={`py-3 text-center font-semibold transition ${
+        tab === "search-form"
+          ? "bg-blue-600 text-white"
+          : "bg-white text-gray-600 hover:bg-gray-100"
+      }`}
+    >
+      🔍 Search Form
+    </button>
 
-      <SearchHeader
+    {/* Google Map Tab */}
+    <button
+      onClick={() => setTab("search-google")}
+      className={`py-3 text-center font-semibold transition ${
+        tab === "search-google"
+          ? "bg-green-600 text-white"
+          : "bg-white text-gray-600 hover:bg-gray-100"
+      }`}
+    >
+      🗺️ Google Map
+    </button>
+
+  </div>
+</div>
+
+    
+{tab ==="search-form" &&(    <SearchHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         locationFilter={locationFilter}
@@ -4960,6 +4990,9 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
       />
+)}
+{tab === "search-google" && (
+  <>
 
       <GooglePlaceSearch setSelectedLocation={setSelectedLocation} />
 
@@ -4985,7 +5018,8 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
           activeTab={activeFilterTab}
         />
       </div>
-
+      </>
+)}
       {/* Results Count */}
       <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
         <h3 className="text-lg font-semibold">

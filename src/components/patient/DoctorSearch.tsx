@@ -4292,6 +4292,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [selectedLocation, setSelectedLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [nearbyHospitals, setNearbyHospitals] = useState<any[]>([]);
   const [showNearby, setShowNearby] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
 
   // Data Arrays for SearchHeader
@@ -5002,9 +5003,13 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
            activeFilterTab === "hospitals" ? "please Search Facility name " : ""})
       </label>*/}
 
-      <GooglePlaceSearch setSelectedLocation={setSelectedLocation} /> 
+      <GooglePlaceSearch  setSelectedLocation={(location) => {
+    setSelectedLocation(location);
+    setShowMap(true);
+  }}/> 
 
       {/* Map Section */}
+      {showMap && (
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-semibold">Location Map</h3>
@@ -5026,6 +5031,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
           activeTab={activeFilterTab}
         />
       </div>
+      )}
       {/* </> */}
 {/* // )} */}
       {/* Results Count */}

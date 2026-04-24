@@ -602,7 +602,7 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
       setSelectedLetter('a');
     } else if (url && !conditionsData[url.toLowerCase()]) {
       // Invalid letter, redirect to /library
-      navigate('/library', { replace: true });
+      navigate('/conditions', { replace: true });
     }
   }, [url, navigate]);
 
@@ -610,7 +610,7 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
     if (conditionsData[letter]) {
       setSelectedLetter(letter);
       setSearchQuery('');
-      navigate(`/library/${letter}`); // Update URL
+      navigate(`/conditions/${letter}`); // Update URL
     }
   };
   const displayedConditions = useMemo(() => {
@@ -709,14 +709,14 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
       {/* Your Personal Health Portal Section - Image Left + Text Right + Alphabet Tabs */}
       <div className="container my-5">
         <div className="row align-items-center g-4 mb-5">
-          <div className="col-md-5 text-center text-md-start">
+          {/* <div className="col-md-5 text-center text-md-start">
             <img
               src={logoMedicalLibrary}
               alt="Health portal illustration"
               className="img-fluid rounded-4 shadow-lg"
               style={{ maxHeight: '300px', objectFit: 'contain' }}
             />
-          </div>
+          </div> */}
           <div className="col-md-7">
             <h2 className="fw-bold display-6">Your personal health portal</h2>
             <p className="text-muted fs-5 mb-3">Access our symptom assessment 24/7.</p>

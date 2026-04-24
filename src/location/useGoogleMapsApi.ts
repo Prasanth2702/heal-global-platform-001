@@ -15,15 +15,12 @@ export function useGoogleMapsApi(apiKey: string, libraries: string[] = ["places"
     if (!loadingPromise) {
       loadingPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(",")}&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(",")}`;
         script.async = true;
         script.defer = true;
 
         // Global callback
-        (window as any).initMap = () => {
-          delete (window as any).initMap;
-          resolve();
-        };
+       script.onload = () => resolve();
 
         script.onerror = (err) => reject(err);
         document.head.appendChild(script);

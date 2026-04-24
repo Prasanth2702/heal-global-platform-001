@@ -643,9 +643,9 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
             <div className="col-lg-8 text-center">
               <h1 className="display-4 fw-bold mb-4">Medical Library</h1>
               <p className="lead mb-4">
-                The right health information leads to the right health actions. This library is stocked with tips that can help you stay well and facts about medical conditions. Just like Ada, everything you'll learn here is based on our doctors' clinical experience and the latest research.
+                The right health information leads to the right health actions. This library is stocked with tips that can help you stay well and facts about medical conditions. Everything you'll learn here is based on our doctors' clinical experience and the latest research.
               </p>
-            <div className="d-flex justify-content-center gap-3 flex-wrap">
+            {/* <div className="d-flex justify-content-center gap-3 flex-wrap">
   <a 
     href="#" 
     className="btn btn-lg px-4 rounded-pill text-white fw-semibold"
@@ -667,7 +667,7 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
   >
     Google Play
   </a>
-</div>
+</div> */}
             </div>
           </div>
         </div>
@@ -717,13 +717,13 @@ const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
               style={{ maxHeight: '300px', objectFit: 'contain' }}
             />
           </div> */}
-          <div className="col-md-7">
+          {/* <div className="col-md-7">
             <h2 className="fw-bold display-6">Your personal health portal</h2>
             <p className="text-muted fs-5 mb-3">Access our symptom assessment 24/7.</p>
-            {/* <button className="btn btn-outline-primary rounded-pill px-4">
+            <button className="btn btn-outline-primary rounded-pill px-4">
               Learn more <ChevronRight size={16} className="ms-1" />
-            </button> */}
-          </div>
+            </button>
+          </div> */}
         </div>
 
         {/* Alphabet Tabs - Modern Pills */}

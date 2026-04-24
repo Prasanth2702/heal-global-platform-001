@@ -2269,7 +2269,7 @@
   // );
 
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -2291,7 +2291,6 @@ import {
 } from "@/components/ui/command";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useGoogleMapsApi } from "@/location/useGoogleMapsApi";
 
 interface SearchHeaderProps {
   searchQuery: string;
@@ -2313,16 +2312,7 @@ interface SearchHeaderProps {
   setSelectedDate?: (date: string) => void;
   facilityType?: string;
   setFacilityType?: (type: string) => void;
-  setSelectedLocation: (location: LatLng) => void;
-  
 }
-
-interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-
 
 const SearchHeader: React.FC<SearchHeaderProps> = ({
   searchQuery,
@@ -2342,7 +2332,6 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   cities,
   selectedDate,
   setSelectedDate,
-  setSelectedLocation,
   facilityType = "all",
   setFacilityType = () => {},
 }) => {
@@ -2472,43 +2461,6 @@ const getAvailableCities = () => {
       setFacilityType(value);
     }
   };
-
-  const [query, setQuery] = useState("");
-    const inputRef = useRef<HTMLInputElement>(null);
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-    const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
-  
-    const apiKey = import.meta.env.VITE_PUBLIC_LOCATION_ANON_KEY;
-    const { isLoaded, loadError } = useGoogleMapsApi(apiKey, ["places"]);
-  
-    useEffect(() => {
-      if (!isLoaded || !inputRef.current) return;
-  
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
-        componentRestrictions: { country: "IN" },
-      });
-  
-      listenerRef.current = autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (!place?.geometry?.location) {
-          alert("Please select a valid place from the list.");
-          return;
-        }
-        const formatted = place.formatted_address || "";
-        setQuery(formatted);
-        const latLng = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        };
-        setSelectedLocation(latLng);
-      });
-  
-      return () => {
-        if (listenerRef.current) listenerRef.current.remove();
-      };
-    }, [isLoaded, setSelectedLocation]);
-  
-    if (loadError) return <div>Error loading Google Places API</div>;
 
   const staticFacilityTypes = [
     "hospital",

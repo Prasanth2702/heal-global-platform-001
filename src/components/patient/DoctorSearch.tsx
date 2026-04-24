@@ -4285,7 +4285,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const [hospitalPage, setHospitalPage] = useState(1);
   const DOCTORS_PER_PAGE = 8;
   const HOSPITALS_PER_PAGE = 8;
-const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
+
   const [userRole, setUserRole] = useState<string | null>(null);
 
   // Map & Location States
@@ -4336,56 +4336,22 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
   };
 
   // Geolocation & Places API
-  // const detectCurrentLocation = () => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         setSelectedLocation({
-  //           lat: position.coords.latitude,
-  //           lng: position.coords.longitude,
-  //         });
-  //          setSelectedLocation(newLocation); // ✅ correct
-  //       setHasSelectedLocation(true); // ✅ important
-  //         toast({ title: "Location Updated", description: "Map centered on your current location" });
-  //       },
-  //       () => toast({ title: "Location Access Denied", description: "Please enable location services", variant: "destructive" })
-  //     );
-  //   } else {
-  //     toast({ title: "Not Supported", description: "Geolocation not supported", variant: "destructive" });
-  //   }
-  // };
   const detectCurrentLocation = () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-
-        setSelectedLocation(newLocation); // ✅ correct
-        setHasSelectedLocation(true);     // ✅ keep this
-
-        toast({
-          title: "Location Updated",
-          description: "Map centered on your current location",
-        });
-      },
-      () =>
-        toast({
-          title: "Location Access Denied",
-          description: "Please enable location services",
-          variant: "destructive",
-        })
-    );
-  } else {
-    toast({
-      title: "Not Supported",
-      description: "Geolocation not supported",
-      variant: "destructive",
-    });
-  }
-};
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setSelectedLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          toast({ title: "Location Updated", description: "Map centered on your current location" });
+        },
+        () => toast({ title: "Location Access Denied", description: "Please enable location services", variant: "destructive" })
+      );
+    } else {
+      toast({ title: "Not Supported", description: "Geolocation not supported", variant: "destructive" });
+    }
+  };
 
   const searchNearbyHospitalsWithPlaces = () => {
     const mapDiv = document.createElement("div");
@@ -4487,11 +4453,6 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
       console.error("Error fetching facilities:", error);
     }
   };
-
-  const handleLocationChange = (location: LatLng) => {
-  setSelectedLocation(location);
-  setHasSelectedLocation(true);
-};
 
   // Filtered data
   const filteredDoctors = doctors.filter((doctor) => {
@@ -4815,7 +4776,8 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-blue-600">
-            {searchPerformed ? "Doctors Matching Your Search" : "Recommended Doctors"}
+            {searchPerformed ? "Doctors Matching Your Search" : "Doctors List"}
+            {/* {searchPerformed ? "Doctors Matching Your Search" : "Recommended Doctors"} */}
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({filteredDoctors.length} found)
             </span>
@@ -4896,7 +4858,7 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-green-600">
-            {searchPerformed ? "Hospitals Matching Your Search" : "Recommended Hospitals / Facility"}
+            {searchPerformed ? "Hospitals Matching Your Search" : "Hospitals / Facility List"}
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({filteredFacilities.length} found)
             </span>
@@ -5019,7 +4981,7 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
         setSelectedSpecialty={setSelectedSpecialty}
         activeFilterTab={activeFilterTab}
         setActiveFilterTab={setActiveFilterTab}
-        setActiveFilterTab={handleSetActiveFilterTab}
+        // setActiveFilterTab={handleSetActiveFilterTab}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
         onSearch={handleSearch}
@@ -5031,71 +4993,39 @@ const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
         setFacilityType={setFacilityType}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        setSelectedLocation={setSelectedLocation} 
+        // setSelectedLocation={setSelectedLocation} 
       /> */}
 {/* )} */}
 {/* {tab === "search-google" && (
   <> */}
       {/* <label className="block text-sm font-medium mb-1">Search Google Map Location  ({activeFilterTab === "doctors" ? "please search Doctor Location " :
            activeFilterTab === "hospitals" ? "please Search Facility name " : ""})
-           </label>*/}
+      </label>*/}
 
-     <GooglePlaceSearch setSelectedLocation={setSelectedLocation} />
+      <GooglePlaceSearch setSelectedLocation={setSelectedLocation} /> 
 
-<div className="mb-6">
-
-  {/* ✅ CONDITION TEXT */}
-  {/* <div className="mb-3">
-    {selectedLocation && (
-      <p className="text-sm text-gray-600">
-        📍 Showing results near selected location
-      </p>
-    )}
-
-    {activeFilterTab === "doctors" && (
-      <p className="text-blue-600 font-medium">
-        👨‍⚕️ Doctors near selected location
-      </p>
-    )}
-
-    {activeFilterTab === "hospitals" && (
-      <p className="text-green-600 font-medium">
-        🏥 Hospitals near selected location
-      </p>
-    )}
-
-    {showNearby && (
-      <p className="text-purple-600 font-medium">
-        🔍 Showing nearby hospitals from Google Places
-      </p>
-    )}
-  </div> */}
-  {/* HEADER */}
-  <div className="flex justify-between items-center mb-3">
-    <h3 className="text-lg font-semibold">Location Map</h3>
-
-    <div className="flex gap-2">
-      {/* <Button variant="outline" size="sm" onClick={detectCurrentLocation}>
-        📍 My Location
-      </Button> */}
-
-      {activeFilterTab === "hospitals" && (
-        <Button variant="outline" size="sm" onClick={searchNearbyHospitalsWithPlaces}>
-          🏥 Nearby Hospitals (Google)
-        </Button>
-      )}
-    </div>
-  </div>
-
-  {/* MAP */}
-  
-  <MapComponent
-    selectedLocation={selectedLocation}
-    doctors={filteredDoctors}
-    facilities={combinedFacilities}
-    activeTab={activeFilterTab}
-  />
-</div>
+      {/* Map Section */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold">Location Map</h3>
+          <div className="flex gap-2">
+            {/* <Button variant="outline" size="sm" onClick={detectCurrentLocation}>
+              📍 My Location
+            </Button> */}
+            {activeFilterTab === "hospitals" && (
+              <Button variant="outline" size="sm" onClick={searchNearbyHospitalsWithPlaces}>
+                🏥 Nearby Hospitals (Google)
+              </Button>
+            )}
+          </div>
+        </div>
+        <MapComponent
+          selectedLocation={selectedLocation}
+          doctors={filteredDoctors}
+          facilities={combinedFacilities}
+          activeTab={activeFilterTab}
+        />
+      </div>
       {/* </> */}
 {/* // )} */}
       {/* Results Count */}

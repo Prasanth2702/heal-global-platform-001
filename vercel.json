@@ -8,11 +8,11 @@
           "source": "/sitemap_index.xml",
           "destination": "/sitemap.xml"
     },
-       {
+    {
          "source": "/:path*",
          "destination": "/index.html"
-       },
-        {
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

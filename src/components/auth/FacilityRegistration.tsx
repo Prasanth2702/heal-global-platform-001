@@ -3703,7 +3703,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       )}
       <div>
-          <Label className="address" htmlFor="address">Address</Label>
+          <Label className="label-required address" htmlFor="address">Address</Label>
           <Input
             id="address"
             value={formData.address}
@@ -3711,9 +3711,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
               setFormData({ ...formData, address: e.target.value });
             }}
           />
+        {renderFieldError('address')}
         </div>
       <div>
-          <Label className="city" htmlFor="city">City</Label>
+          <Label className="label-required city" htmlFor="city">City</Label>
           <Input
             id="city"
             value={formData.city}
@@ -3721,9 +3722,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
               setFormData({ ...formData, city: e.target.value });
             }}
           />
+          {renderFieldError('city')}
         </div>
       <div>
-          <Label className="state" htmlFor="state">State</Label>
+          <Label className="label-required state" htmlFor="state">State</Label>
           <Input
             id="state"
             value={formData.state}
@@ -3731,9 +3733,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
               setFormData({ ...formData, state: e.target.value });
             }}
           />
+          {renderFieldError('state')}
         </div>
       <div>
-          <Label className="country" htmlFor="country">Country</Label>
+          <Label className="label-required country" htmlFor="country">Country</Label>
           <Input
             id="country"
             value={formData.country_code}
@@ -3741,9 +3744,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
               setFormData({ ...formData, country_code: e.target.value });
             }}
           />
+          {renderFieldError('country_code')}
         </div>
       <div>
-          <Label className="pincode" htmlFor="pincode">Pin Code</Label>
+          <Label className="label-required pincode" htmlFor="pincode">Pin Code</Label>
           <Input
             id="pincode"
             value={formData.pincode}
@@ -3751,6 +3755,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
               setFormData({ ...formData, pincode: e.target.value });
             }}
           />
+          {renderFieldError('pincode')}
         </div>
       <div>
           <Label className="latitude" htmlFor="latitude">Latitude</Label>

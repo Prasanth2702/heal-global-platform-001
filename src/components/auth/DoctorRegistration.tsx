@@ -2324,6 +2324,10 @@ const [showMap, setShowMap] = useState(false);
       errors.state = "State is required";
       valid = false;
     }
+    if (!formData.country_code) {
+      errors.country_code = "country is required";
+      valid = false;
+    }
 
     if (!formData.pincode) {
       errors.pincode = "Pincode is required";
@@ -3365,7 +3369,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         </div>
       )}
       <div>
-          <Label className="address" htmlFor="address">Address</Label>
+          <Label className="label-required address" htmlFor="address">Address</Label>
           <Input
             id="address"
             value={formData.address}
@@ -3374,8 +3378,9 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
+        {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
       <div>
-          <Label className="city" htmlFor="city">City</Label>
+          <Label className="label-required city" htmlFor="city">City</Label>
           <Input
             id="city"
             value={formData.city}
@@ -3384,8 +3389,9 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
+        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
       <div>
-          <Label className="state" htmlFor="state">State</Label>
+          <Label className="label-required state" htmlFor="state">State</Label>
           <Input
             id="state"
             value={formData.state}
@@ -3394,8 +3400,9 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
+        {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
       <div>
-          <Label className="country" htmlFor="country">Country</Label>
+          <Label className="label-required country" htmlFor="country">Country</Label>
           <Input
             id="country"
             value={formData.country_code}
@@ -3404,8 +3411,9 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
+        {errors.country_code && <p className="text-red-500 text-sm">{errors.country_code}</p>}
       <div>
-          <Label className="pincode" htmlFor="pincode">Pin Code</Label>
+          <Label className="label-required pincode" htmlFor="pincode">Pin Code</Label>
           <Input
             id="pincode"
             value={formData.pincode}
@@ -3414,6 +3422,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
+        {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
       <div>
           <Label className="latitude" htmlFor="latitude">Latitude</Label>
           <Input
@@ -3434,7 +3443,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             }}
           />
         </div>
-        <div>
+        {/* <div>
           <Label className="label-required" htmlFor="longitude">longitude</Label>
           <Input
             id="longitude"
@@ -3445,7 +3454,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             className={errors.longitude ? "border-red-500" : ""}
           />
           {errors.longitude && <p className="text-red-500 text-sm">{errors.longitude}</p>}
-        </div>
+        </div> */}
         
     </div>
   );

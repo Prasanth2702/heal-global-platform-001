@@ -3425,23 +3425,43 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
       <div>
           <Label className="latitude" htmlFor="latitude">Latitude</Label>
-          <Input
+          {/* <Input
             id="latitude"
             value={formData.latitude}
             onChange={(e) => {
               setFormData({ ...formData, latitude: Number(e.target.value) });
             }}
-          />
+          /> */}
+          <Input
+  id="latitude"
+  type="number"
+  value={formData.latitude || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, latitude: value }));
+  }}
+  placeholder="Enter latitude"
+/>
         </div>
         <div>
           <Label className="longitude" htmlFor="longitude">Longitude</Label>
-          <Input
+          {/* <Input
             id="longitude"
             value={formData.longitude}
             onChange={(e) => {
               setFormData({ ...formData, longitude: Number(e.target.value) });
             }}
-          />
+          /> */}
+          <Input
+  id="longitude"
+  type="number"
+  value={formData.longitude || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, longitude: value }));
+  }}
+  placeholder="Enter longitude"
+/>
         </div>
         {/* <div>
           <Label className="label-required" htmlFor="longitude">longitude</Label>
@@ -3509,7 +3529,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             <GraduationCap className="inline h-4 w-4 mr-1 text-green-500" />
             Graduation Year
           </Label>
-          <Input
+          {/* <Input
             id="graduationYear"
             type="number"
             min="1950"
@@ -3517,7 +3537,20 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             value={formData.graduationYear}
             onChange={(e) => setFormData({ ...formData, graduationYear: Number(e.target.value) })}
             className={`border-2 ${errors.graduationYear ? "border-red-500" : "border-gray-200"}`}
-          />
+          /> */}
+          <Input
+  id="graduationYear"
+  type="number"
+   min="1950"
+   max={new Date().getFullYear()}
+  value={formData.graduationYear || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, graduationYear: value }));
+  }}
+  className={`border-2 ${errors.graduationYear ? "border-red-500" : "border-gray-200"}`}
+  placeholder="Enter Graduation Year"
+/>
           {errors.graduationYear && <p className="text-red-500 text-xs">{errors.graduationYear}</p>}
         </div>
       </div>
@@ -3543,7 +3576,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             <Briefcase className="inline h-4 w-4 mr-1 text-indigo-500" />
             Years of Experience
           </Label>
-          <Input
+          {/* <Input
             id="experience"
             type="number"
             min="0"
@@ -3551,7 +3584,18 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             value={formData.yearsOfExperience}
             onChange={(e) => setFormData({ ...formData, yearsOfExperience: Number(e.target.value) })}
             className={`border-2 ${errors.yearsOfExperience ? "border-red-500" : "border-gray-200"}`}
-          />
+          /> */}
+          <Input
+  id="experience"
+  type="number"
+  value={formData.yearsOfExperience || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, yearsOfExperience: value }));
+  }}
+  className={`border-2 ${errors.yearsOfExperience ? "border-red-500" : "border-gray-200"}`}
+  placeholder="Enter years Of Experience"
+/>
           {errors.yearsOfExperience && <p className="text-red-500 text-xs">{errors.yearsOfExperience}</p>}
         </div>
 
@@ -3560,7 +3604,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             <IndianRupee className="inline h-4 w-4 mr-1 text-emerald-500" />
             Consultation Fee (₹)
           </Label>
-          <Input
+          {/* <Input
             id="consultationFee"
             type="number"
             min="0"
@@ -3568,7 +3612,17 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             onChange={(e) => setFormData({ ...formData, consultationFees: Number(e.target.value) })}
             className="border-2 border-gray-200"
             placeholder="e.g., 500"
-          />
+          /> */}
+          <Input
+  id="consultationFee"
+  type="number"
+  value={formData.consultationFees || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, consultationFees: value }));
+  }}
+  placeholder="Enter consultation fee"
+/>
         </div>
       </div>
 

@@ -3759,22 +3759,42 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       <div>
           <Label className="latitude" htmlFor="latitude">Latitude</Label>
-          <Input
+          {/* <Input
             id="latitude"
             value={formData.latitude}
             onChange={(e) => {
               setFormData({ ...formData, latitude: Number(e.target.value) });
             }}
-          />
+          /> */}
+          <Input
+  id="latitude"
+  type="number"
+  value={formData.latitude || ''}
+  onChange={(e) => {
+    const value = e.target.value === '' ? 0 : Number(e.target.value);
+    setFormData(prev => ({ ...prev, latitude: value }));
+  }}
+  placeholder="Enter latitude"
+/>
         </div>
         <div>
           <Label className="longitude" htmlFor="longitude">Longitude</Label>
-          <Input
+          {/* <Input
             id="longitude"
             value={formData.longitude}
             onChange={(e) => {
               setFormData({ ...formData, longitude: Number(e.target.value) });
             }}
+          /> */}
+          <Input
+            id="longitude"
+            type="number"
+            value={formData.longitude || ''}
+            onChange={(e) => {
+              const value = e.target.value === '' ? 0 : Number(e.target.value);
+              setFormData(prev => ({ ...prev, longitude: value }));
+            }}
+            placeholder="Enter longitude"
           />
         </div>
 

@@ -24,4 +24,5 @@ export interface MedicalFacility {
     website: string,
     aboutFacility: string,
     country_code:string,
+    
 }

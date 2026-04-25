@@ -2025,6 +2025,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import MapComponent from "@/location/MapComponent";
+import GooglePlaceSearchRegister from "@/location/GooglePlaceSearchRegister";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -2218,7 +2220,8 @@ const FacilityRegistration = () => {
   const [profileImage, setProfileImage] = useState<string>("");
   const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: string}>>([]);
   const [user, setUser] = useState<any>(null);
-
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+const [showMap, setShowMap] = useState(false);
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
     "Homeopathy Clinic", "Physiotherapy Center", "Dental Clinic",
@@ -2856,7 +2859,9 @@ const FacilityRegistration = () => {
           additional_services: additionalServicesObj,
           website: formData.website || '',
           about_facility: formData.aboutFacility || '',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          latitude: formData.latitude || null,
+          longitude: formData.longitude || null,
         })
         .eq('id', facilityId);
 
@@ -3475,6 +3480,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       </div>
 
+      
+             
+    
+
       <div>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -3521,7 +3530,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   const renderStep2 = () => (
     <div className="space-y-4">
-      <div>
+      {/* <div>
         <Label className="label-required" htmlFor="address">Address</Label>
         <Textarea
           id="address"
@@ -3606,7 +3615,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
-          {/* <select
+          <select
             id="city"
             value={formData.city || ''}
             onChange={(e) => {
@@ -3626,7 +3635,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                 {city.name}
               </option>
             ))}
-          </select> */}
+          </select>
           <Input
           id="city"
           value={formData.city}
@@ -3663,7 +3672,106 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           />
           {renderFieldError('pincode')}
         </div>
+      </div> */}
+       <div className="space-y-2">
+        <Label>Select Location from Map</Label>
+      
+        <GooglePlaceSearchRegister
+          setSelectedLocation={(location) => {
+            setSelectedLocation(location);
+            setShowMap(true);
+      
+            // ✅ STORE LAT LNG
+            setFormData((prev) => ({
+              ...prev,
+              latitude: location.lat,
+              longitude: location.lng,
+              address: location.address || prev.address,
+            city: location.city || prev.city,
+            state: location.state || prev.state,
+            pincode: location.pincode || prev.pincode,
+            }));
+          }}
+        />
       </div>
+      {showMap && selectedLocation && (
+        <div className="mt-4">
+          <MapComponent
+            selectedLocation={selectedLocation}
+            activeTab="hospitals"
+          />
+        </div>
+      )}
+      <div>
+          <Label className="address" htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            value={formData.address}
+            onChange={(e) => {
+              setFormData({ ...formData, address: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="city" htmlFor="city">City</Label>
+          <Input
+            id="city"
+            value={formData.city}
+            onChange={(e) => {
+              setFormData({ ...formData, city: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="state" htmlFor="state">State</Label>
+          <Input
+            id="state"
+            value={formData.state}
+            onChange={(e) => {
+              setFormData({ ...formData, state: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="country" htmlFor="country">Country</Label>
+          <Input
+            id="country"
+            value={formData.country_code}
+            onChange={(e) => {
+              setFormData({ ...formData, country_code: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="pincode" htmlFor="pincode">Pin Code</Label>
+          <Input
+            id="pincode"
+            value={formData.pincode}
+            onChange={(e) => {
+              setFormData({ ...formData, pincode: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="latitude" htmlFor="latitude">Latitude</Label>
+          <Input
+            id="latitude"
+            value={formData.latitude}
+            onChange={(e) => {
+              setFormData({ ...formData, latitude: Number(e.target.value) });
+            }}
+          />
+        </div>
+        <div>
+          <Label className="longitude" htmlFor="longitude">Longitude</Label>
+          <Input
+            id="longitude"
+            value={formData.longitude}
+            onChange={(e) => {
+              setFormData({ ...formData, longitude: Number(e.target.value) });
+            }}
+          />
+        </div>
 
       <div>
         <Label className="label-required">Departments/Services Available</Label>

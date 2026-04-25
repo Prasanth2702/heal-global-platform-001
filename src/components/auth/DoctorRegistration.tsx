@@ -2022,6 +2022,9 @@ import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import { Country, State } from "country-state-city";
 import { Progress } from "@/components/ui/progress";
+import GooglePlaceSearch from "@/location/GooglePlaceSearch";
+import MapComponent from "@/location/MapComponent";
+import GooglePlaceSearchRegister from "@/location/GooglePlaceSearchRegister";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -2173,7 +2176,8 @@ const DoctorRegistration = () => {
   const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: string}>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+const [showMap, setShowMap] = useState(false);
   // Time slot states
   const [selectedDay, setSelectedDay] = useState<string>('Monday');
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -2204,6 +2208,8 @@ const DoctorRegistration = () => {
     kycVerified: false,
     isVerified: true,
     country_code: "India",
+     latitude: 0,
+  longitude: 0,
   });
 
   const specialties = [
@@ -2632,6 +2638,8 @@ const handleSignUp = async () => {
           state: formData.state,
           pincode: formData.pincode,
           country_code: formData.country_code,
+           latitude: formData.latitude || null,
+          langitude: formData.longitude || null,
         }, { onConflict: 'user_id' });
 
       if (medProfError) {
@@ -3182,6 +3190,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         <br />• At least 1 special character (@$!%*?&)
       </p>
 
+      
       <div className="space-y-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
         <h4 className="font-semibold text-blue-800 flex items-center">
           <Shield className="h-5 w-5 mr-2" />
@@ -3231,7 +3240,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         </h3>
         <p className="text-sm text-gray-500">Where is your practice located?</p>
       </div>
-
+{/* 
       <div className="space-y-2">
         <Label htmlFor="address" className="label-required text-sm font-semibold text-gray-700">Address</Label>
         <Textarea
@@ -3291,7 +3300,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="city" className="label-required">City</Label>
-          {/* <select
+          <select
             id="city"
             value={formData.city || ''}
             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -3304,7 +3313,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
                 {city.name}
               </option>
             ))}
-          </select> */}
+          </select>
            <Input
             id="city"
             value={formData.city}
@@ -3325,7 +3334,119 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
           />
           {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
         </div>
+      </div> */}
+      <div className="space-y-2">
+        <Label>Select Location from Map</Label>
+      
+        <GooglePlaceSearchRegister
+          setSelectedLocation={(location) => {
+            setSelectedLocation(location);
+            setShowMap(true);
+      
+            // ✅ STORE LAT LNG
+            setFormData((prev) => ({
+              ...prev,
+              latitude: location.lat,
+              longitude: location.lng,
+              address: location.address || prev.address,
+            city: location.city || prev.city,
+            state: location.state || prev.state,
+            pincode: location.pincode || prev.pincode,
+            }));
+          }}
+        />
       </div>
+      {showMap && selectedLocation && (
+        <div className="mt-4">
+          <MapComponent
+            selectedLocation={selectedLocation}
+            activeTab="hospitals"
+          />
+        </div>
+      )}
+      <div>
+          <Label className="address" htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            value={formData.address}
+            onChange={(e) => {
+              setFormData({ ...formData, address: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="city" htmlFor="city">City</Label>
+          <Input
+            id="city"
+            value={formData.city}
+            onChange={(e) => {
+              setFormData({ ...formData, city: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="state" htmlFor="state">State</Label>
+          <Input
+            id="state"
+            value={formData.state}
+            onChange={(e) => {
+              setFormData({ ...formData, state: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="country" htmlFor="country">Country</Label>
+          <Input
+            id="country"
+            value={formData.country_code}
+            onChange={(e) => {
+              setFormData({ ...formData, country_code: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="pincode" htmlFor="pincode">Pin Code</Label>
+          <Input
+            id="pincode"
+            value={formData.pincode}
+            onChange={(e) => {
+              setFormData({ ...formData, pincode: e.target.value });
+            }}
+          />
+        </div>
+      <div>
+          <Label className="latitude" htmlFor="latitude">Latitude</Label>
+          <Input
+            id="latitude"
+            value={formData.latitude}
+            onChange={(e) => {
+              setFormData({ ...formData, latitude: Number(e.target.value) });
+            }}
+          />
+        </div>
+        <div>
+          <Label className="longitude" htmlFor="longitude">Longitude</Label>
+          <Input
+            id="longitude"
+            value={formData.longitude}
+            onChange={(e) => {
+              setFormData({ ...formData, longitude: Number(e.target.value) });
+            }}
+          />
+        </div>
+        <div>
+          <Label className="label-required" htmlFor="longitude">longitude</Label>
+          <Input
+            id="longitude"
+            value={formData.longitude}
+            onChange={(e) =>
+  setFormData({ ...formData, longitude: Number(e.target.value) })
+}
+            className={errors.longitude ? "border-red-500" : ""}
+          />
+          {errors.longitude && <p className="text-red-500 text-sm">{errors.longitude}</p>}
+        </div>
+        
     </div>
   );
 

@@ -21,5 +21,7 @@ export interface MedicalProfessional {
     state: string,
     pincode: string,
     country_code:string,
+     latitude?: number | null;
+  longitude?: number | null;
 
 }

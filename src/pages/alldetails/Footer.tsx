@@ -304,7 +304,7 @@ const Footer = () => {
                 <img
                   src={logoFootor}
                   alt="Cloud Hospitals"
-                  className="h-30 w-30 rounded-md object-contain mt-1"
+                  className="h-25 w-25 rounded-md object-contain mt-1"
                 />
               </Link>
               <span className="text-xl font-bold">Cloud Hospitals</span>

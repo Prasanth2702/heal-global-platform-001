@@ -4151,7 +4151,7 @@ import { Label } from "../ui/label";
 import GooglePlaceSearch from "@/location/GooglePlaceSearch";
 import MapComponent from "@/location/MapComponent";
 import { useGoogleMapsApi } from "@/location/useGoogleMapsApi";
-
+import { usePageViewTrackerWithTimeSpent } from "@/hooks/usePageViewTrackerWithTimeSpent";
 export interface Doctor {
   id: string;
   user_id: string;
@@ -4250,7 +4250,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-
+const { trackPageView } = usePageViewTrackerWithTimeSpent();
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("all");
@@ -4283,8 +4283,8 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   // Pagination States
   const [doctorPage, setDoctorPage] = useState(1);
   const [hospitalPage, setHospitalPage] = useState(1);
-  const DOCTORS_PER_PAGE = 8;
-  const HOSPITALS_PER_PAGE = 8;
+  const DOCTORS_PER_PAGE = 6;
+  const HOSPITALS_PER_PAGE = 6;
 
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -4697,8 +4697,15 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
     }
   };
 
-  const handleViewDoctorProfile = (doctorId: string) => {
+  const handleViewDoctorProfile = async (doctorId: string) => {
     const doctor = doctors.find(d => d.id === doctorId);
+      await trackPageView(
+    "medical_professional",
+    doctorId,
+    user?.id,
+    { trackTimeSpent: true }
+  );
+
     if (!user) {
       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, { state: { doctorData: doctor } });
       return;
@@ -4710,20 +4717,38 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
     }
   };
 
-  const handleViewHospitalDetails = (facilityId: string) => {
+  const handleViewHospitalDetails = async(facilityId: string) => {
     const facility = facilities.find(f => f.id === facilityId);
+     await trackPageView(
+    "facility",
+    facilityId,
+    user?.id,
+    { trackTimeSpent: true }
+  );
     const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
     navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'overview', from: 'search' } });
   };
 
-  const handleViewHospitalDepartmentDetails = (facilityId: string) => {
+  const handleViewHospitalDepartmentDetails = async (facilityId: string) => {
     const facility = facilities.find(f => f.id === facilityId);
+     await trackPageView(
+    "facility",
+    facilityId,
+    user?.id,
+    { trackTimeSpent: true }
+  );
     const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
     navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'departments', from: 'search' } });
   };
 
-  const handleViewDepartment = (department: Department) => {
+  const handleViewDepartment = async (department: Department) => {
     const path = user ? '/dashboard/patient/department' : '/appointment/facilityprofile/department';
+    await trackPageView(
+      "facility",
+      department.facility_id,
+      user?.id,
+      { trackTimeSpent: true }
+    );
     navigate(`${path}/${createSlug(department.name || "")}/${department.id}`, { state: { facility: facilities.find(f => f.id === department.facility_id) } });
   };
 
@@ -4799,9 +4824,10 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : (
-           <div className="space-y-4 row">
+           <div className="space-y-6">
             {paginatedDoctors.length > 0 ? (
-              paginatedDoctors.map((doctor) => (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {paginatedDoctors.map((doctor) => (
                 <DoctorCard
                   key={doctor.id}
                   doctor={doctor}
@@ -4822,7 +4848,8 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
                   formatDateNumber={formatDateNumber}
                   formatTimePretty={formatTimePretty}
                 />
-              ))
+              ))}
+              </div>
             ) : (
               <Card>
                 <CardContent className="p-12 text-center">
@@ -4840,7 +4867,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
                 <Button
                   variant="outline"
                   onClick={() => setDoctorPage(doctorPage + 1)}
-                  className="border-blue-200 hover:bg-blue-50"
+                  className="border-blue-200 hover:bg-blue-50 h-20 px-6 "
                 >
                   Load More Doctors
                 </Button>
@@ -4875,9 +4902,11 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
           )} */}
         </div>
 
-        <div className="space-y-4 row">
+        <div className="space-y-6">
+          
           {paginatedHospitals.length > 0 ? (
-            paginatedHospitals.map((facility) => (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {paginatedHospitals.map((facility) => (
               <HospitalCard
                 key={facility.id}
                 facility={facility}
@@ -4900,7 +4929,8 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
                 formatDateNumber={formatDateNumber}
                 formatTimePretty={formatTimePretty}
               />
-            ))
+            ))}
+            </div>
           ) : (
             <Card>
               <CardContent className="p-12 text-center">
@@ -4918,7 +4948,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
               <Button
                 variant="outline"
                 onClick={() => setHospitalPage(hospitalPage + 1)}
-                className="border-green-200 hover:bg-green-50"
+                className="border-green-200 hover:bg-green-50 h-20 px-6 bg-green-700 text-xl text-white font-medium"
               >
                 Load More Hospitals
               </Button>

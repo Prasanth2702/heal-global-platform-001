@@ -125,7 +125,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
   formatTimePretty,
 }) => {
   return (
-  <div className="col-12 col-md-6 col-lg-4 mb-4">
+  <div >
+  {/* <div className="col-12 col-md-6 col-lg-4 mb-4"> */}
     
 
     <Card className="hover:shadow-xl transition-all duration-300 h-full border border-gray-100 rounded-xl overflow-hidden">

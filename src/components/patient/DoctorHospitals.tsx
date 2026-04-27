@@ -993,10 +993,10 @@ const fetchFacilityDetails = async (facilityData: any) => {
   const mockFacility: Facility = {
     ...facilityData,
     image: facilityData.banner_url,
-    contact_number: facilityData.contact_number || "+91 22 1234 5678",
+    contact_number: facilityData.phone_number || "",
     email: facilityData.email || `info@${facilityData.facility_name.toLowerCase().replace(/\s+/g, '')}.com`,
-    facilities: ["24/7 Emergency", "ICU", "Operation Theaters", "Diagnostic Center", "Pharmacy", "Cafeteria", "Parking"],
-    accreditations: ["NABH Accredited", "ISO 9001:2015", "Joint Commission International"],
+    // facilities: ["24/7 Emergency", "ICU", "Operation Theaters", "Diagnostic Center", "Pharmacy", "Cafeteria", "Parking"],
+    // accreditations: ["NABH Accredited", "ISO 9001:2015", "Joint Commission International"],
     emergencyServices: true,
     ambulanceAvailable: true,
     parkingAvailable: true,
@@ -1005,7 +1005,7 @@ const fetchFacilityDetails = async (facilityData: any) => {
     labServices: true,
     pharmacy: true,
     cafeteria: true,
-    visitingHours: "10:00 AM - 8:00 PM (Visiting Hours: 4:00 PM - 6:00 PM)",
+    // visitingHours: "10:00 AM - 8:00 PM (Visiting Hours: 4:00 PM - 6:00 PM)",
   };
 
   setFacility(mockFacility);
@@ -2147,7 +2147,7 @@ selectedDate.setDate(
               </Badge>
             )}
           </div> */}
-          <div className="h-48 relative">
+          <div className="h-60 relative">
             {facility.image ? (
               <img 
                 src={facility.image}
@@ -2242,7 +2242,7 @@ selectedDate.setDate(
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
                       <Globe className="h-5 w-5 mr-2 text-green-600" /> Insurance Partners
                     </h2>
-                    <p className="text-gray-700">{facility.insurance_partners || "All major insurance providers accepted"}</p>
+                    <p className="text-gray-700">{facility.insurance_partners || ""}</p>
                     {facility.website && (
                       <a href={facility.website} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline mt-4 block">
                         Visit Website
@@ -2253,7 +2253,7 @@ selectedDate.setDate(
               </div>
 
               <div className="space-y-6">
-                <Card>
+                {/* <Card>
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Quick Stats</h2>
                     <div className="space-y-4">
@@ -2275,7 +2275,7 @@ selectedDate.setDate(
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
 
                 <Card>
                   <CardContent className="p-6">

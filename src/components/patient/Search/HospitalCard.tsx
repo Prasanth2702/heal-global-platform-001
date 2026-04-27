@@ -142,8 +142,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
 
   return (
 <>
-{facilityDepts.length > 0 && (
-    <div className="col-12 col-md-8 col-lg-4 mb-3">
+{/* {facilityDepts.length > 0 && ( */}
          <Card className="hover:shadow-medium transition h-100">
       <div className="bg-green-600 rounded-t-xl px-6 py-4">
         <div className="flex items-center justify-between">
@@ -470,8 +469,8 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
         </div>
       </CardContent>
     </Card>
-    </div>
-)}
+    
+{/* )} */}
 </>
   );
 };

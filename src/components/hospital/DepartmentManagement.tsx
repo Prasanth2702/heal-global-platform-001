@@ -580,8 +580,8 @@ const [timeCreated, setTimeCreated] = useState(false);
   selectedDays: [] as string[],
       // User account fields
     email: "",
-    password: "",
-    confirmPassword: "",
+    // password: "",
+    // confirmPassword: "",
     first_name: "",
     last_name: "",
     phone_number: "",
@@ -1318,233 +1318,276 @@ const handleSubmitStaff = async (e: React.FormEvent) => {
       });
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      return toast({
-        title: "Password mismatch",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-    }
+    // if (formData.password !== formData.confirmPassword) {
+    //   return toast({
+    //     title: "Password mismatch",
+    //     description: "Passwords do not match",
+    //     variant: "destructive",
+    //   });
+    // }
 
-    if (formData.password.length < 6) {
-      return toast({
-        title: "Weak password",
-        description: "Minimum 6 characters required",
-        variant: "destructive",
-      });
-    }
+    // if (formData.password.length < 6) {
+    //   return toast({
+    //     title: "Weak password",
+    //     description: "Minimum 6 characters required",
+    //     variant: "destructive",
+    //   });
+    // }
   }
 
   setIsCreatingUser(true);
 
+  // try {
+  //   // ===============================
+  //   // ✅ CHECK DUPLICATE EMPLOYEE ID
+  //   // ===============================
+  //   let query = supabase
+  //     .from("staff")
+  //     .select("id")
+  //     .eq("facility_id", userFacility.id)
+  //     .eq("employee_id", formData.employee_id);
+
+  //   if (editingStaff) {
+  //     query = query.neq("id", editingStaff.id);
+  //   }
+
+  //   const { data: duplicate, error: dupError } = await query;
+
+  //   if (dupError) throw dupError;
+
+  //   if (duplicate && duplicate.length > 0) {
+  //     throw new Error("Employee ID already exists");
+  //   }
+
+  //   let userId = formData.user_id;
+
+  //   // ===============================
+  //   // ✅ CREATE AUTH USER (ONLY NEW)
+  //   // ===============================
+  //   if (!editingStaff) {
+  //     const { data: authData, error: authError } =
+  //       await supabase.auth.signUp({
+  //         email: formData.email,
+  //         password: formData.password,
+  //         options: {
+  //           data: {
+  //             first_name: formData.first_name,
+  //             last_name: formData.last_name,
+  //             role: "hospital_staff",
+  //             phone_number: formData.phone_number,
+  //           },
+  //         },
+  //       });
+
+  //     if (authError) throw authError;
+
+  //     if (!authData.user?.id) {
+  //       throw new Error("User creation failed");
+  //     }
+
+  //     userId = authData.user.id;
+
+  //     // ===============================
+  //     // ✅ GET IDENTITY DATA FROM AUTH RESPONSE
+  //     // ===============================
+  //     const identityData = authData.user.identities?.[0]?.identity_data || {};
+
+  //     // ===============================
+  //     // ✅ CHECK IF PROFILE EXISTS BY USER_ID
+  //     // ===============================
+  //     const { data: existingProfile, error: profileCheckError } =
+  //       await supabase
+  //         .from("profiles")
+  //         .select("*")
+  //         .eq("user_id", userId)
+  //         .maybeSingle();
+
+  //     if (profileCheckError) throw profileCheckError;
+
+  //     // ===============================
+  //     // ✅ CREATE OR UPDATE PROFILE BASED ON USER_ID
+  //     // ===============================
+  //     if (!existingProfile) {
+  //       // Create new profile if it doesn't exist
+  //       const { error: profileError } = await supabase
+  //         .from("profiles")
+  //         .insert([
+  //           {
+  //             user_id: userId,
+  //             email: formData.email || identityData.email,
+  //             phone_number: formData.phone_number || identityData.phone_number,
+  //             first_name: formData.first_name || identityData.first_name,
+  //             last_name: formData.last_name || identityData.last_name,
+  //             role: "hospital_staff",
+  //             created_at: new Date().toISOString(),
+  //             updated_at: new Date().toISOString(),
+  //           },
+  //         ]);
+
+  //       if (profileError) throw profileError;
+
+  //       toast({
+  //         title: "Profile Created",
+  //         description: "User profile created successfully from signup data",
+  //       });
+  //     } else {
+  //       // Update existing profile if it exists
+  //       const { error: profileUpdateError } = await supabase
+  //         .from("profiles")
+  //         .update({
+  //           email: formData.email || identityData.email,
+  //           phone_number: formData.phone_number || identityData.phone_number,
+  //           first_name: formData.first_name || identityData.first_name,
+  //           last_name: formData.last_name || identityData.last_name,
+  //           role: "hospital_staff",
+  //           updated_at: new Date().toISOString(),
+  //         })
+  //         .eq("user_id", userId);
+
+  //       if (profileUpdateError) throw profileUpdateError;
+
+  //       toast({
+  //         title: "Profile Updated",
+  //         description: "Existing profile updated with signup data",
+  //       });
+  //     }
+
+  //     toast({
+  //       title: "User Created",
+  //       description: "Hospital staff account created successfully",
+  //     });
+  //   }
+
+  //   // ===============================
+  //   // ✅ STAFF TABLE DATA - USE departmentIdToUse
+  //   // ===============================
+  //   const staffPayload = {
+  //     facility_id: userFacility.id,
+  //     department_id: departmentIdToUse, // Use the variable we set earlier
+  //     employee_id: formData.employee_id,
+  //     position: formData.position,
+  //     hire_date: formData.hire_date,
+  //     user_id: userId,
+  //     shift_schedule: {
+  //       shift: formData.shift_schedule.shift,
+  //       start_time: formData.shift_schedule.start_time,
+  //       end_time: formData.shift_schedule.end_time,
+  //     },
+  //     is_active: formData.is_active,
+  //     updated_at: new Date().toISOString(),
+  //   };
+
+  //   // ===============================
+  //   // ✅ UPDATE / INSERT STAFF
+  //   // ===============================
+  //   if (editingStaff) {
+  //     const { error } = await supabase
+  //       .from("staff")
+  //       .update(staffPayload)
+  //       .eq("id", editingStaff.id);
+
+  //     if (error) throw error;
+
+  //     // ===============================
+  //     // ✅ UPDATE PROFILE FOR EXISTING USER
+  //     // ===============================
+  //     const { error: profileError } = await supabase
+  //       .from("profiles")
+  //       .update({
+  //         first_name: formData.first_name,
+  //         last_name: formData.last_name,
+  //         phone_number: formData.phone_number,
+  //         email: formData.email,
+  //         role: "hospital_staff",
+  //         updated_at: new Date().toISOString(),
+  //       })
+  //       .eq("user_id", userId);
+
+  //     if (profileError) throw profileError;
+
+  //     toast({
+  //       title: "Updated",
+  //       description: "Staff updated successfully",
+  //     });
+  //   } else {
+  //     const { error } = await supabase
+  //       .from("staff")
+  //       .insert([
+  //         {
+  //           ...staffPayload,
+  //           created_at: new Date().toISOString(),
+  //         },
+  //       ]);
+
+  //     if (error) throw error;
+
+  //     toast({
+  //       title: "Success",
+  //       description: "Hospital staff added successfully",
+  //     });
+  //   }
+
+  //   // ===============================
+  //   // ✅ Update formData with department_id for future steps
+  //   // ===============================
+  //   if (departmentIdToUse && !formData.department_id) {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       department_id: departmentIdToUse
+  //     }));
+  //   }
+
+  //   // ===============================
+  //   // ✅ RESET + REFRESH
+  //   // ===============================
+  //   resetForm();
+  //   fetchData();
+  //   setIsAddDialogOpen(false);
+  //   setCurrentStep(1);
+
+  // } 
   try {
-    // ===============================
-    // ✅ CHECK DUPLICATE EMPLOYEE ID
-    // ===============================
-    let query = supabase
-      .from("staff")
-      .select("id")
-      .eq("facility_id", userFacility.id)
-      .eq("employee_id", formData.employee_id);
-
-    if (editingStaff) {
-      query = query.neq("id", editingStaff.id);
-    }
-
-    const { data: duplicate, error: dupError } = await query;
-
-    if (dupError) throw dupError;
-
-    if (duplicate && duplicate.length > 0) {
-      throw new Error("Employee ID already exists");
-    }
-
-    let userId = formData.user_id;
-
-    // ===============================
-    // ✅ CREATE AUTH USER (ONLY NEW)
-    // ===============================
-    if (!editingStaff) {
-      const { data: authData, error: authError } =
-        await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              role: "hospital_staff",
-              phone_number: formData.phone_number,
-            },
-          },
-        });
-
-      if (authError) throw authError;
-
-      if (!authData.user?.id) {
-        throw new Error("User creation failed");
-      }
-
-      userId = authData.user.id;
-
-      // ===============================
-      // ✅ GET IDENTITY DATA FROM AUTH RESPONSE
-      // ===============================
-      const identityData = authData.user.identities?.[0]?.identity_data || {};
-
-      // ===============================
-      // ✅ CHECK IF PROFILE EXISTS BY USER_ID
-      // ===============================
-      const { data: existingProfile, error: profileCheckError } =
-        await supabase
-          .from("profiles")
-          .select("*")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-      if (profileCheckError) throw profileCheckError;
-
-      // ===============================
-      // ✅ CREATE OR UPDATE PROFILE BASED ON USER_ID
-      // ===============================
-      if (!existingProfile) {
-        // Create new profile if it doesn't exist
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              user_id: userId,
-              email: formData.email || identityData.email,
-              phone_number: formData.phone_number || identityData.phone_number,
-              first_name: formData.first_name || identityData.first_name,
-              last_name: formData.last_name || identityData.last_name,
-              role: "hospital_staff",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-          ]);
-
-        if (profileError) throw profileError;
-
-        toast({
-          title: "Profile Created",
-          description: "User profile created successfully from signup data",
-        });
-      } else {
-        // Update existing profile if it exists
-        const { error: profileUpdateError } = await supabase
-          .from("profiles")
-          .update({
-            email: formData.email || identityData.email,
-            phone_number: formData.phone_number || identityData.phone_number,
-            first_name: formData.first_name || identityData.first_name,
-            last_name: formData.last_name || identityData.last_name,
-            role: "hospital_staff",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
-
-        if (profileUpdateError) throw profileUpdateError;
-
-        toast({
-          title: "Profile Updated",
-          description: "Existing profile updated with signup data",
-        });
-      }
-
-      toast({
-        title: "User Created",
-        description: "Hospital staff account created successfully",
-      });
-    }
-
-    // ===============================
-    // ✅ STAFF TABLE DATA - USE departmentIdToUse
-    // ===============================
-    const staffPayload = {
+    const payload = {
       facility_id: userFacility.id,
-      department_id: departmentIdToUse, // Use the variable we set earlier
+      department_id: departmentIdToUse,
       employee_id: formData.employee_id,
       position: formData.position,
       hire_date: formData.hire_date,
-      user_id: userId,
-      shift_schedule: {
-        shift: formData.shift_schedule.shift,
-        start_time: formData.shift_schedule.start_time,
-        end_time: formData.shift_schedule.end_time,
-      },
-      is_active: formData.is_active,
-      updated_at: new Date().toISOString(),
+      email: formData.email,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone_number: formData.phone_number,
+      salary: formData.salary,
+      is_active: formData.is_active,   // optional, edge function ignores it
+      shift_schedule: formData.shift_schedule,
+      created_by: user.id,              // ✅ ADD THIS LINE
     };
 
-    // ===============================
-    // ✅ UPDATE / INSERT STAFF
-    // ===============================
-    if (editingStaff) {
-      const { error } = await supabase
-        .from("staff")
-        .update(staffPayload)
-        .eq("id", editingStaff.id);
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
 
-      if (error) throw error;
+    const response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/create-staff",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
-      // ===============================
-      // ✅ UPDATE PROFILE FOR EXISTING USER
-      // ===============================
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          phone_number: formData.phone_number,
-          email: formData.email,
-          role: "hospital_staff",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+    const result = await response.json();
 
-      if (profileError) throw profileError;
+    if (!response.ok) throw new Error(result.error || "Something went wrong");
 
-      toast({
-        title: "Updated",
-        description: "Staff updated successfully",
-      });
-    } else {
-      const { error } = await supabase
-        .from("staff")
-        .insert([
-          {
-            ...staffPayload,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Hospital staff added successfully",
-      });
-    }
-
-    // ===============================
-    // ✅ Update formData with department_id for future steps
-    // ===============================
-    if (departmentIdToUse && !formData.department_id) {
-      setFormData(prev => ({
-        ...prev,
-        department_id: departmentIdToUse
-      }));
-    }
-
-    // ===============================
-    // ✅ RESET + REFRESH
-    // ===============================
-    resetForm();
+    toast({ title: "Success", description: "Staff created successfully" });
+     resetForm();
     fetchData();
     setIsAddDialogOpen(false);
     setCurrentStep(1);
-
+  
   } catch (err: any) {
     console.error("ERROR:", err);
 
@@ -1553,6 +1596,7 @@ const handleSubmitStaff = async (e: React.FormEvent) => {
       description: err.message || "Something went wrong",
       variant: "destructive",
     });
+
   } finally {
     setIsCreatingUser(false);
   }
@@ -1681,8 +1725,8 @@ const renderFieldError = (field: string) => {
     appointmentType: "consultation",
     selectedDays: [],
            email: "",
-      password: "",
-      confirmPassword: "",
+      // password: "",
+      // confirmPassword: "",
       first_name: "",
       last_name: "",
       phone_number: "",
@@ -2391,7 +2435,7 @@ const getSubmitHandler = () => {
                                 </div>
                               </div>
         
-                              <div className="grid grid-cols-2 gap-4 mt-4">
+                              {/* <div className="grid grid-cols-2 gap-4 mt-4">
                                 <div className="grid gap-2">
                                   <Label htmlFor="password">Password *</Label>
                                   <Input
@@ -2428,7 +2472,7 @@ const getSubmitHandler = () => {
                                     required={!editingStaff}
                                   />
                                 </div>
-                              </div>
+                              </div> */}
                             </div>
                           </>
                         )}

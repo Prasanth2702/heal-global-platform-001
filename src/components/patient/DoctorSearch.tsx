@@ -4867,7 +4867,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
                 <Button
                   variant="outline"
                   onClick={() => setDoctorPage(doctorPage + 1)}
-                  className="border-blue-200 hover:bg-blue-50 h-20 px-6 "
+                  className="border-blue-200 hover:bg-blue-50 h-20 px-6 bg-blue-700 text-xl text-white font-medium "
                 >
                   Load More Doctors
                 </Button>

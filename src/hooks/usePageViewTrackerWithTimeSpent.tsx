@@ -80,89 +80,169 @@ class PageViewTrackerWithTimeSpent {
     return 'desktop'
   }
 
-  async trackView(
-    entityType: 'facility' | 'medical_professional',
-    entityId: string,
-    userId?: string,
-    trackTimeSpent: boolean = true
-  ): Promise<string> {
-    if (!this.visitorId) return ''
+//   async trackView(
+//     entityType: 'facility' | 'medical_professional',
+//     entityId: string,
+//     userId?: string,
+//     trackTimeSpent: boolean = true
+//   ): Promise<string> {
+//     if (!this.visitorId) return ''
 
-    const viewKey = `${entityType}:${entityId}`
-    const viewId = crypto.randomUUID()
+//     const viewKey = `${entityType}:${entityId}`
+//     const viewId = crypto.randomUUID()
     
-    try {
-//         const { data } = await supabase.auth.getSession()
+//     try {
+// //         const { data } = await supabase.auth.getSession()
+// // const token = data.session?.access_token
+// //       const response = await fetch(
+// //         `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
+// //         {
+// //           method: 'POST',
+// //           headers: {
+// //             'Content-Type': 'application/json',
+// //             'Authorization': `Bearer ${token}`
+// //           },
+// //           body: JSON.stringify({
+// //             entity_type: entityType,
+// //             entity_id: entityId,
+// //             device_type: this.getDeviceType(),
+// //             visitor_id: this.visitorId,
+// //             session_id: this.sessionId,
+// //             user_id: userId,
+// //             referrer_url: document.referrer,
+// //             user_agent: navigator.userAgent,
+// //             view_id: viewId
+// //           })
+// //         }
+// //       )
+
+// if (!userId){
+//   const  token =import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// }else {
+// const { data } = await supabase.auth.getSession()
 // const token = data.session?.access_token
-//       const response = await fetch(
-//         `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
-//         {
-//           method: 'POST',
-//           headers: {
-//             'Content-Type': 'application/json',
-//             'Authorization': `Bearer ${token}`
-//           },
-//           body: JSON.stringify({
-//             entity_type: entityType,
-//             entity_id: entityId,
-//             device_type: this.getDeviceType(),
-//             visitor_id: this.visitorId,
-//             session_id: this.sessionId,
-//             user_id: userId,
-//             referrer_url: document.referrer,
-//             user_agent: navigator.userAgent,
-//             view_id: viewId
-//           })
+// }
+
+// const headers: Record<string, string> = {
+//   "Content-Type": "application/json",
+// }
+
+// // ✅ Only attach token if exists
+// if (token) {
+//   headers["Authorization"] = `Bearer ${token}`
+// }
+
+// const response = await fetch(
+//   `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
+//   {
+//     method: "POST",
+//     headers,
+//     body: JSON.stringify({
+//       entity_type: entityType,
+//       entity_id: entityId,
+//       device_type: this.getDeviceType(),
+//       visitor_id: this.visitorId,
+//       session_id: this.sessionId,
+//       user_id: userId,
+//       referrer_url: document.referrer,
+//       user_agent: navigator.userAgent,
+//       view_id: viewId,
+//     }),
+//   }
+// )
+
+//       if (response.ok) {
+//         this.viewIds.set(viewKey, viewId)
+        
+//         if (trackTimeSpent) {
+//           this.startTrackingTime(entityType, entityId, viewId)
 //         }
-//       )
-
-const { data } = await supabase.auth.getSession()
-const token = data.session?.access_token
-
-const headers: Record<string, string> = {
-  "Content-Type": "application/json",
-}
-
-// ✅ Only attach token if exists
-if (token) {
-  headers["Authorization"] = `Bearer ${token}`
-}
-
-const response = await fetch(
-  `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
-  {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      entity_type: entityType,
-      entity_id: entityId,
-      device_type: this.getDeviceType(),
-      visitor_id: this.visitorId,
-      session_id: this.sessionId,
-      user_id: userId,
-      referrer_url: document.referrer,
-      user_agent: navigator.userAgent,
-      view_id: viewId,
-    }),
-  }
-)
-
-      if (response.ok) {
-        this.viewIds.set(viewKey, viewId)
         
-        if (trackTimeSpent) {
-          this.startTrackingTime(entityType, entityId, viewId)
-        }
-        
-        return viewId
-      }
-    } catch (error) {
-      console.error('Error tracking page view:', error)
-    }
+//         return viewId
+//       }
+//     } catch (error) {
+//       console.error('Error tracking page view:', error)
+//     }
     
-    return ''
+//     return ''
+//   }
+async trackView(
+  entityType: 'facility' | 'medical_professional',
+  entityId: string,
+  userId?: string,
+  trackTimeSpent: boolean = true
+): Promise<string> {
+  if (!this.visitorId) return '';
+
+  const viewKey = `${entityType}:${entityId}`;
+  const viewId = crypto.randomUUID();
+
+  try {
+    let token: string | null = null;
+    let useAnonKey = false;
+
+    // Determine token based on whether user is logged in
+    if (userId) {
+      // User is logged in – get session token
+      const { data } = await supabase.auth.getSession();
+      token = data.session?.access_token || null;
+      if (!token) {
+        console.warn('User ID provided but no active session');
+        // Fallback to anon key if no session (optional)
+        useAnonKey = true;
+      }
+    } else {
+      // Anonymous user – use anon key (or no auth header)
+      useAnonKey = true;
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else if (useAnonKey) {
+      // If you want to send an anon key (if your edge function allows public access)
+      headers['apikey'] = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // Or keep empty – depends on your edge function's auth requirements
+    }
+
+    const response = await fetch(
+      'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          entity_type: entityType,
+          entity_id: entityId,
+          device_type: this.getDeviceType(),
+          visitor_id: this.visitorId,
+          session_id: this.sessionId,
+          user_id: userId,
+          referrer_url: document.referrer,
+          user_agent: navigator.userAgent,
+          view_id: viewId,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      this.viewIds.set(viewKey, viewId);
+      if (trackTimeSpent) {
+        this.startTrackingTime(entityType, entityId, viewId);
+      }
+      return viewId;
+    } else {
+      console.error('Track view failed:', response.status, await response.text());
+    }
+  } catch (error) {
+    console.error('Error tracking page view:', error);
   }
 
+  return '';
+}
   private startTrackingTime(
     entityType: 'facility' | 'medical_professional',
     entityId: string,

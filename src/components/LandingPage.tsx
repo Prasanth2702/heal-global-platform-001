@@ -591,7 +591,8 @@ const LandingPage = () => {
   return (
     <>
       <SEOHead 
-        title="NextGen Medical Platform - AI-Enhanced Healthcare Ecosystem"
+        title="PMHS Smart Health - Advanced Healthcare Platform"
+        // title="NextGen Medical Platform - AI-Enhanced Healthcare Ecosystem"
         description="AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities in one powerful platform."
         keywords="medical platform, healthcare, AI medical, telemedicine, patient portal, doctor portal, medical records, appointments, HIPAA compliance, multilingual healthcare"
         jsonLd={[organizationSchema, medicalOrganizationSchema, webApplicationSchema, faqSchema]}

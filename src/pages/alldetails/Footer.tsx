@@ -262,7 +262,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logoFootor from "@/image/image.png";
+import logoFootor from "@/image/pmhs_logo_small.jpeg";
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -273,6 +273,7 @@ const Footer = () => {
       { name: 'Contact Us', path: '/contact' },
       { name: 'Privacy Policy', path: '/privacy' },
       { name: 'Terms of Service', path: '/terms' },
+      { name: 'Refund Policy', path: '/refund-policy' },
       { name: 'FAQs', path: '/faqs' },
       // { name: 'Blog', path: '/blog' },
     ];
@@ -303,32 +304,36 @@ const Footer = () => {
                <Link to="/" onClick={scrollToTop} className="flex items-center space-x-2">
                 <img
                   src={logoFootor}
-                  alt="Cloud Hospitals"
-                  className="h-25 w-25 rounded-md object-contain mt-1"
+                  alt="PMHS Smart Health"
+                  className="h-[100px] w-[150px] object-contain rounded-md "
                 />
               </Link>
-              <span className="text-xl font-bold">Cloud Hospitals</span>
+              <span className="text-xl font-bold">PMHS Smart Health</span>
               <p className="text-white-50 mb-3">
                 Your trusted partner in healthcare. We connect you with the best doctors, 
                 hospitals, and healthcare services to ensure you receive the care you deserve.
               </p>
-              <div className="d-flex gap-3">
-                <a href="#" className="text-white-50 hover-text-primary">
-                  <Facebook size={20} />
-                </a>
-                <a href="#" className="text-white-50 hover-text-primary">
-                  <Twitter size={20} />
-                </a>
-                <a href="#" className="text-white-50 hover-text-primary">
-                  <Instagram size={20} />
-                </a>
-                <a href="#" className="text-white-50 hover-text-primary">
-                  <Linkedin size={20} />
-                </a>
-                <a href="#" className="text-white-50 hover-text-primary">
-                  <Youtube size={20} />
-                </a>
-              </div>
+              <div className="flex gap-3">
+  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-600 transition duration-300">
+    <Facebook size={18} />
+  </a>
+
+  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-sky-500 transition duration-300">
+    <Twitter size={18} />
+  </a>
+
+  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-pink-500 transition duration-300">
+    <Instagram size={18} />
+  </a>
+
+  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-700 transition duration-300">
+    <Linkedin size={18} />
+  </a>
+
+  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-red-600 transition duration-300">
+    <Youtube size={18} />
+  </a>
+</div>
             </div>
 
             {/* Quick Links */}
@@ -379,7 +384,8 @@ const Footer = () => {
                 <li className="mb-2 d-flex align-items-start">
                   <MapPinIcon size={18} className="text-primary me-2 mt-1 flex-shrink-0" />
                   <span className="text-white-50">
-                    98/11, Wheeler Rd Ext, Opposite Music Central, D Costa Layout, Cooke Town, Bengaluru, Karnataka 560005.
+                    {/* 98/11, Wheeler Rd Ext, Opposite Music Central, D Costa Layout, Cooke Town, Bengaluru, Karnataka 560005. */}
+                    Wheelers Rd Ext, D Costa Layout, Cooke Town, Bengaluru, Karnataka - 560005
                   </span>
                 </li>
                 <li className="mb-2 d-flex align-items-center">
@@ -388,7 +394,7 @@ const Footer = () => {
                 </li>
                 <li className="mb-2 d-flex align-items-center">
                   <MailIcon size={18} className="text-primary me-2 flex-shrink-0" />
-                  <span className="text-white-50">support@cloudhospitals.ai</span>
+                  <span className="text-white-50">support@pmhssmarthealth.com</span>
                 </li>
               </ul>
             </div>
@@ -398,7 +404,7 @@ const Footer = () => {
           <div className="row mt-4 pt-3 border-top border-secondary">
             <div className="col-md-6 text-center text-md-start">
               <p className="text-white-50 small mb-0">
-                © {currentYear} Cloud Hospitals AI. All rights reserved. Site Maintained by{' '}
+                © {currentYear} PMHS Smart Health. All rights reserved. Site Maintained by{' '}
                 <a 
                   href="https://pmhstechsolutions.com/" 
                   className="text-blue-500" 
@@ -415,6 +421,9 @@ const Footer = () => {
               </Link>
               <Link to="/terms" onClick={scrollToTop} className="text-white-50 text-decoration-none small me-3">
                 Terms of Service
+              </Link>
+              <Link to="/refund-policy" onClick={scrollToTop} className="text-white-50 text-decoration-none small me-3">
+                Refund Policy
               </Link>
               <Link to="/cookies"onClick={scrollToTop} className="text-white-50 text-decoration-none small">
                 Cookie Policy

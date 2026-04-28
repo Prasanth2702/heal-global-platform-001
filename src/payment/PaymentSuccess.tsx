@@ -472,10 +472,10 @@ const verifyPayment = async () => {
           <p>Redirecting to appointment confirmation in {countdown} seconds...</p>
           <img 
             src="https://www.cloudhospitals.ai/assets/image-Bi3hJeSg.png" 
-            alt="CloudHospitals" 
+            alt="PMHS Smart Health" 
             className="h-8 mx-auto my-2 opacity-50"
           />
-          <p>Need help? Contact support@cloudhospitals.ai</p>
+          <p>Need help? Contact support@pmhssmarthealth.com</p>
         </div>
       </div>
     </div>

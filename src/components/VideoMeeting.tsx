@@ -979,12 +979,12 @@ const DocumentItem = ({ doc }: { doc: DocumentFile }) => {
         const meeting = new (window as any).VideoSDKMeeting();
         setMeetingInstance(meeting);
 
-        let backHref = "https://www.cloudhospitals.ai/"; // fallback
+        let backHref = "https://www.pmhssmarthealth.com/"; // fallback
 if (appointmentContext) {
   if (userRole === "patient" && appointmentContext.doctor_id) {
-    backHref = `https://www.cloudhospitals.ai/patient/appointment-doctor/${appointmentContext.doctor_id}/${appointmentId}`;
+    backHref = `https://www.pmhssmarthealth.com/patient/appointment-doctor/${appointmentContext.doctor_id}/${appointmentId}`;
   } else if (userRole === "doctor" && appointmentContext.patient_id) {
-    backHref = `https://www.cloudhospitals.ai//doctor/appointment-patient/${appointmentContext.patient_id}/${appointmentId}`;
+    backHref = `https://www.pmhssmarthealth.com/doctor/appointment-patient/${appointmentContext.patient_id}/${appointmentId}`;
   }
 }
         const config = {

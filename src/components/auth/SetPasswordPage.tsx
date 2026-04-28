@@ -241,8 +241,8 @@ const SetPasswordPage: React.FC<SetPasswordPageProps> = ({ redirectTo = '/dashbo
         <div className="p-8">
           <div className="text-center mb-8">
             <img 
-              src="https://www.cloudhospitals.ai/assets/image-Bi3hJeSg.png" 
-              alt="CloudHospitals.ai" 
+              src="https://www.pmhssmarthealth.com/assets/image-Bi3hJeSg.png" 
+              alt="PMHS Smart Health" 
               className="h-12 mx-auto mb-6"
             />
             <h1 className="text-2xl font-bold text-gray-900">Set Your Password</h1>

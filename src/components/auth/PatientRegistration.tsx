@@ -2090,22 +2090,22 @@ const PatientRegistration = () => {
     const errors: { [key: string]: string } = {};
     let valid = true;
 
-    const contactNameError = validateMinLength(formData.emergencyContactName, 3, "Emergency contact name");
-    if (contactNameError) {
-      errors.emergencyContactName = contactNameError;
-      valid = false;
-    }
+    // const contactNameError = validateMinLength(formData.emergencyContactName, 3, "Emergency contact name");
+    // if (contactNameError) {
+    //   errors.emergencyContactName = contactNameError;
+    //   valid = false;
+    // }
 
-    if (!emergencyPhoneNumber) {
-      errors.emergencyPhoneNumber = "Emergency contact phone is required";
-      valid = false;
-    } else if (emergencyPhoneNumber.length !== 10) {
-      errors.emergencyPhoneNumber = "Phone number must be 10 digits";
-      valid = false;
-    } else if (!/^\d+$/.test(emergencyPhoneNumber)) {
-      errors.emergencyPhoneNumber = "Phone number must contain only digits";
-      valid = false;
-    }
+    // if (!emergencyPhoneNumber) {
+    //   errors.emergencyPhoneNumber = "Emergency contact phone is required";
+    //   valid = false;
+    // } else if (emergencyPhoneNumber.length !== 10) {
+    //   errors.emergencyPhoneNumber = "Phone number must be 10 digits";
+    //   valid = false;
+    // } else if (!/^\d+$/.test(emergencyPhoneNumber)) {
+    //   errors.emergencyPhoneNumber = "Phone number must contain only digits";
+    //   valid = false;
+    // }
 
     setErrors(errors);
     return valid;
@@ -2589,8 +2589,8 @@ const saveStep1Data = async () => {
           state: formData.state,
           pincode: formData.pincode,
           country_code: formData.country_code,
-          emergency_contact_name: formData.emergencyContactName,
-          emergency_contact_number: emergencyContactCountryCode + emergencyPhoneNumber,
+          emergency_contact_name: formData.emergencyContactName || null,
+          emergency_contact_number: emergencyContactCountryCode + emergencyPhoneNumber || null,
         }, { onConflict: 'user_id' });
 
       if (patientError) {
@@ -3445,7 +3445,7 @@ const saveStep1Data = async () => {
         </h4>
 
         <div className="space-y-2">
-          <Label htmlFor="emergencyContact" className="label-required text-sm font-semibold text-gray-700">
+          <Label htmlFor="emergencyContact" className=" text-sm font-semibold text-gray-700">
             Emergency Contact Name
           </Label>
           <Input
@@ -3455,11 +3455,11 @@ const saveStep1Data = async () => {
             className={`border-2 ${errors.emergencyContactName ? "border-red-500" : "border-gray-200"} focus:border-orange-500`}
             placeholder="Full name of emergency contact"
           />
-          {errors.emergencyContactName && <p className="text-red-500 text-xs">{errors.emergencyContactName}</p>}
+          {/* {errors.emergencyContactName && <p className="text-red-500 text-xs">{errors.emergencyContactName}</p>} */}
         </div>
 
         <div className="space-y-2">
-          <Label className="label-required text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
+          <Label className=" text-sm font-semibold text-gray-700">Emergency Contact Phone</Label>
           <div className="flex space-x-2">
             <Select value={emergencyContactCountryCode} onValueChange={(value) => setEmergencyContactCountryCode(value)}>
               <SelectTrigger className="w-24 border-2 border-gray-200 focus:border-orange-500">
@@ -3488,7 +3488,7 @@ const saveStep1Data = async () => {
               />
             </div>
           </div>
-          {errors.emergencyPhoneNumber && <p className="text-red-500 text-xs">{errors.emergencyPhoneNumber}</p>}
+          {/* {errors.emergencyPhoneNumber && <p className="text-red-500 text-xs">{errors.emergencyPhoneNumber}</p>} */}
         </div>
       </div>
     </div>

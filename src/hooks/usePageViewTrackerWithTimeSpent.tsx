@@ -80,93 +80,6 @@ class PageViewTrackerWithTimeSpent {
     return 'desktop'
   }
 
-//   async trackView(
-//     entityType: 'facility' | 'medical_professional',
-//     entityId: string,
-//     userId?: string,
-//     trackTimeSpent: boolean = true
-//   ): Promise<string> {
-//     if (!this.visitorId) return ''
-
-//     const viewKey = `${entityType}:${entityId}`
-//     const viewId = crypto.randomUUID()
-    
-//     try {
-// //         const { data } = await supabase.auth.getSession()
-// // const token = data.session?.access_token
-// //       const response = await fetch(
-// //         `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
-// //         {
-// //           method: 'POST',
-// //           headers: {
-// //             'Content-Type': 'application/json',
-// //             'Authorization': `Bearer ${token}`
-// //           },
-// //           body: JSON.stringify({
-// //             entity_type: entityType,
-// //             entity_id: entityId,
-// //             device_type: this.getDeviceType(),
-// //             visitor_id: this.visitorId,
-// //             session_id: this.sessionId,
-// //             user_id: userId,
-// //             referrer_url: document.referrer,
-// //             user_agent: navigator.userAgent,
-// //             view_id: viewId
-// //           })
-// //         }
-// //       )
-
-// if (!userId){
-//   const  token =import.meta.env.VITE_SUPABASE_ANON_KEY
-
-// }else {
-// const { data } = await supabase.auth.getSession()
-// const token = data.session?.access_token
-// }
-
-// const headers: Record<string, string> = {
-//   "Content-Type": "application/json",
-// }
-
-// // ✅ Only attach token if exists
-// if (token) {
-//   headers["Authorization"] = `Bearer ${token}`
-// }
-
-// const response = await fetch(
-//   `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-page-view`,
-//   {
-//     method: "POST",
-//     headers,
-//     body: JSON.stringify({
-//       entity_type: entityType,
-//       entity_id: entityId,
-//       device_type: this.getDeviceType(),
-//       visitor_id: this.visitorId,
-//       session_id: this.sessionId,
-//       user_id: userId,
-//       referrer_url: document.referrer,
-//       user_agent: navigator.userAgent,
-//       view_id: viewId,
-//     }),
-//   }
-// )
-
-//       if (response.ok) {
-//         this.viewIds.set(viewKey, viewId)
-        
-//         if (trackTimeSpent) {
-//           this.startTrackingTime(entityType, entityId, viewId)
-//         }
-        
-//         return viewId
-//       }
-//     } catch (error) {
-//       console.error('Error tracking page view:', error)
-//     }
-    
-//     return ''
-//   }
 async trackView(
   entityType: 'facility' | 'medical_professional',
   entityId: string,
@@ -272,40 +185,53 @@ async trackView(
     this.visibilityTimers.set(viewKey, timer)
   }
 
-  private async updateTimeSpent(
-    viewId: string,
-    timeSpent: number,
-    entityType: 'facility' | 'medical_professional',
-    entityId: string
-  ) {
-    if (timeSpent < 2) return // Only update if more than 2 seconds
-    
-    try {
-        const { data } = await supabase.auth.getSession()
-const token = data.session?.access_token
-      await fetch(
-        `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-time-spent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            view_id: viewId,
-            time_spent: timeSpent,
-            entity_type: entityType,
-            entity_id: entityId,
-            session_id: this.sessionId,
-            visitor_id: this.visitorId
-          })
-        }
-      )
+private async updateTimeSpent(
+  viewId: string,
+  timeSpent: number,
+  entityType: 'facility' | 'medical_professional',
+  entityId: string
+) {
+  if (timeSpent < 2) return;
 
-    } catch (error) {
-      console.error('Error updating time spent:', error)
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      // ✅ fallback for anonymous users
+      headers['apikey'] = import.meta.env.VITE_SUPABASE_ANON_KEY;
     }
+
+    const response = await fetch(
+      `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/track-time-spent`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          view_id: viewId,
+          time_spent: timeSpent,
+          entity_type: entityType,
+          entity_id: entityId,
+          session_id: this.sessionId,
+          visitor_id: this.visitorId
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Time spent API failed:', await response.text());
+    }
+
+  } catch (error) {
+    console.error('Error updating time spent:', error);
   }
+}
 
   private pauseTimeTracking(
     entityType: 'facility' | 'medical_professional',
@@ -390,6 +316,26 @@ export const usePageViewTrackerWithTimeSpent = () => {
     
     return viewId
   }, [])
+  const manualUpdateTimeSpent = useCallback(async (
+  entityType: 'facility' | 'medical_professional',
+  entityId: string,
+  timeSpent: number
+) => {
+  const viewKey = `${entityType}:${entityId}`
+  const viewId = activeViewsRef.current.get(viewKey)
+
+  if (!viewId) {
+    console.warn("No viewId found for manual update")
+    return
+  }
+
+  await tracker["updateTimeSpent"](
+    viewId,
+    timeSpent,
+    entityType,
+    entityId
+  )
+}, [])
 
   const stopTracking = useCallback((
     entityType: 'facility' | 'medical_professional',
@@ -414,5 +360,5 @@ export const usePageViewTrackerWithTimeSpent = () => {
     }
   }, [])
 
-  return { trackPageView, stopTracking }
+  return { trackPageView, stopTracking,manualUpdateTimeSpent }
 }

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
 import Footer from "@/pages/alldetails/Footer";
 import Loader3 from "../ui/Loader3";
+import logodashboard from "../../image/pmhs_logo_small.jpeg";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -178,7 +179,7 @@ const checkBedManagementDepartment = async () => {
 
   const userTypeConfig = {
     patient: {
-      title: "NextGen Medical - Patient Dashboard",
+      title: "PMHS Smart Health - Patient Dashboard",
       variant: "patient" as const,
       routes: [
         { path: "/dashboard/patient", label: "Dashboard", icon: TrendingUp },
@@ -245,7 +246,7 @@ const checkBedManagementDepartment = async () => {
   //     ]
     },
     doctor: {
-      title: "NextGen Medical - Doctor Dashboard",
+      title: "PMHS Smart Health - Doctor Dashboard",
       variant: "doctor" as const,
       routes: [
         { path: "/dashboard/doctor", label: "Dashboard", icon: TrendingUp },
@@ -285,7 +286,7 @@ const checkBedManagementDepartment = async () => {
   //   ]
     },
     facility: {
-      title: "NextGen Medical - Facility Dashboard",
+      title: "PMHS Smart Health - Facility Dashboard",
       variant: "facility" as const,
       routes: [
         { path: "/dashboard/facility", label: "Dashboard", icon: TrendingUp },
@@ -385,7 +386,7 @@ const checkBedManagementDepartment = async () => {
   //   }]
     },
     admin: {
-      title: "NextGen Medical - Admin Dashboard",
+      title: "PMHS Smart Health - Admin Dashboard",
       variant: "admin" as const,
       routes: [
         { path: "/dashboard/admin", label: "Overview", icon: TrendingUp },
@@ -422,7 +423,7 @@ const checkBedManagementDepartment = async () => {
 // ]
     },
     hospital_staff: {
-      title: "NextGen Medical - Hospital staff Dashboard",
+      title: "PMHS Smart Health - Hospital staff Dashboard",
       variant: "hospital_staff" as const,
       routes: [
         { path: "/dashboard/staff", label: "Overview", icon: TrendingUp },
@@ -514,12 +515,12 @@ const checkBedManagementDepartment = async () => {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <div className="flex items-center space-x-2">
-            {/* <img
-    src="/favicon.svg"
-    alt="NextGen Medical"
+            <img
+    src={logodashboard}
+    alt="PMHS Smart Health"
     className="h-8 w-8 rounded-md object-contain"
-  /> */}
-            <span className="font-bold text-lg">NextGen Medical</span>
+  />
+            <span className="font-bold text-lg">PMHS Smart Health</span>
           </div>
           <Button
             variant="ghost"

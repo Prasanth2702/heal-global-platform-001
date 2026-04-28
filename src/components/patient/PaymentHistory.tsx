@@ -208,7 +208,7 @@ const appointmentIds = paymentsData
           </div>
           
           <div className="bg-gray-50 rounded p-3 text-center text-xs text-gray-500 mt-4">
-            This is a system generated receipt. For any queries, contact support@cloudhospitals.ai
+            This is a system generated receipt. For any queries, contact support@pmhssmarthealth.com
           </div>
         </div>
         

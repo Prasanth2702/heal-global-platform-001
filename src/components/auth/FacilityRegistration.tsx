@@ -2327,15 +2327,15 @@ const [showMap, setShowMap] = useState(false);
         if (value.length !== 6) return "Pincode must be 6 digits";
         if (!/^\d+$/.test(value)) return "Pincode must contain only digits";
         return "";
-      case 'licenseNumber':
-        if (!value) return "License number is required";
-        if (value.length < 5) return "License number must be at least 5 characters";
-        return "";
-      case 'establishedYear':
-        if (!value) return "Established year is required";
-        const currentYear = new Date().getFullYear();
-        if (value < 1900 ) return `Year must be between 1900 and ${currentYear}`;
-        return "";
+      // case 'licenseNumber':
+      //   if (!value) return "License number is required";
+      //   if (value.length < 5) return "License number must be at least 5 characters";
+      //   return "";
+      // case 'establishedYear':
+      //   if (!value) return "Established year is required";
+      //   const currentYear = new Date().getFullYear();
+      //   if (value < 1900 ) return `Year must be between 1900 and ${currentYear}`;
+      //   return "";
       case 'departments':
         if (!value || value.length === 0) return "Please select at least one department";
         return "";
@@ -2696,7 +2696,7 @@ const [showMap, setShowMap] = useState(false);
         departments: formData.departments,
         facility_name: formData.facilityName,
         facility_type: formData.facilityType,
-        license_number: formData.licenseNumber,
+        license_number: formData.licenseNumber || null,
         established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
         is_verified: true,
         created_at: new Date().toISOString(),
@@ -2740,7 +2740,7 @@ const [showMap, setShowMap] = useState(false);
               password: password,
               facilityName: formData.facilityName,
               facilityType: formData.facilityType,
-              licenseNumber: formData.licenseNumber,
+              licenseNumber: formData.licenseNumber || null,
               userId: userId,
             }),
           }
@@ -3441,7 +3441,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="label-required" htmlFor="licenseNumber">Medical License Number</Label>
+          <Label  htmlFor="licenseNumber">Medical License Number</Label>
           <Input
             id="licenseNumber"
             value={formData.licenseNumber}
@@ -3456,10 +3456,10 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             className={touchedFields.licenseNumber && fieldErrors.licenseNumber ? "border-red-500" : ""}
             placeholder="Enter license number"
           />
-          {renderFieldError('licenseNumber')}
+          {/* {renderFieldError('licenseNumber')} */}
         </div>
         <div>
-          <Label className="label-required" htmlFor="establishedYear">Established Year</Label>
+          <Label  htmlFor="establishedYear">Established Year</Label>
           <Input
             id="establishedYear"
             type="number"
@@ -3476,7 +3476,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             className={touchedFields.establishedYear && fieldErrors.establishedYear ? "border-red-500" : ""}
             placeholder="Enter year"
           />
-          {renderFieldError('establishedYear')}
+          {/* {renderFieldError('establishedYear')} */}
         </div>
       </div>
 

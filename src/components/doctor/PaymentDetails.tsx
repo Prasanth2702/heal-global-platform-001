@@ -217,7 +217,7 @@ patients.forEach(patient => {
               </div>
             </div>
             <div className="bg-gray-50 rounded p-3 text-center text-xs text-gray-500 mt-4">
-              This is a system generated receipt. For any queries, contact support@cloudhospitals.ai
+              This is a system generated receipt. For any queries, contact support@pmhssmarthealth.com
             </div>
           </div>
           <div className="sticky bottom-0 bg-white border-t px-6 py-3 flex justify-end">

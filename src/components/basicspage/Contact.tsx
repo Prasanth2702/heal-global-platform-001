@@ -239,7 +239,7 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">UK Office</h3>
                     <p className="info-content text-gray-600">
-                      Cloud Hospitals LLC
+                      PMHS Smart Health LLC
                       <br />
                       128 City Road
                       <br />
@@ -253,7 +253,7 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">Dubai Office</h3>
                     <p className="info-content text-gray-600">
-                      Cloud Hospitals 
+                      PMHS Smart Health LLC
                       <br />
                       Al Quasis,
                       <br />
@@ -272,7 +272,7 @@ const Contact = () => {
                   <div className="contact-info-section">
                     <h3 className="info-title font-bold mb-2">USA Office</h3>
                     <p className="info-content text-gray-600">
-                      Cloud Hospitals LLC
+                      PMHS Smart Health LLC
                       <br />
                       8 The Green Suite B, Dover, Delaware 19901
                       <br />
@@ -290,18 +290,18 @@ const Contact = () => {
                     <h3 className="info-title font-bold mb-2">Email</h3>
                     <p className="info-content text-gray-600">
                       <a
-                        href="mailto:contact@cloudhospitals.ai"
+                        href="mailto:contact@pmhssmarthealth.com"
                         className="text-blue-600"
                       >
-                        contact@cloudhospitals.ai
+                        contact@pmhssmarthealth.com
                       </a>
                     </p>
                     <p className="info-content text-gray-600">
                       <a
-                        href="mailto:support@cloudhospitals.ai"
+                        href="mailto:support@pmhssmarthealth.com"
                         className="text-blue-600"
                       >
-                        support@cloudhospitals.ai
+                        support@pmhssmarthealth.com
                       </a>
                     </p>
                   </div>
@@ -312,7 +312,7 @@ const Contact = () => {
                 <h3 className="info-title font-bold mb-4">Our Location</h3>
                 <div className="map-container mb-4">
                   <iframe
-                    title="CloudHospitals Healthcare Services Location"
+                    title="PMHS Smart Health Healthcare Services Location"
                     width="100%"
                     height="300"
                     frameBorder="0"

@@ -2198,7 +2198,8 @@ const [showMap, setShowMap] = useState(false);
     pincode: '',
     medicalSpeciality: "",
     licenseNumber: "",
-    graduationYear: new Date().getFullYear(),
+    graduationYear: 0,
+    // graduationYear: new Date().getFullYear(),
     medicalSchool: "",
     yearsOfExperience: 0,
     languagesKnown: "",
@@ -2347,10 +2348,10 @@ const [showMap, setShowMap] = useState(false);
       valid = false;
     }
 
-    if (!formData.licenseNumber) {
-      errors.licenseNumber = "License number is required";
-      valid = false;
-    }
+    // if (!formData.licenseNumber) {
+    //   errors.licenseNumber = "License number is required";
+    //   valid = false;
+    // }
 
     if (!formData.graduationYear) {
       errors.graduationYear = "Graduation year is required";
@@ -2628,7 +2629,7 @@ const handleSignUp = async () => {
           // email: formData.emailAddress,
           // phone_number: fullPhoneNumber,
           medical_speciality: formData.medicalSpeciality,
-          license_number: formData.licenseNumber,
+          license_number: formData.licenseNumber || null,
           graduation_year: formData.graduationYear,
           medical_school: formData.medicalSchool,
           years_experience: formData.yearsOfExperience,
@@ -3425,13 +3426,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
       <div>
           <Label className="latitude" htmlFor="latitude">Latitude</Label>
-          {/* <Input
-            id="latitude"
-            value={formData.latitude}
-            onChange={(e) => {
-              setFormData({ ...formData, latitude: Number(e.target.value) });
-            }}
-          /> */}
+        
           <Input
   id="latitude"
   type="number"
@@ -3445,13 +3440,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         </div>
         <div>
           <Label className="longitude" htmlFor="longitude">Longitude</Label>
-          {/* <Input
-            id="longitude"
-            value={formData.longitude}
-            onChange={(e) => {
-              setFormData({ ...formData, longitude: Number(e.target.value) });
-            }}
-          /> */}
+          
           <Input
   id="longitude"
   type="number"
@@ -3510,7 +3499,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="licenseNumber" className="label-required text-sm font-semibold text-gray-700">
+          <Label htmlFor="licenseNumber" className=" text-sm font-semibold text-gray-700">
             <FileText className="inline h-4 w-4 mr-1 text-purple-500" />
             License Number
           </Label>
@@ -3521,7 +3510,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
             className={`border-2 ${errors.licenseNumber ? "border-red-500" : "border-gray-200"}`}
             placeholder="Medical license number"
           />
-          {errors.licenseNumber && <p className="text-red-500 text-xs">{errors.licenseNumber}</p>}
+          {/* {errors.licenseNumber && <p className="text-red-500 text-xs">{errors.licenseNumber}</p>} */}
         </div>
 
         <div className="space-y-2">

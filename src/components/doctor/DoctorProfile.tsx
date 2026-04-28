@@ -1223,10 +1223,10 @@ const removeMembership = (index: number) => {
       valid = false;
     }
     
-    if (!formData.licenseNumber) {
-      errors.licenseNumber = 'License number is required';
-      valid = false;
-    }
+    // if (!formData.licenseNumber) {
+    //   errors.licenseNumber = 'License number is required';
+    //   valid = false;
+    // }
     
     // if (!formData.graduationYear || formData.graduationYear < 1900 || formData.graduationYear > new Date().getFullYear()) {
     //   errors.graduationYear = 'Invalid graduation year';

@@ -1477,7 +1477,7 @@ const Sidebar = () => (
               </div>
               <h5 className="fw-bold mb-2">Email Us</h5>
               <p className="text-muted mb-2">Get support via email</p>
-              <h6 className="text-success">support@cloudhospitals.ai</h6>
+              <h6 className="text-success">support@pmhssmarthealth.com</h6>
             </div>
           </div>
           

@@ -112,7 +112,7 @@ const RefundPolicy = () => {
                   To cancel an appointment or request a refund:
                 </p>
                 <ol className="list-decimal pl-6 text-gray-700 space-y-1">
-                  <li>Log in to your cloudhospitals.ai account</li>
+                  <li>Log in to your pmhssmarthealth.com account</li>
                   <li>Go to "My Bookings" section</li>
                   <li>Select the booking you wish to cancel</li>
                   <li>Click on "Cancel Booking" and follow the instructions</li>
@@ -125,7 +125,7 @@ const RefundPolicy = () => {
                   9. Policy Acceptance
                 </h2>
                 <p className="text-gray-700">
-                  By booking appointments, beds, or diagnostic tests through cloudhospitals.ai, you acknowledge and agree to this Cancellation & Refund Policy. Different healthcare providers may have slightly varying cancellation policies, which will be clearly displayed at the time of booking.
+                  By booking appointments, beds, or diagnostic tests through pmhssmarthealth.com, you acknowledge and agree to this Cancellation & Refund Policy. Different healthcare providers may have slightly varying cancellation policies, which will be clearly displayed at the time of booking.
                 </p>
               </div>
 
@@ -147,19 +147,19 @@ const RefundPolicy = () => {
                   <p>
                     <strong>Email:</strong>{" "}
                     <a
-                      href="mailto:refunds@cloudhospitals.ai"
+                      href="mailto:refunds@pmhssmarthealth.com"
                       className="text-blue-600 hover:underline"
                     >
-                      refunds@cloudhospitals.ai
+                      refunds@pmhssmarthealth.com
                     </a>
                   </p>
                   <p>
                     <strong>Support:</strong>{" "}
                     <a
-                      href="mailto:support@cloudhospitals.ai"
+                      href="mailto:support@pmhssmarthealth.com"
                       className="text-blue-600 hover:underline"
                     >
-                      support@cloudhospitals.ai
+                      support@pmhssmarthealth.com
                     </a>
                   </p>
                   <p>

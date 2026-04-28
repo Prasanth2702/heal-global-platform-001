@@ -433,7 +433,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import logoheader from "@/image/Gemini.png";
+import logoheader from "@/image/pmhs_logo_small.jpeg";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -596,14 +596,14 @@ const Header = () => {
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity" 
               onClick={closeMobileMenu}
             >
-              <img
-                src={logoheader}
-                alt="Cloud Hospitals"
-                className="h-8 w-8 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-md object-contain"
-              />
-              <span className="text-sm sm:text-base md:text-lg font-bold truncate max-w-[150px] sm:max-w-[200px] md:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
-                CloudHospitals.ai
-              </span>
+             <img
+  src={logoheader}
+  alt="PMHS Smart Health"
+  className="h-20 w-20 sm:h-24 sm:w-24 md:h-32 md:w-32 lg:h-36 lg:w-36 object-contain"
+/>
+              {/* <span className="text-sm sm:text-base md:text-lg font-bold truncate max-w-[150px] sm:max-w-[200px] md:max-w-none bg-gradient-to-r from-gray-600 to-gray-600 bg-clip-text text-transparent">
+                PMHS Smart Health
+              </span> */}
             </Link>
 
             {/* Desktop Navigation - hidden on mobile, visible from md up */}

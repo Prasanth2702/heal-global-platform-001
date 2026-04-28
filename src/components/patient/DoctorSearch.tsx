@@ -4251,6 +4251,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
 const { trackPageView } = usePageViewTrackerWithTimeSpent();
+// const { trackPageView,manualUpdateTimeSpent } = usePageViewTrackerWithTimeSpent();
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("all");
@@ -4705,6 +4706,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
     user?.id,
     { trackTimeSpent: true }
   );
+  // await manualUpdateTimeSpent("medical_professional", doctorId, 10);
 
     if (!user) {
       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, { state: { doctorData: doctor } });
@@ -4725,6 +4727,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
     user?.id,
     { trackTimeSpent: true }
   );
+  // await manualUpdateTimeSpent("facility", facilityId, 10);
     const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
     navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'overview', from: 'search' } });
   };
@@ -4737,6 +4740,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
     user?.id,
     { trackTimeSpent: true }
   );
+  // await manualUpdateTimeSpent("facility", facilityId, 10);
     const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
     navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'departments', from: 'search' } });
   };
@@ -4749,6 +4753,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
       user?.id,
       { trackTimeSpent: true }
     );
+    // await manualUpdateTimeSpent("facility", department.facility_id, 10);
     navigate(`${path}/${createSlug(department.name || "")}/${department.id}`, { state: { facility: facilities.find(f => f.id === department.facility_id) } });
   };
 

@@ -748,6 +748,7 @@ const [bannerUrl, setBannerUrl] = useState('');
           aboutFacility: facilitiesData.about_facility,
           bannerUrl: facilitiesData.banner_url || '',
         }));
+        setBannerUrl(facilitiesData.banner_url || '');
       }
        await fetchUserDocuments(user.id);
     }

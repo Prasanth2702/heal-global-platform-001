@@ -1918,7 +1918,12 @@ const useDeviceType = () => {
 const Hometab: React.FC = () => {
   const navigate = useNavigate();
   const deviceType = useDeviceType(); // 'mobile', 'tablet', 'desktop'
-  
+  const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+};
   // Responsive text size helpers
   const getTextSizeClass = (base: string, sm?: string, md?: string, lg?: string) => {
     if (deviceType === 'mobile') return sm || 'text-xs';
@@ -2048,8 +2053,10 @@ const Hometab: React.FC = () => {
       if (!user) {
         if (path) {
           navigate(path);
+          scrollToTop();
         } else {
           navigate('/appointment');
+          scrollToTop();
         }
         return;
       }
@@ -2065,6 +2072,7 @@ const Hometab: React.FC = () => {
       }
     }
     navigate(path);
+    scrollToTop();
   };
   
   const fetchDoctors = async () => {

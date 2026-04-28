@@ -1560,16 +1560,37 @@ const getLiveStatus = (booking: BedBooking) => {
 
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-2">
-            <TabsTrigger value="current" className="space-x-2">
-              <Activity className="h-4 w-4" />
-              <span>Current Bookings ({currentBookings.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="past" className="space-x-2">
-              <Clock className="h-4 w-4" />
-              <span>Booking History ({pastBookings.length})</span>
-            </TabsTrigger>
-          </TabsList>
+         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-2">
+
+  <TabsTrigger
+    value="current"
+    className="
+      flex items-center gap-2
+      transition-all duration-200
+      hover:bg-blue-50
+      data-[state=active]:bg-blue-600
+      data-[state=active]:text-white
+    "
+  >
+    <Activity className="h-4 w-4" />
+    <span>Current Bookings ({currentBookings.length})</span>
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="past"
+    className="
+      flex items-center gap-2
+      transition-all duration-200
+      hover:bg-gray-100
+      data-[state=active]:bg-gray-700
+      data-[state=active]:text-white
+    "
+  >
+    <Clock className="h-4 w-4" />
+    <span>Booking History ({pastBookings.length})</span>
+  </TabsTrigger>
+
+</TabsList>
 
           <TabsContent value={activeTab} className="space-y-6">
             {displayedBookings.length === 0 ? (

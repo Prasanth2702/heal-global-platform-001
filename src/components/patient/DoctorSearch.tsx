@@ -4872,7 +4872,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
                 <Button
                   variant="outline"
                   onClick={() => setDoctorPage(doctorPage + 1)}
-                  className="border-blue-200 hover:bg-blue-50 h-20 px-6 bg-blue-700 text-xl text-white font-medium "
+                 className="bg-blue-700 text-white hover:bg-blue-800 h-20 px-6 text-xl font-medium"
                 >
                   Load More Doctors
                 </Button>
@@ -4953,7 +4953,7 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
               <Button
                 variant="outline"
                 onClick={() => setHospitalPage(hospitalPage + 1)}
-                className="border-green-200 hover:bg-green-50 h-20 px-6 bg-green-700 text-xl text-white font-medium"
+                className="bg-green-700 text-white hover:bg-green-800 h-20 px-6 text-xl font-medium"
               >
                 Load More Hospitals
               </Button>

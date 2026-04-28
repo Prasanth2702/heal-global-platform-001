@@ -1525,13 +1525,43 @@ const handleBookAppointmentClick = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+          {/* <TabsList className="grid w-full grid-cols-3 lg:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="experience">Experience</TabsTrigger>
             <TabsTrigger value="availability">Availability</TabsTrigger>
-            {/* <TabsTrigger value="reviews">Reviews</TabsTrigger> */}
-          </TabsList>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          </TabsList> */}
+   <TabsList className="grid w-full grid-cols-3 lg:w-auto">
 
+  <TabsTrigger
+    value="overview"
+    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+  >
+    Overview
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="experience"
+    className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+  >
+    Experience
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="availability"
+    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+  >
+    Availability
+  </TabsTrigger>
+
+  {/* <TabsTrigger
+    value="reviews"
+    className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+  >
+    Reviews
+  </TabsTrigger> */}
+
+</TabsList>
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
@@ -2202,13 +2232,43 @@ selectedDate.setDate(
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+          {/* <TabsList className="grid w-full grid-cols-4 lg:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="departments">Departments</TabsTrigger>
             <TabsTrigger value="doctors">Doctors</TabsTrigger>
             <TabsTrigger value="facilities">Facilities</TabsTrigger>
-          </TabsList>
+          </TabsList> */}
+<TabsList className="grid w-full grid-cols-4 lg:w-auto">
+  
+  <TabsTrigger
+    value="overview"
+    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+  >
+    Overview
+  </TabsTrigger>
 
+  <TabsTrigger
+    value="departments"
+    className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+  >
+    Departments
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="doctors"
+    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+  >
+    Doctors
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="facilities"
+    className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+  >
+    Facilities
+  </TabsTrigger>
+
+</TabsList>
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">

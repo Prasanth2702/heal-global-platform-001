@@ -1268,7 +1268,7 @@ import {
   MapPin as MapPinIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Header from '@/pages/alldetails/Header';
 import Footer from '@/pages/alldetails/Footer';
 import { toast } from '@/hooks/use-toast';
@@ -1286,7 +1286,14 @@ const HomeLoginPage: React.FC<HomeLoginPageProps> = ({ children }) => {
   const { view } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [currentView, setCurrentView] = useState<ViewType>('all');
+const location = useLocation();
 
+useEffect(() => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}, [location.pathname]);
   useEffect(() => {
     if (view === 'doctors') {
       setCurrentView('doctors');
@@ -1311,6 +1318,11 @@ const HomeLoginPage: React.FC<HomeLoginPageProps> = ({ children }) => {
     } else if (viewType === "beds") {
       navigate(`/appointment/beds`);
     }
+
+    window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
   };
 
   // Sidebar Component

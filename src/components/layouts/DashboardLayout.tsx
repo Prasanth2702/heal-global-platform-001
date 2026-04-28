@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
 import Footer from "@/pages/alldetails/Footer";
 import Loader3 from "../ui/Loader3";
-import logodashboard from "../../image/pmhs_logo_small.jpeg";
+import logodashboard from "../../image/pmhs_logo_small.png";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

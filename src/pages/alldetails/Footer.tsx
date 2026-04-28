@@ -262,7 +262,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logoFootor from "@/image/pmhs_logo_small.jpeg";
+import logoFootor from "@/image/pmhs_logo_small.png";
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();

@@ -433,7 +433,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import logoheader from "@/image/pmhs_logo_small.jpeg";
+import logoheader from "@/image/pmhs_logo_small.png";
 
 const Header = () => {
   const navigate = useNavigate();

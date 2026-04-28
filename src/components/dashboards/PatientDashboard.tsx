@@ -641,7 +641,7 @@ const recentReports = [
           </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link to="/dashboard/patient/appointments" className="block cursor-pointer">
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-purple-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
@@ -665,25 +665,25 @@ const recentReports = [
           </CardHeader>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
+        {/* <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-orange-100">Active Prescriptions</CardTitle>
             <CardDescription className="text-3xl font-bold text-white flex items-center">
               <Heart className="h-6 w-6 mr-2" />
-              {/* 3 */}0
+               3 0
             </CardDescription>
           </CardHeader>
-        </Card>
+        </Card> */}
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
+        {/* <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-purple-100">Health Score</CardTitle>
             <CardDescription className="text-3xl font-bold text-white flex items-center">
               <Star className="h-6 w-6 mr-2" />
-              {/* 85% */}0
+              0
             </CardDescription>
           </CardHeader>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Main Content Grid */}

@@ -2836,7 +2836,7 @@ const Hometab: React.FC = () => {
                   <PatientProtectedButton 
                     className={`btn btn-light text-success fw-bold ${getTextSizeClass('text-sm', 'text-xs', 'text-base')} px-3 md:px-4 py-1 md:py-2 w-full sm:w-auto text-center`} 
                     onClick={() => handleNavigation('/dashboard/patient/hospitals', true)} 
-                    path="/appointment/facility"
+                    path="/appointment/hospitals"
                   >
                     View All Hospitals →
                   </PatientProtectedButton>

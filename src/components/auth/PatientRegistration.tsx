@@ -1916,6 +1916,23 @@ const PatientRegistration = () => {
   // Store Step 1 Data After Submission
   const [step1Completed, setStep1Completed] = useState(false);
   const [savedUserId, setSavedUserId] = useState<string>('');
+const isAtLeast16 = (date: Date) => {
+  const currentYear = new Date().getFullYear();
+
+  const minDate = new Date(
+    currentYear - 16,
+    11, // December
+    31
+  );
+
+  return date <= minDate;
+};
+
+const currentYear = new Date().getFullYear();
+
+const maxDate = new Date(currentYear - 16, 11, 31)
+  .toISOString()
+  .split("T")[0];
 
   const [formData, setFormData] = useState<Patient>({
     firstName: '',
@@ -2173,7 +2190,7 @@ const PatientRegistration = () => {
     }
   }, [formData.country_code, formData.state, countries, states]);
 
-  const currentYear = new Date().getFullYear();
+  // const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
   // Date handlers
@@ -2187,22 +2204,107 @@ const PatientRegistration = () => {
     }
   };
 
-  const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
+//   const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
+//     if (
+//       updatedManualDate.manualYear &&
+//       updatedManualDate.manualMonth &&
+//       updatedManualDate.manualDay
+//     ) {
+//       const monthIndex = months.indexOf(updatedManualDate.manualMonth);
+//       const dateString = `${updatedManualDate.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(updatedManualDate.manualDay).padStart(2, '0')}`;
+//       const newDate = new Date(dateString);
+    
+//    const currentYear = new Date().getFullYear();
+
+// const minAllowedDate = new Date(
+//   currentYear - 16,
+//   11, // December (0-based index)
+//   31  // Last day of year
+// );
+
+//     if (newDate > minAllowedDate) {
+//       setErrors((prev) => ({
+//         ...prev,
+//         dateOfBirth: "You must be at least 16 years old",
+//       }));
+//       return;
+//     }
+
+//     // ✅ Clear error if valid
+//     setErrors((prev) => ({
+//       ...prev,
+//       dateOfBirth: "",
+//     }));
+    
+    
+//       setDate(newDate);
+//       setFormData(prev => ({
+//         ...prev,
+//         dateOfBirth: dateString
+//       }));
+//     }
+//   };
+const handleManualDateChange = (updatedManualDate: {
+  manualYear: string;
+  manualMonth: string;
+  manualDay: string;
+}) => {
+  const { manualYear, manualMonth, manualDay } = updatedManualDate;
+
+  if (manualYear && manualMonth && manualDay) {
+    const monthIndex = months.indexOf(manualMonth);
+
+    // ❌ Safety check
+    if (monthIndex === -1) return;
+
+    // ✅ Create date safely (avoid string parsing issues)
+    const newDate = new Date(
+      Number(manualYear),
+      monthIndex,
+      Number(manualDay)
+    );
+
+    // ❌ Invalid date check (e.g., Feb 30)
     if (
-      updatedManualDate.manualYear &&
-      updatedManualDate.manualMonth &&
-      updatedManualDate.manualDay
+      newDate.getFullYear() !== Number(manualYear) ||
+      newDate.getMonth() !== monthIndex ||
+      newDate.getDate() !== Number(manualDay)
     ) {
-      const monthIndex = months.indexOf(updatedManualDate.manualMonth);
-      const dateString = `${updatedManualDate.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(updatedManualDate.manualDay).padStart(2, '0')}`;
-      const newDate = new Date(dateString);
-      setDate(newDate);
-      setFormData(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        dateOfBirth: dateString
+        dateOfBirth: "Invalid date selected",
       }));
+      return;
     }
-  };
+
+    // ✅ Year-end 16 age rule
+    const currentYear = new Date().getFullYear();
+    const minAllowedDate = new Date(currentYear - 16, 11, 31);
+
+    if (newDate > minAllowedDate) {
+      setErrors((prev) => ({
+        ...prev,
+        dateOfBirth: "You must be at least 16 years old",
+      }));
+      return;
+    }
+
+    // ✅ Clear error
+    setErrors((prev) => ({
+      ...prev,
+      dateOfBirth: "",
+    }));
+
+    // ✅ Format date safely
+    const dateString = `${manualYear}-${String(monthIndex + 1).padStart(2, "0")}-${String(manualDay).padStart(2, "0")}`;
+
+    setDate(newDate);
+    setFormData((prev) => ({
+      ...prev,
+      dateOfBirth: dateString,
+    }));
+  }
+};
 
   const generateCandidateId = (): string => {
     const year = new Date().getFullYear().toString();
@@ -3036,6 +3138,8 @@ const saveStep1Data = async () => {
         <br />• At least 1 special character (@$!%*?&)
       </p>
 
+       
+
       <div className="space-y-3 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
         <div className="flex items-center space-x-3">
           <Checkbox
@@ -3072,12 +3176,12 @@ const saveStep1Data = async () => {
         <p className="text-sm text-gray-500">Help us provide better care</p>
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label className="label-required text-sm font-semibold text-gray-700">Date of Birth</Label>
         <div className="flex items-center space-x-3">
           <div className="relative flex-1">
             <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
+            {/* <Input
               type="date"
               value={formData.dateOfBirth}
               onChange={(e) => {
@@ -3087,7 +3191,152 @@ const saveStep1Data = async () => {
               }}
               disabled={showManualDate}
               className={`pl-9 border-2 ${errors.dateOfBirth ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
-            />
+            /> 
+            <Input
+  type="date"
+  value={formData.dateOfBirth}
+  onChange={(e) => {
+    const selectedDate = new Date(e.target.value);
+
+    if (!isAtLeast16(selectedDate)) {
+      setErrors((prev) => ({
+        ...prev,
+        dateOfBirth: "You must be at least 16 years old",
+      }));
+      return;
+    }
+
+    setErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+
+    handleDateSelect(selectedDate);
+    setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }));
+  }}
+  max={new Date(
+    new Date().getFullYear() - 16,
+    new Date().getMonth(),
+    new Date().getDate()
+  ).toISOString().split("T")[0]}
+  disabled={showManualDate}
+  className={`pl-9 border-2 ${errors.dateOfBirth ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
+/>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowManualDate(!showManualDate)}
+            className="border-2 border-gray-200 hover:border-purple-500"
+          >
+            <Globe className="mr-2 h-4 w-4" />
+            Manual
+          </Button>
+        </div>
+        {errors.dateOfBirth && <p className="text-red-500 text-xs">{errors.dateOfBirth}</p>}
+
+        {showManualDate && (
+          <div className="grid grid-cols-3 gap-3 p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+            <div>
+              <Label className="text-xs font-semibold">Year</Label>
+              <Select
+                value={manualDate.manualYear}
+                onValueChange={(value) => {
+                  const updated = { ...manualDate, manualYear: value };
+                  setManualDate(updated);
+                  handleManualDateChange(updated);
+                }}
+              >
+                <SelectTrigger className={`border-2 ${errors.manualYear ? "border-red-500" : "border-gray-200"}`}>
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold">Month</Label>
+              <Select
+                value={manualDate.manualMonth}
+                onValueChange={(value) => {
+                  const updated = { ...manualDate, manualMonth: value };
+                  setManualDate(updated);
+                  handleManualDateChange(updated);
+                }}
+              >
+                <SelectTrigger className={`border-2 ${errors.manualMonth ? "border-red-500" : "border-gray-200"}`}>
+                  <SelectValue placeholder="Month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month) => (
+                    <SelectItem key={month} value={month}>{month}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold">Day</Label>
+              <Select
+                value={manualDate.manualDay}
+                onValueChange={(value) => {
+                  const updated = { ...manualDate, manualDay: value };
+                  setManualDate(updated);
+                  handleManualDateChange(updated);
+                }}
+              >
+                <SelectTrigger className={`border-2 ${errors.manualDay ? "border-red-500" : "border-gray-200"}`}>
+                  <SelectValue placeholder="Day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+      </div> */}
+
+      <div className="space-y-2">
+        <Label className="label-required text-sm font-semibold text-gray-700">Date of Birth</Label>
+        <div className="flex items-center space-x-3">
+          <div className="relative flex-1">
+            <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            {/* <Input
+              type="date"
+              value={formData.dateOfBirth}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value);
+                handleDateSelect(selectedDate);
+                setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }));
+              }}
+              disabled={showManualDate}
+              className={`pl-9 border-2 ${errors.dateOfBirth ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
+            /> */}
+            <Input
+  type="date"
+  value={formData.dateOfBirth}
+  onChange={(e) => {
+    const selectedDate = new Date(e.target.value);
+
+    if (!isAtLeast16(selectedDate)) {
+      setErrors((prev) => ({
+        ...prev,
+        dateOfBirth: "You must be at least 16 years old",
+      }));
+      return;
+    }
+
+    setErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+
+    handleDateSelect(selectedDate);
+    setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }));
+  }}
+  max={maxDate}
+  disabled={showManualDate}
+  className={`pl-9 border-2 ${errors.dateOfBirth ? "border-red-500" : "border-gray-200"} focus:border-blue-500`}
+/>
           </div>
           <Button
             type="button"

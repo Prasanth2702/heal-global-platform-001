@@ -4,6 +4,7 @@ import "./Contact.css";
 import { Button } from "@/components/ui/button";
 import Header from "@/pages/alldetails/Header";
 import Footer from "@/pages/alldetails/Footer";
+import { sendContactEnquiry } from "@/services/contactApi";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Contact = () => {
     email: "",
     message: "",
     phone: "",
+    subject: "",
   });
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,72 +30,112 @@ const Contact = () => {
       [name]: value,
     }));
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  if (!agreed) {
+    setSubmitStatus({
+      success: false,
+      message: "Please agree to the terms and conditions",
+    });
+    return;
+  }
 
-    if (!agreed) {
-      setSubmitStatus({
-        success: false,
-        message: "Please agree to the terms and conditions",
-      });
-      return;
-    }
+  setIsSubmitting(true);
+  setSubmitStatus({ success: false, message: "" });
 
-    setIsSubmitting(true);
-    setSubmitStatus({ success: false, message: "" });
+  const result = await sendContactEnquiry(formData);
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contact-us-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Remove Authorization header and use only apikey
-            Authorization: `Bearer ${api_key}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+  if (result.success) {
+    setSubmitStatus({
+      success: true,
+      message: result.message,
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
-      }
+    setFormData({
+      name: "",
+      email: "",
+      message: "",
+      subject: "",
+      phone: "",
+    });
 
-      const data = await response.json();
+    setAgreed(false);
+  } else {
+    setSubmitStatus({
+      success: false,
+      message: result.error || "Something went wrong",
+    });
+  }
 
-      setSubmitStatus({
-        success: true,
-        message:
-          data.message ||
-          "Thank you for your message! We'll get back to you soon.",
-      });
+  setIsSubmitting(false);
+};
 
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        message: "",
-        phone: "",
-      });
-      setAgreed(false);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setSubmitStatus({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while sending your message",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!agreed) {
+  //     setSubmitStatus({
+  //       success: false,
+  //       message: "Please agree to the terms and conditions",
+  //     });
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+  //   setSubmitStatus({ success: false, message: "" });
+
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contact-us-email`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           // Remove Authorization header and use only apikey
+  //           Authorization: `Bearer ${api_key}`,
+  //         },
+  //         body: JSON.stringify(formData),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(
+  //         errorData.message || `HTTP error! status: ${response.status}`
+  //       );
+  //     }
+
+  //     const data = await response.json();
+
+  //     setSubmitStatus({
+  //       success: true,
+  //       message:
+  //         data.message ||
+  //         "Thank you for your message! We'll get back to you soon.",
+  //     });
+
+  //     // Reset form
+  //     setFormData({
+  //       name: "",
+  //       email: "",
+  //       message: "",
+  //       phone: "",
+  //     });
+  //     setAgreed(false);
+  //   } catch (error) {
+  //     console.error("Error submitting form:", error);
+  //     setSubmitStatus({
+  //       success: false,
+  //       message:
+  //         error instanceof Error
+  //           ? error.message
+  //           : "An error occurred while sending your message",
+  //     });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
   return (
     <>
       <div className="contact-us-page">
@@ -180,6 +222,25 @@ const Contact = () => {
                         className="w-full border border-gray-300 rounded px-4 py-2"
                       />
                     </div>
+
+                     <div>
+                        <label
+                          htmlFor="subject"
+                          className="block font-medium mb-2"
+                        >
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          id="subject"
+                          name="subject"
+                          placeholder="Enter the subject"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          required
+                          className="w-full border border-gray-300 rounded px-4 py-2"
+                        />
+                      </div>
 
                     <div className="mb-4">
                       <label

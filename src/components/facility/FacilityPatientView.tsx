@@ -4743,7 +4743,7 @@ const CompletionMessage = () => {
                     <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
                     <Button variant="doctor" onClick={() => setOpenComplete(true)}
                     
-                    // disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+                    disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
 >Mark as Completed</Button>
 
 
@@ -4762,7 +4762,7 @@ const CompletionMessage = () => {
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
                   <CardContent>
                     <Button variant="doctor" onClick={() => setOpenComplete(true)} 
-                    // disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+                    disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
 >Mark as Completed</Button>
 <CompletionMessage />
                   </CardContent>

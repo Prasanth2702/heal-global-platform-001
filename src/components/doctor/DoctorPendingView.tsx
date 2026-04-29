@@ -24,6 +24,7 @@ const DoctorPendingView: React.FC = () => {
   const [appointments, setAppointments] = useState<PendingAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     fetchPendingAppointments();
@@ -34,9 +35,11 @@ const DoctorPendingView: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      
       // 1. Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('Not authenticated');
+      setUserId(user.id); // ✅ ADD THIS LINE
 
       // 2. Get medical professional record (doctor)
       const { data: medicalProfessional, error: mpError } = await supabase
@@ -125,8 +128,8 @@ const DoctorPendingView: React.FC = () => {
     }
   };
 
-  const handleViewDetails = (appointmentId: string, patientId: string) => {
-    navigate(`/doctor/appointment-patient/${patientId}/${appointmentId}`);
+  const handleViewDetails = (userId: string, patientId: string, appointmentId: string) => {
+    navigate(`/doctor/appointment-patient/${userId}/${patientId}/${appointmentId}`);
   };
 
   const handleBack = () => navigate(-1);
@@ -183,7 +186,7 @@ const DoctorPendingView: React.FC = () => {
                 <Button
                   variant="outline-primary"
                   size="sm"
-                  onClick={() => handleViewDetails(app.id, app.patientId)}
+                  onClick={() => handleViewDetails(userId, app.patientId, app.id)}
                 >
                   <Eye size={14} className="me-1" /> View
                 </Button>
@@ -249,7 +252,7 @@ const DoctorPendingView: React.FC = () => {
                 <Button
                   variant="outline-primary"
                   size="sm"
-                  onClick={() => handleViewDetails(app.id, app.patientId)}
+                  onClick={() => handleViewDetails(userId, app.patientId, app.id)}
                 >
                   View Details →
                 </Button>

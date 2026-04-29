@@ -27,8 +27,8 @@ const InitiatePayment: React.FC<InitiatePaymentProps> = ({
     if (!session) throw new Error("User not authenticated");
 
     const { data, error } = await supabase.functions.invoke(
-      // "initiate-live-payment",
-      "initiate-test-payment",
+      "initiate-live-payment",
+      // "initiate-test-payment",
       {
         body: {
           appointment_id: appointmentId,

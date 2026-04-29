@@ -1560,8 +1560,8 @@ export default function FacilityAppointmentManagement() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentFacilityId, setCurrentFacilityId] = useState<string | null>(null);
   const [facilityName, setFacilityName] = useState<string>("");
-  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   // UI state
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed">("all");

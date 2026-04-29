@@ -1517,7 +1517,8 @@ export default function DoctorAppointmentManagement() {
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "pending">("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [videoMeeting, setVideoMeeting] = useState<VideoMeetingState>({
     showMeeting: false,
     meetingId: "",

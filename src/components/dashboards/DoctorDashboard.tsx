@@ -26,6 +26,7 @@ const [loading, setLoading] = useState(true);
 const [totalEarnings, setTotalEarnings] = useState<number>(0);
 const [monthlyPatientsCount, setMonthlyPatientsCount] = useState<number>(0);
 const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
+const [doctorViews, setDoctorViews] = useState(0);
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -59,6 +60,14 @@ useEffect(() => {
       await fetchPatients(doctorData.id);
 await fetchTotalEarnings(user.id);   // user.id is the doctor's user_id
 await fetchMonthlyStats(user.id);   // <-- add this line
+
+const { data: viewData } = await supabase
+  .from("medical_professional_page_views")
+  .select("view_count")
+  .eq("medical_professional_id", doctorData.id);
+
+const totalViews = viewData?.reduce((sum, v) => sum + v.view_count, 0) || 0;
+setDoctorViews(totalViews);
 
     } catch (error) {
       console.error("Error fetching doctor data:", error);
@@ -656,6 +665,16 @@ if (activeTab !== "overview") {
     </CardTitle>
     <CardDescription className="text-2xl font-bold text-doctor">
       ₹{totalEarnings.toLocaleString('en-IN')}
+    </CardDescription>
+  </CardHeader>
+</Card>
+<Card variant="doctor">
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium text-muted-foreground">
+      Profile Views
+    </CardTitle>
+    <CardDescription className="text-2xl font-bold text-doctor">
+      {doctorViews}
     </CardDescription>
   </CardHeader>
 </Card>

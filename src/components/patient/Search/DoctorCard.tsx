@@ -206,7 +206,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
       </div>
       <span className="text-green-600 font-bold text-base">
         {doctor.consultationFee && doctor.consultationFee > 0 ? (
-          <>₹{doctor.consultationFee}</>
+          <>₹{doctor.consultationFee + 150 }</>
         ) : (
           <span className="text-blue-600 text-sm font-medium">Free Consult</span>
         )}

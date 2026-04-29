@@ -2614,6 +2614,7 @@ const handleSignUp = async () => {
       return;
     }
 
+
     setIsSubmitting(true);
 
     try {
@@ -3605,6 +3606,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
           <Input
   id="consultationFee"
   type="number"
+  min={import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE } // Enforce minimum fee
   value={formData.consultationFees || ''}
   onChange={(e) => {
     const value = e.target.value === '' ? 0 : Number(e.target.value);
@@ -3612,6 +3614,10 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
   }}
   placeholder="Enter consultation fee"
 />
+<p className="text-xs text-gray-500 mt-1">
+        {/* 💡 Minimum fee is Rs 100. It will be added with Platform Fee of Rs 150  automatically.(ex Consultation Fee Rs.100 and Platform Fee Rs.150 total = Rs 250 / per appointment) */}
+        💡 Minimum fee is Rs {import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE }. It will be added with Platform Fee of Rs {import.meta.env.VITE_DOCTOR_PROFILE_FEE}  automatically.(ex Consultation Fee Rs.{import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE } and Platform Fee Rs.{import.meta.env.VITE_DOCTOR_PROFILE_FEE } total = Rs {parseInt(import.meta.env.VITE_DOCTOR_PROFILE_MIN_FEE ) + parseInt(import.meta.env.VITE_DOCTOR_PROFILE_FEE )} / per appointment)
+      </p>
         </div>
       </div>
 

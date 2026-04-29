@@ -211,6 +211,7 @@ const PaymentSuccess: React.FC = () => {
 
   const MAX_RETRIES = 5;
   const RETRY_DELAY = 3000;
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     // const verifyPayment = async () => {
@@ -298,6 +299,13 @@ const PaymentSuccess: React.FC = () => {
     // };
 const verifyPayment = async () => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) {
+  throw new Error("User not authenticated");
+}
+
+setUserId(user.id); // ✅ STORE USER ID
 
     // 1️⃣ Get Payment
     const { data: payment, error: paymentError } = await supabase
@@ -455,7 +463,7 @@ const verifyPayment = async () => {
 
         <div className="mt-8 flex gap-4">
           <button
-            onClick={() => navigate(`/patient/appointment-doctor/${appointmentDetails.doctor_id}/${appointmentDetails.id}`)}
+            onClick={() => navigate(`/patient/appointment-doctor/${userId}/${appointmentDetails.doctor_id}/${appointmentDetails.id}`)}
             className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             View My Appointments

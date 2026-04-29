@@ -204,7 +204,8 @@ const PatientPayment = () => {
             <div className="flex justify-between items-center pt-2">
               <span className="text-lg font-semibold text-gray-800">Consultation Fee</span>
               <span className="text-2xl font-bold text-blue-600">
-                ₹{appointmentDetails.consultation_fee?.toLocaleString()}
+                ₹{appointmentDetails.consultation_fee  + 150}
+                {/* ₹{appointmentDetails.consultation_fee  + 150?.toLocaleString()} */}
               </span>
             </div>
           </div>
@@ -222,7 +223,8 @@ const PatientPayment = () => {
                 <span className="flex items-center gap-2">
                   <CreditCard size={16} /> Amount Paid
                 </span>
-                <span className="font-semibold">₹{paymentDetails.amount?.toLocaleString()}</span>
+                <span className="font-semibold">₹{paymentDetails.amount +150}</span>
+                {/* <span className="font-semibold">₹{paymentDetails.amount?.toLocaleString()}</span> */}
               </div>
               {paymentDetails.paid_at && (
                 <div className="flex justify-between text-gray-700">

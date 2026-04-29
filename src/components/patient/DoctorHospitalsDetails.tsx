@@ -87,10 +87,14 @@ interface Doctor {
   awards?: string[];
   specializations?: string[];
   education?: {
-    degree: string;
-    institution: string;
-    year: string;
-  }[];
+  degree: string;
+  institution: string;
+  year: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+}[];
   workExperience?: {
     position: string;
     hospital: string;
@@ -1707,7 +1711,7 @@ const handleBookAppointmentClick = () => {
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
                       <GraduationCap className="h-5 w-5 mr-2 text-blue-600" /> Education & Training
                     </h2>
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                       {doctor.education?.map((edu, index) => (
                         <div key={index} className="flex gap-3">
                           <div className="w-2 h-2 mt-2 rounded-full bg-blue-600"></div>
@@ -1717,7 +1721,34 @@ const handleBookAppointmentClick = () => {
                           </div>
                         </div>
                       ))}
-                    </div>
+                    </div> */}
+                    <div className="space-y-4">
+  {doctor.education?.map((edu, index) => {
+    // Build address string from available fields
+    const addressParts = [
+      edu.city,
+      edu.state,
+      edu.country,
+      edu.pincode
+    ].filter(part => part && part.trim() !== "");
+    const address = addressParts.length > 0 ? addressParts.join(", ") : null;
+    
+    return (
+      <div key={index} className="flex gap-3">
+        <div className="w-2 h-2 mt-2 rounded-full bg-blue-600"></div>
+        <div>
+          <p className="font-medium">{edu.degree}</p>
+          <p className="text-sm text-gray-600">{edu.institution} • {edu.year}</p>
+          {address && (
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <MapPin className="h-3 w-3" /> {address}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  })}
+</div>
                   </CardContent>
                 </Card>
 

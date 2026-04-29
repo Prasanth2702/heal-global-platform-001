@@ -2989,9 +2989,9 @@ export default function FacilityAppointmentCard({
   className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
   onClick={() => {
     if (userRole === 'staff' || userRole === 'department_staff') {
-      navigate(`/staff/appointment-patient/${appointment.patientId}/${appointment.id}`);
+      navigate(`/staff/appointment-patient/${userId}/${appointment.patientId}/${appointment.id}`);
     } else {
-      navigate(`/facility/appointment-patient/${appointment.patientId}/${appointment.id}`);
+      navigate(`/facility/appointment-patient/${userId}/${appointment.patientId}/${appointment.id}`);
     }
   }}
 >

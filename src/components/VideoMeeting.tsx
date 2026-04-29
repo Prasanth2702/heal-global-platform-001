@@ -982,9 +982,9 @@ const DocumentItem = ({ doc }: { doc: DocumentFile }) => {
         let backHref = "https://www.pmhssmarthealth.com/"; // fallback
 if (appointmentContext) {
   if (userRole === "patient" && appointmentContext.doctor_id) {
-    backHref = `https://www.pmhssmarthealth.com/patient/appointment-doctor/${appointmentContext.doctor_id}/${appointmentId}`;
+    backHref = `https://www.pmhssmarthealth.com/patient/appointment-doctor/${userId}/${appointmentContext.doctor_id}/${appointmentId}`;
   } else if (userRole === "doctor" && appointmentContext.patient_id) {
-    backHref = `https://www.pmhssmarthealth.com/doctor/appointment-patient/${appointmentContext.patient_id}/${appointmentId}`;
+    backHref = `https://www.pmhssmarthealth.com/doctor/appointment-patient/${userId}/${appointmentContext.patient_id}/${appointmentId}`;
   }
 }
         const config = {

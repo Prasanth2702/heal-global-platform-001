@@ -394,11 +394,11 @@ const App = () => {
 <Route path="/dashboard/patient/facilities/:slug/:id" element={<PatientFacilitiesPagess />} />
 <Route path="/appointment/beds/:slug/:id" element={<PatientFacilitiesPages />} />
 {/* <Route path="/dashboard/facility/staffId" element={<StaffManagementDetails/>}/> */}
-  <Route path="/facility/appointment-patient/:Id/:appointmentId" element={<FacilityPatientViews />} />
-  <Route path="/staff/appointment-patient/:Id/:appointmentId" element={<FacilityPatientViewsStaff />} />
-  <Route path="/doctor/appointment-patient/:Id/:appointmentId" element={<DoctorPatientViewss />} />
-  <Route path="/patient/appointment-doctor/:Id/:appointmentId" element={<PatientViews />} />
-  <Route path="/patient/appointment-facility/:Id/:appointmentId" element={<PatientViews />} />
+  <Route path="/facility/appointment-patient/:user/:Id/:appointmentId" element={<FacilityPatientViews />} />
+  <Route path="/staff/appointment-patient/:user/:Id/:appointmentId" element={<FacilityPatientViewsStaff />} />
+  <Route path="/doctor/appointment-patient/:user/:Id/:appointmentId" element={<DoctorPatientViewss />} />
+  <Route path="/patient/appointment-doctor/:user/:Id/:appointmentId" element={<PatientViews />} />
+  <Route path="/patient/appointment-facility/:user/:Id/:appointmentId" element={<PatientViews />} />
 <Route path="/patient/appointment-payment/:appointmentId" element={<PatientPayment />} />
 <Route path="/payment-success" element={<PaymentSuccess />} />
 <Route path="/payment-cancelled" element={<PaymentCancelled />} />

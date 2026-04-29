@@ -1883,7 +1883,7 @@ export default function DoctorAppointmentCard({
       {displayStatus !== "cancelled" && (
         <button
           className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
-          onClick={() => navigate(`/doctor/appointment-patient/${appointment.patientId}/${appointment.id}`)}
+          onClick={() => navigate(`/doctor/appointment-patient/${userId}/${appointment.patientId}/${appointment.id}`)}
         >
           <User className="h-4 w-4 mr-1" /> Appointment Details Page
         </button>

@@ -2445,6 +2445,7 @@ interface DoctorProfile {
 
 interface FacilityProfile {
   id: string;
+  user_id: string;
   facility_name: string;
   facility_type: string;
   license_number: string;
@@ -2505,6 +2506,9 @@ interface Appointment {
   document_requested?: boolean;
   host_joined?: boolean;
   createdAt?: string;
+  time_slot_id?: string;
+  start_time?: string;
+  end_time?: string;
 }
 
 interface Document {
@@ -2530,11 +2534,12 @@ interface Vitals {
 }
 
 const FacilityPatientView: React.FC = () => {
-  const { Id, appointmentId } = useParams<{ Id: string; appointmentId: string }>();
+  const {user, Id, appointmentId } = useParams<{user:string; Id: string; appointmentId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
 
   const userRole = location.pathname.includes("/facility/") ? "facility"
+                 : location.pathname.includes("/facility/") ? "hospital_staff"
                  : location.pathname.includes("/doctor/") ? "doctor"
                  : "patient";
 
@@ -2544,7 +2549,7 @@ const FacilityPatientView: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewType, setViewType] = useState<"patient" | "doctor" | "facility" | null>(null);
+  const [viewType, setViewType] = useState<"patient" | "doctor" | "facility" | "hospital_staff" | null>(null);
   
   // Patient specific state
   const [patient, setPatient] = useState<PatientProfile | null>(null);
@@ -2694,152 +2699,438 @@ const [joiningVideo, setJoiningVideo] = useState(false);
     );
   };
 
-  const loadPatientData = async (patientRecord: any) => {
-    // Load Patient Profile
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", patientRecord.user_id)
-      .single();
+//   const loadPatientData = async (patientRecord: any) => {
+//     // Load Patient Profile
+//     const { data: profileData } = await supabase
+//       .from("profiles")
+//       .select("*")
+//       .eq("user_id", patientRecord.user_id)
+//       .single();
 
-    const fullPatient: PatientProfile = {
-      id: patientRecord.id,
-      user_id: patientRecord.user_id,
-      first_name: profileData?.first_name || "",
-      last_name: profileData?.last_name || "",
-      email: profileData?.email || "",
-      phone_number: profileData?.phone_number || "",
-      date_of_birth: patientRecord.date_of_birth || "",
-      gender: patientRecord.gender || "",
-      blood_group: patientRecord.blood_group || "",
-      height: patientRecord.height || 0,
-      weight: patientRecord.weight || 0,
-      known_allergies: patientRecord.known_allergies || "",
-      emergency_contact_name: patientRecord.emergency_contact_name || "",
-      emergency_contact_number: patientRecord.emergency_contact_number || "",
-      emergency_contact_relationship: patientRecord.emergency_contact_relationship || "",
-      medical_history: patientRecord.medical_history || "",
-      current_medications: patientRecord.current_medications || "",
-    };
-    setPatient(fullPatient);
+//     const fullPatient: PatientProfile = {
+//       id: patientRecord.id,
+//       user_id: patientRecord.user_id,
+//       first_name: profileData?.first_name || "",
+//       last_name: profileData?.last_name || "",
+//       email: profileData?.email || "",
+//       phone_number: profileData?.phone_number || "",
+//       date_of_birth: patientRecord.date_of_birth || "",
+//       gender: patientRecord.gender || "",
+//       blood_group: patientRecord.blood_group || "",
+//       height: patientRecord.height || 0,
+//       weight: patientRecord.weight || 0,
+//       known_allergies: patientRecord.known_allergies || "",
+//       emergency_contact_name: patientRecord.emergency_contact_name || "",
+//       emergency_contact_number: patientRecord.emergency_contact_number || "",
+//       emergency_contact_relationship: patientRecord.emergency_contact_relationship || "",
+//       medical_history: patientRecord.medical_history || "",
+//       current_medications: patientRecord.current_medications || "",
+//     };
+//     setPatient(fullPatient);
 
-    // Load All Appointments
-    const { data: appointmentsData } = await supabase
-      .from("appointments")
-      .select(`
-        id, appointment_date, type, status, facility_id, doctor_id, department_id, payment_requested, document_requested
-      `)
-      .eq("patient_id", patientRecord.id)
-      .order("appointment_date", { ascending: false });
+//     // Load All Appointments
+//     const { data: appointmentsData } = await supabase
+//       .from("appointments")
+//       .select(`
+//         id, appointment_date, time_slot_id, type, status, facility_id, doctor_id, department_id, payment_requested, document_requested
+//       `)
+//       .eq("patient_id", patientRecord.id)
+//       .order("appointment_date", { ascending: false });
 
-    if (appointmentsData) {
-      const formattedAppointments = await Promise.all(
-        appointmentsData.map(async (apt: any) => {
-          let departmentName = "N/A";
-          if (apt.department_id) {
-            const { data: deptData } = await supabase
-              .from("departments")
-              .select("name")
-              .eq("id", apt.department_id)
-              .single();
-            if (deptData) departmentName = deptData.name;
-          }
-          let doctorName = "N/A";
-          let doctorSpecialty = "N/A";
-          if (apt.doctor_id) {
-            const { data: doctorData } = await supabase
-              .from("medical_professionals")
-              .select("name, specialty")
-              .eq("user_id", apt.doctor_id)
-              .single();
-            if (doctorData) {
-              doctorName = doctorData.name;
-              doctorSpecialty = doctorData.specialty;
-            }
-          }
-          return {
-            id: apt.id,
-            appointment_date: apt.appointment_date,
-            appointment_time: apt.appointment_time,
-            type: apt.type,
-            status: apt.status,
-            department: departmentName,
-            doctor_name: doctorName,
-            doctor_specialty: doctorSpecialty,
-            facility_id: apt.facility_id,
-            doctor_id: apt.doctor_id,
-            payment_requested: apt.payment_requested,
-            document_requested: apt.document_requested,
-          };
-        })
-      );
-      setAppointments(formattedAppointments);
-    }
+//     if (appointmentsData) {
+//       // const formattedAppointments = await Promise.all(
+//       //   appointmentsData.map(async (apt: any) => {
+//       //     let departmentName = "N/A";
+//       //     if (apt.department_id) {
+//       //       const { data: deptData } = await supabase
+//       //         .from("departments")
+//       //         .select("name")
+//       //         .eq("id", apt.department_id)
+//       //         .single();
+//       //       if (deptData) departmentName = deptData.name;
+//       //     }
+//       //     let doctorName = "N/A";
+//       //     let doctorSpecialty = "N/A";
+//       //     if (apt.doctor_id) {
+//       //       const { data: doctorData } = await supabase
+//       //         .from("medical_professionals")
+//       //         .select("name, specialty")
+//       //         .eq("user_id", apt.doctor_id)
+//       //         .single();
+//       //       if (doctorData) {
+//       //         doctorName = doctorData.name;
+//       //         doctorSpecialty = doctorData.specialty;
+//       //       }
+//       //     }
 
-    // Fetch Current Appointment
-    if (appointmentId) {
-      const { data: aptData, error: aptError } = await supabase
-        .from("appointments")
-        .select(`
-          id, appointment_date, duration_minutes, type, status, department_id, facility_id, doctor_id, patient_id,
-          chief_complaint, notes, consultation_fee, video_room_id, reminder_sent, payment_requested, document_requested, created_at
-        `)
-        .eq("id", appointmentId)
-        .single();
+//       //     const { data: slotData } = await supabase
+//       //   .from("time_slots")
+//       //   .select("id, start_time, end_time")
+//       //   .eq("id", apt.time_slot_id)
+//       //   .single();
 
-      if (!aptError && aptData) {
-        let departmentName = "N/A";
-        if (aptData.department_id) {
-          const { data: deptData } = await supabase
-            .from("departments")
-            .select("name")
-            .eq("id", aptData.department_id)
-            .single();
-          if (deptData) departmentName = deptData.name;
-        }
-        let doctorName = "N/A";
-        if (aptData.doctor_id) {
-          const { data: doctorData } = await supabase
-            .from("medical_professionals")
-            .select("medical_speciality")
-            .eq("user_id", aptData.doctor_id)
-            .single();
-          if (doctorData) doctorName = doctorData.name;
-        }
-        setCurrentAppointment({
-          id: aptData.id,
-          appointment_date: aptData.appointment_date,
-          duration_minutes: aptData.duration_minutes,
-          type: aptData.type,
-          status: aptData.status,
-          department_name: departmentName,
-          department_id: aptData.department_id,
-          doctor_name: doctorName,
-          doctor_specialty: "",
-          facility_id: aptData.facility_id,
-          doctor_id: aptData.doctor_id,
-          chief_complaint: aptData.chief_complaint,
-          notes: aptData.notes,
-          consultation_fee: aptData.consultation_fee,
-          video_room_id: aptData.video_room_id,
-          reminder_sent: aptData.reminder_sent,
-          payment_requested: aptData.payment_requested,
-          document_requested: aptData.document_requested,
-          createdAt: aptData.created_at,
-        });
+      
+//       //     return {
+//       //       id: apt.id,
+//       //       appointment_date: apt.appointment_date,
+//       //       appointment_time: apt.appointment_time,
+//       //       type: apt.type,
+//       //       status: apt.status,
+//       //       department: departmentName,
+//       //       doctor_name: doctorName,
+//       //       doctor_specialty: doctorSpecialty,
+//       //       facility_id: apt.facility_id,
+//       //       doctor_id: apt.doctor_id,
+//       //       payment_requested: apt.payment_requested,
+//       //       document_requested: apt.document_requested,
+//       //     };
+//       //   })
+//       // );
+//       const formattedAppointments = await Promise.all(
+//   appointmentsData.map(async (apt: any) => {
+//     let departmentName = "N/A";
+//     let doctorName = "N/A";
+//     let doctorSpecialty = "N/A";
+//     let slotTime = "N/A";
+
+//     // ===============================
+//     // ✅ Department
+//     // ===============================
+//     if (apt.department_id) {
+//       const { data: deptData } = await supabase
+//         .from("departments")
+//         .select("name")
+//         .eq("id", apt.department_id)
+//         .single();
+
+//       if (deptData) departmentName = deptData.name;
+//     }
+
+//     // ===============================
+//     // ✅ Doctor (ONLY if doctor appointment)
+//     // ===============================
+//     if (apt.type === "doctor" && apt.doctor_id) {
+//       const { data: doctorData } = await supabase
+//         .from("medical_professionals")
+//         .select("name, specialty")
+//         .eq("user_id", apt.doctor_id)
+//         .single();
+
+//       if (doctorData) {
+//         doctorName = doctorData.name;
+//         doctorSpecialty = doctorData.specialty;
+//       }
+//     }
+
+//     // ===============================
+//     // ✅ Time Slot Condition
+//     // ===============================
+//     if (apt.time_slot_id) {
+//       let slotQuery = supabase
+//         .from("time_slots")
+//         .select("start_time, end_time")
+//         .eq("id", apt.time_slot_id);
+
+//       // 👉 Doctor Appointment
+//       if (apt.type === "doctor" && apt.doctor_id) {
+//         slotQuery = slotQuery.eq("doctor_id", apt.doctor_id);
+//       }
+
+//       // 👉 Facility Appointment
+//       if (apt.type === "facility" && apt.facility_id && apt.department_id) {
+//         slotQuery = slotQuery
+//           .eq("facility_id", apt.facility_id)
+//           .eq("department_id", apt.department_id);
+//       }
+
+//       const { data: slotData } = await slotQuery.single();
+
+//       if (slotData) {
+//         slotTime = `${slotData.start_time} - ${slotData.end_time}`;
+//       }
+//     }
+
+//     return {
+//       id: apt.id,
+//       appointment_date: apt.appointment_date,
+//       appointment_time: slotTime, // ✅ FIXED HERE
+//       type: apt.type,
+//       status: apt.status,
+//       department: departmentName,
+//       doctor_name: doctorName,
+//       doctor_specialty: doctorSpecialty,
+//       facility_id: apt.facility_id,
+//       doctor_id: apt.doctor_id,
+//       payment_requested: apt.payment_requested,
+//       document_requested: apt.document_requested,
+//     };
+//   })
+// );
+//       setAppointments(formattedAppointments);
+//     }
+
+//     // Fetch Current Appointment
+//     if (appointmentId) {
+//       const { data: aptData, error: aptError } = await supabase
+//         .from("appointments")
+//         .select(`
+//           id, appointment_date, duration_minutes, type, status, department_id, facility_id, doctor_id, patient_id,
+//           chief_complaint, notes, consultation_fee, video_room_id, reminder_sent, payment_requested, document_requested, created_at, time_slot_id
+//         `)
+//         .eq("id", appointmentId)
+//         .single();
+
+//       if (!aptError && aptData) {
+//         let departmentName = "N/A";
+//         if (aptData.department_id) {
+//           const { data: deptData } = await supabase
+//             .from("departments")
+//             .select("name")
+//             .eq("id", aptData.department_id)
+//             .single();
+//           if (deptData) departmentName = deptData.name;
+//         }
+//         let doctorName = "N/A";
+//         if (aptData.doctor_id) {
+//           const { data: doctorData } = await supabase
+//             .from("medical_professionals")
+//             .select("medical_speciality")
+//             .eq("user_id", aptData.doctor_id)
+//             .single();
+//           if (doctorData) doctorName = doctorData.name;
+//         }
+//         setCurrentAppointment({
+//           id: aptData.id,
+//           appointment_date: aptData.appointment_date,
+//           duration_minutes: aptData.duration_minutes,
+//           type: aptData.type,
+//           status: aptData.status,
+//           department_name: departmentName,
+//           department_id: aptData.department_id,
+//           doctor_name: doctorName,
+//           doctor_specialty: "",
+//           facility_id: aptData.facility_id,
+//           doctor_id: aptData.doctor_id,
+//           chief_complaint: aptData.chief_complaint,
+//           notes: aptData.notes,
+//           consultation_fee: aptData.consultation_fee,
+//           video_room_id: aptData.video_room_id,
+//           reminder_sent: aptData.reminder_sent,
+//           payment_requested: aptData.payment_requested,
+//           document_requested: aptData.document_requested,
+//           createdAt: aptData.created_at,
+//         });
+        
+//       }
+//     }
+    
+
+//     // Fetch Documents
+//     if (appointmentId) {
+//       const { data: docsData } = await supabase
+//         .from("documents")
+//         .select("*")
+//         .eq("appointment_id", appointmentId)
+//         .order("created_at", { ascending: false });
+//       if (docsData) setDocuments(docsData);
+//     }
+//   };
+const loadPatientData = async (patientRecord: any) => {
+  // 1. Load Patient Profile (unchanged)
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", patientRecord.user_id)
+    .single();
+
+  const fullPatient: PatientProfile = {
+    id: patientRecord.id,
+    user_id: patientRecord.user_id,
+    first_name: profileData?.first_name || "",
+    last_name: profileData?.last_name || "",
+    email: profileData?.email || "",
+    phone_number: profileData?.phone_number || "",
+    date_of_birth: patientRecord.date_of_birth || "",
+    gender: patientRecord.gender || "",
+    blood_group: patientRecord.blood_group || "",
+    height: patientRecord.height || 0,
+    weight: patientRecord.weight || 0,
+    known_allergies: patientRecord.known_allergies || "",
+    emergency_contact_name: patientRecord.emergency_contact_name || "",
+    emergency_contact_number: patientRecord.emergency_contact_number || "",
+    emergency_contact_relationship: patientRecord.emergency_contact_relationship || "",
+    medical_history: patientRecord.medical_history || "",
+    current_medications: patientRecord.current_medications || "",
+  };
+  setPatient(fullPatient);
+
+  // 2. Load All Appointments (including time_slot_id)
+  const { data: appointmentsData } = await supabase
+    .from("appointments")
+    .select(`
+      id, appointment_date, time_slot_id, type, status, facility_id, doctor_id, department_id, payment_requested, document_requested
+    `)
+    .eq("patient_id", patientRecord.id)
+    .order("appointment_date", { ascending: false });
+
+  if (appointmentsData) {
+    // Collect all time_slot_ids (ignore null/undefined)
+    const timeSlotIds = appointmentsData
+      .map(apt => apt.time_slot_id)
+      .filter(id => id);
+
+    // Batch fetch time slots
+    let timeSlotsMap = new Map();
+    if (timeSlotIds.length > 0) {
+      const { data: slotsData, error: slotsError } = await supabase
+        .from("time_slots")
+        .select("id, start_time, end_time")
+        .in("id", timeSlotIds);
+      if (!slotsError && slotsData) {
+        slotsData.forEach(slot => timeSlotsMap.set(slot.id, slot));
       }
     }
 
-    // Fetch Documents
-    if (appointmentId) {
-      const { data: docsData } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("appointment_id", appointmentId)
-        .order("created_at", { ascending: false });
-      if (docsData) setDocuments(docsData);
+    const formattedAppointments = await Promise.all(
+      appointmentsData.map(async (apt: any) => {
+        // Department name
+        let departmentName = "N/A";
+        if (apt.department_id) {
+          const { data: deptData } = await supabase
+            .from("departments")
+            .select("name")
+            .eq("id", apt.department_id)
+            .single();
+          if (deptData) departmentName = deptData.name;
+        }
+
+        // Doctor name & specialty
+        let doctorName = "N/A";
+        let doctorSpecialty = "N/A";
+        if (apt.doctor_id) {
+          const { data: doctorData } = await supabase
+            .from("medical_professionals")
+            .select("name, specialty")
+            .eq("user_id", apt.doctor_id)
+            .single();
+          if (doctorData) {
+            doctorName = doctorData.name;
+            doctorSpecialty = doctorData.specialty;
+          }
+        }
+
+        // Get time slot details from map
+        const slot = timeSlotsMap.get(apt.time_slot_id);
+        const start_time = slot?.start_time || "";
+        const end_time = slot?.end_time || "";
+        const appointment_time = start_time && end_time ? `${start_time} - ${end_time}` : "";
+
+        return {
+          id: apt.id,
+          appointment_date: apt.appointment_date,
+          time_slot_id: apt.time_slot_id,
+          start_time,
+          end_time,
+          appointment_time,   // formatted string
+          type: apt.type,
+          status: apt.status,
+          department: departmentName,
+          doctor_name: doctorName,
+          doctor_specialty: doctorSpecialty,
+          facility_id: apt.facility_id,
+          doctor_id: apt.doctor_id,
+          payment_requested: apt.payment_requested,
+          document_requested: apt.document_requested,
+        };
+      })
+    );
+    setAppointments(formattedAppointments);
+  }
+
+  // 3. Fetch Current Appointment (including its time slot)
+  if (appointmentId) {
+    const { data: aptData, error: aptError } = await supabase
+      .from("appointments")
+      .select(`
+        id, appointment_date, time_slot_id, duration_minutes, type, status,
+        department_id, facility_id, doctor_id, patient_id,
+        chief_complaint, notes, consultation_fee, video_room_id,
+        reminder_sent, payment_requested, document_requested, created_at
+      `)
+      .eq("id", appointmentId)
+      .single();
+
+    if (!aptError && aptData) {
+      let departmentName = "N/A";
+      if (aptData.department_id) {
+        const { data: deptData } = await supabase
+          .from("departments")
+          .select("name")
+          .eq("id", aptData.department_id)
+          .single();
+        if (deptData) departmentName = deptData.name;
+      }
+      let doctorName = "N/A";
+      if (aptData.doctor_id) {
+        const { data: doctorData } = await supabase
+          .from("medical_professionals")
+          .select("medical_speciality")
+          .eq("user_id", aptData.doctor_id)
+          .single();
+        if (doctorData) doctorName = doctorData.name;
+      }
+
+      // Fetch time slot for current appointment
+      let start_time = "", end_time = "";
+      if (aptData.time_slot_id) {
+        const { data: slotData } = await supabase
+          .from("time_slots")
+          .select("start_time, end_time")
+          .eq("id", aptData.time_slot_id)
+          .single();
+        if (slotData) {
+          start_time = slotData.start_time;
+          end_time = slotData.end_time;
+        }
+      }
+
+      setCurrentAppointment({
+        id: aptData.id,
+        appointment_date: aptData.appointment_date,
+        time_slot_id: aptData.time_slot_id,
+        start_time,
+        end_time,
+        duration_minutes: aptData.duration_minutes,
+        type: aptData.type,
+        status: aptData.status,
+        department_name: departmentName,
+        department_id: aptData.department_id,
+        doctor_name: doctorName,
+        doctor_specialty: "",
+        facility_id: aptData.facility_id,
+        doctor_id: aptData.doctor_id,
+        chief_complaint: aptData.chief_complaint,
+        notes: aptData.notes,
+        consultation_fee: aptData.consultation_fee,
+        video_room_id: aptData.video_room_id,
+        reminder_sent: aptData.reminder_sent,
+        payment_requested: aptData.payment_requested,
+        document_requested: aptData.document_requested,
+        createdAt: aptData.created_at,
+      });
     }
-  };
+  }
+
+  // 4. Fetch Documents (unchanged)
+  if (appointmentId) {
+    const { data: docsData } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("appointment_id", appointmentId)
+      .order("created_at", { ascending: false });
+    if (docsData) setDocuments(docsData);
+  }
+};
 
   const loadDoctorData = async (doctorRecord: any) => {
     try {
@@ -3616,26 +3907,308 @@ useEffect(() => {
       setCancelling(false);
     }
   };
+// const completeAppointment = async () => {
+//   setCompleting(true);
 
-  const completeAppointment = async () => {
-    setCompleting(true);
-    try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", appointmentId)
-        .eq("patient_id", patient?.id);
-      if (error) throw error;
-      toast({ title: "Appointment Completed", description: "You have marked this appointment as completed." });
-      setOpenComplete(false);
-      await fetchData();
-    } catch (err: any) {
-      console.error(err);
-      toast({ title: "Error", description: err.message || "Failed to complete appointment", variant: "destructive" });
-    } finally {
-      setCompleting(false);
+//   try {
+//     let query = supabase
+//       .from("appointments")
+//       .update({
+//         status: "completed",
+//         completed_at: new Date().toISOString(),
+//       })
+//       .eq("id", appointmentId);
+
+//     // ✅ Doctor case
+//     if (userRole === "doctor") {
+//       query = query.eq("doctor_id", currentAppointment?.doctor_id);
+//     }
+
+//     // ✅ Facility case
+//     if (userRole === "facility") {
+//       query = query.eq("facility_id", currentAppointment?.facility_id);
+//     }
+
+//     // ✅ Optional: patient safety check
+//     if (patient?.id) {
+//       query = query.eq("patient_id", patient.id);
+//     }
+
+//     const { error } = await query;
+
+//     if (error) throw error;
+
+//     toast({
+//       title: "Appointment Completed",
+//       description: "You have marked this appointment as completed.",
+//     });
+
+//     setOpenComplete(false);
+//     await fetchData();
+//   } catch (err: any) {
+//     console.error(err);
+//     toast({
+//       title: "Error",
+//       description: err.message || "Failed to complete appointment",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setCompleting(false);
+//   }
+// };
+  // const completeAppointment = async () => {
+  //   setCompleting(true);
+  //   try {
+  //     const { error } = await supabase
+  //       .from("appointments")
+  //       .update({ status: "completed", completed_at: new Date().toISOString() })
+  //       .eq("id", appointmentId)
+  //       .eq("patient_id", patient?.id)
+  //       .eq("facility_id", currentAppointment?.facility_id);
+  //     if (error) throw error;
+  //     toast({ title: "Appointment Completed", description: "You have marked this appointment as completed." });
+  //     setOpenComplete(false);
+  //     await fetchData();
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     toast({ title: "Error", description: err.message || "Failed to complete appointment", variant: "destructive" });
+  //   } finally {
+  //     setCompleting(false);
+  //   }
+  // };
+//   const completeAppointment = async () => {
+//   // 🔒 Condition: only allow completion if appointment time has passed
+//   if (!isAppointmentTimePassed()) {
+//     toast({
+//       title: "Cannot Complete",
+//       description: "You can mark this appointment as completed only after the scheduled time has ended.",
+//       variant: "destructive",
+//     });
+//     return;
+//   }
+
+//   setCompleting(true);
+//   try {
+//     const { data: sessionData } = await supabase.auth.getSession();
+//     const token = sessionData.session?.access_token;
+
+//     if (!token) throw new Error("Not authenticated");
+
+//     // 👇 Call your edge function
+//     const response = await fetch(
+//       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/complete-appointment",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({
+//           id: appointmentId,
+//           doctor_id: currentAppointment?.doctor_id ||null,
+//           facility_id: currentAppointment?.facility_id || null,
+//           department_id: currentAppointment?.department_id || null,
+//         }),
+//       }
+//     );
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       throw new Error(result.error || "Failed to complete appointment");
+//     }
+
+//     toast({
+//       title: "Appointment Completed",
+//       description: "Appointment has been marked as completed.",
+//     });
+//     setOpenComplete(false);
+//     await fetchData(); // refresh the view
+//   } catch (err: any) {
+//     console.error(err);
+//     toast({
+//       title: "Error",
+//       description: err.message || "Failed to complete appointment",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setCompleting(false);
+//   }
+// };
+// const completeAppointment = async () => {
+//   // 🔒 Time validation
+//   // if (!isAppointmentTimePassed()) {
+//   //   toast({
+//   //     title: "Cannot Complete",
+//   //     description: "You can mark this appointment as completed only after the scheduled time has ended.",
+//   //     variant: "destructive",
+//   //   });
+//   //   return;
+//   // }
+
+//   setCompleting(true);
+
+//   try {
+//     const { data: sessionData } = await supabase.auth.getSession();
+//     const token = sessionData.session?.access_token;
+
+//     if (!token) throw new Error("Not authenticated");
+
+//     // ✅ Build payload based on role
+//     let payload: any = {
+//       id: appointmentId,
+//     };
+
+//     if (userRole === "doctor") {
+//   payload.doctor_id = currentAppointment?.doctor_id;
+// }
+
+// if (userRole === "facility") {
+//   payload.facility_admin_id = currentAppointment?.facility_id;
+// }
+
+// if (userRole === "hospital_staff") {
+
+//   payload.staff_id = user;
+// }
+   
+
+//     // 🚀 Call Edge Function
+//     const response = await fetch(
+//       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/complete-appointment",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       throw new Error(result.error || "Failed to complete appointment");
+//     }
+
+//     toast({
+//       title: "Appointment Completed",
+//       description: "Appointment has been marked as completed successfully.",
+//     });
+
+//     setOpenComplete(false);
+//     await fetchData();
+
+//   } catch (err: any) {
+//     console.error(err);
+//     toast({
+//       title: "Error",
+//       description: err.message || "Failed to complete appointment",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setCompleting(false);
+//   }
+// };
+
+const completeAppointment = async () => {
+  setCompleting(true);
+
+  try {
+    // 1️⃣ Get session + user
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    const token = sessionData.session?.access_token;
+
+    if (!token || !user) throw new Error("Not authenticated");
+
+    // 2️⃣ Get profile (ROLE SOURCE)
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("user_id, role") // make sure 'role' column exists
+      .eq("user_id", user)
+      .single();
+
+    if (profileError || !profile) {
+      throw new Error("User profile not found");
     }
-  };
+
+    const role = profile.role; // 👈 role from DB
+
+    let payload: any = {
+      id: appointmentId,
+    };
+
+    // 3️⃣ Role-based logic
+
+    // ✅ Doctor
+    if (role === "doctor") {
+      payload.doctor_id = currentAppointment?.doctor_id;
+    }
+
+    // ✅ Facility Admin
+    else if (role === "facility" || role === "hospital_admin") {
+      const { data: facility } = await supabase
+        .from("facilities")
+        .select("admin_user_id")
+        .eq("admin_user_id", user) // better check by user.id
+        .single();
+
+      if (!facility) {
+        throw new Error("Facility not found for this admin");
+      }
+
+      payload.facility_admin_id = currentAppointment?.facility_id;
+    }
+
+    // ✅ Staff
+    else if (role === "hospital_staff") {
+      const { data: staff } = await supabase
+        .from("staff")
+        .select("user_id, is_active")
+        .eq("facility_id", currentAppointment?.facility_id) // ensure staff belongs to the same facility
+        .eq("user_id", user)
+        .single();
+
+      if (!staff || !staff.is_active) {
+        throw new Error("Staff not active or not found");
+      }
+
+      payload.staff_id = user;
+    }
+
+    else {
+      throw new Error("Invalid role");
+    }
+
+    // 4️⃣ Call Edge Function
+    const response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/complete-appointment",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to complete appointment");
+    }
+
+    console.log("✅ SUCCESS:", result);
+
+  } catch (err: any) {
+    console.error("❌ ERROR:", err.message);
+  } finally {
+    setCompleting(false);
+  }
+};
 const BookingCompleted = async (
   document_requested: boolean,
   payment_requested: boolean
@@ -3905,6 +4478,41 @@ const handleConfirmCompletion = () => {
 
   setIsDialogOpen(false);
 };
+
+const isAppointmentTimePassed = () => {
+  if (!currentAppointment?.appointment_date || !currentAppointment?.end_time) return false;
+  // Combine date and end_time into a full datetime
+  const dateStr = currentAppointment.appointment_date.split('T')[0]; // YYYY-MM-DD
+  const endDateTime = new Date(`${dateStr}T${currentAppointment.end_time}`);
+  return new Date() > endDateTime;
+};
+const getCompletionMessage = () => {
+  if (isCompleted) return "Appointment already completed";
+  if (isCancelled) return "Appointment has been cancelled";
+
+  if (!isAppointmentTimePassed()) {
+    if (currentAppointment?.type === "doctor") {
+      return "You can mark this appointment as completed only after the doctor's consultation time ends.";
+    }
+
+    if (currentAppointment?.type === "facility") {
+      return "You can mark this appointment as completed only after the facility service time ends.";
+    }
+
+    return "You can mark this appointment as completed only after the scheduled time ends.";
+  }
+
+  return "";
+};
+const CompletionMessage = () => {
+  if (isAppointmentTimePassed() || isCompleted || isCancelled) return null;
+
+  return (
+    <p className="text-sm text-gray-500 mt-2">
+      {getCompletionMessage()}
+    </p>
+  );
+};
   // ==================== PATIENT VIEW ====================
   if (viewType === "patient" && patient) {
     const isPending = currentAppointment?.status === "pending";
@@ -4049,7 +4657,7 @@ const handleConfirmCompletion = () => {
   </CardTitle>
 </div>
     <CardContent className="p-4 flex flex-col items-center text-center">
-      {currentAppointment?.payment_requested ? (
+      {paymentCompleted ? (
         <>
           <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center mb-2">
             <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4059,6 +4667,21 @@ const handleConfirmCompletion = () => {
           <h3 className="font-semibold text-green-700">Consultation Fee Paid</h3>
           <p className="text-xs text-muted-foreground">Awaiting patient payment</p>
         </>
+
+        ) : currentAppointment?.payment_requested ? (
+  <>
+    <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+      <CreditCard className="h-5 w-5 text-yellow-600" />
+    </div>
+
+    <h3 className="font-semibold text-yellow-700">
+      Payment Requested
+    </h3>
+
+    <p className="text-xs text-muted-foreground">
+      Waiting for the patient to complete the payment.
+    </p>
+  </>
       ) : (
         <>
           <CreditCard className="h-8 w-8 text-amber-600 mb-2" />
@@ -4075,9 +4698,10 @@ const handleConfirmCompletion = () => {
     </CardContent>
   </Card>
 )}
+            </div>
               {/* Teleconsultation Card */}
-              {currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
-                <Card className="bg-sky-50/40 border-sky-100 sm:col-span-2">
+              {userRole === "doctor" && currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
+                <Card className="relative border-0 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
     <Telescope className="h-5 w-5" />
@@ -4096,15 +4720,18 @@ const handleConfirmCompletion = () => {
                     </Button>
                     <div className="flex gap-2">
                       <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
-                      <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1">Mark as Completed</Button>
+                      <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1" disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+>Mark as Completed</Button>
                     </div>
+              <CompletionMessage />
                   </CardContent>
                 </Card>
               )}
 
               {/* Non-teleconsultation action buttons */}
               {userRole === "doctor" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
-                <Card className="bg-rose-50/40 border-rose-100">
+                <Card className="relative border-0 shadow-lg overflow-hidden">
+                {/* <Card className="bg-rose-50/40 border-rose-100"> */}
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
     <LucideAppWindow className="h-5 w-5" />
@@ -4114,12 +4741,18 @@ const handleConfirmCompletion = () => {
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
                   <CardContent className="flex gap-2">
                     <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
-                    <Button variant="doctor" onClick={() => setOpenComplete(true)} disabled={isCompleted || isCancelled}>Mark as Completed</Button>
+                    <Button variant="doctor" onClick={() => setOpenComplete(true)}
+                    
+                    // disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+>Mark as Completed</Button>
+
+
                   </CardContent>
+<CompletionMessage />
                 </Card>
               )}
               {userRole === "facility" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
-                <Card className="bg-rose-50/40 border-rose-100">
+                <Card className="relative border-0 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
     <LucideAppWindow className="h-5 w-5" />
@@ -4128,12 +4761,14 @@ const handleConfirmCompletion = () => {
 </div>
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
                   <CardContent>
-                    <Button variant="doctor" onClick={() => setOpenComplete(true)} disabled={isCompleted || isCancelled}>Mark as Completed</Button>
+                    <Button variant="doctor" onClick={() => setOpenComplete(true)} 
+                    // disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+>Mark as Completed</Button>
+<CompletionMessage />
                   </CardContent>
                   
                 </Card>
               )}
-            </div>
 
             {/* Medical Documents Card - only if document_requested true */}
             {/* {currentAppointment?.document_requested === true && ( */}
@@ -4611,7 +5246,7 @@ const handleConfirmCompletion = () => {
                         {userRole === "patient" && paymentCompleted ? (
                           <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg><span className="font-medium">Consultation Fee Paid</span></div>
                         ) : userRole === "patient" && !paymentCompleted && (
-                          <Button size="default" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md" onClick={() => navigate(`/patient/appointment-payment/${appointmentId}`)}>Consultation Fee ₹{doctor.consultation_fee || "0"}</Button>
+                          <Button size="default" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md" onClick={() => navigate(`/patient/appointment-payment/${appointmentId}`)}>Consultation Fee ₹{doctor.consultation_fee +150 || "0"}</Button>
                         )}
                         {currentAppointment?.payment_requested && !paymentCompleted && <p className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded-md">⏳ Meeting started – you can now request consultation fee.</p>}
                       </div>

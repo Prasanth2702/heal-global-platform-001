@@ -259,7 +259,8 @@ import {
   Pill,
   Ambulance,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Server
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoFootor from "@/image/pmhs_logo_small.png";
@@ -284,6 +285,7 @@ const Footer = () => {
       { name: 'Book Appointment', path: '/appointment/beds', icon: CalendarCheck },
       { name: 'Help & Support', path: '/help', icon: HelpCircle},
       { name: 'Medical Library', path: '/conditions', icon: BookOpen},
+      { name: 'Subscriptions Information', path: 'https://services.pmhssmarthealth.com/' , icon: Server, external: true},
       // { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
       // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
       // { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
@@ -359,7 +361,7 @@ const Footer = () => {
             <div className="col-lg-3 col-md-6">
               <h6 className="fw-bold mb-3">Our Services</h6>
               <ul className="list-unstyled">
-                {services.slice(0, 6).map((service, index) => {
+                {/* {services.slice(0, 6).map((service, index) => {
                   const Icon = service.icon;
                   return (
                     <li key={index} className="mb-2">
@@ -373,7 +375,37 @@ const Footer = () => {
                       </Link>
                     </li>
                   );
-                })}
+                })} */}
+                {services.slice(0, 6).map((service, index) => {
+  const Icon = service.icon;
+
+  return (
+    <li key={index} className="mb-2">
+      {service.external ? (
+        // ✅ External link
+        <a
+          href={service.path}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white-50 text-decoration-none hover-text-primary d-inline-flex align-items-center"
+        >
+          <Icon size={14} className="me-2" />
+          {service.name}
+        </a>
+      ) : (
+        // ✅ Internal link
+        <Link
+          to={service.path}
+          onClick={scrollToTop}
+          className="text-white-50 text-decoration-none hover-text-primary d-inline-flex align-items-center"
+        >
+          <Icon size={14} className="me-2" />
+          {service.name}
+        </Link>
+      )}
+    </li>
+  );
+})}
               </ul>
             </div>
 

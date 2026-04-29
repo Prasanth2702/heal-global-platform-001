@@ -61,7 +61,8 @@ const HospitalDashboard = () => {
   todayAppointments: 0,
   monthlyRevenue: 0,
   activePatients: 0,
-  inventoryAlerts: 0
+  inventoryAlerts: 0,
+  pageViews: 0
 });
 
 //  useEffect(() => {
@@ -196,6 +197,18 @@ useEffect(() => {
         ? [...new Set(activePatientsData.map(a => a.patient_id))].length 
         : 0;
 
+        const { data: viewData, error: viewError } = await supabase
+  .from("facility_page_views")
+  .select("view_count")
+  .eq("facility_id", facilityId)
+  .single();
+
+let todayViews = viewData.view_count;
+
+// if (!viewError && viewData) {
+//   todayViews = viewData.view_count;
+// }
+
       // Update overview stats with real data
       setOverviewStats(prev => ({
         ...prev,
@@ -204,8 +217,8 @@ useEffect(() => {
         todayAppointments: appointmentsData?.filter(app => 
           new Date(app.appointment_date).toDateString() === new Date().toDateString()
         ).length || 0,
-        activePatients: uniquePatients || 0
-        // monthlyRevenue and inventoryAlerts need their own queries
+        activePatients: uniquePatients || 0,
+       pageViews: todayViews // monthlyRevenue and inventoryAlerts need their own queries
       }));
 
     } catch (error) {
@@ -466,6 +479,20 @@ return (
                 <p className="text-xs text-muted-foreground">Under treatment</p>
               </CardContent>
             </Card>
+            <Card>
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">Page Views</CardTitle>
+    <Activity className="h-4 w-4 text-muted-foreground" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {loading ? "..." : overviewStats.pageViews}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Today's patient visits
+    </p>
+  </CardContent>
+</Card>
           </div>
 
           <div className="mt-6">

@@ -4716,7 +4716,7 @@ const CompletionMessage = () => {
   </Card>
 )}
             </div>
-              {/* Teleconsultation Card */}
+              {/* Teleconsultation Card
               {userRole === "doctor" && currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="relative border-0 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
@@ -4731,26 +4731,29 @@ const CompletionMessage = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button onClick={() => { handleJoinVideo(currentAppointment, "doctor"); handleJoinMeeting(); }} disabled={joiningVideo} className="w-full">
-                      {/* <Video className="mr-2 h-4 w-4" /> Start Tele Consultation */}
+                      {/* <Video className="mr-2 h-4 w-4" /> Start Tele Consultation 
                       {joiningVideo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
   {joiningVideo ? "Starting..." : "Start Tele Consultation"}
                     </Button>
-                    <div className="flex gap-2">
                       <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
-                      {/* <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1"  */}
+                      {/* <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1"  
                       <Button variant="doctor" onClick={() => setOpenComplete(true)} className="flex-1" 
                       disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
 >Mark as Completed</Button>
-                    </div>
-              <CompletionMessage />
+              <div className="mt-3 p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+  <AlertCircle className="h-5 w-5 mt-0.5" />
+  <div className="text-sm">
+    <CompletionMessage />
+  </div>
+</div>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Non-teleconsultation action buttons */}
+              {/* Non-teleconsultation action buttons 
               {userRole === "doctor" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="relative border-0 shadow-lg overflow-hidden">
-                {/* <Card className="bg-rose-50/40 border-rose-100"> */}
+                {/* <Card className="bg-rose-50/40 border-rose-100"> 
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
     <LucideAppWindow className="h-5 w-5" />
@@ -4758,7 +4761,7 @@ const CompletionMessage = () => {
   </CardTitle>
 </div>
                   <CardHeader className="pb-2"><CardTitle className="text-base">Appointment Actions</CardTitle></CardHeader>
-                  <CardContent className="flex gap-2">
+                  <CardContent className="flex gap-2 ">
                     <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
                     <Button variant="doctor" onClick={() => setOpenComplete(true)}
                     
@@ -4766,8 +4769,13 @@ const CompletionMessage = () => {
 >Mark as Completed</Button>
 
 
+<div className="mt-3 p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+  <AlertCircle className="h-5 w-5 mt-0.5" />
+  <div className="text-sm">
+    <CompletionMessage />
+  </div>
+</div>
                   </CardContent>
-<CompletionMessage />
                 </Card>
               )}
               {(currentUserRole === "hospital_admin"  || currentUserRole === "hospital_staff" ) && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
@@ -4783,11 +4791,151 @@ const CompletionMessage = () => {
                     <Button variant="doctor" onClick={() => setOpenComplete(true)} 
                     disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
 >Mark as Completed</Button>
-<CompletionMessage />
+<div className="mt-3 p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+  <AlertCircle className="h-5 w-5 mt-0.5" />
+  <div className="text-sm">
+    <CompletionMessage />
+  </div>
+</div>
                   </CardContent>
                   
                 </Card>
-              )}
+              )} */}
+              {/* Teleconsultation Card */}
+{userRole === "doctor" && currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
+  <Card className="relative border-0 shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <Telescope className="h-5 w-5" />
+        Start Tele Consultation Meeting
+      </CardTitle>
+    </div>
+    <CardHeader className="pb-2">
+      <CardTitle className="flex items-center text-base">
+        <Video className="mr-2 h-5 w-5 text-sky-600" /> Upcoming Teleconsultation
+      </CardTitle>
+      <CardDescription>
+        Scheduled on {new Date(currentAppointment.appointment_date).toLocaleDateString()}
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {/* Main action buttons row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button
+          onClick={() => {
+            handleJoinVideo(currentAppointment, "doctor");
+            handleJoinMeeting();
+          }}
+          disabled={joiningVideo}
+          className="flex-1"
+        >
+          {joiningVideo ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Video className="mr-2 h-4 w-4" />
+          )}
+          {joiningVideo ? "Starting..." : "Start Tele Consultation"}
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={() => setOpenCancel(true)}
+          disabled={isCompleted || isCancelled}
+          className="flex-1"
+        >
+          Cancel Appointment
+        </Button>
+      </div>
+      {/* Mark as Completed button – below for clarity */}
+      <Button
+        variant="doctor"
+        onClick={() => setOpenComplete(true)}
+        disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+        className="w-full sm:w-auto"
+      >
+        Mark as Completed
+      </Button>
+      {/* Warning message */}
+      <div className="mt-2 p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+        <div className="text-sm">
+          <CompletionMessage />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
+{/* Non-teleconsultation action buttons – doctor */}
+{userRole === "doctor" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
+  <Card className="relative border-0 shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <LucideAppWindow className="h-5 w-5" />
+        Appointment Actions
+      </CardTitle>
+    </div>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-base">Appointment Actions</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button
+          variant="destructive"
+          onClick={() => setOpenCancel(true)}
+          disabled={isCompleted || isCancelled}
+          className="flex-1"
+        >
+          Cancel Appointment
+        </Button>
+        <Button
+          variant="doctor"
+          onClick={() => setOpenComplete(true)}
+          disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+          className="flex-1"
+        >
+          Mark as Completed
+        </Button>
+      </div>
+      <div className="p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+        <div className="text-sm">
+          <CompletionMessage />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
+{/* Hospital admin / staff – only Mark as Completed */}
+{(currentUserRole === "hospital_admin" || currentUserRole === "hospital_staff") && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
+  <Card className="relative border-0 shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <LucideAppWindow className="h-5 w-5" />
+        Appointment Actions
+      </CardTitle>
+    </div>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-base">Appointment Actions</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <Button
+        variant="doctor"
+        onClick={() => setOpenComplete(true)}
+        disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+        className="w-full sm:w-auto"
+      >
+        Mark as Completed
+      </Button>
+      <div className="p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+        <div className="text-sm">
+          <CompletionMessage />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
 
             {/* Medical Documents Card - only if document_requested true */}
             {/* {currentAppointment?.document_requested === true && ( */}

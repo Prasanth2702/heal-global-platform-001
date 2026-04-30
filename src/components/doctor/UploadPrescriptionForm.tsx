@@ -1,6 +1,6 @@
 // components/UploadPrescriptionForm.tsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,6 +34,8 @@ const [documentType, setDocumentType] = useState<string>(
   const [description, setDescription] = useState<string>('');
   const [tags, setTags] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStep, setUploadStep] = useState< 1 | 2 | 3>(1); 
+    const autoCloseTimeout = React.useRef<NodeJS.Timeout | null>(null);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState<string>('');
 const [patientConsent, setPatientConsent] = useState<"yes" | "no" | null>("yes");
@@ -58,6 +60,18 @@ const isUploadDisabled =
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
+
+  // Sync isUploading with uploadStep
+useEffect(() => {
+  setIsUploading(uploadStep !== 1);
+}, [uploadStep]);
+
+// Cleanup timeout on unmount
+useEffect(() => {
+  return () => {
+    if (autoCloseTimeout.current) clearTimeout(autoCloseTimeout.current);
+  };
+}, []);
 
 // const handleSubmit = async (e: React.FormEvent) => {
 //   e.preventDefault();
@@ -161,7 +175,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     setMessage("Please select at least one file");
     return;
   }
-
+ setUploadStep(1);
   setIsUploading(true);
   setStatus("idle");
   setMessage("");
@@ -220,7 +234,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     // ✅ SUCCESSFUL UPLOAD - Now trigger document indexing for each uploaded document
     const uploadedDocuments = result.uploaded_documents || [];
-    
+    setUploadStep(2); 
     if (uploadedDocuments.length > 0) {
       // Trigger indexing for each document
       const indexingPromises = uploadedDocuments.map(async (doc: any) => {
@@ -285,6 +299,12 @@ const handleSubmit = async (e: React.FormEvent) => {
           setIsUploading(false);
 
     }
+     setUploadStep(3);
+     // Auto cancel after 3 seconds
+    if (autoCloseTimeout.current) clearTimeout(autoCloseTimeout.current);
+    autoCloseTimeout.current = setTimeout(() => {
+      onCancel();
+    }, 3000);
 
     // Clear form
     setFiles([]);
@@ -299,14 +319,11 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-  return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-        <FileText className="w-8 h-8 text-emerald-600" />
-        Upload Prescription / Document
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
+const renderStepContent = () => {
+  // STEP 1 → FORM
+  if (!uploadStep || uploadStep === 1) {
+    return (
+<form onSubmit={handleSubmit} className="space-y-6">
         {/* Document Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -407,23 +424,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           />
         </div>
 
-        {/* Status Message */}
-        {status !== 'idle' && (
-          <div
-            className={`p-4 rounded-lg flex items-center gap-3 ${
-              status === 'success'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
-            }`}
-          >
-            {status === 'success' ? (
-              <CheckCircle2 className="w-6 h-6" />
-            ) : (
-              <AlertCircle className="w-6 h-6" />
-            )}
-            <p className="font-medium">{message}</p>
-          </div>
-        )}
+      
 
           {/* PATIENT CONSENT */}
 {uploadedBy === "patient" && (
@@ -549,8 +550,332 @@ const handleSubmit = async (e: React.FormEvent) => {
 </div>
 
 
-      </form>
+      </form>);}
+
+  // STEP 2 → LOADING (INDEXING)
+  if (uploadStep === 2) {
+    return (
+      <div className="text-center py-10">
+        <Loader2 className="w-12 h-12 text-emerald-600 mx-auto mb-4 animate-spin" />
+        <h3 className="text-lg font-medium text-gray-700">
+          Indexing documents...
+        </h3>
+        <p className="text-sm text-gray-500 mt-2">
+          Please wait, processing your files...
+        </p>
+      </div>
+    );
+  }
+
+  // STEP 3 → SUCCESS / ERROR
+  if (uploadStep === 3) {
+    return (
+      <div className="flex justify-center">
+        {status !== "idle" && (
+          <div
+            className={`p-5 rounded-xl flex items-center gap-3 shadow-md
+              ${
+                status === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : "bg-red-50 text-red-800 border border-red-200"
+              }`}
+          >
+            {status === "success" ? (
+              <CheckCircle2 className="w-6 h-6" />
+            ) : (
+              <AlertCircle className="w-6 h-6" />
+            )}
+            <p className="font-medium">{message}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+};
+  
+  
+  return (
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+        <FileText className="w-8 h-8 text-emerald-600" />
+        Upload Prescription / Document
+      </h2>
+
+       <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
+            ${uploadStep >= 1 ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+            1
+          </div>
+          <span className={uploadStep >= 1 ? 'text-emerald-700' : 'text-gray-500'}>Upload</span>
+        </div>
+        <div className="flex-1 h-0.5 bg-gray-200 mx-2">
+          <div className={`h-0.5 bg-emerald-600 transition-all duration-300 ${uploadStep >= 2 ? 'w-full' : 'w-0'}`} />
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
+            ${uploadStep >= 2 ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+            2
+          </div>
+          <span className={uploadStep >= 2 ? 'text-emerald-700' : 'text-gray-500'}>Index</span>
+        </div>
+        <div className="flex-1 h-0.5 bg-gray-200 mx-2">
+          <div className={`h-0.5 bg-emerald-600 transition-all duration-300 ${uploadStep >= 3 ? 'w-full' : 'w-0'}`} />
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
+            ${uploadStep >= 3 ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+            3
+          </div>
+          <span className={uploadStep >= 3 ? 'text-emerald-700' : 'text-gray-500'}>Done</span>
+        </div>
+      </div>
+{renderStepContent()}
       
     </div>
   );
 }
+//       <form onSubmit={handleSubmit} className="space-y-6">
+//         {/* Document Type */}
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700 mb-2">
+//             Document Type
+//           </label>
+//           {/* {uploadedBy === "doctor" ? ( */}
+//             {/* <input type="text" value="Prescription" readOnly className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" /> ):( */}
+//           <select
+//   value={documentType}
+//   onChange={(e) => setDocumentType(e.target.value)}
+//   className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+//   required
+// >
+//   <option value="prescription">Prescription</option>
+//   <option value="medical_record">Medical Record</option>
+//   <option value="lab_report">Lab Report</option>
+//   <option value="image">Image</option>
+//   <option value="insurance">Insurance</option>
+//   <option value="id_proof">ID Proof</option>
+// </select>
+
+//             {/* )} */}
+//         </div>
+
+//         {/* File Upload */}
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700 mb-2">
+//             Select Files (PDF, Images, etc.)
+//           </label>
+//           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition">
+//             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+//             <input
+//               type="file"
+//               multiple
+//               accept=".pdf,image/*,.doc,.docx"
+//               onChange={handleFileChange}
+//               className="hidden"
+//               id="file-upload"
+//             />
+//             <label
+//               htmlFor="file-upload"
+//               className="cursor-pointer text-emerald-600 font-medium hover:text-emerald-700"
+//             >
+//               Click to browse or drag & drop files here
+//             </label>
+//           </div>
+
+//           {/* Selected Files List */}
+//           {files.length > 0 && (
+//             <div className="mt-4 space-y-2">
+//               <p className="text-sm font-medium text-gray-700">Selected files:</p>
+//               {files.map((file, index) => (
+//                 <div
+//                   key={index}
+//                   className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg"
+//                 >
+//                   <span className="text-sm text-gray-800 truncate max-w-xs">
+//                     {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+//                   </span>
+//                   <button
+//                     type="button"
+//                     onClick={() => removeFile(index)}
+//                     className="text-red-600 hover:text-red-800 text-sm"
+//                   >
+//                     Remove
+//                   </button>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+
+//         {/* Description */}
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700 mb-2">
+//             Description (Optional)
+//           </label>
+//           <textarea
+//             value={description}
+//             onChange={(e) => setDescription(e.target.value)}
+//             rows={3}
+//             placeholder="e.g., Follow-up medication for hypertension..."
+//             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+//           />
+//         </div>
+
+//         {/* Tags */}
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700 mb-2">
+//             Tags (Optional, comma-separated)
+//           </label>
+//           <input
+//             type="text"
+//             value={tags}
+//             onChange={(e) => setTags(e.target.value)}
+//             placeholder="e.g., hypertension, antibiotics, follow-up"
+//             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+//           />
+//         </div>
+
+//         {/* Status Message */}
+//         {status !== 'idle' && (
+//           <div
+//             className={`p-4 rounded-lg flex items-center gap-3 ${
+//               status === 'success'
+//                 ? 'bg-green-50 text-green-800 border border-green-200'
+//                 : 'bg-red-50 text-red-800 border border-red-200'
+//             }`}
+//           >
+//             {status === 'success' ? (
+//               <CheckCircle2 className="w-6 h-6" />
+//             ) : (
+//               <AlertCircle className="w-6 h-6" />
+//             )}
+//             <p className="font-medium">{message}</p>
+//           </div>
+//         )}
+
+//           {/* PATIENT CONSENT */}
+// {uploadedBy === "patient" && (
+//   <div className="rounded-lg border bg-amber-50 p-4 space-y-3">
+//     <p className="text-sm font-medium text-gray-800">
+//       Do you agree to share these documents with your booked doctor?
+//     </p>
+
+//     <div className="flex gap-6">
+//       <label className="flex items-center gap-2 text-sm cursor-pointer">
+//         <input
+//           type="radio"
+//           name="patient-consent"
+//           value="yes"
+//           checked={patientConsent === "yes"}
+//           onChange={() => setPatientConsent("yes")}
+//           disabled={isUploading}
+//         />
+//         Yes, I agree 
+//       </label>
+//       <label className="flex items-center gap-2 text-sm cursor-pointer">
+//         <input
+//           type="radio"
+//           name="patient-consent"
+//           value="no"
+//           checked={patientConsent === "no"}
+//           onChange={() => setPatientConsent("no")}
+//           disabled={isUploading}
+//         />
+//         No, I do not agree
+//       </label>
+
+   
+//     </div>
+
+//     {/* {patientConsent !== "yes" && (
+//       <p className="text-xs text-red-600">
+//         You must agree to share documents to proceed with upload.
+//       </p>
+//     )} */}
+//   </div>
+// )}
+// {uploadedBy === "doctor" && doctorId && (
+//    <div className="rounded-lg border bg-amber-50 p-4 space-y-3">
+//     <p className="text-sm font-medium text-gray-800">
+//       Do you agree to share these documents with your Patient?
+//     </p>
+
+//     <div className="flex gap-6">
+//       <label className="flex items-center gap-2 text-sm cursor-pointer">
+//         <input
+//           type="radio"
+//           name="patient-consent"
+//           value="yes"
+//           checked={patientConsent === "yes"}
+//           onChange={() => setPatientConsent("yes")}
+//           disabled={isUploading}
+//         />
+//         Yes, I agree 
+//       </label>
+
+   
+//     </div>
+//     </div>
+// )}
+// {uploadedBy === "department" && depertmentId && (
+//    <div className="rounded-lg border bg-amber-50 p-4 space-y-3">
+//     <p className="text-sm font-medium text-gray-800">
+//       Do you agree to share these documents with your Patient?
+//     </p>
+
+//     <div className="flex gap-6">
+//       <label className="flex items-center gap-2 text-sm cursor-pointer">
+//         <input
+//           type="radio"
+//           name="patient-consent"
+//           value="yes"
+//           checked={patientConsent === "yes"}
+//           onChange={() => setPatientConsent("yes")}
+//           disabled={isUploading}
+//         />
+//         Yes, I agree 
+//       </label>
+
+   
+//     </div>
+//     </div>
+// )}
+  
+
+//         {/* Submit Button */}
+//     <div className="flex gap-4">
+//   <button
+//     type="button"
+//     onClick={onCancel}
+//     className="w-full py-3 px-6 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100"
+//   >
+//     Cancel
+//   </button>
+
+//   <button
+//     type="submit"
+//     disabled={isUploadDisabled}
+//     className={`w-full py-3 px-6 rounded-lg font-semibold text-white flex items-center justify-center gap-3 transition
+//       ${
+//         isUploadDisabled
+//           ? 'bg-gray-400 cursor-not-allowed'
+//           : 'bg-emerald-600 hover:bg-emerald-700'
+//       }`}
+//   >
+//     {isUploading ? (
+//       <>
+//         <Loader2 className="w-5 h-5 animate-spin" />
+//         Uploading...
+//       </>
+//     ) : (
+//       <>
+//         <Upload className="w-5 h-5" />
+//         Upload Documents
+//       </>
+//     )}
+//   </button>
+// </div>
+
+
+//       </form>

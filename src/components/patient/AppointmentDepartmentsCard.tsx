@@ -866,7 +866,7 @@ export default function AppointmentDepartmentsCard({
          <button
                           className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
 
-            onClick={() => navigate(`/patient/appointment-facility/${appointment.facilityId}/${appointment.id}`)}
+            onClick={() => navigate(`/patient/appointment-facility/${userId}/${appointment.facilityId}/${appointment.id}`)}
           >
             <User className="h-4 w-4 mr-1" /> Appointment Details Page
           </button>

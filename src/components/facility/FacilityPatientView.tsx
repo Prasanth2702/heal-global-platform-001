@@ -2594,6 +2594,8 @@ const FacilityPatientView: React.FC = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [documentPermission, setDocumentPermission] = useState<string>("false");
 const [consultationFee, setConsultationFee] = useState<string>("false");
+const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [videoMeeting, setVideoMeeting] = useState<{
     showMeeting: boolean;
     meetingId: string;
@@ -2698,6 +2700,21 @@ const [joiningVideo, setJoiningVideo] = useState(false);
       </div>
     );
   };
+
+  useEffect(() => {
+  const fetchUserRole = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user)
+      .single();
+    if (!error && data) {
+      setCurrentUserRole(data.role);  // e.g. "facility", "hospital_staff"
+    }
+  };
+  fetchUserRole();
+}, [user]);
 
 //   const loadPatientData = async (patientRecord: any) => {
 //     // Load Patient Profile
@@ -4159,7 +4176,7 @@ const completeAppointment = async () => {
         throw new Error("Facility not found for this admin");
       }
 
-      payload.facility_admin_id = currentAppointment?.facility_id;
+      payload.facility_admin_id = user;
     }
 
     // ✅ Staff
@@ -4439,17 +4456,17 @@ const PatientPendingOverlay = () => (
       <div className="bg-gray-50 rounded-lg px-6 py-4 shadow-md text-center font-medium space-y-3">
         
         <div>
-          ⏳ Pending – Your appointment is waiting for your approval.
+          ⏳ Pending – This appointment is waiting for your approval.
         </div>
 
-          <Button
+          {/* <Button
             variant="doctor"
             onClick={() => setIsDialogOpen(true)}
             disabled={isCompleted || isCancelled}
             className="w-full"
           >
-            Confired your Appointment
-          </Button>
+            Confirm this appointment
+          </Button> */}
 
       </div>
 
@@ -4534,11 +4551,11 @@ const CompletionMessage = () => {
               <TimerDisplay seconds={timeLeft} />
             </div>
           )}
-          {userRole === "doctor"&&(
+          {userRole === "doctor" && currentAppointment.status === "pending" && (
           <Button variant="doctor" 
           onClick={() => setIsDialogOpen(true)} 
             disabled={isCompleted || isCancelled}>
-            Confired your Appointment
+            Confirm this appointment
           </Button>)}
         </div>
 
@@ -4720,7 +4737,9 @@ const CompletionMessage = () => {
                     </Button>
                     <div className="flex gap-2">
                       <Button variant="destructive" onClick={() => setOpenCancel(true)} disabled={isCompleted || isCancelled}>Cancel Appointment</Button>
-                      <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1" disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+                      {/* <Button variant="doctor" onClick={startCompleteWithUpload} className="flex-1"  */}
+                      <Button variant="doctor" onClick={() => setOpenComplete(true)} className="flex-1" 
+                      disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
 >Mark as Completed</Button>
                     </div>
               <CompletionMessage />
@@ -4751,7 +4770,7 @@ const CompletionMessage = () => {
 <CompletionMessage />
                 </Card>
               )}
-              {userRole === "facility" && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
+              {(currentUserRole === "hospital_admin"  || currentUserRole === "hospital_staff" ) && currentAppointment && currentAppointment.type !== "teleconsultation" && currentAppointment.status === "confirmed" && (
                 <Card className="relative border-0 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
   <CardTitle className="text-white flex items-center gap-2">
@@ -4973,9 +4992,10 @@ const CompletionMessage = () => {
         </DialogContent>
       </Dialog> */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-  <DialogContent className="sm:max-w-md">
+  <DialogContent>
+  {/* <DialogContent className="sm:max-w-md"> */}
     <DialogHeader>
-      <DialogTitle>Complete Consultation</DialogTitle>
+      <DialogTitle>Confirm this appointment</DialogTitle>
       <DialogDescription>
         Please confirm the following details before completing the appointment.
       </DialogDescription>
@@ -5007,10 +5027,10 @@ const CompletionMessage = () => {
 
         {/* Preview Message */}
         {documentPermission && (
-          <div className="bg-gray-100 p-3 rounded-md text-sm mt-2">
+          <div className="bg-gray-100 p-3 rounded-md text-sm mt-2 ">
             {documentPermission === "true"
               ? "📄 I have read the privacy policy of the platform. I shall handle the patients digital documents with care and will not share with any one else."
-              : ""}
+              : "📄 I understand that the patient will not be able to share any digital medical or lab documents through the platform. I shall collect any necessary documents in offline mode."}
           </div>
         )}
       </div>
@@ -5058,10 +5078,44 @@ const CompletionMessage = () => {
       </Button>
 
       <Button
-        onClick={handleConfirmCompletion}
+        // onClick={handleConfirmCompletion}
+        onClick={() => setShowFinalConfirm(true)}
         type="button"
       >
         Confirm Booking
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+<Dialog open={showFinalConfirm} onOpenChange={setShowFinalConfirm}>
+  <DialogContent className="sm:max-w-sm">
+    <DialogHeader>
+      <DialogTitle>Would you like to Confirmation</DialogTitle>
+      <DialogDescription>
+        Yes, I want to confirm this appointment.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="text-sm text-gray-600">
+      I understand that this action will mark the appointment as confirmed and I will not be able to make any further changes.
+    </div>
+
+    <DialogFooter>
+      <Button
+        variant="outline"
+        onClick={() => setShowFinalConfirm(false)}
+      >
+        No, Cancel
+      </Button>
+
+      <Button
+        onClick={() => {
+          setShowFinalConfirm(false);
+          handleConfirmCompletion(); // ✅ FINAL ACTION
+        }}
+      >
+        Yes, Confirm
       </Button>
     </DialogFooter>
   </DialogContent>

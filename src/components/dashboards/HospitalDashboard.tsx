@@ -197,17 +197,27 @@ useEffect(() => {
         ? [...new Set(activePatientsData.map(a => a.patient_id))].length 
         : 0;
 
-        const { data: viewData, error: viewError } = await supabase
+//         const { data: viewData, error: viewError } = await supabase
+//   .from("facility_page_views")
+//   .select("view_count")
+//   .eq("facility_id", facilityId)
+//   .single();
+
+// let todayViews = viewData.view_count;
+
+// // if (!viewError && viewData) {
+// //   todayViews = viewData.view_count;
+// // }
+const { data: viewData, error: viewError } = await supabase
   .from("facility_page_views")
   .select("view_count")
-  .eq("facility_id", facilityId)
-  .single();
+  .eq("facility_id", facilityId);
 
-let todayViews = viewData.view_count;
+let totalViews = 0;
 
-// if (!viewError && viewData) {
-//   todayViews = viewData.view_count;
-// }
+if (!viewError && viewData) {
+  totalViews = viewData.reduce((sum, row) => sum + (row.view_count || 0), 0);
+}
 
       // Update overview stats with real data
       setOverviewStats(prev => ({
@@ -218,7 +228,7 @@ let todayViews = viewData.view_count;
           new Date(app.appointment_date).toDateString() === new Date().toDateString()
         ).length || 0,
         activePatients: uniquePatients || 0,
-       pageViews: todayViews // monthlyRevenue and inventoryAlerts need their own queries
+       pageViews: totalViews // monthlyRevenue and inventoryAlerts need their own queries
       }));
 
     } catch (error) {

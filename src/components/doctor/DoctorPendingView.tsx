@@ -188,7 +188,7 @@ const [userId, setUserId] = useState<string>("");
                   size="sm"
                   onClick={() => handleViewDetails(userId, app.patientId, app.id)}
                 >
-                  <Eye size={14} className="me-1" /> View
+                  <Eye size={14} className="me-1" /> View and confirm
                 </Button>
               </td>
             </tr>
@@ -254,7 +254,7 @@ const [userId, setUserId] = useState<string>("");
                   size="sm"
                   onClick={() => handleViewDetails(userId, app.patientId, app.id)}
                 >
-                  View Details →
+                  View Detail s →
                 </Button>
               </div>
             </div>

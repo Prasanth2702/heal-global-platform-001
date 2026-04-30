@@ -2359,12 +2359,12 @@ const Hometab: React.FC = () => {
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div>
                         <small className={`text-muted d-block ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>Consultation Fee</small>
-                        <strong className={`text-primary ${getTextSizeClass('', 'text-sm', 'text-base')}`}>${doctor.consultationFee}</strong>
+                        <strong className={`text-primary ${getTextSizeClass('', 'text-sm', 'text-base')}`}>${doctor.consultationFee + 150}</strong>
                       </div>
-                      <div className="text-end">
+                      {/* <div className="text-end">
                         <small className={`text-muted d-block ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>Patients</small>
                         <strong className={getTextSizeClass('', 'text-sm', 'text-base')}>{doctor.patients}+</strong>
-                      </div>
+                      </div> */}
                     </div>
                     <div className="d-grid gap-2">
                       <PatientProtectedButton 

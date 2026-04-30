@@ -1832,7 +1832,7 @@ export default function DoctorAppointmentManagement() {
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Appointment waiting for your approval</DialogTitle>
+            <DialogTitle>Appointment waiting for your confirmation</DialogTitle>
             <DialogDescription>
               Review the appointment information before taking action.
             </DialogDescription>
@@ -1880,7 +1880,7 @@ export default function DoctorAppointmentManagement() {
               >
                 <Button className="w-full sm:w-auto">
                   <Eye className="mr-2 h-4 w-4" />
-                  Confired 
+                  Proceed to Confirm 
                 </Button>
               </Link>
             )}

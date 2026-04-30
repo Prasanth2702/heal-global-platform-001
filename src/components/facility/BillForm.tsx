@@ -371,6 +371,8 @@ const [role, setRole] = useState<string | null>(null)
  const [departmentId, setDepartmentId] = useState<string | null>(null)
 const [position, setPosition] = useState<string | null>(null)
 
+const [discountAmount, setDiscountAmount] = useState(0)
+
 useEffect(() => {
   getUserRole()
 }, [userId])
@@ -556,9 +558,10 @@ useEffect(() => {
     : items.filter(item => item.category_id === selectedCategory)
 
   const subtotal = billItems.reduce((sum, item) => sum + item.total_price, 0)
-  const discountAmount = (subtotal * discountPercentage) / 100
-  const total = subtotal - discountAmount
+  // const discountAmount = (subtotal * discountPercentage) / 100
+  // const total = subtotal - discountAmount
 
+  const total = Math.max(0, subtotal - discountAmount)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -612,7 +615,8 @@ useEffect(() => {
     unit_price: item.unit_price,
     total_price: item.quantity * item.unit_price
   })),
-  discount_percentage: discountPercentage,
+  discount_amount: discountAmount,
+  // discount_percentage: discountPercentage,
   discount_approver_name: discountApproverName,
   discount_reason: discountReason,
   notes,
@@ -890,7 +894,7 @@ useEffect(() => {
       <div className="bg-white shadow-sm rounded-lg p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Discount (Optional)</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Discount Percentage
             </label>
@@ -903,7 +907,22 @@ useEffect(() => {
               onChange={(e) => setDiscountPercentage(parseFloat(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
             />
-          </div>
+          </div> */}
+          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Discount Amount (₹)
+  </label>
+   <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={discountAmount}
+              onChange={(e) => setDiscountAmount(parseFloat(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Enter discount in ₹"
+  />
+</div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Approver Name
@@ -999,12 +1018,20 @@ useEffect(() => {
             <span className="text-gray-600">Subtotal:</span>
             <span className="text-lg font-semibold">₹{subtotal.toFixed(2)}</span>
           </div>
-          {discountPercentage > 0 && (
+          {/* {discountPercentage > 0 && (
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Discount ({discountPercentage}%):</span>
               <span className="text-lg font-semibold text-green-600">-₹{discountAmount.toFixed(2)}</span>
             </div>
-          )}
+          )} */}
+          {discountAmount > 0 && (
+  <div className="flex justify-between items-center">
+    <span className="text-gray-600">Discount:</span>
+    <span className="text-lg font-semibold text-green-600">
+      -₹{discountAmount.toFixed(2)}
+    </span>
+  </div>
+)}
           <div className="border-t border-indigo-200 pt-2 mt-2">
             <div className="flex justify-between items-center">
               <span className="text-xl font-bold text-gray-900">Total Amount:</span>

@@ -118,8 +118,8 @@ export const BillDetailsModal: React.FC<BillDetailsModalProps> = ({
                       <td className="px-4 py-2 text-sm">{idx + 1}</td>
                       <td className="px-4 py-2 text-sm">{item.item_name}</td>
                       <td className="px-4 py-2 text-sm">{item.quantity}</td>
-                      <td className="px-4 py-2 text-sm">?{item.unit_price.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-sm font-medium">?{item.total_price.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-sm">₹{item.unit_price.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-sm font-medium">₹{item.total_price.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -136,7 +136,7 @@ export const BillDetailsModal: React.FC<BillDetailsModalProps> = ({
                   <span className="text-gray-500">Percentage:</span> {bill.discount_percentage}%
                 </div>
                 <div>
-                  <span className="text-gray-500">Amount:</span> ?{bill.discount_amount.toFixed(2)}
+                  <span className="text-gray-500">Amount:</span> ₹{bill.discount_amount.toFixed(2)}
                 </div>
                 {bill.discount_approver_name && (
                   <div>
@@ -167,7 +167,7 @@ export const BillDetailsModal: React.FC<BillDetailsModalProps> = ({
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="font-bold">?{payment.amount.toFixed(2)}</span>
+                        <span className="font-bold">₹{payment.amount.toFixed(2)}</span>
                         <div className="text-xs text-gray-500">
                           {payment.payment_date ? new Date(payment.payment_date).toLocaleString() : 'Date not available'}
                         </div>
@@ -191,17 +191,17 @@ export const BillDetailsModal: React.FC<BillDetailsModalProps> = ({
           <div className="border-t border-gray-200 pt-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-600">Subtotal:</span>
-              <span>?{bill.subtotal.toFixed(2)}</span>
+              <span>₹{bill.subtotal.toFixed(2)}</span>
             </div>
             {bill.discount_amount > 0 && (
               <div className="flex justify-between items-center mb-2 text-green-600">
                 <span>Discount:</span>
-                <span>-?{bill.discount_amount.toFixed(2)}</span>
+                <span>-₹{bill.discount_amount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between items-center text-lg font-bold pt-2 border-t">
               <span>Total Amount:</span>
-              <span>?{bill.total_amount.toFixed(2)}</span>
+              <span>₹{bill.total_amount.toFixed(2)}</span>
             </div>
           </div>
 

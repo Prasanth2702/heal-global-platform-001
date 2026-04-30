@@ -50,7 +50,7 @@ const AuthLayout = ({ children, title, description, userType = "patient" }: Auth
           <div className="absolute inset-0 flex items-center justify-center p-8">
             <div className="text-center text-white">
               <h2 className="text-4xl font-bold mb-4">
-                Join NextGen Medical Platform
+                Join Gen Z era Medical Platform
               </h2>
               <p className="text-xl text-white/90">
                 Connecting healthcare professionals and patients through technology

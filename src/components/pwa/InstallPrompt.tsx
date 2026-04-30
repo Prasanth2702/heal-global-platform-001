@@ -26,7 +26,7 @@ const InstallPrompt = () => {
               <Smartphone className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-sm mb-1">Install NextGen Medical</h4>
+              <h4 className="font-semibold text-sm mb-1">Install Gen Z era Medical</h4>
               <p className="text-xs text-muted-foreground mb-3">
                 Get the app for faster access and offline features
               </p>

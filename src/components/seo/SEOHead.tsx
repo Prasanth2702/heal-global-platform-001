@@ -19,7 +19,7 @@ interface SEOHeadProps {
 }
 
 const SEOHead: React.FC<SEOHeadProps> = ({
-  title = "NextGen Medical Platform - AI-Enhanced Healthcare Ecosystem",
+  title = "Gen Z era Medical Platform - AI-Enhanced Healthcare Ecosystem",
   description = "AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities in one powerful platform.",
   keywords = "medical platform, healthcare, AI medical, telemedicine, patient portal, doctor portal, medical records, appointments, HIPAA compliance",
   image = "/og-image.jpg",
@@ -28,7 +28,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   article,
   jsonLd
 }) => {
-  const fullTitle = title.includes('NextGen Medical') ? title : `${title} | NextGen Medical Platform`;
+  const fullTitle = title.includes('Gen Z era Medical') ? title : `${title} | Gen Z era Medical Platform`;
 
   return (
     <Helmet>
@@ -42,7 +42,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:image" content={image} />
       <meta property="og:url" content={url} />
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="NextGen Medical Platform" />
+      <meta property="og:site_name" content="Gen Z era Medical Platform" />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

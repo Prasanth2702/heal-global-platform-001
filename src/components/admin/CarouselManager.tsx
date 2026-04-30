@@ -51,7 +51,7 @@ interface CarouselSlide {
 const defaultSlides: CarouselSlide[] = [
   {
     id: '1',
-    title: 'NextGen Unified Medical Platform',
+    title: 'Gen Z era Unified Medical Platform',
     subtitle: 'Complete Healthcare Ecosystem',
     description: 'AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities.',
     image: '/assets/medical-hero.jpg',

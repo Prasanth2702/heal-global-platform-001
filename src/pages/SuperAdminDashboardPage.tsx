@@ -8,8 +8,8 @@ const SuperAdminDashboardPage = () => {
   return (
     <>
       <SEOHead 
-        title="Super Admin Dashboard - NextGen Medical Platform"
-        description="Super admin dashboard for managing the NextGen Medical Platform"
+        title="Super Admin Dashboard - Gen Z era Medical Platform"
+        description="Super admin dashboard for managing the Gen Z era Medical Platform"
         keywords="super admin, dashboard, medical platform management"
       />
       

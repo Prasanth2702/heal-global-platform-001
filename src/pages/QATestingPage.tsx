@@ -10,7 +10,7 @@ const QATestingPage = () => {
   return (
     <>
       <SEOHead 
-        title="QA Testing Environment - NextGen Medical Platform"
+        title="QA Testing Environment - Gen Z era Medical Platform"
         description="Comprehensive testing environment for quality assurance, bug tracking, feedback collection, and go-live preparation"
         keywords="QA testing, bug tracking, feedback collection, go-live checklist, quality assurance, medical platform testing"
       />

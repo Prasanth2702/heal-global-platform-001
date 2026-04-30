@@ -2715,7 +2715,7 @@ const saveStep1Data = async () => {
 
       toast({
         title: '🎉 Registration Successful!',
-        description: 'Welcome to NextGen Medical Platform.',
+        description: 'Welcome to Gen Z era Medical Platform.',
       });
 
       setIsSubmitting(false);

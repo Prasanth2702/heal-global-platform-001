@@ -4,7 +4,7 @@ import React from 'react';
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "NextGen Medical Platform",
+  "name": "Gen Z era Medical Platform",
   "url": "https://heal-global-platform.lovableproject.com",
   "logo": "https://heal-global-platform.lovableproject.com/icon-512.png",
   "description": "AI-enhanced, multilingual, compliance-ready digital ecosystem for healthcare",
@@ -24,7 +24,7 @@ export const organizationSchema = {
 export const medicalOrganizationSchema = {
   "@context": "https://schema.org",
   "@type": "MedicalOrganization",
-  "name": "NextGen Medical Platform",
+  "name": "Gen Z era Medical Platform",
   "url": "https://heal-global-platform.lovableproject.com",
   "logo": "https://heal-global-platform.lovableproject.com/icon-512.png",
   "description": "Digital healthcare platform providing telemedicine, patient management, and AI-powered medical assistance",
@@ -55,7 +55,7 @@ export const medicalOrganizationSchema = {
 export const webApplicationSchema = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "NextGen Medical Platform",
+  "name": "Gen Z era Medical Platform",
   "url": "https://heal-global-platform.lovableproject.com",
   "description": "Comprehensive healthcare platform with AI-powered features",
   "applicationCategory": "HealthApplication",
@@ -85,10 +85,10 @@ export const faqSchema = {
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is NextGen Medical Platform HIPAA compliant?",
+      "name": "Is Gen Z era Medical Platform HIPAA compliant?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, NextGen Medical Platform is fully HIPAA compliant with end-to-end encryption, secure data storage, and comprehensive audit trails."
+        "text": "Yes, Gen Z era Medical Platform is fully HIPAA compliant with end-to-end encryption, secure data storage, and comprehensive audit trails."
       }
     },
     {
@@ -104,7 +104,7 @@ export const faqSchema = {
       "name": "Can I use this platform on mobile devices?",
       "acceptedAnswer": {
         "@type": "Answer", 
-        "text": "Yes, NextGen Medical Platform is fully responsive and works on all devices including smartphones, tablets, and desktops. We also offer PWA installation for native app-like experience."
+        "text": "Yes, Gen Z era Medical Platform is fully responsive and works on all devices including smartphones, tablets, and desktops. We also offer PWA installation for native app-like experience."
       }
     }
   ]

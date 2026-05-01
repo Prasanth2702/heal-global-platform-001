@@ -2616,7 +2616,157 @@ const [joiningVideo, setJoiningVideo] = useState(false);
     setPendingCompletion(true);
     setShowUploadModal(true);
   };
+const [isCheckingLimit, setIsCheckingLimit] = useState(true);
+const [limitExceeded, setLimitExceeded] = useState(false);
+const [limitMessage, setLimitMessage] = useState("");
+const [limitRecommendations, setLimitRecommendations] = useState<string[]>([]);
+//  useEffect(() => {
+//   const checkSubscriptionAndNavigate = async () => {
+//     try {
+//       if (!user || !currentAppointment) return; // ✅ use currentAppointment
 
+//       const { data: sessionData } = await supabase.auth.getSession();
+//       const token = sessionData.session?.access_token;
+
+//       const response = await fetch(
+//         "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({
+//             user_auth_id: user,
+//             consultation_type: currentAppointment.type, // ✅ use currentAppointment.type
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+
+//       const limits = {
+//         clinical: result.limits?.in_person || { used: 0, max: 0 },
+//         tele: result.limits?.teleconsultation || { used: 0, max: 0 },
+//       };
+
+//       const isTele = currentAppointment.type === "teleconsultation";
+//       const selectedLimit = isTele ? limits.tele : limits.clinical;
+
+//       if (!result.hasActiveSubscription || selectedLimit.used >= selectedLimit.max) {
+//         toast({ title: "Subscription limit reached. Please upgrade your plan." }); // ✅ object form
+//         return;
+//       }
+
+//       // ... rest of your logic
+//     } catch (err) {
+//       console.error("Subscription check failed:", err);
+//       toast({ title: "Unable to verify subscription" }); // ✅ object form
+//     }
+//   };
+
+//   checkSubscriptionAndNavigate();
+// }, [user, currentAppointment]); // ✅ add currentAppointment as dependency
+
+// useEffect(() => {
+//   const checkSubscriptionAndNavigate = async () => {
+//     try {
+//       if (!user || !currentAppointment) return;
+
+//       const { data: sessionData } = await supabase.auth.getSession();
+//       const token = sessionData.session?.access_token;
+
+//       const response = await fetch(
+//         "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({
+//             user_auth_id: user,
+//             consultation_type: currentAppointment.type,
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+
+//       // ✅ 🚫 HARD STOP if not allowed
+//       if (!result.allowed) {
+//         // 🔥 Clean UI message
+//         toast({
+//           title: result.message || "Subscription limit reached",
+//           description: result.recommendations?.join("\n"),
+//           variant: "destructive",
+//         });
+
+//         return; // ❗ STOP EVERYTHING HERE
+//       }
+
+//       // ✅ ONLY runs if allowed = true
+//       console.log("Allowed → continue flow");
+
+//       // your next logic here (navigation, API calls, etc.)
+
+//     } catch (err) {
+//       console.error("Subscription check failed:", err);
+//       toast({
+//         title: "Unable to verify subscription",
+//         variant: "destructive",
+//       });
+//     }
+//   };
+
+//   checkSubscriptionAndNavigate();
+// }, [user, currentAppointment]);
+
+useEffect(() => {
+  const checkSubscription = async () => {
+    try {
+      if (!user || !currentAppointment) {
+        setIsCheckingLimit(false);
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const response = await fetch(
+        "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            user_auth_id: user,
+            consultation_type: currentAppointment.type,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result.allowed) {
+        setLimitExceeded(true);
+        setLimitMessage(result.message || "Subscription limit exceeded");
+        setLimitRecommendations(result.recommendations || []);
+      } else {
+        setLimitExceeded(false);
+      }
+    } catch (err) {
+      console.error("Subscription check failed:", err);
+      setLimitExceeded(false); // Allow page on error, or you can set to true if you want to block
+    } finally {
+      setIsCheckingLimit(false);
+    }
+  };
+
+  checkSubscription();
+}, [user, currentAppointment]);
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -3778,6 +3928,8 @@ useEffect(() => {
     );
   }
 
+  
+
   const handleJoinVideo = (appointment: Appointment, userRole: "patient" | "doctor") => {
     if (!appointment.video_room_id) {
       toast({ title: "Error", description: "No video room available for this appointment", variant: "destructive" });
@@ -4530,6 +4682,67 @@ const CompletionMessage = () => {
     </p>
   );
 };
+
+// Show loader while checking subscription
+
+if (isCheckingLimit && viewType === "patient" && patient && currentAppointment?.status === "pending") {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Verifying subscription...</p>
+      </div>
+    </div>
+  );
+}
+
+// Show full-page error if limit exceeded
+if (limitExceeded && viewType === "patient" && patient && currentAppointment?.status === "pending") {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
+      <Card className="max-w-md w-full shadow-xl border-red-200">
+        <CardHeader className="bg-red-600 text-white rounded-t-xl">
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-6 w-6" /> Subscription Limit Exceeded
+          </CardTitle>
+          <CardDescription className="text-red-100">
+            You cannot access this appointment
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="bg-red-50 p-4 rounded-lg text-red-800 text-sm">
+            {limitMessage}
+          </div>
+
+          {limitRecommendations.length > 0 && (
+            <div className="space-y-2">
+              <p className="font-medium text-sm text-gray-700">Recommendations:</p>
+              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                {limitRecommendations.map((rec, idx) => (
+                  <li key={idx}>{rec}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* <div className="flex gap-3 pt-4">
+            <Button className="flex-1" onClick={() => window.open("/pricing", "_blank")}>
+              Upgrade Plan
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={() => window.open("/contact", "_blank")}>
+              Contact Support
+            </Button>
+          </div> */}
+
+          <Button variant="ghost" className="w-full mt-2" onClick={() => navigate(-1)}>
+            Go Back
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
   // ==================== PATIENT VIEW ====================
   if (viewType === "patient" && patient) {
     const isPending = currentAppointment?.status === "pending";

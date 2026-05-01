@@ -2481,12 +2481,185 @@ const [step1Success, setStep1Success] = useState(false);
 //       return null;
 //     }
 //   };
+// const handleSignUp = async () => {
+//   setIsSubmitting(true);
+  
+//   try {
+//     const fullPhoneNumber = countryCode + phoneNumber;
+    
+//     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+//       email: formData.emailAddress,
+//       password: password,
+//       options: {
+//         data: {
+//           firstName: formData.firstName,
+//           lastName: formData.lastName,
+//           phone_number: fullPhoneNumber,
+//           role: 'doctor',
+//         },
+//       },
+//     });
+
+//     if (signUpError) {
+//       toast({
+//         title: 'Registration Failed',
+//         description: signUpError.message,
+//         variant: 'destructive',
+//       });
+//       setIsSubmitting(false);
+//       return null;
+//     }
+
+//     const userId = signUpData.user?.id;
+    
+//     if (!userId) {
+//       toast({
+//         title: 'Registration Failed',
+//         description: 'Could not retrieve user information',
+//         variant: 'destructive',
+//       });
+//       setIsSubmitting(false);
+//       return null;
+//     }
+    
+//     const { data: existingProfile, error: checkError } = await supabase
+//       .from('profiles')
+//       .select('id')
+//       .eq('id', userId)
+//       .maybeSingle();
+    
+//     let profileError;
+//     await supabase
+//       .from('profiles')
+//       .update({
+//         first_name: formData.firstName,
+//         last_name: formData.lastName,
+//         phone_number: fullPhoneNumber,
+//         role: 'doctor',
+//       })
+//       .eq('email', formData.emailAddress);
+
+//       await supabase
+//       .from('medical_professionals')
+//       .update({
+//         user_id: userId,
+//           license_number: formData.licenseNumber || null,
+//       })
+//       .eq('user_id', userId);
+
+//     if (profileError) {
+//       console.error('Error updating profile:', profileError);
+//       toast({
+//         title: 'Profile Update Issue',
+//         description: 'Your account was created but profile update had issues',
+//         variant: 'destructive',
+//       });
+//     } else {
+//       toast({
+//         title: 'Account Created!',
+//         description: 'Your basic account has been created. Please continue with the registration.',
+//       });
+//     }
+
+//     const { data: checkprofessionalexisting, error: checkprofessionalError } = await supabase
+//       .from('medical_professionals')
+//       .select('id')
+//       .eq('user_id', userId)
+//       .maybeSingle();
+
+//     // Call the professional welcome email edge function
+//     try {
+//       // Get the current session to get the access token
+//       const { data: { session } } = await supabase.auth.getSession();
+//       const accessToken = session?.access_token;
+      
+//       if (accessToken) {
+//         const response = await fetch(
+//           'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/professional-welcome-email',
+//           {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${accessToken}`,
+//             },
+//             body: JSON.stringify({
+//               email: formData.emailAddress,
+//               password: password,
+//               firstName: formData.firstName,
+//               lastName: formData.lastName,
+//               userId: userId,
+//             }),
+//           }
+//         );
+
+//         if (response.ok) {
+//           console.log('Professional welcome email sent successfully');
+//         } else {
+//           console.error('Failed to send welcome email:', await response.text());
+//         }
+//       }
+//     } catch (emailError) {
+//       console.error('Error calling welcome email function:', emailError);
+//       // Don't block registration if email fails
+//     }
+
+//     try {
+//       const { data: { session } } = await supabase.auth.getSession();
+//       const accessToken = session?.access_token;
+
+//       const response = await fetch(
+//         'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/assign-professional-subscription',
+//         {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': `Bearer ${accessToken}`,
+//           },
+//           body: JSON.stringify({
+//             user_id: userId,
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+//       if (response.ok) {
+//         console.log('Professional subscription assigned:', result);
+//       } else {
+//         console.error('Failed to assign subscription:', result);
+//       }
+//     } catch (subError) {
+//       console.error('Error calling assign-professional-subscription:', subError);
+//       // Non-blocking; registration continues
+//     }
+
+//     mixpanelInstance.track('Doctor Step 1 Completed', {
+//   email: formData.emailAddress,
+//   userId: userId,
+//   firstName: formData.firstName,
+//   lastName: formData.lastName,
+// });
+
+//     setIsSubmitting(false);
+//     return signUpData.user;
+    
+//   } catch (error) {
+//     console.error('Error saving step 1:', error);
+//     toast({
+//       title: 'Error',
+//       description: 'Failed to save personal information',
+//       variant: 'destructive',
+//     });
+//     setIsSubmitting(false);
+//     return null;
+//   }
+// };
 const handleSignUp = async () => {
   setIsSubmitting(true);
   
   try {
     const fullPhoneNumber = countryCode + phoneNumber;
     
+    // 1. Create auth user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: formData.emailAddress,
       password: password,
@@ -2511,7 +2684,6 @@ const handleSignUp = async () => {
     }
 
     const userId = signUpData.user?.id;
-    
     if (!userId) {
       toast({
         title: 'Registration Failed',
@@ -2522,14 +2694,8 @@ const handleSignUp = async () => {
       return null;
     }
     
-    const { data: existingProfile, error: checkError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle();
-    
-    let profileError;
-    await supabase
+    // 2. Update profiles table
+    const { error: profileError } = await supabase
       .from('profiles')
       .update({
         first_name: formData.firstName,
@@ -2553,9 +2719,73 @@ const handleSignUp = async () => {
       });
     }
 
-    // Call the professional welcome email edge function
+    // 3. UPSERT medical_professionals record (create if not exists)
+    const { error: medProfError } = await supabase
+      .from('medical_professionals')
+      .upsert({
+        user_id: userId,
+        license_number: formData.licenseNumber || "",
+        
+          medical_speciality: formData.medicalSpeciality || "",
+          graduation_year: formData.graduationYear || 0,
+          medical_school: formData.medicalSchool || "",
+          years_experience: formData.yearsOfExperience || 0,
+          languages_known: formData.languagesKnown || [],
+          consultation_fee: formData.consultationFees || 0,
+          education: formData.additionalQualifications || [],
+          about_yourself: formData.aboutYourself || "",
+          is_verified: formData.isVerified || false,
+          address: formData.address || "",
+          city: formData.city || "",
+          state: formData.state || "",
+          pincode: formData.pincode || 0,
+          country_code: formData.country_code || "",
+           latitude: formData.latitude || 0,
+          langitude: formData.longitude || 0,
+        // Add any other default fields you want to initialise
+      }, { onConflict: 'user_id' });
+
+    if (medProfError) {
+      console.error('Error creating medical professional record:', medProfError);
+      // Continue anyway, but subscription may fail
+    } else {
+      console.log('Medical professional record ensured for user:', userId);
+    }
+
+     // 5. Assign professional subscription (must come after medical_professionals record exists)
     try {
-      // Get the current session to get the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+
+      if (accessToken) {
+        const response = await fetch(
+          'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/assign-professional-subscription',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              // tier_id: '11917512-601d-4937-881b-95b594882379' // optional if you want a specific tier
+            }),
+          }
+        );
+
+        const result = await response.json();
+        if (response.ok) {
+          console.log('Professional subscription assigned:', result);
+        } else {
+          console.error('Failed to assign subscription:', result);
+        }
+      }
+    } catch (subError) {
+      console.error('Error calling assign-professional-subscription:', subError);
+    }
+
+    // 4. Send welcome email (non-blocking)
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       
@@ -2586,15 +2816,17 @@ const handleSignUp = async () => {
       }
     } catch (emailError) {
       console.error('Error calling welcome email function:', emailError);
-      // Don't block registration if email fails
     }
 
+   
+
+    // 6. Mixpanel tracking
     mixpanelInstance.track('Doctor Step 1 Completed', {
-  email: formData.emailAddress,
-  userId: userId,
-  firstName: formData.firstName,
-  lastName: formData.lastName,
-});
+      email: formData.emailAddress,
+      userId: userId,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+    });
 
     setIsSubmitting(false);
     return signUpData.user;
@@ -2625,6 +2857,12 @@ const handleSignUp = async () => {
     setIsSubmitting(true);
 
     try {
+      const { data: existingProfile, error: checkError } = await supabase
+      .from('medical_professionals')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
       const fullPhoneNumber = countryCode + phoneNumber;
       
       // Save professional info (Steps 2 and 3 data)

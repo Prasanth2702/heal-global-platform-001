@@ -2740,7 +2740,41 @@ const earlyCompleteRegistration = async () => {
     
     setFacilityId(facilityData.id);
 
-    // Call the facility welcome email edge function
+  
+try {
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+
+  if (!accessToken) {
+    console.error("No session for subscription");
+  } else {
+    const response = await fetch(
+      'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/assign-facility-subscription',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          admin_user_id: userId, // ✅ correct
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      console.log("Facility subscription assigned:", result);
+    } else {
+      console.error("Subscription failed:", result);
+    }
+  }
+} catch (err) {
+  console.error("Subscription error:", err);
+}
+
+  // Call the facility welcome email edge function
     try {
       // Get the current session to get the access token
       const { data: { session } } = await supabase.auth.getSession();
@@ -2794,7 +2828,7 @@ const earlyCompleteRegistration = async () => {
         description: 'Facility registered but welcome email could not be sent. Please contact support.',
               });
     }
-
+    
     toast({
       title: 'Step 1 Completed',
       description: 'Facility information saved successfully!',

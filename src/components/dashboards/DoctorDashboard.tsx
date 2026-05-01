@@ -14,6 +14,13 @@ import PatientAttendDetails from "../doctor/PatientAttendDetails";
 import Loader1 from "../ui/Loader1";
 import PaymentDetails from "../doctor/PaymentDetails";
 
+type UsagePayload = {
+  consultation_type: string;
+  appointment_id: string;
+  professional_id?: string;
+  facility_id?: string;
+};
+
 const DoctorDashboard = () => {
 
   const location = useLocation();
@@ -27,6 +34,8 @@ const [totalEarnings, setTotalEarnings] = useState<number>(0);
 const [monthlyPatientsCount, setMonthlyPatientsCount] = useState<number>(0);
 const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
 const [doctorViews, setDoctorViews] = useState(0);
+const [professionalId, setProfessionalId] = useState<string | null>(null);
+const [planName, setPlanName] = useState<string | null>(null);
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -60,6 +69,11 @@ useEffect(() => {
       await fetchPatients(doctorData.id);
 await fetchTotalEarnings(user.id);   // user.id is the doctor's user_id
 await fetchMonthlyStats(user.id);   // <-- add this line
+await fetchPlan(doctorData.id);   // <-- add this line
+if (doctorData && doctorData.id) {
+  setProfessionalId(user.id);
+}// <-- add this line to book an appointment
+
 
 const { data: viewData } = await supabase
   .from("medical_professional_page_views")
@@ -281,6 +295,51 @@ const transformedAppointments = appointmentsData.map(app => {
   fetchDoctorData();
 }, []);
 
+
+ 
+
+    const fetchPlan =  async (doctorId: string) => {
+
+      // const { data: doctorData, error: doctorError } = await supabase
+      //   .from("medical_professionals")
+      //   .select("id")
+      //   .eq("id", doctorId)
+      //   .single();
+
+      // const patientId = doctorData ? [doctorData.id] : [];
+
+      // 1. Get active subscription for this professional
+      const { data: subscription, error: subError } = await supabase
+        .from('active_subscriptions')
+        .select('tier_id')
+        .eq('professional_id', doctorId)
+        .eq('is_active', true)
+        .single();
+
+      if (subError || !subscription) {
+        console.warn('No active subscription');
+        setPlanName('No active plan');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fetch tier name from subscription_tiers
+      const { data: tier, error: tierError } = await supabase
+        .from('subscription_tiers')
+        .select('tier_name')
+        .eq('tier_id', subscription.tier_id)
+        .single();
+
+      if (tierError || !tier) {
+        console.error('Tier not found');
+        setPlanName('Unknown plan');
+      } else {
+        setPlanName(tier.tier_name);
+      }
+      setLoading(false);
+    };
+
+
     useEffect(() => {
       const path = location.pathname;
         console.log("Navigate to tab:",path);
@@ -322,6 +381,203 @@ const transformedAppointments = appointmentsData.map(app => {
       });
     };
 
+// const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
+//   const [limits, setLimits] = useState<any>(null);
+//   const [loading, setLoading] = useState(true);
+//   const [hasSubscription, setHasSubscription] = useState(true);
+
+//   useEffect(() => {
+//     if (!professionalId) return;
+//     const fetchLimits = async () => {
+//       try {
+//         const { data: sessionData } = await supabase.auth.getSession();
+//         const token = sessionData.session?.access_token;
+        
+//         const response = await fetch(
+//           "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//           {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${token}`
+//             },
+//             body: JSON.stringify({
+//               user_auth_id: professionalId,
+//             })
+//           }
+//         );
+//         const result = await response.json();
+//         setLimits(result.limits);
+//         setHasSubscription(result.hasActiveSubscription);
+//       } catch (err) {
+//         console.error('Error fetching subscription limits:', err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchLimits();
+//   }, [professionalId]);
+
+//   if (loading) return <div className="text-center py-2">Loading usage...</div>;
+  
+//   // // Show no‑subscription message
+//   // if (!hasSubscription || (limits?.clinical?.max === 0 && limits?.tele?.max === 0)) {
+//   //   return (
+//   //     <div className="text-center py-4 border rounded-lg bg-amber-50">
+//   //       <p className="text-amber-800">⚠️ No active subscription found.</p>
+//   //       <p className="text-sm text-gray-600 mt-1">
+//   //         Please contact support or upgrade your plan to continue.
+//   //       </p>
+//   //       <Button 
+//   //         variant="outline" 
+//   //         size="sm" 
+//   //         className="mt-3"
+//   //         onClick={() => window.open('/pricing', '_blank')}
+//   //       >
+//   //         View Plans
+//   //       </Button>
+//   //     </div>
+//   //   );
+//   // }
+
+//   // if (!limits) return null;
+
+//   return (
+//     <div className="space-y-3">
+//       <div>
+//         <div className="flex justify-between text-sm">
+//           <span>Clinical Consultations</span>
+//           <span>{limits.clinical.used} / {limits.clinical.max}</span>
+//         </div>
+//         <progress 
+//           value={limits.clinical.used} 
+//           max={limits.clinical.max}
+//           className={`w-full h-2 rounded-full ${limits.clinical.remaining < 10 ? 'text-red-500' : 'text-green-500'}`}
+//         />
+//         <p className="text-xs text-muted-foreground mt-1">
+//           {limits.clinical.remaining} remaining this month
+//         </p>
+//       </div>
+//       <div>
+//         <div className="flex justify-between text-sm">
+//           <span>Tele-Consultations</span>
+//           <span>{limits.tele.used} / {limits.tele.max}</span>
+//         </div>
+//         <progress 
+//           value={limits.tele.used} 
+//           max={limits.tele.max}
+//           className={`w-full h-2 rounded-full ${limits.tele.remaining < 10 ? 'text-red-500' : 'text-green-500'}`}
+//         />
+//         <p className="text-xs text-muted-foreground mt-1">
+//           {limits.tele.remaining} remaining this month
+//         </p>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
+  const [limits, setLimits] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasSubscription, setHasSubscription] = useState(true);
+
+  useEffect(() => {
+    if (!professionalId) return;
+    const fetchLimits = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        
+        const response = await fetch(
+          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              user_auth_id: professionalId,
+            })
+          }
+        );
+        const result = await response.json();
+        
+        // 👇 ADD THIS MAPPING (the only change)
+        const transformedLimits = {
+          clinical: result.limits?.in_person || { used: 0, max: 0, remaining: 0 },
+          tele: result.limits?.teleconsultation || { used: 0, max: 0, remaining: 0 }
+        };
+        
+        setLimits(transformedLimits);
+        setHasSubscription(result.hasActiveSubscription);
+      } catch (err) {
+        console.error('Error fetching subscription limits:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLimits();
+  }, [professionalId]);
+
+  // rest of your component remains exactly the same...
+  if (loading) return <div className="text-center py-2">Loading usage...</div>;
+  
+  if (!hasSubscription || (limits?.clinical?.max === 0 && limits?.tele?.max === 0)) {
+    return (
+      <div className="text-center py-4 border rounded-lg bg-amber-50">
+        <p className="text-amber-800">⚠️ No active subscription found.</p>
+        <p className="text-sm text-gray-600 mt-1">
+          Please contact support or upgrade your plan to continue.
+        </p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="mt-3"
+          onClick={() => window.open('/pricing', '_blank')}
+        >
+          View Plans
+        </Button>
+      </div>
+    );
+  }
+
+  if (!limits) return null;
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="flex justify-between text-sm">
+          <span>Clinical Consultations</span>
+          <span>{limits.clinical.used} / {limits.clinical.max}</span>
+        </div>
+        <progress 
+          value={limits.clinical.used} 
+          max={limits.clinical.max}
+          className={`w-full h-2 rounded-full ${limits.clinical.remaining < 10 ? 'text-red-500' : 'text-green-500'}`}
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          {limits.clinical.remaining} remaining this month
+        </p>
+      </div>
+      <div>
+        <div className="flex justify-between text-sm">
+          <span>Tele-Consultations</span>
+          <span>{limits.tele.used} / {limits.tele.max}</span>
+        </div>
+        <progress 
+          value={limits.tele.used} 
+          max={limits.tele.max}
+          className={`w-full h-2 rounded-full ${limits.tele.remaining < 10 ? 'text-red-500' : 'text-green-500'}`}
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          {limits.tele.remaining} remaining this month
+        </p>
+      </div>
+    </div>
+  );
+};
   const todayAppointments = [
     {
       id: 1,
@@ -539,6 +795,16 @@ if (activeTab !== "overview") {
           <p className="text-muted-foreground">Manage your practice and patients</p>
         </div>
         <div>
+                  <div className="bg-primary/10 px-3 py-1 rounded-full">
+          {loading ? (
+            <span className="text-sm text-muted-foreground">Loading…</span>
+          ) : (
+            <span className="text-sm font-medium">
+              Plan: {planName}
+            </span>
+          )}
+        </div>
+
         </div>
         <div className="flex gap-2">
            <Button
@@ -675,6 +941,41 @@ if (activeTab !== "overview") {
     </CardTitle>
     <CardDescription className="text-2xl font-bold text-doctor">
       {doctorViews}
+    </CardDescription>
+  </CardHeader>
+</Card>
+
+{/* Subscription Usage Card */}
+{professionalId && (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-lg">Subscription Usage</CardTitle>
+      <CardDescription>Your remaining consultations for this month</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <SubscriptionUsage professionalId={professionalId} />
+    </CardContent>
+  </Card>
+)}
+<Card variant="doctor" >
+  <CardHeader className="pb-2">
+    <CardTitle className="text-lg font-medium text-muted-foreground">
+      To Upgrade / Renew your subscription, please contact Support from your Registered email
+    </CardTitle>
+
+    <CardDescription className="text-lg text-gray-700 space-y-1">
+      <p>
+        <span className="font-semibold text-doctor"><a
+                        href="mailto:support@pmhssmarthealth.com"
+                        className="text-blue-600"
+                      >
+                        support@pmhssmarthealth.com
+                      </a></span>
+      </p>
+
+      <p className="text-lg text-muted-foreground">
+        You can manage your appointments based on your current subscription plan.
+      </p>
     </CardDescription>
   </CardHeader>
 </Card>

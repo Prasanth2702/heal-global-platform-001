@@ -1713,6 +1713,192 @@
 
 // export default PatientRegistration;
 
+  // Save Step 1 Data Only
+//   const saveStep1Data = async () => {
+//     setIsSubmitting(true);
+    
+//     try {
+//       const fullPhoneNumber = countryCode + phoneNumber;
+      
+//       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+//         email: formData.emailAddress.toLowerCase(),
+//         password: password,
+//         options: {
+//           data: {
+//             first_name: formData.firstName,
+//             last_name: formData.lastName,
+//             phone_number: fullPhoneNumber,
+//             avatar_url: profileImage,
+//             role: 'patient',
+//           },
+//         },
+//       });
+
+//       if (signUpError) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: signUpError.message,
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return false;
+//       }
+
+//       const userId = signUpData.user?.id;
+//       if (!userId) {
+//         toast({
+//           title: 'Registration Failed',
+//           description: 'Could not retrieve user information',
+//           variant: 'destructive',
+//         });
+//         setIsSubmitting(false);
+//         return false;
+//       }
+
+//       setSavedUserId(userId);
+//       setUser({ id: userId });
+// const { data: existingProfile, error: checkError } = await supabase
+//                         .from('profiles')
+//                         .select('id')
+//                         .eq('id', userId)
+//                         .maybeSingle();
+                  
+//                       let profileError;
+      
+//                       await supabase
+//         .from('profiles')
+//         .update({
+//           first_name: formData.firstName,
+//           last_name: formData.lastName,
+//           phone_number: fullPhoneNumber,
+//           role: 'patient',
+//           avatar_url: profileImage,
+//           profile_id: profileId,
+//         })
+//         .eq('email', formData.emailAddress);
+
+//       if (profileError) {
+//         console.error('Error updating profile:', profileError);
+//       }
+//           try {
+//       // Get the current session to get the access token
+//       const { data: { session } } = await supabase.auth.getSession();
+//       const accessToken = session?.access_token;
+      
+//       if (!accessToken) {
+//         console.error('No access token available for email function');
+//       } else {
+//         const response = await fetch(
+//           'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/patient-welcome-email',
+//           {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${accessToken}`,
+//             },
+//             body: JSON.stringify({
+//               email: formData.emailAddress.toLowerCase(),
+//               password: password,
+//               // firstName: formData.firstName,
+//               // lastName: formData.lastName,
+//               // userId: userId,
+//             }),
+//           }
+//         );
+
+//         const responseData = await response.json();
+        
+//         if (response.ok) {
+//           console.log('Welcome email sent successfully:', responseData);
+//           toast({
+//             title: 'Welcome Email Sent',
+//             description: 'Check your email for login instructions.',
+//           });
+//         } else {
+//           console.error('Failed to send welcome email:', responseData);
+//           // Optionally show a non-blocking warning
+//           toast({
+//             title: 'Email Notification Issue',
+//             description: 'Account created but welcome email could not be sent. Please contact support.',
+            
+//           });
+//         }
+//       }
+//     } catch (emailError) {
+//       console.error('Error calling welcome email function:', emailError);
+//       // Don't block registration if email fails
+//       toast({
+//         title: 'Email Notification Issue',
+//         description: 'Account created but welcome email could not be sent. Please contact support.',
+      
+//       });
+//     }
+
+
+
+//       toast({
+//         title: 'Step 1 Completed',
+//         description: 'Personal information saved successfully!',
+//       });
+      
+//       setIsSubmitting(false);
+//       setStep1Completed(true);
+//       return true;
+      
+//     } catch (error) {
+//       console.error('Error saving step 1:', error);
+//       toast({
+//         title: 'Error',
+//         description: 'Failed to save personal information',
+//         variant: 'destructive',
+//       });
+//       setIsSubmitting(false);
+//       return false;
+//     }
+//   };
+
+//   const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
+//     if (
+//       updatedManualDate.manualYear &&
+//       updatedManualDate.manualMonth &&
+//       updatedManualDate.manualDay
+//     ) {
+//       const monthIndex = months.indexOf(updatedManualDate.manualMonth);
+//       const dateString = `${updatedManualDate.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(updatedManualDate.manualDay).padStart(2, '0')}`;
+//       const newDate = new Date(dateString);
+    
+//    const currentYear = new Date().getFullYear();
+
+// const minAllowedDate = new Date(
+//   currentYear - 16,
+//   11, // December (0-based index)
+//   31  // Last day of year
+// );
+
+//     if (newDate > minAllowedDate) {
+//       setErrors((prev) => ({
+//         ...prev,
+//         dateOfBirth: "You must be at least 16 years old",
+//       }));
+//       return;
+//     }
+
+//     // ✅ Clear error if valid
+//     setErrors((prev) => ({
+//       ...prev,
+//       dateOfBirth: "",
+//     }));
+    
+    
+//       setDate(newDate);
+//       setFormData(prev => ({
+//         ...prev,
+//         dateOfBirth: dateString
+//       }));
+//     }
+//   };
+
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1905,7 +2091,7 @@ const PatientRegistration = () => {
   const [countries] = useState(Country.getAllCountries());
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  
+  const [step1Success, setStep1Success] = useState(false);
   // Onboarding States
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -2204,46 +2390,7 @@ const maxDate = new Date(currentYear - 16, 11, 31)
     }
   };
 
-//   const handleManualDateChange = (updatedManualDate: { manualYear: string; manualMonth: string; manualDay: string }) => {
-//     if (
-//       updatedManualDate.manualYear &&
-//       updatedManualDate.manualMonth &&
-//       updatedManualDate.manualDay
-//     ) {
-//       const monthIndex = months.indexOf(updatedManualDate.manualMonth);
-//       const dateString = `${updatedManualDate.manualYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(updatedManualDate.manualDay).padStart(2, '0')}`;
-//       const newDate = new Date(dateString);
-    
-//    const currentYear = new Date().getFullYear();
 
-// const minAllowedDate = new Date(
-//   currentYear - 16,
-//   11, // December (0-based index)
-//   31  // Last day of year
-// );
-
-//     if (newDate > minAllowedDate) {
-//       setErrors((prev) => ({
-//         ...prev,
-//         dateOfBirth: "You must be at least 16 years old",
-//       }));
-//       return;
-//     }
-
-//     // ✅ Clear error if valid
-//     setErrors((prev) => ({
-//       ...prev,
-//       dateOfBirth: "",
-//     }));
-    
-    
-//       setDate(newDate);
-//       setFormData(prev => ({
-//         ...prev,
-//         dateOfBirth: dateString
-//       }));
-//     }
-//   };
 const handleManualDateChange = (updatedManualDate: {
   manualYear: string;
   manualMonth: string;
@@ -2345,149 +2492,6 @@ const handleManualDateChange = (updatedManualDate: {
     })();
   }, []);
 
-  // Save Step 1 Data Only
-//   const saveStep1Data = async () => {
-//     setIsSubmitting(true);
-    
-//     try {
-//       const fullPhoneNumber = countryCode + phoneNumber;
-      
-//       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-//         email: formData.emailAddress.toLowerCase(),
-//         password: password,
-//         options: {
-//           data: {
-//             first_name: formData.firstName,
-//             last_name: formData.lastName,
-//             phone_number: fullPhoneNumber,
-//             avatar_url: profileImage,
-//             role: 'patient',
-//           },
-//         },
-//       });
-
-//       if (signUpError) {
-//         toast({
-//           title: 'Registration Failed',
-//           description: signUpError.message,
-//           variant: 'destructive',
-//         });
-//         setIsSubmitting(false);
-//         return false;
-//       }
-
-//       const userId = signUpData.user?.id;
-//       if (!userId) {
-//         toast({
-//           title: 'Registration Failed',
-//           description: 'Could not retrieve user information',
-//           variant: 'destructive',
-//         });
-//         setIsSubmitting(false);
-//         return false;
-//       }
-
-//       setSavedUserId(userId);
-//       setUser({ id: userId });
-// const { data: existingProfile, error: checkError } = await supabase
-//                         .from('profiles')
-//                         .select('id')
-//                         .eq('id', userId)
-//                         .maybeSingle();
-                  
-//                       let profileError;
-      
-//                       await supabase
-//         .from('profiles')
-//         .update({
-//           first_name: formData.firstName,
-//           last_name: formData.lastName,
-//           phone_number: fullPhoneNumber,
-//           role: 'patient',
-//           avatar_url: profileImage,
-//           profile_id: profileId,
-//         })
-//         .eq('email', formData.emailAddress);
-
-//       if (profileError) {
-//         console.error('Error updating profile:', profileError);
-//       }
-//           try {
-//       // Get the current session to get the access token
-//       const { data: { session } } = await supabase.auth.getSession();
-//       const accessToken = session?.access_token;
-      
-//       if (!accessToken) {
-//         console.error('No access token available for email function');
-//       } else {
-//         const response = await fetch(
-//           'https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/patient-welcome-email',
-//           {
-//             method: 'POST',
-//             headers: {
-//               'Content-Type': 'application/json',
-//               'Authorization': `Bearer ${accessToken}`,
-//             },
-//             body: JSON.stringify({
-//               email: formData.emailAddress.toLowerCase(),
-//               password: password,
-//               // firstName: formData.firstName,
-//               // lastName: formData.lastName,
-//               // userId: userId,
-//             }),
-//           }
-//         );
-
-//         const responseData = await response.json();
-        
-//         if (response.ok) {
-//           console.log('Welcome email sent successfully:', responseData);
-//           toast({
-//             title: 'Welcome Email Sent',
-//             description: 'Check your email for login instructions.',
-//           });
-//         } else {
-//           console.error('Failed to send welcome email:', responseData);
-//           // Optionally show a non-blocking warning
-//           toast({
-//             title: 'Email Notification Issue',
-//             description: 'Account created but welcome email could not be sent. Please contact support.',
-            
-//           });
-//         }
-//       }
-//     } catch (emailError) {
-//       console.error('Error calling welcome email function:', emailError);
-//       // Don't block registration if email fails
-//       toast({
-//         title: 'Email Notification Issue',
-//         description: 'Account created but welcome email could not be sent. Please contact support.',
-      
-//       });
-//     }
-
-
-
-//       toast({
-//         title: 'Step 1 Completed',
-//         description: 'Personal information saved successfully!',
-//       });
-      
-//       setIsSubmitting(false);
-//       setStep1Completed(true);
-//       return true;
-      
-//     } catch (error) {
-//       console.error('Error saving step 1:', error);
-//       toast({
-//         title: 'Error',
-//         description: 'Failed to save personal information',
-//         variant: 'destructive',
-//       });
-//       setIsSubmitting(false);
-//       return false;
-//     }
-//   };
 const saveStep1Data = async () => {
   setIsSubmitting(true);
   
@@ -2615,6 +2619,13 @@ const saveStep1Data = async () => {
       title: 'Step 1 Completed',
       description: 'Personal information saved successfully!',
     });
+
+    mixpanelInstance.track('Patient Step 1 Completed', {
+  email: formData.emailAddress,
+  userId: userId,
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+});
     
     setIsSubmitting(false);
     setStep1Completed(true);
@@ -2741,10 +2752,14 @@ const saveStep1Data = async () => {
       isValid = validateStep1();
       if (isValid) {
         const success = await saveStep1Data();
+        // if (success) {
+        //   setCurrentStep(prev => prev + 1);
+        //   window.scrollTo(0, 0);
+        // }
         if (success) {
-          setCurrentStep(prev => prev + 1);
-          window.scrollTo(0, 0);
-        }
+      setStep1Success(true);   // Show success page, stay on step 1
+      return;                  // Do NOT go to step 2 yet
+    }
       }
     } else if (currentStep === 2) {
       isValid = validateStep2();
@@ -2770,9 +2785,32 @@ const saveStep1Data = async () => {
   };
 
   const handleBack = () => {
+    if (currentStep === 2) setStep1Success(false); 
     setCurrentStep(prev => prev - 1);
     window.scrollTo(0, 0);
   };
+
+      const handleSkip = () => {
+  // When skipping a step, we do NOT validate or save data.
+  // Just move to next step.
+  if (currentStep < 4) {
+    setCurrentStep(prev => prev + 1);
+    window.scrollTo(0, 0);
+  }
+};
+const earlyCompleteRegistration = async () => {
+  setIsSubmitting(true);
+  try {
+    // Save whatever data the user has filled (steps 2,3,4 if partially done)
+    const success =  handleSuccessPopupClose(); // this function already saves all patient fields
+   
+  } catch (err) {
+    console.error(err);
+    toast({ title: "Error", description: "Could not complete registration.", variant: "destructive" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   // Profile Image Upload Handler
   const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -2821,6 +2859,12 @@ const saveStep1Data = async () => {
     //     console.error('Error updating profile picture:', updateError);
     //   }
     // }
+
+     mixpanelInstance.track('Patient Profile Image Uploaded', {
+    userId: user?.id || savedUserId,
+    email: formData.emailAddress,
+    hasImage: true,
+  });
 
     setIsUploading(false);
 
@@ -2949,6 +2993,14 @@ const saveStep1Data = async () => {
         path: filePath,
         uploadedAt: new Date()
       }]);
+      
+      mixpanelInstance.track('Patient Document Uploaded', {
+  userId: user?.id,
+  email: formData.emailAddress,
+  fileName: file.name,
+  fileType: file.type,
+  fileSize: file.size,
+});
       
       toast({
         title: "Document Uploaded",
@@ -3166,6 +3218,27 @@ const saveStep1Data = async () => {
       </div>
     </div>
   );
+
+  const Step1SuccessPage = ({ onContinue }: { onContinue: () => void }) => (
+  <div className="flex flex-col items-center justify-center text-center space-y-6 py-16">
+    <div className="bg-green-100 p-6 rounded-full">
+      <Check className="h-12 w-12 text-green-600" />
+    </div>
+    <h2 className="text-2xl font-bold text-green-600">
+      Registration Step 1 Completed 🎉
+    </h2>
+    <p className="text-gray-600 max-w-md">
+      Your personal details have been successfully saved. 
+      You can now continue to complete your profile.
+    </p>
+    <Button
+      onClick={onContinue}
+      className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8"
+    >
+      Continue to Step 2 →
+    </Button>
+  </div>
+);
 
   const renderStep2 = () => (
     <div className="space-y-5">
@@ -3753,11 +3826,21 @@ const saveStep1Data = async () => {
         <StepIndicator />
         
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          {currentStep === 1 && renderStep1()}
+          {/* {currentStep === 1 && renderStep1()} */}
+          {currentStep === 1 && (
+  step1Success ? (
+    <Step1SuccessPage onContinue={() => {
+      setStep1Success(false);
+      setCurrentStep(2);
+    }} />
+  ) : (
+    renderStep1()
+  )
+)}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
           {currentStep === 4 && renderStep4()}
-
+{!(currentStep === 1 && step1Success) && (
           <div className="flex justify-between pt-6">
             {currentStep > 1 && (
               <Button
@@ -3812,7 +3895,32 @@ const saveStep1Data = async () => {
               </Button>
             )}
           </div>
+)}
 
+<div className="text-center text-sm text-gray-600">
+          {currentStep >= 2 && currentStep <= 4 && (
+    <Button
+      type="button"
+      variant="secondary"
+      onClick={handleSkip}
+      disabled={isSubmitting}
+      className="border-2 border-gray-300 hover:bg-gray-100"
+    >
+      Skip this step →
+    </Button>
+  )}
+  {currentStep >= 2 && currentStep <= 4 && (
+  <Button
+    type="button"
+    variant="outline"
+    onClick={earlyCompleteRegistration}
+    disabled={isSubmitting}
+    className="border-2 border-green-500 text-green-600 hover:bg-green-50"
+  >
+    Go to Dashboard 🚀
+  </Button>
+)}
+  </div>
           <div className="text-center text-sm text-gray-600">
             Already have an account?{" "}
             <Button

@@ -2186,7 +2186,7 @@ const [showMap, setShowMap] = useState(false);
   );
   const [selectedType, setSelectedType] = useState<'Clinic' | 'Tele'>('Clinic');
   const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-
+const [step1Success, setStep1Success] = useState(false);
   const [formData, setFormData] = useState<MedicalProfessional>({
     firstName: "",
     lastName: "",
@@ -2589,6 +2589,13 @@ const handleSignUp = async () => {
       // Don't block registration if email fails
     }
 
+    mixpanelInstance.track('Doctor Step 1 Completed', {
+  email: formData.emailAddress,
+  userId: userId,
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+});
+
     setIsSubmitting(false);
     return signUpData.user;
     
@@ -2782,6 +2789,11 @@ const handleSignUp = async () => {
       const publicUrl = publicUrlData?.publicUrl;
       setProfileImage(publicUrl);
 
+      mixpanelInstance.track('Doctor Profile Image Uploaded', {
+  userId: userId,
+  email: formData.emailAddress,
+  hasImage: true,
+});
       toast({
         title: "Profile Picture Uploaded",
         description: "Your profile picture has been uploaded. It will be saved when you complete registration.",
@@ -2967,6 +2979,14 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
           path: filePath,
           uploadedAt: new Date()
         }]);
+
+        mixpanelInstance.track('Doctor Document Uploaded', {
+  userId: userId,
+  email: formData.emailAddress,
+  fileName: file.name,
+  fileType: file.type,
+  fileSize: file.size,
+});
         
         toast({
           title: "Document Uploaded",
@@ -2987,7 +3007,7 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
 };
   const handleStep1Submit = async () => {
     if (!validateStep1()) return false;
-    
+    if (userId) return true;
     const user = await handleSignUp();
     
     if (user) {
@@ -3002,6 +3022,10 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
     
     if (currentStep === 1) {
       success = await handleStep1Submit();
+      if (success) {
+      setStep1Success(true);   // ✅ Show success page, stay on step 1
+      return;
+    }
     } else if (currentStep === 2) {
       // Only validate, don't save
       success = validateStep2();
@@ -3028,9 +3052,35 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
 
   const handleBack = () => {
     setCurrentStep(prev => prev - 1);
+      setStep1Success(false); 
     window.scrollTo(0, 0);
   };
+  const handleSkip = () => {
+  // When skipping a step, we do NOT validate or save data.
+  // Just move to next step.
+  if (currentStep < 6) {
+    setCurrentStep(prev => prev + 1);
+    window.scrollTo(0, 0);
+  }
+};
+ const handleSuccessPopupClose = () => {
+    setShowSuccessPopup(false);
+    navigate('/dashboard/doctor');
+  };
 
+const earlyCompleteRegistration = async () => {
+  setIsSubmitting(true);
+  try {
+    // Save whatever data the user has filled (steps 2,3,4 if partially done)
+    const success =  handleSuccessPopupClose(); // this function already saves all patient fields
+   
+  } catch (err) {
+    console.error(err);
+    toast({ title: "Error", description: "Could not complete registration.", variant: "destructive" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   const StepIndicator = () => (
     <div className="mb-8 px-4">
       <div className="mb-2">
@@ -3237,6 +3287,26 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
       </div>
     </div>
   );
+  const Step1SuccessPage = ({ onContinue }) => {
+  return (
+    <div className="text-center py-12 px-4">
+      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
+        <CheckCircle className="h-10 w-10 text-green-600" />
+      </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-3">Account Created! 🎉</h2>
+      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+        Your basic account has been successfully set up.<br />
+        Now you can continue to fill out your professional details.
+      </p>
+      <Button
+        onClick={onContinue}
+        className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-8"
+      >
+        Continue to Step 2 → 
+      </Button>
+    </div>
+  );
+};
 
   const renderStep2 = () => (
     <div className="space-y-5">
@@ -3882,13 +3952,23 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
         <StepIndicator />
         
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          {currentStep === 1 && renderStep1()}
+          {/* {currentStep === 1 && renderStep1()} */}
+          {currentStep === 1 && (
+  step1Success ? (
+    <Step1SuccessPage onContinue={() => {
+      setStep1Success(false);
+      setCurrentStep(2);
+    }} />
+  ) : (
+    renderStep1()
+  )
+)}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
           {currentStep === 4 && renderStep4()}
           {currentStep === 5 && renderStep5()}
           {currentStep === 6 && renderStep6()}
-
+{!(currentStep === 1 && step1Success) && (
           <div className="flex justify-between pt-6">
             {currentStep > 1 && (
               <Button
@@ -3943,6 +4023,32 @@ const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) 
               </Button>
             )}
           </div>
+)}
+
+<div className="text-center text-sm text-gray-600">
+          {currentStep >= 2 && currentStep <= 6 && (
+    <Button
+      type="button"
+      variant="secondary"
+      onClick={handleSkip}
+      disabled={isSubmitting}
+      className="border-2 border-gray-300 hover:bg-gray-100"
+    >
+      Skip this step →
+    </Button>
+  )}
+  {currentStep >= 2 && currentStep <= 6 && (
+  <Button
+    type="button"
+    variant="outline"
+    onClick={earlyCompleteRegistration}
+    disabled={isSubmitting}
+    className="border-2 border-green-500 text-green-600 hover:bg-green-50"
+  >
+    Go to Dashboard 🚀
+  </Button>
+)}
+  </div>
 
           <div className="text-center text-sm text-gray-600">
             Already registered?{" "}

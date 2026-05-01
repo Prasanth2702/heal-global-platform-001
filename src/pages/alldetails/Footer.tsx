@@ -316,25 +316,25 @@ const Footer = () => {
                 hospitals, and healthcare services to ensure you receive the care you deserve.
               </p>
               <div className="flex gap-3">
-  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-600 transition duration-300">
+  <a href="https://www.facebook.com/people/PMHS-Smart-Health/61560357824868/" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-600 transition duration-300">
     <Facebook size={18} />
   </a>
 
-  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-sky-500 transition duration-300">
+  {/* <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-sky-500 transition duration-300">
     <Twitter size={18} />
-  </a>
+  </a> */}
 
-  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-pink-500 transition duration-300">
+  <a href="https://www.instagram.com/pmhssmarthealth" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-pink-500 transition duration-300">
     <Instagram size={18} />
   </a>
 
-  <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-700 transition duration-300">
+  {/* <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-blue-700 transition duration-300">
     <Linkedin size={18} />
   </a>
 
   <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white hover:bg-red-600 transition duration-300">
     <Youtube size={18} />
-  </a>
+  </a> */}
 </div>
             </div>
 

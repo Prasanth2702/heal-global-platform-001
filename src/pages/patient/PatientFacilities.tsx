@@ -2090,53 +2090,53 @@ const [checkingRole, setCheckingRole] = useState(false);
   //     state: { facility }
   //   });
   // };
-//   const handleViewWards = (facility: Facility) => {
-//   // Navigate to facility detail page based on authentication status
-//   if (user) {
-//     // Logged in user goes to dashboard route
-//     navigate(`/dashboard/patient/facilities/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-//       state: { facility }
-//     });
-//   } else {
-//     // Non-logged in user goes to appointment route
+  const handleViewWards = (facility: Facility) => {
+  // Navigate to facility detail page based on authentication status
+  if (user) {
+    // Logged in user goes to dashboard route
+    navigate(`/dashboard/patient/facilities/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+      state: { facility }
+    });
+  } else {
+    // Non-logged in user goes to appointment route
+    navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+      state: { facility }
+    });
+  }
+};
+// const handleViewWards = async (facility: Facility) => {
+//   if (!user) {
+//     // Not logged in → appointment route
 //     navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
 //       state: { facility }
 //     });
+//     return;
+//   }
+
+//   setCheckingRole(true);
+//   try {
+//     const isPatient = await checkIfPatient(user.id);
+//     if (isPatient) {
+//       // Patient → dashboard route
+//       navigate(`/dashboard/patient/facilities/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+//         state: { facility }
+//       });
+//     } else {
+//       // Logged in but not patient (doctor, admin, staff) → appointment route
+//       navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+//         state: { facility }
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error checking patient status:", error);
+//     // Fallback to appointment route
+//     navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+//       state: { facility }
+//     });
+//   } finally {
+//     setCheckingRole(false);
 //   }
 // };
-const handleViewWards = async (facility: Facility) => {
-  // if (!user) {
-  //   // Not logged in → appointment route
-  //   navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-  //     state: { facility }
-  //   });
-  //   return;
-  // }
-
-  setCheckingRole(true);
-  try {
-    const isPatient = await checkIfPatient(user.id);
-    if (isPatient) {
-      // Patient → dashboard route
-      navigate(`/dashboard/patient/facilities/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-        state: { facility }
-      });
-    } else {
-      // Logged in but not patient (doctor, admin, staff) → appointment route
-      navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-        state: { facility }
-      });
-    }
-  } catch (error) {
-    console.error("Error checking patient status:", error);
-    // Fallback to appointment route
-    // navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-    //   state: { facility }
-    // });
-  } finally {
-    setCheckingRole(false);
-  }
-};
 
   const checkIfPatient = async (userId: string) => {
     try {

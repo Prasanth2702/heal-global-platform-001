@@ -4884,6 +4884,13 @@ import PatientBookingsPage from "@/components/facility/PatientBookingsPage";
 import AnalyticsReportsPage from "@/components/facility/AnalyticsReportsPage";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+
+interface Facility {
+  id: string;
+  facility_name: string;
+  admin_user_id: string;
+}
 
 const ViewFacility: React.FC = () => {
    const navigate = useNavigate();
@@ -5016,6 +5023,21 @@ const ViewFacility: React.FC = () => {
     window.dispatchEvent(new Event('refreshData'));
   };
 
+   const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+    const [userFacility, setUserFacility] = useState<Facility | null>(null);
+    useEffect(() => {
+      if (userFacility?.id) {
+        checkLimit(userFacility.id, "bedbookings"); // 🔥 AUTO CALL
+      }
+    }, [userFacility]);
+    
+    const isStaffLimitReached =
+      limits && limits?.limits?.bedBookings?.allowed === false;
+    
+    const limitMessage =
+      limits?.message ||
+      "You have reached the maximum bed booking limit.";
+    
   const handleAddWard = () => {
     // Implement add ward functionality
     navigate("/dashboard/facility/ward-management")
@@ -5312,6 +5334,8 @@ const ViewFacility: React.FC = () => {
               </div>
             </Col>
             <Col xs={12} md={4} className="text-center text-md-end">
+          
+              
               <div className="d-flex justify-content-center justify-content-md-end gap-2 gap-md-3">
                 <Button
                   variant="light"
@@ -5416,6 +5440,12 @@ const ViewFacility: React.FC = () => {
           </Col>
         </Row>
       </Container>
+
+       {limits && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Bed Booking Limit: {limits?.limits?.bedBookings?.current} / {limits?.limits?.bedBookings?.max}
+  </div>
+)}
 
       {/* Tab Container - responsive tabs */}
       <Container fluid>

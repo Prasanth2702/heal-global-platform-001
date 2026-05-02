@@ -48,6 +48,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { mixpanelInstance } from "@/utils/mixpanel";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 
 // Define types (these should be in a separate types file or at the top)
 type BedStatus = "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" | "RESERVED";
@@ -133,6 +134,12 @@ interface Ward {
   available_beds: number;
 }
 
+interface Facility {
+  id: string;
+  facility_name: string;
+  admin_user_id: string;
+}
+
 const BedBookingManagementPage: React.FC = () => {
   const [wards, setWards] = useState<Ward[]>([]);
   const [beds, setBeds] = useState<Bed[]>([]);
@@ -179,6 +186,31 @@ const BedBookingManagementPage: React.FC = () => {
       variant: type === "error" ? "destructive" : "default",
     });
   };
+useEffect(() => {
+  const fetchFacility = async () => {
+    const facilityId = await getUserFacilityId();
+    if (facilityId) {
+      setUserFacility({ id: facilityId, facility_name: '', admin_user_id: '' });
+    }
+  };
+  fetchFacility();
+}, []);
+
+  const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+  const [userFacility, setUserFacility] = useState<Facility | null>(null);
+  useEffect(() => {
+    if (userFacility?.id) {
+      checkLimit(userFacility.id, "bedbookings"); // 🔥 AUTO CALL
+    }
+  }, [userFacility]);
+  
+  const isStaffLimitReached =
+    limits && limits?.limits?.bedBookings?.allowed === false;
+  
+  const limitMessage =
+    limits?.message ||
+    "You have reached the maximum bed booking limit.";
+  
 
   // Helper function for date formatting
   const formatDate = (dateString: string) => {
@@ -774,6 +806,14 @@ const fetchData = async (date: Date) => {
   };
 
   return (
+    <>
+    <div className="flex items-center justify-content justify-content-md-center gap-2 mb-4">
+           {limits && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Bed Booking Limit: {limits?.limits?.bedBookings?.current} / {limits?.limits?.bedBookings?.max}
+  </div>
+)}
+</div>
     <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
       <div className="lg:col-span-1">
         <Card>
@@ -1646,6 +1686,7 @@ const fetchData = async (date: Date) => {
 
         {/* Action Form */}
         {currentAction === "admit" && (
+          
           <>
             <h6 className="flex items-center gap-2 font-medium">
               <Stethoscope className="h-4 w-4 text-blue-500" />
@@ -1985,6 +2026,16 @@ const fetchData = async (date: Date) => {
         onOpenChange={setShowBookingDetailsDialog}
       >
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col ">
+
+            {isStaffLimitReached && selectedBookingForDetails?.status === "RESERVED" && currentAction === "admit" ? (
+      <>
+        <DialogHeader>
+          <DialogTitle>Subscription Required</DialogTitle>
+          <DialogDescription>{limitMessage}</DialogDescription>
+        </DialogHeader>
+      </>
+    ) : (
+                <>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ClipboardList className="h-5 w-5 text-blue-500" />
@@ -2284,9 +2335,12 @@ const fetchData = async (date: Date) => {
               </Button>
             )}
           </DialogFooter>
+          </>
+              )}
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 };
 

@@ -18,6 +18,7 @@ import FacilityAppointmentManagement from "@/components/facility/FacilityAppoint
 import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import CreateBilling from "../facility/CreateBilling";
+import { FacilityLimitDashboard } from "../facility/limitchecker/FacilityLimitDashboard";
 
 interface Appointment {
   id: string;
@@ -64,7 +65,54 @@ const HospitalDashboard = () => {
   inventoryAlerts: 0,
   pageViews: 0
 });
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userType, setUserType] = useState<'admin' | 'staff' | null>(null);
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Get current authenticated user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) throw userError;
+        if (!user) {
+          console.error('No user found');
+          setLoading(false);
+          return;
+        }
+
+        setUserId(user.id);
+
+        // Check if user is a staff member
+        const { data: staff, error: staffError } = await supabase
+          .from('staff')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (staff) {
+          setUserType('staff');
+        } else {
+          // Check if user is a facility admin
+          const { data: facility, error: facilityError } = await supabase
+            .from('facilities')
+            .select('id')
+            .eq('admin_user_id', user.id)
+            .maybeSingle();
+
+          if (facility) {
+            setUserType('admin');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 //  useEffect(() => {
 //   const fetchDashboardData = async () => {
 //     setLoading(true);
@@ -254,6 +302,8 @@ if (!viewError && viewData) {
   // else if (path.includes('/billing-item')) setActiveTab('new-billing');
   else setActiveTab('overview');
 }, [location.pathname]);
+
+
 
     // Update URL when tab changes
    const handleTabChange = (tab: typeof activeTab) => {
@@ -507,6 +557,19 @@ return (
 
           <div className="mt-6">
             <AppointmentFlow />
+          </div>
+          <div className="mt-6">
+              <FacilityLimitDashboard
+        {...(userType === 'admin' 
+          ? { facility_admin_id: userId } 
+          : { staff_user_id: userId }
+        )}
+        autoRefresh={true}
+        refreshInterval={30000}
+        onLimitExceeded={(exceededLimits) => {
+          console.warn('Limits exceeded:', exceededLimits);
+        }}
+      />
           </div>
         </TabsContent>
 

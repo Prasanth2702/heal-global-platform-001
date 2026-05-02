@@ -6,7 +6,13 @@ import { BillList } from './BillList'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useFacilityLimit } from '@/hooks/useFacilityLimit'
 
+interface Facility {
+  id: string;
+  facility_name: string;
+  admin_user_id: string;
+}
 
 
 export const BillingSystem  = () => {
@@ -132,7 +138,30 @@ useEffect(() => {
     }
   }
 
-  
+const [isBillingBlocked, setIsBillingBlocked] = useState(false);
+const [billingMessage, setBillingMessage] = useState("");
+ const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+useEffect(() => {
+  const checkBillingAccess = async () => {
+    if (!facilityId) return;
+
+    const result = await checkLimit(facilityId, "all");
+
+    console.log("LIMIT RESULT:", result);
+
+    // 🔥 MAIN CONDITION
+    if (result?.billingFeatureEnabled === false) {
+      setIsBillingBlocked(true);
+      setBillingMessage(
+        "Subscription Required: Billing feature is not enabled for your plan."
+      );
+    } else {
+      setIsBillingBlocked(false);
+    }
+  };
+
+  checkBillingAccess();
+}, [facilityId]);
 
 //   const loadBills = async () => {
 //       const data = await billingService.getBills(facilityId)
@@ -186,6 +215,33 @@ useEffect(() => {
       setLoading(false)
     }
   }
+
+  if (isBillingBlocked) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-6 rounded-xl shadow-md text-center">
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Subscription Required
+        </h2>
+        <p className="text-gray-600 mb-4">
+          {billingMessage}
+        </p>
+
+        <ul className="text-sm text-gray-500 mb-4">
+          <li>• Upgrade your plan to enable billing</li>
+          <li>• Contact administrator</li>
+        </ul>
+
+        <button
+          className="bg-indigo-600 text-white px-4 py-2 rounded"
+          onClick={() => window.location.reload()}
+        >
+          Refresh
+        </button>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gray-50">

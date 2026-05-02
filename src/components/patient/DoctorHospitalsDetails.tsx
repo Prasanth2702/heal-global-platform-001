@@ -432,7 +432,8 @@ useEffect(() => {
         }
         
         const response = await fetch(
-          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee",
+          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/create-temp-booking",
+          // "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/book-appointment-without-fee",
           {
             method: "POST",
             headers: {

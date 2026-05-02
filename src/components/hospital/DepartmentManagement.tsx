@@ -371,6 +371,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Loader2 from "../ui/Loader2";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 
 interface Profile {
   id: string;
@@ -492,9 +493,22 @@ const trackTimeSlotAction = (action: string, slotData?: any, additionalData = {}
   });
 };
 
+const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+const [userFacility, setUserFacility] = useState<Facility | null>(null);
+useEffect(() => {
+  if (userFacility?.id) {
+    checkLimit(userFacility.id, "departments"); // 🔥 AUTO CALL
+  }
+}, [userFacility]);
 
-  const [userFacility, setUserFacility] = useState<Facility | null>(null);
-// const departmentTypes = [
+const isStaffLimitReached =
+  limits && limits?.limits?.departments?.allowed === false;
+
+const limitMessage =
+  limits?.message ||
+  "You have reached the maximum department limit.";
+
+  // const departmentTypes = [
 //   "OPD",
 //   "Diagnostics",
 //   "Pharmacy",
@@ -1858,7 +1872,11 @@ const getSubmitHandler = () => {
       {userFacility?.facility_name || "your facility"}
     </p>
   </div>
-
+{limits && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Department Limit: {limits?.limits?.departments?.current} / {limits?.limits?.departments?.max}
+  </div>
+)}
   <div className="flex gap-2">
     {/* Department Dialog */}
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -1874,6 +1892,18 @@ const getSubmitHandler = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+                    {isStaffLimitReached ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Subscription Required</DialogTitle>
+                <DialogDescription>
+                  {limitMessage}
+                </DialogDescription>
+                <Button onClick={() => setIsAddDialogOpen(false)}>Close</Button>
+              </DialogHeader>
+            </>
+          ) : (
+        <>
         <DialogHeader>
           <DialogTitle>
             {editingDepartment ? "Edit Department" : "Add New Department"}
@@ -2972,6 +3002,8 @@ const getSubmitHandler = () => {
   ) : null}
 </DialogFooter>
 </form>
+</>
+          )}
       </DialogContent>
     </Dialog>
 

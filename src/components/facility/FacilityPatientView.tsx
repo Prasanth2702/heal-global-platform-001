@@ -2396,6 +2396,7 @@ import VideoMeeting from "../VideoMeeting";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CardLink } from "react-bootstrap";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 // Interfaces
 interface PatientProfile {
   id: string;
@@ -2722,51 +2723,121 @@ const [limitRecommendations, setLimitRecommendations] = useState<string[]>([]);
 //   checkSubscriptionAndNavigate();
 // }, [user, currentAppointment]);
 
+// useEffect(() => {
+//   const checkSubscription = async () => {
+//     try {
+//       if (!user || !currentAppointment) {
+//         setIsCheckingLimit(false);
+//         return;
+//       }
+
+//       const { data: sessionData } = await supabase.auth.getSession();
+//       const token = sessionData.session?.access_token;
+
+//       const response = await fetch(
+//         "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({
+//             user_auth_id: user,
+//             consultation_type: currentAppointment.type,
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+
+//       if (!result.allowed) {
+//         setLimitExceeded(true);
+//         setLimitMessage(result.message || "Subscription limit exceeded");
+//         setLimitRecommendations(result.recommendations || []);
+//       } else {
+//         setLimitExceeded(false);
+//       }
+//     } catch (err) {
+//       console.error("Subscription check failed:", err);
+//       setLimitExceeded(false); // Allow page on error, or you can set to true if you want to block
+//     } finally {
+//       setIsCheckingLimit(false);
+//     }
+//   };
+
+//   checkSubscription();
+// }, [user, currentAppointment]);
+const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
 useEffect(() => {
   const checkSubscription = async () => {
+    setIsCheckingLimit(true);   // ✅ start loading
+
     try {
-      if (!user || !currentAppointment) {
-        setIsCheckingLimit(false);
-        return;
-      }
-
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
-      const response = await fetch(
-        "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            user_auth_id: user,
-            consultation_type: currentAppointment.type,
-          }),
+      if (userRole === "doctor") {
+        if (!user || !currentAppointment) {   // ✅ use user.id
+          setLimitExceeded(false);
+          return;
         }
-      );
 
-      const result = await response.json();
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
 
-      if (!result.allowed) {
-        setLimitExceeded(true);
-        setLimitMessage(result.message || "Subscription limit exceeded");
-        setLimitRecommendations(result.recommendations || []);
+        const response = await fetch(
+          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              user_auth_id: user,               // ✅ fixed
+              consultation_type: currentAppointment.type,
+            }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (!result.allowed) {
+          setLimitExceeded(true);
+          setLimitMessage(result.message || "Subscription limit exceeded");
+          setLimitRecommendations(result.recommendations || []);
+        } else {
+          setLimitExceeded(false);
+        }
       } else {
-        setLimitExceeded(false);
+        // non‑doctor branch
+        if (!user) return;
+
+         const { data: facility, error: facilityError } = await supabase
+      .from('facilities')
+      .select('id')
+      .eq('admin_user_id', user)
+      .single()
+
+      const facilityId = facility?.id;
+        const result = await checkLimit(facilityId,"clinical");  // ✅ using hook for non‑doctor
+
+        if (!result.allowed) {
+          setLimitExceeded(true);
+          setLimitMessage(result.message || "Facility limit exceeded");
+          setLimitRecommendations(result.recommendations || []);
+        } else {
+          setLimitExceeded(false);
+        }
       }
     } catch (err) {
       console.error("Subscription check failed:", err);
-      setLimitExceeded(false); // Allow page on error, or you can set to true if you want to block
+      setLimitExceeded(false);   // allow page on error
     } finally {
-      setIsCheckingLimit(false);
+      setIsCheckingLimit(false);  // ✅ always reset loading
     }
   };
 
   checkSubscription();
-}, [user, currentAppointment]);
+}, [user, currentAppointment, userRole]);   // ✅ added missing deps
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -4685,7 +4756,7 @@ const CompletionMessage = () => {
 
 // Show loader while checking subscription
 
-if (isCheckingLimit && viewType === "patient" && patient && currentAppointment?.status === "pending") {
+if (isCheckingLimit && viewType === "patient" && userRole === "doctor" && patient && currentAppointment?.status === "pending") {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="text-center">
@@ -4697,7 +4768,65 @@ if (isCheckingLimit && viewType === "patient" && patient && currentAppointment?.
 }
 
 // Show full-page error if limit exceeded
-if (limitExceeded && viewType === "patient" && patient && currentAppointment?.status === "pending") {
+if (limitExceeded && viewType === "patient" && userRole === "doctor" && patient && currentAppointment?.status === "pending") {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
+      <Card className="max-w-md w-full shadow-xl border-red-200">
+        <CardHeader className="bg-red-600 text-white rounded-t-xl">
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-6 w-6" /> Subscription Limit Exceeded
+          </CardTitle>
+          <CardDescription className="text-red-100">
+            You cannot access this appointment
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="bg-red-50 p-4 rounded-lg text-red-800 text-sm">
+            {limitMessage}
+          </div>
+
+          {limitRecommendations.length > 0 && (
+            <div className="space-y-2">
+              <p className="font-medium text-sm text-gray-700">Recommendations:</p>
+              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                {limitRecommendations.map((rec, idx) => (
+                  <li key={idx}>{rec}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* <div className="flex gap-3 pt-4">
+            <Button className="flex-1" onClick={() => window.open("/pricing", "_blank")}>
+              Upgrade Plan
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={() => window.open("/contact", "_blank")}>
+              Contact Support
+            </Button>
+          </div> */}
+
+          <Button variant="ghost" className="w-full mt-2" onClick={() => navigate(-1)}>
+            Go Back
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+if (isCheckingLimit && viewType === "patient" && userRole === "facility" && patient && currentAppointment?.status === "pending") {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Verifying subscription...</p>
+      </div>
+    </div>
+  );
+}
+
+// Show full-page error if limit exceeded
+if (limitExceeded && viewType === "patient" && userRole === "facility" && patient && currentAppointment?.status === "pending") {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
       <Card className="max-w-md w-full shadow-xl border-red-200">
@@ -4765,6 +4894,12 @@ if (limitExceeded && viewType === "patient" && patient && currentAppointment?.st
             </div>
           )}
           {userRole === "doctor" && currentAppointment.status === "pending" && (
+          <Button variant="doctor" 
+          onClick={() => setIsDialogOpen(true)} 
+            disabled={isCompleted || isCancelled}>
+            Confirm this appointment
+          </Button>)}
+          {userRole === "facility" && currentAppointment.status === "pending" && (
           <Button variant="doctor" 
           onClick={() => setIsDialogOpen(true)} 
             disabled={isCompleted || isCancelled}>

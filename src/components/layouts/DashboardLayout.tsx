@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -352,11 +352,16 @@ const checkBedManagementDepartment = async () => {
         label: "Patient Registration",
         icon: Refrigerator,
       },
-      // {
-      //   path: "/dashboard/facility/my-bills",
-      //   label: "My Bills",
-      //   icon: BrickWallIcon,
-      // },
+      {
+          path: "/dashboard/facility/my-bills",
+          label: "My Bills",
+          icon: BrickWallIcon,
+        },
+        // {
+        //   path: "/dashboard/facility/limit-checker",
+        //   label: "Limit Checker",
+        //   icon: LucideMonitor,
+        // },
       // {
       //   path: "/dashboard/facility/cash-flow-reports",
       //   label: "Cash Flow Reports",
@@ -441,11 +446,11 @@ const checkBedManagementDepartment = async () => {
       },
     ]
   : []),
-  // {
-  //       path: "/dashboard/staff/billing",
-  //       label: "Billing",
-  //       icon: BinaryIcon,
-  //     },
+  {
+        path: "/dashboard/staff/billing",
+        label: "Billing",
+        icon: BinaryIcon,
+      },
   {
         path: "/dashboard/staff/patient-register",
         label: "Patient Register",

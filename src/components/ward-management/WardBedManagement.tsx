@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,7 +47,13 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import Loader3 from "../ui/Loader3";
 import { useLocation } from "react-router-dom";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 
+interface Facility {
+  id: string;
+  facility_name: string;
+  admin_user_id: string;
+}
 // Zod schemas for validation
 const wardSchema = z.object({
   ward_code: z
@@ -375,6 +381,47 @@ const passedBeds = location.state?.beds;
   useEffect(() => {
     fetchWardsAndBeds();
   }, [facilityId]);
+
+//   const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+// const [userFacility, setUserFacility] = useState<Facility | null>(null);
+// useEffect(() => {
+//   if (userFacility?.id) {
+//     checkLimit(userFacility.id, "beds");
+//   }
+// }, [userFacility]);
+  
+// const isStaffLimitReached = limits && limits?.limits?.beds?.allowed === false;
+  
+//   const limitMessage =
+//     limits?.message ||
+//     "You have reached the maximum bed limit.";
+
+// const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+
+// // Call checkLimit whenever facilityId is available
+// useEffect(() => {
+//   if (facilityId) {
+//     checkLimit(facilityId, "beds").catch((error) => {
+//       console.error("Failed to check facility limit:", error);
+//     });
+//   }
+// }, [facilityId, checkLimit]);
+
+const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+const limitCheckTriggered = useRef<string | null>(null);
+
+useEffect(() => {
+  if (facilityId && limitCheckTriggered.current !== facilityId) {
+    limitCheckTriggered.current = facilityId;
+    checkLimit(facilityId, "beds").catch((error) => {
+      console.error("Failed to check facility limit:", error);
+    });
+  }
+}, [facilityId, checkLimit]); // dependencies remain, but ref prevents re‑execution
+
+// Compute limit states directly from the limits object
+const isStaffLimitReached = limits?.limits?.beds?.allowed === false;
+const limitMessage = limits?.message || "You have reached the maximum bed limit.";
 
   // Function to fetch booked bed IDs for a specific ward
   const fetchBookedBeds = async (wardId: string) => {
@@ -1204,6 +1251,13 @@ const onSubmitBed = async (data) => {
             beds occupied
           </div>
         </div>
+
+ {limits && (
+  
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Bed Limit: {limits?.limits?.beds?.current ?? 0} / {limits?.limits?.beds?.max ?? 0}
+  </div>
+)}
       </div>
 
       {/* Main Content Card */}
@@ -1278,6 +1332,29 @@ const onSubmitBed = async (data) => {
                         : "bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200"
                     }`}
                   >
+                    {!editingWard && isStaffLimitReached ? (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-yellow-800">Subscription Required</h4>
+                <p className="text-sm text-yellow-700 mt-1">{limitMessage}</p>
+                <button
+                  type="button"
+                 onClick={() => {
+                            resetWard();
+                            setEditingWard(null);
+                            setShowWardForm(false);
+                          }}
+                  className="mt-3 px-3 py-1 text-sm bg-white border border-yellow-300 rounded-md text-yellow-700 hover:bg-yellow-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
                     <div className="mb-4 sm:mb-6">
                       <h3
                         className={`text-base sm:text-lg font-bold flex items-center ${
@@ -1559,6 +1636,8 @@ const onSubmitBed = async (data) => {
                         </button>
                       </div>
                     </form>
+                    </>
+        )}
                   </div>
                 ) : (
                   <div
@@ -1880,7 +1959,8 @@ const onSubmitBed = async (data) => {
           {activeTab === "beds" && (
             <div className="animate-slide-in">
               {/* Bed Form - responsive */}
-              {editingBed || showBedForm ? (
+                      
+             { editingBed || showBedForm ? (
                 <div
                   className={`rounded-xl border p-4 sm:p-5 shadow-sm sticky top-6 ${
                     editingBed
@@ -1888,6 +1968,29 @@ const onSubmitBed = async (data) => {
                       : "bg-gradient-to-br from-teal-50 to-emerald-50 border-emerald-200"
                   }`}
                 >
+
+                  {!editingBed && isStaffLimitReached ? (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-yellow-800">Subscription Required</h4>
+                <p className="text-sm text-yellow-700 mt-1">{limitMessage}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetBed();
+                    setShowBedForm(false);
+                  }}
+                  className="mt-3 px-3 py-1 text-sm bg-white border border-yellow-300 rounded-md text-yellow-700 hover:bg-yellow-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4 sm:mb-6">
                     <div>
                       <h3
@@ -2033,7 +2136,9 @@ const onSubmitBed = async (data) => {
                     )}
                   </div>
 
-                  {selectedWard || editingBed ? (
+                  {/* {selectedWard || editingBed ? ( */}
+{selectedWard || editingBed ? (
+
                     <form onSubmit={handleSubmitBed(onSubmitBed)} className="space-y-4">
                       {/* Form fields (content unchanged) - responsive classes added */}
                       <div className="space-y-4">
@@ -2334,6 +2439,8 @@ const onSubmitBed = async (data) => {
                       <p className="text-gray-600 font-medium">Please select a ward to create beds</p>
                     </div>
                   )}
+                  </>
+                )}
                 </div>
               ) : (
                 <div

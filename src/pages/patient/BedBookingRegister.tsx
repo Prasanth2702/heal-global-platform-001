@@ -19,7 +19,7 @@ const BedBookingRegister = () => {
     special_instructions: "",
     expected_admission_date: "",
     expected_discharge_date: "",
-    priority: "medium",
+    priority: "low",
     insurance_provider: "",
     insurance_policy_number: "",
     referring_doctor_name: "",
@@ -366,10 +366,10 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
                   className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select admission type</option>
-                  <option value="EMERGENCY">Emergency</option>
+                  {/* <option value="EMERGENCY">Emergency</option> */}
                   <option value="PLANNED">Planned</option>
-                  <option value="TRANSFER">Transfer</option>
-                  <option value="OUTPATIENT">Outpatient</option>
+                  {/* <option value="TRANSFER">Transfer</option> */}
+                  {/* <option value="OUTPATIENT">Outpatient</option> */}
                 </select>
               </div>
 
@@ -384,10 +384,10 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
                   value={formData.priority}
                   className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="medium">Medium</option>
+                  {/* <option value="medium">Medium</option> */}
                   <option value="low">Low</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  {/* <option value="high">High</option>
+                  <option value="critical">Critical</option> */}
                 </select>
               </div>
             </div>

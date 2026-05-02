@@ -549,6 +549,11 @@ const ForgotPassword = () => {
       description: "Reset your password to manage your facility",
       variant: "facility" as const,
     },
+    hospital_staff: {
+      title: "Reset Hospital Staff Password",
+      description: "Reset your password to manage your facility",
+      variant: "facility" as const,
+    },
     admin: {
       title: "Reset Admin Password",
       description: "Reset your password for platform administration",
@@ -556,8 +561,21 @@ const ForgotPassword = () => {
     }
   };
 
-  const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
-  const userRole = (userType === 'facility') ? 'hospital_admin' : userType;
+  const normalizedUserType =
+  userType === "hospital_staff" ? "facility" : userType;
+
+const config =
+  userTypeConfig[normalizedUserType as keyof typeof userTypeConfig] ||
+  userTypeConfig.patient;
+
+  // const config = userTypeConfig[userType as keyof typeof userTypeConfig] || userTypeConfig.patient;
+  // const userRole = (userType === 'facility') ? 'hospital_admin' : userType;
+const userRoles = (() => {
+  if (userType === 'facility') {
+    return ['hospital_admin', 'hospital_staff']; // ✅ BOTH roles
+  }
+  return [userType];
+})();
 
   // Track page view
   useEffect(() => {
@@ -566,36 +584,60 @@ const ForgotPassword = () => {
     });
   }, [userType]);
 
-  const checkEmailInProfiles = async (email: string) => {
-    const lowerCaseEmail = email.toLowerCase();
-    // const { data, error } = await supabase
-    //   .from('profiles')
-    //   .select('email')
-    //   .eq('email', lowerCaseEmail)
-    //   .eq('role', userRole)
-    //   .maybeSingle();
+  // const checkEmailInProfiles = async (email: string) => {
+  //   const lowerCaseEmail = email.toLowerCase();
+  //   // const { data, error } = await supabase
+  //   //   .from('profiles')
+  //   //   .select('email')
+  //   //   .eq('email', lowerCaseEmail)
+  //   //   .eq('role', userRole)
+  //   //   .maybeSingle();
     
-    let query = supabase
+  //   let query = supabase
+  //   .from('profiles')
+  //   .select('email')
+  //   .eq('email', lowerCaseEmail);
+  
+  // if (userType === 'facility') {
+  //   // Check for either role
+  //   query = query.in('role', ['hospital_admin', 'hospital_staff']);
+  // } else {
+  //   // Check for specific role
+  //   query = query.eq('role', userRole);
+  // }
+  
+  // const { data, error } = await query.maybeSingle();
+
+  //   if (error) {
+  //     console.error('Error checking email:', error);
+  //     return false;
+  //   }
+  //   return !!data;
+  // };
+const checkEmailInProfiles = async (email: string) => {
+  const lowerCaseEmail = email.toLowerCase();
+
+  let query = supabase
     .from('profiles')
     .select('email')
     .eq('email', lowerCaseEmail);
-  
+
   if (userType === 'facility') {
-    // Check for either role
+    // ✅ Check BOTH admin + staff
     query = query.in('role', ['hospital_admin', 'hospital_staff']);
   } else {
-    // Check for specific role
-    query = query.eq('role', userRole);
+    query = query.eq('role', userType);
   }
-  
+
   const { data, error } = await query.maybeSingle();
 
-    if (error) {
-      console.error('Error checking email:', error);
-      return false;
-    }
-    return !!data;
-  };
+  if (error) {
+    console.error('Error checking email:', error);
+    return false;
+  }
+
+  return !!data;
+};
 
   const handleSendResetEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -614,7 +656,8 @@ const ForgotPassword = () => {
       if (!emailExists) {
         toast({
           title: "Email not found",
-          description: "This email is not registered. Please check or sign up.",
+          description: "We couldn’t find an account with this email. Please check your email or contact your administrator.",
+          // description: "This email is not registered. Please check or sign up.",
           variant: "destructive"
         });
         mixpanelInstance.track('Forgot Password - Email Not Found', {

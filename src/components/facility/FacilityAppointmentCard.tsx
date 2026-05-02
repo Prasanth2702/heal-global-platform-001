@@ -2813,7 +2813,7 @@ export default function FacilityAppointmentCard({
   const isCancelled = enhancedAppointment.status === "cancelled";
   const isUpcoming = !enhancedAppointment.isPast && enhancedAppointment.status === "confirmed";
   const isPastConfirmed = enhancedAppointment.isPast && enhancedAppointment.status === "confirmed";
-
+const isPending = enhancedAppointment.status === "pending";
   if (!canAccessAppointment) return null;
 
   // Role badge helper
@@ -2837,7 +2837,15 @@ export default function FacilityAppointmentCard({
       <div
         className={`
           relative rounded-xl p-5 space-y-4 shadow transition border-l-4 mt-4
-          ${enhancedAppointment.status === "cancelled" ? "border-red-500 bg-red-50" : "border-green-500 bg-green-50"}
+          ${
+  enhancedAppointment.status === "cancelled"
+    ? "border-red-500 bg-red-50"
+    : enhancedAppointment.status === "completed"
+    ? "border-blue-500 bg-blue-50"
+    : enhancedAppointment.status === "pending"
+    ? "border-gray-400 bg-gray-100"
+    : "border-green-500 bg-green-50"
+}
           ${!isAssignedDoctor && !hasManagementAccess ? 'opacity-90' : ''}
         `}
       >
@@ -2868,10 +2876,22 @@ export default function FacilityAppointmentCard({
           )}
           <div className="flex-1">
             <h3 className="text-lg font-semibold">{enhancedAppointment.patientName}</h3>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+            {/* <span className={`text-xs px-2 py-1 rounded-full font-medium ${
               enhancedAppointment.status === "confirmed" ? "bg-green-100 text-green-700" :
               enhancedAppointment.status === "completed" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"
-            }`}>
+            }`}
+            > */}
+            <span
+  className={`text-xs px-2 py-1 rounded-full font-medium ${
+    enhancedAppointment.status === "confirmed"
+      ? "bg-green-100 text-green-700"
+      : enhancedAppointment.status === "completed"
+      ? "bg-blue-100 text-blue-700"
+      : enhancedAppointment.status === "pending"
+      ? "bg-gray-200 text-gray-700"
+      : "bg-red-100 text-red-700"
+  }`}
+>
               {enhancedAppointment.status.toUpperCase()}
             </span>
           </div>
@@ -2985,6 +3005,7 @@ export default function FacilityAppointmentCard({
                   >
                     <User className="h-4 w-4 mr-1" /> Appointment Details Page
                   </button> */}
+                  {enhancedAppointment.status !== "cancelled" && (
                   <button
   className="w-full px-4 py-2.5 text-sm rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
   onClick={() => {
@@ -2997,6 +3018,7 @@ export default function FacilityAppointmentCard({
 >
   <User className="h-4 w-4 mr-1" /> Appointment Details Page
 </button>
+                  )}
               
 
         {/* Documents list (reusable for both upcoming & past – but we already show it inside upcoming block; however if you want to keep it also here, you can, but per requirements it's only for upcoming. So removed from bottom.) */}

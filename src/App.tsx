@@ -102,6 +102,7 @@ import { useToast } from "./hooks/use-toast";
 import SetPasswordPage from "./components/auth/SetPasswordPage";
 import LocationPage from "./location/LocationPage";
 import FacilityLimitCheckerView from "./components/facility/limitchecker/FacilityLimitCheckerView";
+import FacilityPendingViewPage from "./components/facility/FacilityPendingViewPage";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -405,6 +406,7 @@ const App = () => {
 <Route path="/payment-cancelled" element={<PaymentCancelled />} />
 <Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} />
 <Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} />
+<Route path="/dashboard/facility/appointment-pending" element={<FacilityPendingViewPage />} />
 <Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
 <Route path="/dashboard/facility/limit-checker" element={<FacilityLimitCheckerView />} />
 {/* <Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} /> */}

@@ -1454,19 +1454,21 @@
 //   );
 // }
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import VideoMeeting from "../VideoMeeting";
 import FacilityAppointmentCard from "./FacilityAppointmentCard";
 import { mixpanelInstance } from "@/utils/mixpanel";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Calendar, Users, Building2 } from "lucide-react";
+import { Loader2, RefreshCw, Calendar, Users, Building2, Eye } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Filter } from "lucide-react";
 import { format } from "date-fns";
 import Loader1 from "../ui/Loader1";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 // Types
 interface DepartmentInfo {
   id: string;
@@ -1494,7 +1496,7 @@ export interface FacilityAppointment {
   time: string;
   type: "teleconsultation" | "in_person";
   isPast: boolean;
-  status: "confirmed" | "cancelled" | "completed";
+  status: "confirmed" | "cancelled" | "completed" |"pending";
   notes?: string;
   videoRoomId?: string;
   patientAvatar?: string | null;
@@ -1564,7 +1566,7 @@ export default function FacilityAppointmentManagement() {
   // const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   // UI state
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
-  const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed" |"pending">("all");
 
   // Video meeting state
   const [videoMeeting, setVideoMeeting] = useState<VideoMeetingState>({
@@ -1754,6 +1756,28 @@ export default function FacilityAppointmentManagement() {
       setLoading(false);
     }
   };
+ const hasAutoOpened = useRef(false);
+const [selectedPendingAppointment, setSelectedPendingAppointment] = useState<FacilityAppointment | null>(null);
+const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+
+useEffect(() => {
+  if (!loading && appointments.length > 0 && !hasAutoOpened.current) {
+    const pendingAppt = appointments.find(
+      apt => apt.status?.toLowerCase() === "pending"
+    );
+
+    if (pendingAppt) {
+      setSelectedPendingAppointment(pendingAppt);
+      setDetailsDialogOpen(true);
+      hasAutoOpened.current = true;
+    }
+  }
+}, [loading, appointments]);
+  
+    const handleViewPendingDetails = (appointment: FacilityAppointment) => {
+      setSelectedPendingAppointment(appointment);
+      setDetailsDialogOpen(true);
+    };
 
   // Fetch all departments for admin
   const fetchAllDepartments = async (facilityId: string) => {
@@ -2592,7 +2616,7 @@ const past = dateFilteredAppointments.filter((a) => a.isPast);
           <div className="p-4 border-b bg-gray-50">
             <div className="flex flex-wrap gap-2">
               <span className="text-sm font-medium text-gray-700 mr-2 py-1">Status:</span>
-              {["all", "confirmed", "cancelled"].map((s) => (
+              {["all", "confirmed", "cancelled","pending"].map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s as any)}
@@ -2600,6 +2624,7 @@ const past = dateFilteredAppointments.filter((a) => a.isPast);
                     statusFilter === s
                       ? s === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300'
                       : s === 'cancelled' ? 'bg-red-100 text-red-800 border-red-300'
+                      : s === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
                       : 'bg-blue-100 text-blue-800 border-blue-300'
                       : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
@@ -2651,6 +2676,64 @@ const past = dateFilteredAppointments.filter((a) => a.isPast);
         </div>
       </div>
     </div>
+    <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Appointment waiting for your confirmation</DialogTitle>
+            <DialogDescription>
+              Review the appointment information before taking action.
+            </DialogDescription>
+          </DialogHeader>
+          {/* {selectedPendingAppointment && (
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="font-medium">Patient Name:</div>
+                <div>{selectedPendingAppointment.patientName}</div>
+                <div className="font-medium">Date:</div>
+                <div>{selectedPendingAppointment.date}</div>
+                <div className="font-medium">Time:</div>
+                <div>{selectedPendingAppointment.time}</div>
+                <div className="font-medium">Type:</div>
+                <div className="capitalize">{selectedPendingAppointment.type}</div>
+                <div className="font-medium">Status:</div>
+                <div className="capitalize text-amber-600 font-semibold">Pending</div>
+                <div className="font-medium">Email:</div>
+                <div>{selectedPendingAppointment.email || "Not provided"}</div>
+                <div className="font-medium">Phone:</div>
+                <div>{selectedPendingAppointment.phoneNumber || "Not provided"}</div>
+                {selectedPendingAppointment.notes && (
+                  <>
+                    <div className="font-medium">Notes:</div>
+                    <div className="col-span-1">{selectedPendingAppointment.notes}</div>
+                  </>
+                )}
+              </div>
+            </div>
+          )} */}
+          <div className="space-y-4 py-2">
+            You have a pending appointment request. Please review and take action.
+    Click View Pending Appointment to open the pending appointment page.
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setDetailsDialogOpen(false)}>
+              Close
+            </Button>
+            {selectedPendingAppointment && (
+              <Link
+                to={`/dashboard/facility/appointment-pending`}
+                // to={`/doctor/appointment-patient/${selectedPendingAppointment.patientId}/${selectedPendingAppointment.id}`}
+                // target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full sm:w-auto">
+                  <Eye className="mr-2 h-4 w-4" />
+                  Proceed to Confirm 
+                </Button>
+              </Link>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
   </div>
 );
 }

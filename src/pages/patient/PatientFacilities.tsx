@@ -2105,13 +2105,13 @@ const [checkingRole, setCheckingRole] = useState(false);
 //   }
 // };
 const handleViewWards = async (facility: Facility) => {
-  if (!user) {
-    // Not logged in → appointment route
-    navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-      state: { facility }
-    });
-    return;
-  }
+  // if (!user) {
+  //   // Not logged in → appointment route
+  //   navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+  //     state: { facility }
+  //   });
+  //   return;
+  // }
 
   setCheckingRole(true);
   try {
@@ -2130,9 +2130,9 @@ const handleViewWards = async (facility: Facility) => {
   } catch (error) {
     console.error("Error checking patient status:", error);
     // Fallback to appointment route
-    navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
-      state: { facility }
-    });
+    // navigate(`/appointment/beds/${createSlug(facility?.facility_name || "")}/${facility.id}`, {
+    //   state: { facility }
+    // });
   } finally {
     setCheckingRole(false);
   }

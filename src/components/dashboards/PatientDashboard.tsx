@@ -777,7 +777,7 @@ const recentReports = [
               )}
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-                onClick={() => { trackButtonClick("Search Tab"); handleTabChange("search"); }}
+                onClick={() => { trackButtonClick("Appointments Tab"); handleTabChange("appointments"); }}
               >
                 <Search className="mr-2 h-4 w-4" />
                 Find & Book Doctors

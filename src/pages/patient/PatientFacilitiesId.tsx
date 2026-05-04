@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addDays, format, isBefore, startOfDay } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 
 interface Facility {
   id: string;
@@ -124,6 +125,7 @@ const [selectedDate, setSelectedDate] = useState<Date>(() => {
   tomorrow.setHours(0,0,0,0);
   return tomorrow;
 });
+
 useEffect(() => {
   const checkPatientStatus = async () => {
     if (!user) {
@@ -186,6 +188,16 @@ useEffect(() => {
       fetchBedBookings();
     }
   }, [selectedFacility]);
+
+   const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+    useEffect(() => {
+  if (selectedFacility?.id) {
+    checkLimit(selectedFacility.id, "bedbookings");
+  }
+}, [selectedFacility?.id]);
+
+    const isBedBookingLimitReached =
+  limits?.limits?.bedBookings?.allowed === false;
 
   const fetchFacilityById = async (facilityId: string) => {
     try {
@@ -601,6 +613,12 @@ useEffect(() => {
 
     return !isBlocked;
   });
+  // const isLastBed = bedsAvailableOnDate.length <= 1;
+//   const totalBedsCount = selectedFacility.total_beds || 0;
+// const availableBedsCount = bedsAvailableOnDate.length;
+
+// // 10% threshold
+// const isNearFullCapacity = availableBedsCount <= Math.ceil(totalBedsCount * 0.1);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -969,7 +987,12 @@ useEffect(() => {
   ) : (
     <>
       {canBook ? (
-        isPatient === true ? (
+        isBedBookingLimitReached ? (
+    <Button disabled className="bg-gray-300 text-gray-500">
+      Booking not available, please try after some time.
+    </Button>
+  ) : 
+  isPatient === true ? (
           <PatientProtectedButton 
             className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             onClick={() => handleNavigation(`/dashboard/patient/bookregister/${createSlug(bed.facilityName || '')}/${bed.facilityId}/${bed.ward_id}/${bed.id}?date=${selectedDate.toISOString()}`, true)}

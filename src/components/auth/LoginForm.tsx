@@ -287,6 +287,17 @@ const LoginForm = () => {
       description: "Access your practice management dashboard",
       variant: "doctor" as const,
     },
+     // 🔥 NEW
+  "facility-admin": {
+    title: "Facility Admin Login",
+    description: "Manage your facility and staff",
+    variant: "facility" as const,
+  },
+  "facility-staff": {
+    title: "Facility Staff Login",
+    description: "Access assigned hospital operations",
+    variant: "facility" as const,
+  },
     facility: {
       title: "Medical Facility Login",
       description: "Manage your facility and staff",

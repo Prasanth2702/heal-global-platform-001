@@ -559,7 +559,7 @@ return (
             <AppointmentFlow />
           </div>
           <div className="mt-6">
-              <FacilityLimitDashboard
+              {/* <FacilityLimitDashboard
         {...(userType === 'admin' 
           ? { facility_admin_id: userId } 
           : { staff_user_id: userId }
@@ -569,7 +569,7 @@ return (
         onLimitExceeded={(exceededLimits) => {
           console.warn('Limits exceeded:', exceededLimits);
         }}
-      />
+      /> */}
           </div>
         </TabsContent>
 

@@ -1331,6 +1331,7 @@ const currentBookings = bookings.filter((booking) => {
 
 const pastBookings = bookings.filter((booking) => {
   const { discharge } = getEffectiveDates(booking);
+  
   const status = booking.status?.toLowerCase();
 
   return (
@@ -1469,7 +1470,16 @@ const getLiveStatus = (booking: BedBooking) => {
         </div>
     );
   }
+  
+  const getCustomStatusMessage = (booking: BedBooking) => {
+  const status = booking.status?.toLowerCase();
 
+  if (status === "occupied" || status === "admitted") {
+    return "Your booking is confirmed. Please call early morning to confirm your bed.";
+  }
+
+  return null;
+};
   return (
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
         {/* Header Section */}
@@ -1608,7 +1618,9 @@ const getLiveStatus = (booking: BedBooking) => {
                 </CardContent>
               </Card>
             ) : (
-              displayedBookings.map((booking) => (
+              displayedBookings.map((booking) =>{
+                 const customMessage = getCustomStatusMessage(booking);
+               return  (
                 // <Card key={booking.id} className="overflow-hidden">
                 <Card
   key={booking.id}
@@ -1893,11 +1905,22 @@ const getLiveStatus = (booking: BedBooking) => {
                             </>
                           )}
                         </div>
+                      {customMessage && (
+  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+    <p className="text-green-700 text-sm font-medium">
+      {customMessage}
+    </p>
+    <p className="text-sm">
+      <br />
+                                  <span className="text-gray-500"> Phone : {booking.facility_phone}</span>
+                                </p>
+  </div>
+)}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))
+              )})
             )}
           </TabsContent>
         </Tabs>

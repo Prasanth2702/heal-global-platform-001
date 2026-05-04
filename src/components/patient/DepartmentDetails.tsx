@@ -28,6 +28,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import Loader2 from "../ui/Loader2";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 
 interface Department {
   id: string;
@@ -94,6 +95,34 @@ const createSlug = (text: string) => {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+};
+const [isBookingBlocked, setIsBookingBlocked] = useState(false);
+useEffect(() => {
+  if (facility?.id) {
+    checkBookingStatus(facility.id);
+  }
+}, [facility]);
+const checkBookingStatus = async (facilityId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("booking_attempts")
+      .insert({ facility_id: facilityId, booking_type: "appointment" })
+      .eq("facility_id", facilityId); // ✅ FIX
+
+    if (error) {
+      console.error("Booking status error:", error);
+      return;
+    }
+
+    // ✅ If no row → allow booking
+    if (!data) {
+      setIsBookingBlocked(false);
+      return;
+    }
+   
+  } catch (err) {
+    console.error("checkBookingStatus error:", err);
+  }
 };
 
 // Add this missing function
@@ -180,6 +209,17 @@ const handleConfirmBooking = async () => {
       fetchDepartmentDetails();
     }
   }, [id]);
+
+  const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+    useEffect(() => {
+      if (facility) {
+        checkLimit(facility.id, "clinical"); // 🔥 AUTO CALL
+      }
+    }, [facility]);
+
+    const isClinicalLimitReached =
+  limits?.limits?.clinical &&
+  limits.limits.clinical.allowed === false;
 
   // const fetchDepartmentDetails = async () => {
   //   setLoading(true);
@@ -345,8 +385,12 @@ if (slotError) {
     return `${hour12}:${mm} ${ampm}`;
   };
 
+
+
 const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
     try {
+
+      
       const { data: slotsData, error: slotsError } = await supabase
         .from("time_slots")
         .select("*")
@@ -558,9 +602,10 @@ newDate.setDate(newDate.getDate() + dayOffset);
   size="sm"
   className="bg-green-600 hover:bg-green-700"
   onClick={() => toggleExpandDepartment(department)}
-  disabled={!hasTimeSlots}
+  disabled={!hasTimeSlots || isClinicalLimitReached}
 >
-  View Availability
+  {/* View Availability */}
+  {isClinicalLimitReached ? "Booking not available, please try after some time." : "View Availability"}
 </Button>
 
 </div>
@@ -757,9 +802,9 @@ selectedDate.setDate(
                                                                     size="sm"
                                                                     className="mt-3 w-full sm:w-auto bg-green-600 hover:bg-green-700"
                                                                     disabled={!selectedSlot}
-                                                                    onClick={() =>
+                                                                    onClick={() =>{
                                                                       handleDepartmentBookNow(selectedSlot!, selectedDay, department)
-                                                                    }
+                                                                    }}
                                                                   >
                                                                     Book Appointment without Payment
                                                                   </Button>

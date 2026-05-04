@@ -7,12 +7,13 @@ import { useEffect, useState } from "react";
 const BedBookingRegister = () => {
   const { facilityId, wardId, bedId } = useParams();
   const navigate = useNavigate();
-
+const [termsAccepted, setTermsAccepted] = useState(false);
+const [confirmationAccepted, setConfirmationAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [patientData, setPatientData] = useState<any>(null);
   const [formData, setFormData] = useState({
-    admission_type: "",
+    admission_type: "PLANNED",
     primary_diagnosis: "",
     secondary_diagnosis: "",
     allergies: "",
@@ -484,7 +485,8 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Expected Admission Date *
+                   Start Admission Date *
+                  {/* Expected Admission Date * */}
                 </label>
                 <input
                   type="date"
@@ -500,7 +502,8 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Expected Discharge Date
+                  End Admission Date *
+                  {/* Expected Discharge Date */}
                 </label>
                 <input
                   type="date"
@@ -590,6 +593,8 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
                 <input
                   id="terms"
                   type="checkbox"
+                   checked={termsAccepted}
+        onChange={(e) => setTermsAccepted(e.target.checked)}
                   required
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
@@ -602,11 +607,28 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
               </label>
             </div>
           </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  type="checkbox"
+                   checked={confirmationAccepted}
+        onChange={(e) => setConfirmationAccepted(e.target.checked)}
+                  required
+                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                />
+              </div>
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                As I understand, I have proceeded with planning the bed booking. The final confirmation will come directly from the facility, and I will contact them to confirm before visiting. This confirmation is at the platform level and not from the facility itself.
+              </label>
+            </div>
+          </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !termsAccepted || !confirmationAccepted}
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (

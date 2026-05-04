@@ -668,10 +668,23 @@ const checkEmailInProfiles = async (email: string) => {
         return;
       }
 
-      // Use Supabase's built-in password reset
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/forgot-password/${userType}`,
-      });
+      // // Use Supabase's built-in password reset
+      // const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      //   redirectTo: `${window.location.origin}/forgot-password/${userType}`,
+      // });
+      
+      // Decide redirect based on user type
+const isStaff = userType === "hospital_staff";
+
+const redirectUrl = isStaff
+  ? `${window.location.origin}/set-password?type=recovery&userType=${userType}`
+  : `${window.location.origin}/forgot-password/${userType}`;
+
+// Use Supabase's built-in password reset
+const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: redirectUrl,
+});
+      
 
       if (error) {
         console.error('Supabase reset error:', error);

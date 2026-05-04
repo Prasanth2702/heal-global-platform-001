@@ -62,6 +62,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import Loader2 from "../ui/Loader2";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+import { useDoctorLimit } from "@/hooks/useDoctorLimit";
 
 // Types
 interface Doctor {
@@ -337,6 +339,55 @@ useEffect(() => {
     setBookings([]);
     setHasTimeSlots(false);
   }
+};
+
+const [isBookingBlocked, setIsBookingBlocked] = useState(false);
+useEffect(() => {
+  if (facility?.id) {
+    checkBookingStatus(facility.id);
+  }
+}, [facility]);
+const checkBookingStatus = async (doctors: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("booking_attempts")
+      .insert({ professional_id: doctor.user_id, booking_type: "appointment" })
+      .eq("professional_id", doctor.user_id); // ✅ FIX
+
+    if (error) {
+      console.error("Booking status error:", error);
+      return;
+    }
+
+    // ✅ If no row → allow booking
+    if (!data) {
+      setIsBookingBlocked(false);
+      return;
+    }
+   
+  } catch (err) {
+    console.error("checkBookingStatus error:", err);
+  }
+};
+
+ const { checkLimit,limits} = useDoctorLimit();
+    useEffect(() => {
+      if (doctor?.id) {
+        checkLimit(doctor.user_id); // 🔥 AUTO CALL
+      }
+    }, [doctor?.id]);
+   const inPersonLimit = limits?.limits?.in_person;
+const teleLimit = limits?.limits?.teleconsultation;
+const isTeleBlocked = teleLimit?.remaining === 0;
+const isInPersonBlocked = inPersonLimit?.remaining === 0;
+const isSlotBlocked = (slotType: string) => {
+  if (slotType === "teleconsultation" || slotType === "online") {
+    return isTeleBlocked;
+  }
+  if (slotType === "clinic" || slotType === "in_person") {
+    return isInPersonBlocked;
+  }
+  return false;
 };
   //  const fetchTimeSlotsAndBookings = async (doctorId: string) => {
   //     try {
@@ -1815,13 +1866,24 @@ const handleBookAppointmentClick = () => {
   </div>
 )}
 
-<Button
+{/* <Button
   variant="default"
   size="sm"
   onClick={() => toggleExpand(doctor.user_id)}
-  disabled = {hasTimeSlots === false}
+  disabled = {hasTimeSlots === false || isClinicalLimitReached}
 >
-  View Availability
+  {/* View Availability 
+   {isClinicalLimitReached ? "Booking not available, please try after some time." : "View Availability"}
+</Button> */}
+<Button
+variant="default"
+  size="sm"
+  onClick={() => toggleExpand(doctor.user_id)}
+  disabled={!selectedSlot || isSlotBlocked(selectedSlot?.slot_type)}
+>
+  {selectedSlot && isSlotBlocked(selectedSlot.slot_type)
+    ? "Limit reached for this type"
+    : "Book Appointment"}
 </Button>
 
 </div>

@@ -26,35 +26,69 @@ const FacilityPendingView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 const [userId, setUserId] = useState<string>("");
 
+  const [facilityId, setFacilityId] = useState<string>("");
+const [userRole, setUserRole] = useState<string>("");
   useEffect(() => {
     fetchPendingAppointments();
   }, []);
+
 
   const fetchPendingAppointments = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      
-      // 1. Get current user
+      // ✅ 1. Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error('Not authenticated');
-      setUserId(user.id); // ✅ ADD THIS LINE
+      if (userError || !user) throw new Error("Not authenticated");
 
-      // 2. Get medical professional record (doctor)
-      const { data: medicalProfessional, error: mpError } = await supabase
-        .from('facilities')
-        .select('id, admin_user_id')
-        .eq('admin_user_id', user.id)
+      setUserId(user.id);
+
+      // ✅ 2. Get user profile (role)
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
         .single();
 
-      if (mpError || !medicalProfessional) {
-        throw new Error('Facility profile not found');
+      if (profileError || !profile) throw new Error("Profile not found");
+
+setUserRole(profile.role); // ✅ ADD THIS LINE
+
+      let resolvedFacilityId = "";
+
+      // ✅ 3. Role-based facility fetch
+      if (profile.role === "hospital_admin") {
+        const { data, error } = await supabase
+          .from("facilities")
+          .select("id")
+          .eq("admin_user_id", user.id)
+          .single();
+
+        if (error || !data) throw new Error("Facility not found for admin");
+
+        resolvedFacilityId = data.id;
+
+      } else if (profile.role === "hospital_staff") {
+        const { data, error } = await supabase
+          .from("staff")
+          .select("facility_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (error || !data) throw new Error("Facility not found for staff");
+
+        resolvedFacilityId = data.facility_id;
+
+      } else {
+        throw new Error("Unauthorized role");
       }
 
-      // 3. Fetch all pending appointments for this doctor
+      setFacilityId(resolvedFacilityId);
+
+      // ✅ 4. Fetch pending appointments
       const { data: appointmentsData, error: aptError } = await supabase
-        .from('appointments')
+        .from("appointments")
         .select(`
           id,
           appointment_date,
@@ -62,76 +96,186 @@ const [userId, setUserId] = useState<string>("");
           status,
           patient_id,
           facility_id,
-          chief_complaint,
           notes,
           created_at
         `)
-        .eq('facility_id', medicalProfessional.id)  // using facility_id as identifier
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        .eq("facility_id", resolvedFacilityId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
 
       if (aptError) throw aptError;
+
       if (!appointmentsData?.length) {
         setAppointments([]);
-        setLoading(false);
         return;
       }
 
-      // 4. Get unique patient IDs
+      // ✅ 5. Get patient details
       const patientIds = [...new Set(appointmentsData.map(a => a.patient_id))];
 
-      // 5. Fetch patient profiles
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name, email, phone_number, avatar_url')
-        .in('user_id', patientIds);
+        .from("profiles")
+        .select("user_id, first_name, last_name, email, phone_number")
+        .in("user_id", patientIds);
 
       if (profilesError) throw profilesError;
 
-      // Create patient lookup map
       const patientMap: Record<string, any> = {};
-      profiles?.forEach(profile => {
-        patientMap[profile.user_id] = {
-          name: `${profile.first_name} ${profile.last_name}`,
-          email: profile.email,
-          phone: profile.phone_number,
-          avatar: profile.avatar_url,
+      profiles?.forEach(p => {
+        patientMap[p.user_id] = {
+          name: `${p.first_name || ""} ${p.last_name || ""}`,
+          email: p.email,
+          phone: p.phone_number,
         };
       });
 
-      // 6. Transform data
+      // ✅ 6. Transform data
       const pendingApps: PendingAppointment[] = appointmentsData.map(app => {
-        const patient = patientMap[app.patient_id] || { name: 'Unknown', email: null, phone: null };
-        const appointmentDate = new Date(app.appointment_date);
+        const patient = patientMap[app.patient_id] || { name: "Unknown" };
+        const dateObj = new Date(app.appointment_date);
+
         return {
           id: app.id,
           patientName: patient.name,
           patientId: app.patient_id,
-          date: appointmentDate.toLocaleDateString(),
-          time: appointmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          type: app.type as "teleconsultation" | "in_person",
+          date: dateObj.toLocaleDateString(),
+          time: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          type: app.type,
           status: app.status,
           notes: app.notes,
           email: patient.email,
           phoneNumber: patient.phone,
-          patientAvatar: patient.avatar,
-          createdAt: app.created_at,
         };
       });
 
       setAppointments(pendingApps);
+
     } catch (err: any) {
-      console.error('Error fetching pending appointments:', err);
-      setError(err.message || 'Failed to load pending appointments');
+      console.error(err);
+      setError(err.message || "Failed to load appointments");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetails = (userId: string, patientId: string, appointmentId: string) => {
-    navigate(`/facility/appointment-patient/${userId}/${patientId}/${appointmentId}`);
-  };
+//   const fetchPendingAppointments = async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
 
+      
+//       // 1. Get current user
+//       const { data: { user }, error: userError } = await supabase.auth.getUser();
+//       if (userError || !user) throw new Error('Not authenticated');
+//       setUserId(user.id); // ✅ ADD THIS LINE
+
+//       // 2. Get medical professional record (doctor)
+//       const { data: medicalProfessional, error: mpError } = await supabase
+//         .from('facilities')
+//         .select('id, admin_user_id')
+//         .eq('admin_user_id', user.id)
+//         .single();
+
+//       if (mpError || !medicalProfessional) {
+//         throw new Error('Facility profile not found');
+//       }
+
+//       // 3. Fetch all pending appointments for this doctor
+//       const { data: appointmentsData, error: aptError } = await supabase
+//         .from('appointments')
+//         .select(`
+//           id,
+//           appointment_date,
+//           type,
+//           status,
+//           patient_id,
+//           facility_id,
+//           chief_complaint,
+//           notes,
+//           created_at
+//         `)
+//         .eq('facility_id', medicalProfessional.id)  // using facility_id as identifier
+//         .eq('status', 'pending')
+//         .order('created_at', { ascending: false });
+
+//       if (aptError) throw aptError;
+//       if (!appointmentsData?.length) {
+//         setAppointments([]);
+//         setLoading(false);
+//         return;
+//       }
+
+//       // 4. Get unique patient IDs
+//       const patientIds = [...new Set(appointmentsData.map(a => a.patient_id))];
+
+//       // 5. Fetch patient profiles
+//       const { data: profiles, error: profilesError } = await supabase
+//         .from('profiles')
+//         .select('user_id, first_name, last_name, email, phone_number, avatar_url')
+//         .in('user_id', patientIds);
+
+//       if (profilesError) throw profilesError;
+
+//       // Create patient lookup map
+//       const patientMap: Record<string, any> = {};
+//       profiles?.forEach(profile => {
+//         patientMap[profile.user_id] = {
+//           name: `${profile.first_name} ${profile.last_name}`,
+//           email: profile.email,
+//           phone: profile.phone_number,
+//           avatar: profile.avatar_url,
+//         };
+//       });
+
+//       // 6. Transform data
+//       const pendingApps: PendingAppointment[] = appointmentsData.map(app => {
+//         const patient = patientMap[app.patient_id] || { name: 'Unknown', email: null, phone: null };
+//         const appointmentDate = new Date(app.appointment_date);
+//         return {
+//           id: app.id,
+//           patientName: patient.name,
+//           patientId: app.patient_id,
+//           date: appointmentDate.toLocaleDateString(),
+//           time: appointmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+//           type: app.type as "teleconsultation" | "in_person",
+//           status: app.status,
+//           notes: app.notes,
+//           email: patient.email,
+//           phoneNumber: patient.phone,
+//           patientAvatar: patient.avatar,
+//           createdAt: app.created_at,
+//         };
+//       });
+
+//       setAppointments(pendingApps);
+//     } catch (err: any) {
+//       console.error('Error fetching pending appointments:', err);
+//       setError(err.message || 'Failed to load pending appointments');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleViewDetails = (userId: string, patientId: string, appointmentId: string) => {
+    
+    
+//     navigate(`/facility/appointment-patient/${userId}/${patientId}/${appointmentId}`);
+//   };
+const handleViewDetails = (
+  userId: string,
+  patientId: string,
+  appointmentId: string
+) => {
+  if (userRole === "hospital_staff") {
+    navigate(
+      `/staff/appointment-patient/${userId}/${patientId}/${appointmentId}`
+    );
+  } else {
+    navigate(
+      `/facility/appointment-patient/${userId}/${patientId}/${appointmentId}`
+    );
+  }
+};
   const handleBack = () => navigate(-1);
 
   // Status badge component

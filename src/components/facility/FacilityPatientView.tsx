@@ -4875,6 +4875,7 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
   // ==================== PATIENT VIEW ====================
   if (viewType === "patient" && patient) {
     const isPending = currentAppointment?.status === "pending";
+    const isFacility = userRole === "facility" || currentUserRole === "hospital_admin" || currentUserRole === "hospital_staff";
     return (
       <div className="w-full px-4 sm:px-6 py-4 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -4899,12 +4900,17 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
             disabled={isCompleted || isCancelled}>
             Confirm this appointment
           </Button>)}
-          {userRole === "facility" && currentAppointment.status === "pending" && (
+          {/* {userRole === "facility" && currentAppointment.status === "pending" && (
           <Button variant="doctor" 
           onClick={() => setIsDialogOpen(true)} 
             disabled={isCompleted || isCancelled}>
             Confirm this appointment
-          </Button>)}
+          </Button>)} */}
+           {isPending &&  isFacility && (
+                      <Button variant="doctor" onClick={() => setIsDialogOpen(true)} disabled={isCompleted || isCancelled}>
+                        Confirm this appointment
+                      </Button>
+                    )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

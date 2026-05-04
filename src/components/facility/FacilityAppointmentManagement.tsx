@@ -2443,6 +2443,13 @@ const past = dateFilteredAppointments.filter((a) => a.isPast);
   //   </div>
   // );
 
+const getRedirectPath = () => {
+  if (!selectedPendingAppointment || !currentUserId) return "#";
+
+  return facilityUser?.role === "hospital_staff"
+    ? `/dashboard/staff/appointment-pending`
+    : `/dashboard/facility/appointment-pending`;
+};
   return (
   <div className="p-6 max-w-7xl mx-auto">
     {/* Header Section */}
@@ -2720,7 +2727,7 @@ const past = dateFilteredAppointments.filter((a) => a.isPast);
             </Button>
             {selectedPendingAppointment && (
               <Link
-                to={`/dashboard/facility/appointment-pending`}
+                to={getRedirectPath()}
                 // to={`/doctor/appointment-patient/${selectedPendingAppointment.patientId}/${selectedPendingAppointment.id}`}
                 // target="_blank"
                 rel="noopener noreferrer"

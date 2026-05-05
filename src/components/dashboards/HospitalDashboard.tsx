@@ -569,8 +569,7 @@ return (
         onLimitExceeded={(exceededLimits) => {
           console.warn('Limits exceeded:', exceededLimits);
         }}
-      />
-          </div>
+      />          </div>
         </TabsContent>
 
         {/* Departments Tab */}

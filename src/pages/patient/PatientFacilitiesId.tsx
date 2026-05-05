@@ -189,6 +189,31 @@ useEffect(() => {
     }
   }, [selectedFacility]);
 
+  useEffect(() => {
+    if (selectedFacility?.id) {
+      checkBookingStatus(selectedFacility?.id || "");
+    }
+  }, [selectedFacility?.id]);
+  const checkBookingStatus = async (facilityId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("booking_attempts")
+        .insert({ facility_id: facilityId, booking_type: "BedBooking" })
+        .eq("facility_id", facilityId); // ✅ FIX
+  
+      if (error) {
+        console.error("Booking status error:", error);
+        return;
+      }
+  
+    
+     
+    } catch (err) {
+      console.error("checkBookingStatus error:", err);
+    }
+  };
+  
+
    const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
     useEffect(() => {
   if (selectedFacility?.id) {

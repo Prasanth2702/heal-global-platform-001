@@ -32,131 +32,259 @@ const [userRole, setUserRole] = useState<string>("");
     fetchPendingAppointments();
   }, []);
 
+const fetchPendingAppointments = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-  const fetchPendingAppointments = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    // 1. Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Not authenticated");
+    setUserId(user.id);
 
-      // ✅ 1. Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("Not authenticated");
+    // 2. Get user profile (role)
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
 
-      setUserId(user.id);
+    if (profileError || !profile) throw new Error("Profile not found");
+    setUserRole(profile.role);
 
-      // ✅ 2. Get user profile (role)
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
+    let resolvedFacilityId = "";
+    let resolvedDepartmentId: string | null = null;   // <-- NEW: for staff department
+
+    // 3. Role-based facility (and department) fetch
+    if (profile.role === "hospital_admin") {
+      const { data, error } = await supabase
+        .from("facilities")
+        .select("id")
+        .eq("admin_user_id", user.id)
+        .single();
+
+      if (error || !data) throw new Error("Facility not found for admin");
+      resolvedFacilityId = data.id;
+
+    } else if (profile.role === "hospital_staff") {
+      // Fetch both facility_id AND department_id for the staff member
+      const { data, error } = await supabase
+        .from("staff")
+        .select("facility_id, department_id")   // <-- ADD department_id
         .eq("user_id", user.id)
         .single();
 
-      if (profileError || !profile) throw new Error("Profile not found");
-
-setUserRole(profile.role); // ✅ ADD THIS LINE
-
-      let resolvedFacilityId = "";
-
-      // ✅ 3. Role-based facility fetch
-      if (profile.role === "hospital_admin") {
-        const { data, error } = await supabase
-          .from("facilities")
-          .select("id")
-          .eq("admin_user_id", user.id)
-          .single();
-
-        if (error || !data) throw new Error("Facility not found for admin");
-
-        resolvedFacilityId = data.id;
-
-      } else if (profile.role === "hospital_staff") {
-        const { data, error } = await supabase
-          .from("staff")
-          .select("facility_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (error || !data) throw new Error("Facility not found for staff");
-
-        resolvedFacilityId = data.facility_id;
-
-      } else {
-        throw new Error("Unauthorized role");
-      }
-
-      setFacilityId(resolvedFacilityId);
-
-      // ✅ 4. Fetch pending appointments
-      const { data: appointmentsData, error: aptError } = await supabase
-        .from("appointments")
-        .select(`
-          id,
-          appointment_date,
-          type,
-          status,
-          patient_id,
-          facility_id,
-          notes,
-          created_at
-        `)
-        .eq("facility_id", resolvedFacilityId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (aptError) throw aptError;
-
-      if (!appointmentsData?.length) {
-        setAppointments([]);
-        return;
-      }
-
-      // ✅ 5. Get patient details
-      const patientIds = [...new Set(appointmentsData.map(a => a.patient_id))];
-
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("user_id, first_name, last_name, email, phone_number")
-        .in("user_id", patientIds);
-
-      if (profilesError) throw profilesError;
-
-      const patientMap: Record<string, any> = {};
-      profiles?.forEach(p => {
-        patientMap[p.user_id] = {
-          name: `${p.first_name || ""} ${p.last_name || ""}`,
-          email: p.email,
-          phone: p.phone_number,
-        };
-      });
-
-      // ✅ 6. Transform data
-      const pendingApps: PendingAppointment[] = appointmentsData.map(app => {
-        const patient = patientMap[app.patient_id] || { name: "Unknown" };
-        const dateObj = new Date(app.appointment_date);
-
-        return {
-          id: app.id,
-          patientName: patient.name,
-          patientId: app.patient_id,
-          date: dateObj.toLocaleDateString(),
-          time: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          type: app.type,
-          status: app.status,
-          notes: app.notes,
-          email: patient.email,
-          phoneNumber: patient.phone,
-        };
-      });
-
-      setAppointments(pendingApps);
-
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to load appointments");
-    } finally {
-      setLoading(false);
+      if (error || !data) throw new Error("Facility or department not found for staff");
+      resolvedFacilityId = data.facility_id;
+      resolvedDepartmentId = data.department_id;  // <-- store department ID
+    } else {
+      throw new Error("Unauthorized role");
     }
-  };
+
+    setFacilityId(resolvedFacilityId);
+
+    // 4. Build the appointments query
+    let query = supabase
+      .from("appointments")
+      .select(`
+        id,
+        appointment_date,
+        type,
+        status,
+        patient_id,
+        facility_id,
+        notes,
+        created_at
+      `)
+      .eq("facility_id", resolvedFacilityId)
+      .eq("status", "pending");
+
+    // 5. 🔥 Apply department filter for staff (if department_id exists)
+    if (profile.role === "hospital_staff" && resolvedDepartmentId) {
+      // Assuming the appointments table has a `department_id` column
+      query = query.eq("department_id", resolvedDepartmentId);
+    }
+
+    const { data: appointmentsData, error: aptError } = await query
+      .order("created_at", { ascending: false });
+
+    if (aptError) throw aptError;
+
+    if (!appointmentsData?.length) {
+      setAppointments([]);
+      return;
+    }
+
+    // 6. Fetch patient details (unchanged)
+    const patientIds = [...new Set(appointmentsData.map(a => a.patient_id))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("user_id, first_name, last_name, email, phone_number")
+      .in("user_id", patientIds);
+
+    if (profilesError) throw profilesError;
+
+    const patientMap: Record<string, any> = {};
+    profiles?.forEach(p => {
+      patientMap[p.user_id] = {
+        name: `${p.first_name || ""} ${p.last_name || ""}`,
+        email: p.email,
+        phone: p.phone_number,
+      };
+    });
+
+    // 7. Transform data (unchanged)
+    const pendingApps: PendingAppointment[] = appointmentsData.map(app => {
+      const patient = patientMap[app.patient_id] || { name: "Unknown" };
+      const dateObj = new Date(app.appointment_date);
+      return {
+        id: app.id,
+        patientName: patient.name,
+        patientId: app.patient_id,
+        date: dateObj.toLocaleDateString(),
+        time: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        type: app.type,
+        status: app.status,
+        notes: app.notes,
+        email: patient.email,
+        phoneNumber: patient.phone,
+      };
+    });
+
+    setAppointments(pendingApps);
+
+  } catch (err: any) {
+    console.error(err);
+    setError(err.message || "Failed to load appointments");
+  } finally {
+    setLoading(false);
+  }
+};
+
+//   const fetchPendingAppointments = async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
+
+//       // ✅ 1. Get current user
+//       const { data: { user }, error: userError } = await supabase.auth.getUser();
+//       if (userError || !user) throw new Error("Not authenticated");
+
+//       setUserId(user.id);
+
+//       // ✅ 2. Get user profile (role)
+//       const { data: profile, error: profileError } = await supabase
+//         .from("profiles")
+//         .select("role")
+//         .eq("user_id", user.id)
+//         .single();
+
+//       if (profileError || !profile) throw new Error("Profile not found");
+
+// setUserRole(profile.role); // ✅ ADD THIS LINE
+
+//       let resolvedFacilityId = "";
+
+//       // ✅ 3. Role-based facility fetch
+//       if (profile.role === "hospital_admin") {
+//         const { data, error } = await supabase
+//           .from("facilities")
+//           .select("id")
+//           .eq("admin_user_id", user.id)
+//           .single();
+
+//         if (error || !data) throw new Error("Facility not found for admin");
+
+//         resolvedFacilityId = data.id;
+
+//       } else if (profile.role === "hospital_staff") {
+//         const { data, error } = await supabase
+//           .from("staff")
+//           .select("facility_id")
+//           .eq("user_id", user.id)
+//           .single();
+
+//         if (error || !data) throw new Error("Facility not found for staff");
+
+//         resolvedFacilityId = data.facility_id;
+
+//       } else {
+//         throw new Error("Unauthorized role");
+//       }
+
+//       setFacilityId(resolvedFacilityId);
+
+//       // ✅ 4. Fetch pending appointments
+//       const { data: appointmentsData, error: aptError } = await supabase
+//         .from("appointments")
+//         .select(`
+//           id,
+//           appointment_date,
+//           type,
+//           status,
+//           patient_id,
+//           facility_id,
+//           notes,
+//           created_at
+//         `)
+//         .eq("facility_id", resolvedFacilityId)
+//         .eq("status", "pending")
+//         .order("created_at", { ascending: false });
+
+//       if (aptError) throw aptError;
+
+//       if (!appointmentsData?.length) {
+//         setAppointments([]);
+//         return;
+//       }
+
+//       // ✅ 5. Get patient details
+//       const patientIds = [...new Set(appointmentsData.map(a => a.patient_id))];
+
+//       const { data: profiles, error: profilesError } = await supabase
+//         .from("profiles")
+//         .select("user_id, first_name, last_name, email, phone_number")
+//         .in("user_id", patientIds);
+
+//       if (profilesError) throw profilesError;
+
+//       const patientMap: Record<string, any> = {};
+//       profiles?.forEach(p => {
+//         patientMap[p.user_id] = {
+//           name: `${p.first_name || ""} ${p.last_name || ""}`,
+//           email: p.email,
+//           phone: p.phone_number,
+//         };
+//       });
+
+//       // ✅ 6. Transform data
+//       const pendingApps: PendingAppointment[] = appointmentsData.map(app => {
+//         const patient = patientMap[app.patient_id] || { name: "Unknown" };
+//         const dateObj = new Date(app.appointment_date);
+
+//         return {
+//           id: app.id,
+//           patientName: patient.name,
+//           patientId: app.patient_id,
+//           date: dateObj.toLocaleDateString(),
+//           time: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+//           type: app.type,
+//           status: app.status,
+//           notes: app.notes,
+//           email: patient.email,
+//           phoneNumber: patient.phone,
+//         };
+//       });
+
+//       setAppointments(pendingApps);
+
+//     } catch (err: any) {
+//       console.error(err);
+//       setError(err.message || "Failed to load appointments");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
 //   const fetchPendingAppointments = async () => {
 //     try {

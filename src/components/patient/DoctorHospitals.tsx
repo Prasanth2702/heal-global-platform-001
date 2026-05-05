@@ -342,29 +342,54 @@ useEffect(() => {
 };
 
 const [isBookingBlocked, setIsBookingBlocked] = useState(false);
+// useEffect(() => {
+//   if (facility?.id) {
+//     checkBookingStatus(facility.id);
+//   }
+// }, [facility]);
+// const checkBookingStatus = async (doctors: string) => {
+//   try {
+//     const { data, error } = await supabase
+//       .from("booking_attempts")
+//       .insert({ professional_id: doctor.user_id, booking_type: "appointment" })
+//       .eq("professional_id", doctor.user_id); // ✅ FIX
+
+//     if (error) {
+//       console.error("Booking status error:", error);
+//       return;
+//     }
+
+//     // ✅ If no row → allow booking
+//     if (!data) {
+//       setIsBookingBlocked(false);
+//       return;
+//     }
+   
+//   } catch (err) {
+//     console.error("checkBookingStatus error:", err);
+//   }
+// };
+
 useEffect(() => {
-  if (facility?.id) {
-    checkBookingStatus(facility.id);
+  if (doctor?.user_id) {
+    checkBookingStatus(doctor.user_id);
   }
-}, [facility]);
-const checkBookingStatus = async (doctors: string) => {
+}, [doctor?.user_id]);
+
+const checkBookingStatus = async (professionalId: string) => {
   try {
     const { data, error } = await supabase
       .from("booking_attempts")
-      .insert({ professional_id: doctor.user_id, booking_type: "appointment" })
-      .eq("professional_id", doctor.user_id); // ✅ FIX
+      .insert({ professionals_id: professionalId ,booking_type: "appointment" })
+      .eq("professionals_id", professionalId); // ✅ FIXED HERE
+     
 
     if (error) {
       console.error("Booking status error:", error);
       return;
     }
 
-    // ✅ If no row → allow booking
-    if (!data) {
-      setIsBookingBlocked(false);
-      return;
-    }
-   
+    setIsBookingBlocked(!!data); // true if record exists
   } catch (err) {
     console.error("checkBookingStatus error:", err);
   }
@@ -1866,25 +1891,24 @@ const handleBookAppointmentClick = () => {
   </div>
 )}
 
-{/* <Button
+<Button
   variant="default"
   size="sm"
   onClick={() => toggleExpand(doctor.user_id)}
-  disabled = {hasTimeSlots === false || isClinicalLimitReached}
+  disabled = {hasTimeSlots === false || isSlotBlocked(selectedSlot?.slot_type)}
 >
-  {/* View Availability 
-   {isClinicalLimitReached ? "Booking not available, please try after some time." : "View Availability"}
-</Button> */}
-<Button
+   {isSlotBlocked(selectedSlot?.slot_type) ? "Booking not available, please try after some time." : "View Availability"}
+</Button>
+{/* <Button
 variant="default"
   size="sm"
   onClick={() => toggleExpand(doctor.user_id)}
   disabled={!selectedSlot || isSlotBlocked(selectedSlot?.slot_type)}
 >
   {selectedSlot && isSlotBlocked(selectedSlot.slot_type)
-    ? "Limit reached for this type"
-    : "Book Appointment"}
-</Button>
+    ? "Booking not available, please try after some time."
+    : "View Availability"}
+</Button> */}
 
 </div>
                           {expandedDoctorId === doctor.user_id && (

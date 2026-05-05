@@ -158,7 +158,15 @@ const PatientPayment = () => {
   }
 
   const isPaymentCompleted = paymentDetails !== null;
+const isFreeConsultation =
+  appointmentDetails?.consultation_fee === 0;
 
+const PLATFORM_FEE = 150;
+
+const extraCharge = isFreeConsultation ? 0 : PLATFORM_FEE;
+
+const totalAmount =
+  (appointmentDetails?.consultation_fee || 0) + extraCharge;
   return (
     <DashboardLayout userType="patient">
       <div className="max-w-2xl mx-auto p-4">
@@ -201,13 +209,29 @@ const PatientPayment = () => {
               <span className="text-gray-600">Appointment Date</span>
               <span className="font-medium">{appointmentDetails.appointment_date}</span>
             </div>
-            <div className="flex justify-between items-center pt-2">
+            {/* <div className="flex justify-between items-center pt-2">
               <span className="text-lg font-semibold text-gray-800">Consultation Fee</span>
               <span className="text-2xl font-bold text-blue-600">
                 ₹{appointmentDetails.consultation_fee  + 150}
-                {/* ₹{appointmentDetails.consultation_fee  + 150?.toLocaleString()} */}
+                ₹{appointmentDetails.consultation_fee  + 150?.toLocaleString()}
               </span>
-            </div>
+            </div> */}
+            <div className="flex justify-between text-gray-600">
+<span>Platform Fee</span>
+  <span>₹{appointmentDetails.consultation_fee}</span>
+</div>
+
+{!isFreeConsultation && (
+  <div className="flex justify-between text-gray-600">
+    <span>Consultation Fee</span>
+    <span>₹150</span>
+  </div>
+)}
+
+<div className="flex justify-between text-lg font-bold text-blue-600 border-t pt-2">
+  <span>Total</span>
+  <span>₹{totalAmount}</span>
+</div>
           </div>
         </div>
 

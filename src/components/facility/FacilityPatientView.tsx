@@ -3498,7 +3498,7 @@ const loadPatientData = async (patientRecord: any) => {
       console.error("Error in loadDoctorData:", error);
     }
   };
-const loadFacilityData = async (facilityRecord: any) => {
+  const loadFacilityData = async (facilityRecord: any, appointmentId?: string) => {
   try {
     // 1. Set base facility
     setFacility(facilityRecord);
@@ -3511,7 +3511,7 @@ const loadFacilityData = async (facilityRecord: any) => {
       .single();
     if (profileData) setDoctorProfile(profileData);
 
-    // 3. Load facility details (without departments – fetched separately)
+    // 3. Load facility details
     const { data: facilityData } = await supabase
       .from("facilities")
       .select(`
@@ -3525,7 +3525,13 @@ const loadFacilityData = async (facilityRecord: any) => {
         about_facility,
         number_of_staffs,
         number_of_departments,
-        is_verified
+        is_verified,
+        city,
+        state,
+        country_code,
+        pin_code,
+        email,
+        phone_number
       `)
       .eq("id", facilityRecord.id)
       .single();
@@ -3544,11 +3550,14 @@ const loadFacilityData = async (facilityRecord: any) => {
         equipment,
         bed_capacity,
         available_beds,
-        is_active
+        is_active,
+        staff_count,
+        price_per_day,
+        has_variable_pricing
       `)
       .eq("facility_id", facilityRecord.id);
 
-    // 5. Load appointments with necessary fields
+    // 5. Load appointments (list)
     const { data: appointmentsData } = await supabase
       .from("appointments")
       .select(`
@@ -3556,7 +3565,9 @@ const loadFacilityData = async (facilityRecord: any) => {
         type,
         status,
         patient_id,
-        department_id
+        department_id,
+        document_requested,
+        appointment_date
       `)
       .eq("facility_id", facilityRecord.id)
       .order("appointment_date", { ascending: false })
@@ -3578,7 +3589,7 @@ const loadFacilityData = async (facilityRecord: any) => {
       };
     });
 
-    // 7. Load documents (optional)
+    // 7. Load documents (optional) - all documents for this facility
     const { data: docsData } = await supabase
       .from("documents")
       .select("*")
@@ -3596,7 +3607,7 @@ const loadFacilityData = async (facilityRecord: any) => {
       .select("*", { count: "exact", head: true })
       .eq("facility_id", facilityRecord.id);
 
-    // 9. Set appointments including a stats row (using a placeholder appointment)
+    // 9. Set appointments list including stats row
     setAppointments([
       ...formattedAppointments,
       {
@@ -3608,13 +3619,223 @@ const loadFacilityData = async (facilityRecord: any) => {
         department_name: `Wards: ${wardCount || 0}`,
         doctor_name: `Beds: ${bedCount || 0}`,
         doctor_specialty: "",
-      } as any, // cast to any because it's not a real appointment
+      } as any,
     ]);
+
+    // 10. 🔥 Fetch the current appointment details (if appointmentId is provided)
+    if (appointmentId) {
+      const { data: aptData, error: aptError } = await supabase
+        .from("appointments")
+        .select(`
+          id,
+          appointment_date,
+          time_slot_id,
+          duration_minutes,
+          type,
+          status,
+          department_id,
+          facility_id,
+          doctor_id,
+          patient_id,
+          chief_complaint,
+          notes,
+          consultation_fee,
+          video_room_id,
+          reminder_sent,
+          payment_requested,
+          document_requested,
+          created_at
+        `)
+        .eq("id", appointmentId)
+        .single();
+
+      if (!aptError && aptData) {
+        // Get department name
+        let departmentName = "N/A";
+        if (aptData.department_id) {
+          const { data: deptData } = await supabase
+            .from("departments")
+            .select("name")
+            .eq("id", aptData.department_id)
+            .single();
+          if (deptData) departmentName = deptData.name;
+        }
+
+        // Get doctor name (if any)
+        let doctorName = "N/A";
+        if (aptData.doctor_id) {
+          const { data: doctorData } = await supabase
+            .from("medical_professionals")
+            .select("name")
+            .eq("user_id", aptData.doctor_id)
+            .single();
+          if (doctorData) doctorName = doctorData.name;
+        }
+
+        // Get time slot (if any)
+        let start_time = "", end_time = "";
+        if (aptData.time_slot_id) {
+          const { data: slotData } = await supabase
+            .from("time_slots")
+            .select("start_time, end_time")
+            .eq("id", aptData.time_slot_id)
+            .single();
+          if (slotData) {
+            start_time = slotData.start_time;
+            end_time = slotData.end_time;
+          }
+        }
+
+        // Set current appointment state
+        setCurrentAppointment({
+          id: aptData.id,
+          appointment_date: aptData.appointment_date,
+          time_slot_id: aptData.time_slot_id,
+          start_time,
+          end_time,
+          duration_minutes: aptData.duration_minutes,
+          type: aptData.type,
+          status: aptData.status,
+          department_name: departmentName,
+          department_id: aptData.department_id,
+          doctor_name: doctorName,
+          doctor_specialty: "",
+          facility_id: aptData.facility_id,
+          doctor_id: aptData.doctor_id,
+          chief_complaint: aptData.chief_complaint,
+          notes: aptData.notes,
+          consultation_fee: aptData.consultation_fee,
+          video_room_id: aptData.video_room_id,
+          reminder_sent: aptData.reminder_sent,
+          payment_requested: aptData.payment_requested,
+          document_requested: aptData.document_requested, // ✅ crucial field
+          createdAt: aptData.created_at,
+        });
+      }
+    }
 
   } catch (error) {
     console.error("Facility Load Error:", error);
   }
 };
+// const loadFacilityData = async (facilityRecord: any) => {
+//   try {
+//     // 1. Set base facility
+//     setFacility(facilityRecord);
+
+//     // 2. Load admin profile (optional)
+//     const { data: profileData } = await supabase
+//       .from("profiles")
+//       .select("*")
+//       .eq("user_id", facilityRecord.admin_user_id)
+//       .single();
+//     if (profileData) setDoctorProfile(profileData);
+
+//     // 3. Load facility details (without departments – fetched separately)
+//     const { data: facilityData } = await supabase
+//       .from("facilities")
+//       .select(`
+//         id,
+//         facility_name,
+//         facility_type,
+//         address,
+//         rating,
+//         license_number,
+//         total_reviews,
+//         about_facility,
+//         number_of_staffs,
+//         number_of_departments,
+//         is_verified
+//       `)
+//       .eq("id", facilityRecord.id)
+//       .single();
+//     if (facilityData) setFacility(facilityData as FacilityProfile);
+
+//     // 4. Load departments for this facility
+//     const { data: departmentsData } = await supabase
+//       .from("departments")
+//       .select(`
+//         id,
+//         facility_id,
+//         name,
+//         description,
+//         head_doctor_id,
+//         services,
+//         equipment,
+//         bed_capacity,
+//         available_beds,
+//         is_active
+//       `)
+//       .eq("facility_id", facilityRecord.id);
+
+//     // 5. Load appointments with necessary fields
+//     const { data: appointmentsData } = await supabase
+//       .from("appointments")
+//       .select(`
+//         id,
+//         type,
+//         status,
+//         patient_id,
+//         department_id,
+//         document_requested
+//       `)
+//       .eq("facility_id", facilityRecord.id)
+//       .order("appointment_date", { ascending: false })
+//       .limit(10);
+
+//     // 6. Enrich appointments with department names
+//     const formattedAppointments: Appointment[] = (appointmentsData || []).map((apt: any) => {
+//       const department = departmentsData?.find((d: any) => d.id === apt.department_id);
+//       return {
+//         id: apt.id,
+//         appointment_date: apt.appointment_date,
+//         appointment_time: apt.appointment_time,
+//         type: apt.type,
+//         status: apt.status,
+//         department_id: apt.department_id,
+//         department_name: department?.name || "N/A",
+//         doctor_name: "N/A",
+//         doctor_specialty: "General",
+//       };
+//     });
+
+//     // 7. Load documents (optional)
+//     const { data: docsData } = await supabase
+//       .from("documents")
+//       .select("*")
+//       .eq("owner_id", facilityRecord.id)
+//       .order("created_at", { ascending: false });
+//     if (docsData) setDocuments(docsData);
+
+//     // 8. Get ward and bed counts for stats
+//     const { count: wardCount } = await supabase
+//       .from("wards")
+//       .select("*", { count: "exact", head: true })
+//       .eq("facility_id", facilityRecord.id);
+//     const { count: bedCount } = await supabase
+//       .from("beds")
+//       .select("*", { count: "exact", head: true })
+//       .eq("facility_id", facilityRecord.id);
+
+//     // 9. Set appointments including a stats row (using a placeholder appointment)
+//     setAppointments([
+//       ...formattedAppointments,
+//       {
+//         id: "stats",
+//         appointment_date: "",
+//         type: "stats",
+//         status: "",
+//         department_id: undefined,
+//         department_name: `Wards: ${wardCount || 0}`,
+//         doctor_name: `Beds: ${bedCount || 0}`,
+//         doctor_specialty: "",
+//       } as any, // cast to any because it's not a real appointment
+//     ]);
+
+//   } catch (error) {
+//     console.error("Facility Load Error:", error);
+//   }
+// };
 
   // const loadFacilityData = async (facilityRecord: any) => {
   //   setFacility(facilityRecord);
@@ -3880,7 +4101,7 @@ const loadFacilityData = async (facilityRecord: any) => {
         .maybeSingle();
       if (facilityData) {
         setViewType("facility");
-        await loadFacilityData(facilityData);
+        await loadFacilityData(facilityData,appointmentId);
         return;
       }
 
@@ -4986,7 +5207,7 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
     <p className="text-xs text-muted-foreground mb-2">Add medical reports, prescriptions, lab reports, or other documents</p>
     <p className="text-[11px] text-gray-500">Supported formats: PDF, PNG, JPG, JPEG</p>
     {/* {isPending && <PendingOverlay />} */}
-    {(isPending || !currentAppointment?.document_requested)  && userRole === "doctor" &&  <PatientPendingOverlay />}
+    {(isPending || !currentAppointment?.document_requested)  &&  <PatientPendingOverlay />}
   </CardContent>
 </Card>
 
@@ -5796,13 +6017,14 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
   </CardTitle>
 </div>
                     <CardContent className="p-4 flex flex-col items-center text-center">
-                      <div className="flex gap-3"><IndianRupee className="h-8 w-8 text-amber-600 mb-2" /><div><h3 className="font-semibold">Consultation Fee</h3><p className="text-xs text-muted-foreground mb-3">₹{doctor.consultation_fee || "0"}</p></div></div>
+                      <div className="flex gap-3"><IndianRupee className="h-8 w-8 text-amber-600 mb-2" /><div><h3 className="font-semibold">Consultation Fee</h3><p className="text-xs text-muted-foreground mb-3">₹{doctor.consultation_fee +150 || "0"}</p></div></div>
                       <div className="space-y-2">
                         {!currentAppointment?.payment_requested && <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded-md">💡 Please request payment from the doctor after the consultation fee is complete.</p>}
                         {userRole === "patient" && paymentCompleted ? (
                           <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg><span className="font-medium">Consultation Fee Paid</span></div>
                         ) : userRole === "patient" && !paymentCompleted && (
-                          <Button size="default" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md" onClick={() => navigate(`/patient/appointment-payment/${appointmentId}`)}>Consultation Fee ₹{doctor.consultation_fee +150 || "0"}</Button>
+                          <Button size="default" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md" onClick={() => navigate(`/patient/appointment-payment/${appointmentId}`)}>Payment</Button>
+                          // <Button size="default" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md" onClick={() => navigate(`/patient/appointment-payment/${appointmentId}`)}>Consultation Fee ₹{doctor.consultation_fee +150 || "0"}</Button>
                         )}
                         {currentAppointment?.payment_requested && !paymentCompleted && <p className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded-md">⏳ Meeting started – you can now request consultation fee.</p>}
                       </div>
@@ -6104,6 +6326,29 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
                   <p className="text-[11px] text-gray-500">Supported formats: PDF, PNG, JPG, JPEG</p>
                 </CardContent>
                 {/* {isPending && <PendingOverlay />} */}
+                 {/* {(isPending || !currentAppointment?.document_requested) && (
+  <div className="absolute inset-0 bg-gray-500/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
+    <div className="bg-gray-50 rounded-lg px-4 py-2 shadow-md text-center font-medium">
+      
+      {isPending ? (
+        <>⏳ Pending — Waiting for confirmation.</>
+      ) : (
+        <>Please share the medical reports and lab reports directly.</>
+      )}
+    </div>
+  </div>
+)} */}
+{(isPending || !currentAppointment?.document_requested) && (
+  <div className="absolute inset-0 bg-gray-500/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
+    <div className="bg-gray-50 rounded-lg px-4 py-2 shadow-md text-center font-medium">
+      {isPending ? (
+        <>⏳ Pending — Waiting for confirmation.</>
+      ) : (
+        <>Please share the medical reports and lab reports directly.</>
+      )}
+    </div>
+  </div>
+)}
               </Card>
             {/* )} */}
 

@@ -2141,14 +2141,21 @@ const Hometab: React.FC = () => {
           established_year,
           insurance_partners,
           about_facility,
-          website
+          website,
+          admin_user_id,
+    profiles:profiles!facilities_admin_user_id_fkey (
+      phone_number,
+      email
+    )
         `);
       if (facilitiesError) throw facilitiesError;
       if (facilitiesData) {
         const enhancedFacilities = facilitiesData.map(facility => ({
           ...facility,
-          contact_number: "+1 234-567-890" + Math.floor(Math.random() * 10),
-          email: `info@${facility.facility_name.toLowerCase().replace(/\s+/g, '')}.com`,
+          contact_number: facility.profiles?.phone_number || "Not Available",
+  email: facility.profiles?.email || "Not Available",
+          // contact_number: "+1 234-567-890" + Math.floor(Math.random() * 10),
+          // email: `info@${facility.facility_name.toLowerCase().replace(/\s+/g, '')}.com`,
           facilities: ["Emergency", "ICU", "Pharmacy", "Laboratory"]
         }));
         setFacilities(enhancedFacilities);

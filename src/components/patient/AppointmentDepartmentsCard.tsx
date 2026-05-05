@@ -647,7 +647,7 @@
 // ========================================
 
 import React, { useEffect, useState } from "react";
-import { Calendar, MapPin, Clock, FileText, Upload, Building2, Building, User } from "lucide-react";
+import { Calendar, MapPin, Clock, FileText, Upload, Building2, Building, User, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
 import AppointmentDocumentsModal from "@/components/doctor/AppointmentDocumentsModal";
@@ -664,7 +664,7 @@ interface DepartmentAppointment {
   date: string;
   time: string;
   type: "teleconsultation" | "in_person";
-  status: "confirmed" | "cancelled" | "completed";
+  status: "confirmed" | "cancelled" | "completed" | "pending";
   location: string;
   consultationFee: number | null;
   slotStartTime: string;
@@ -724,7 +724,17 @@ export default function AppointmentDepartmentsCard({
       case "confirmed": return "bg-green-100 text-green-700";
       case "completed": return "bg-blue-100 text-blue-700";
       case "cancelled": return "bg-red-100 text-red-700";
+      case "pending": return "bg-yellow-100 text-yellow-700";
       default: return "bg-gray-100 text-gray-700";
+    }
+  };
+  const isPending = appointment.status === "pending";
+   const getPendingMessage = () => {
+    if (appointment.status === "pending") {
+      return "⚠️ This appointment is awaiting your confirmation. Please confirm within 30 minutes of booking to avoid auto-cancellation.";
+    } else {
+      return "⏳ Your appointment is currently pending confirmation from the doctor/medical team or the facility. Please do not visit until you receive confirmation. You will be notified once it is confirmed. You may follow up with them using the email  provided in your profile.";
+      // return "⏳ Your appointment is pending doctor confirmation. You will be notified once confirmed.";
     }
   };
 
@@ -733,11 +743,17 @@ export default function AppointmentDepartmentsCard({
       className={`
         relative rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl
         border-l-4
+
         ${
-          appointment.status === "cancelled"
-            ? "border-red-500 bg-gradient-to-r from-red-50 to-white"
-            : "border-blue-500 bg-gradient-to-r from-blue-50 to-white"
-        }
+  appointment.status === "pending"
+    ? "border-gray-400 bg-gray-100"
+    : appointment.status === "cancelled"
+    ? "border-red-500 bg-gradient-to-r from-red-50 to-white"
+    : appointment.status === "completed"
+    ? "border-green-500 bg-gradient-to-r from-green-50 to-white"
+    : "border-blue-500 bg-gradient-to-r from-blue-50 to-white"
+}
+       
       `}
     >
       <div className="p-4 md:p-5 space-y-4">
@@ -830,6 +846,13 @@ export default function AppointmentDepartmentsCard({
            
           )}
         </div>
+
+        {isPending && (
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 flex items-start gap-2 text-gray-700">
+            <AlertCircle size={18} className="text-gray-500 mt-0.5" />
+            <p className="text-sm">{getPendingMessage()}</p>
+          </div>
+        )}
 
         {/* Documents Button - conditional */}
         {/* {showDocuments && (

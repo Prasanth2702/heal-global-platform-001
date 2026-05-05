@@ -205,7 +205,7 @@ useEffect(() => {
   }, [userFacility]);
   
   const isStaffLimitReached =
-    limits && limits?.limits?.bedBookings?.allowed === true;
+    limits && limits?.limits?.bedBookings?.allowed === false;
   
   const limitMessage =
     limits?.message ||

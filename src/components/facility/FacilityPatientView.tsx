@@ -3196,8 +3196,8 @@ const loadPatientData = async (patientRecord: any) => {
     known_allergies: patientRecord.known_allergies || "",
     emergency_contact_name: patientRecord.emergency_contact_name || "",
     emergency_contact_number: patientRecord.emergency_contact_number || "",
-    emergency_contact_relationship: patientRecord.emergency_contact_relationship || "",
-    medical_history: patientRecord.medical_history || "",
+    emergency_contact_relationship: patientRecord.emergency_contact_relationship || null,
+    medical_history: patientRecord.medical_history || null,
     current_medications: patientRecord.current_medications || "",
   };
   setPatient(fullPatient);

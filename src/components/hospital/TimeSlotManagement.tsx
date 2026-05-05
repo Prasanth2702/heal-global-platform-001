@@ -2436,6 +2436,9 @@ const TimeSlotManagement = () => {
             slot_type: formData.appointmentType,
             facility_id: userFacility.id, // Use user's facility ID
             department_id: formData.department_id,
+                max_appointments: formData.maxAppointments,   // ✅ ADD THIS
+    // slot_duration: formData.slotDuration,         // ✅ ADD
+    // break_time: formData.breakTime, 
             day_of_week: editingSlot.dayOfWeek,
             is_available: editingSlot.isActive,
             updated_at: new Date().toISOString(),
@@ -2459,6 +2462,9 @@ const TimeSlotManagement = () => {
           start_time: formData.startTime,
           end_time: formData.endTime,
           slot_type: formData.appointmentType,
+              max_appointments: formData.maxAppointments,   // ✅ ADD THIS
+    // slot_duration: formData.slotDuration,         // ✅ ADD
+    // break_time: formData.breakTime, 
           day_of_week: day,
           is_available: true,
           created_at: new Date().toISOString(),

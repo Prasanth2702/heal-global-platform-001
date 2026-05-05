@@ -570,8 +570,8 @@ return (
           <div className="mt-6">
               <FacilityLimitDashboard
         {...(userType === 'admin' 
-          ? { facility_admin_id: userId } 
-          : { staff_user_id: userId }
+          && { facility_admin_id: userId } 
+         
         )}
         autoRefresh={true}
         refreshInterval={30000}

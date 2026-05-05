@@ -2560,6 +2560,68 @@ const saveStep1Data = async () => {
       console.error('Error updating profile:', profileError);
     }
 
+    // Create or update patient record
+const { data: existingPatient, error: patientCheckError } = await supabase
+  .from('patients')
+  .select('id')
+  .eq('user_id', userId)
+  .maybeSingle();
+
+if (patientCheckError) {
+  console.error('Error checking patient:', patientCheckError);
+}
+
+let patientError;
+
+if (existingPatient) {
+  // 🔄 UPDATE
+  const { error } = await supabase
+    .from('patients')
+    .update({
+      user_id: userId,
+      date_of_birth: null,
+      gender: "",
+      blood_group: "",
+      emergency_contact_name: "",
+      emergency_contact_number: "",
+      known_allergies: "",
+      current_medications: "",
+      address: "",
+      city: "",
+      state: "",
+      pincode: null,
+    })
+    .eq('user_id', userId);
+
+  patientError = error;
+} else {
+  // 🆕 INSERT
+  const { error } = await supabase
+    .from('patients')
+    .insert([
+      {
+        user_id: userId,
+        date_of_birth: null,
+        gender: "",
+        blood_group: "",
+        emergency_contact_name: "",
+        emergency_contact_number: "",
+        known_allergies: "",
+        current_medications: "",
+        address: "",
+        city: "",
+        state: "",
+        pincode: null,
+      },
+    ]);
+
+  patientError = error;
+}
+
+if (patientError) {
+  console.error('Error saving patient:', patientError);
+}
+
     // Call the welcome email edge function with better error handling
     try {
       // Get the current session to get the access token

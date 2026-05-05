@@ -1906,7 +1906,7 @@ const getSubmitHandler = () => {
         <>
         <DialogHeader>
           <DialogTitle>
-            {editingDepartment ? "Edit Department" : "Add New Department"}
+            {editingDepartment ? "Edit Staff Department" : "Add Staff Department"}
           </DialogTitle>
           <DialogDescription>
             {editingDepartment

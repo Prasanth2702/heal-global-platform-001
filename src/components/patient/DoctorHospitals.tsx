@@ -2529,7 +2529,7 @@ selectedDate.setDate(
               </span>
             </div> */}
             <Button variant="ghost" size="sm" className="text-green-600">
-              View Departments <ChevronRight className="h-4 w-4 ml-1" />
+              Proceed to Book Appointment <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </CardContent>

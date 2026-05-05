@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useFacilityLimit } from '@/hooks/useFacilityLimit'
+import { PhoneIcon } from 'lucide-react'
 
 interface Facility {
   id: string;
@@ -231,6 +232,13 @@ useEffect(() => {
           <li>• Upgrade your plan to enable billing</li>
           <li>• Contact administrator</li>
         </ul>
+
+        <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
 
         <button
           className="bg-indigo-600 text-white px-4 py-2 rounded"

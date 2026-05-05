@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './FacilityLimitChecker.css'; // Import CSS for styling
 import { supabase } from "@/integrations/supabase/client";
+import { PhoneIcon } from 'lucide-react';
 
 const FacilityLimitChecker = () => {
   const [loading, setLoading] = useState(false);
@@ -360,7 +361,7 @@ const { data: sessionData } = await supabase.auth.getSession();
 
           {/* Subscription Details */}
           <div className="subscription-details">
-            <h3>?? Subscription Details</h3>
+            <h3> Subscription Details</h3>
             <div className="details-grid">
               <div className="detail-item">
                 <span className="label">Plan:</span>
@@ -396,7 +397,7 @@ const { data: sessionData } = await supabase.auth.getSession();
           {/* Upgrade Recommendations */}
           {!limits.allowed && limits.recommendations && (
             <div className="recommendations">
-              <h3>?? Recommendations</h3>
+              <h3> Recommendations</h3>
               <ul>
                 {limits.recommendations.map((rec, idx) => (
                   <li key={idx}>{rec}</li>
@@ -405,6 +406,13 @@ const { data: sessionData } = await supabase.auth.getSession();
               <button className="upgrade-button">Upgrade Subscription</button>
             </div>
           )}
+
+          <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
         </div>
       )}
     </div>

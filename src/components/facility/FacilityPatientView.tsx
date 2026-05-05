@@ -2386,6 +2386,7 @@ import {
   LucideAppWindow,
   Telescope,
   ClipboardList,
+  PhoneIcon,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import UploadPrescriptionForm from "@/components/doctor/UploadPrescriptionForm";
@@ -5026,6 +5027,13 @@ if (limitExceeded && viewType === "patient" && userRole === "doctor" && patient 
             </Button>
           </div> */}
 
+          <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
+
           <Button variant="ghost" className="w-full mt-2" onClick={() => navigate(-1)}>
             Go Back
           </Button>
@@ -5074,6 +5082,13 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
               </ul>
             </div>
           )}
+
+          <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
 
           {/* <div className="flex gap-3 pt-4">
             <Button className="flex-1" onClick={() => window.open("/pricing", "_blank")}>

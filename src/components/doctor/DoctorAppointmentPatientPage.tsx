@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock, Video, MapPin, FileText, User, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Video, MapPin, FileText, User, Mail, Phone, PhoneIcon } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 import { format } from "date-fns";// adjust path if needed
 import { toast } from "@/hooks/use-toast";
@@ -239,6 +239,13 @@ export default function DoctorAppointmentPatientPage() {
                 The usage above shows both consultation types. Your current appointment is a{" "}
                 <strong>{isTele ? "teleconsultation" : "clinical (in-person)"}</strong> – ensure you have remaining quota for that type.
               </p>
+
+              <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
             </div>
           </CardContent>
         </Card>

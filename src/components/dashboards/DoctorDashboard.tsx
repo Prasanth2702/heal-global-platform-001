@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File, IndianRupee} from "lucide-react";
+import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File, IndianRupee, PhoneIcon} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
@@ -964,14 +964,22 @@ if (activeTab !== "overview") {
     </CardTitle>
 
     <CardDescription className="text-lg text-gray-700 space-y-1">
-      <p>
+      {/* <p>
         <span className="font-semibold text-doctor"><a
                         href="mailto:support@pmhssmarthealth.com"
                         className="text-blue-600"
                       >
                         support@pmhssmarthealth.com
                       </a></span>
-      </p>
+      </p> */}
+
+      <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
+
 
       <p className="text-lg text-muted-foreground">
         You can manage your appointments based on your current subscription plan.

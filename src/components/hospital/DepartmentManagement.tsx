@@ -351,6 +351,7 @@ import {
   Activity,
   ChevronRight,
   ChevronLeft,
+  PhoneIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -1897,7 +1898,16 @@ const getSubmitHandler = () => {
               <DialogHeader>
                 <DialogTitle>Subscription Required</DialogTitle>
                 <DialogDescription>
+                  <>
                   {limitMessage}
+
+                  <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+
+<p className="flex items-center justify-center">
+  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
+  <span className="text-primary">+91 98868 81149</span>
+</p>
+</>
                 </DialogDescription>
                 <Button onClick={() => setIsAddDialogOpen(false)}>Close</Button>
               </DialogHeader>

@@ -798,7 +798,8 @@ selectedDate.setDate(
                                                                       handleDepartmentBookNow(selectedSlot!, selectedDay, department)
                                                                     }
                                                                   >
-                                                                    Book Appointment without Payment
+                                                                    Book Appointment
+                                                                    {/* Book Appointment without Payment */}
                                                                   </Button>
                                                                 </>
                                                               )}

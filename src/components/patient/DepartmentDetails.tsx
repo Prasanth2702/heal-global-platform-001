@@ -131,6 +131,29 @@ const handleConfirmBooking = async () => {
 
   try {
     setIsBooking(true);
+
+    const bookingDateObj = new Date(bookingInfo.booking_date);
+
+const dayOfWeek = bookingDateObj.toLocaleDateString("en-US", {
+  weekday: "long",
+});
+
+const slotStatus = await checkSlotAvailability(
+  bookingInfo.slot_id,
+  bookingInfo.booking_date,
+  dayOfWeek // ✅ correct
+);
+
+    if (!slotStatus || slotStatus.count <= 0) {
+      toast({
+        title: "Slot Full",
+        description: "This time slot is already fully booked.",
+        variant: "destructive",
+      });
+      setIsBooking(false);
+      return;
+    }
+
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -220,6 +243,47 @@ const handleConfirmBooking = async () => {
     const isClinicalLimitReached =
   limits?.limits?.clinical &&
   limits.limits.clinical.allowed === false;
+
+
+
+  // useEffect(() => {
+  //     if (slot) {
+  //       checkSlotAvailability(slot.id, data); // 🔥 AUTO CALL
+  //     }
+  //   }, [slot]);
+    const checkSlotAvailability = async (slotId: string, date: string, dayOfWeek:string) => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    const response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/get-time-slot-counts",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          time_slot_id: slotId,
+          date: date,
+          day_Of_Week: dayOfWeek.toLowerCase()
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "Failed to check slot");
+    }
+
+    return result; // contains count, booked_count, max_appointments
+  } catch (error) {
+    console.error("Slot check error:", error);
+    return null;
+  }
+};
 
   // const fetchDepartmentDetails = async () => {
   //   setLoading(true);
@@ -806,7 +870,8 @@ selectedDate.setDate(
                                                                       handleDepartmentBookNow(selectedSlot!, selectedDay, department)
                                                                     }}
                                                                   >
-                                                                    Book Appointment without Payment
+                                                                    Book Appointment 
+                                                                    {/* Book Appointment without Payment */}
                                                                   </Button>
                                                                 </>
                                                               )}

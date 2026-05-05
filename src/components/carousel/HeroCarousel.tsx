@@ -979,14 +979,14 @@ const defaultHeroSlides: CarouselSlide[] = [
     id: '2',
     title: "Gen Z era Unified Medical Platform",
     subtitle: "Complete Healthcare Ecosystem",
-    description: "AI-enhanced, multilingual, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities.",
+    description: "AI-enhanced, compliance-ready digital ecosystem connecting patients, medical professionals, and healthcare facilities.",
     image: heroImage,
     ctaText: "Get Started Today",
     secondaryCtaText: "Learn More",
     ctaLink: "/register/patient",
     badge: "FEATURED",
     badgeColor: "green",
-    features: ["AI-Enhanced", "Multilingual", "Compliance-Ready"],
+    features: ["AI-Enhanced", "Compliance-Ready"],
     stats: { primary: "50+", primaryLabel: "Countries", secondary: "1M+", secondaryLabel: "Users" },
     gradient: "from-green-600 via-emerald-600 to-teal-600",
     isActive: true,
@@ -1195,7 +1195,7 @@ const HeroCarousel = () => {
                           </div>
                           
                           {/* Stats */}
-                          <div className="flex items-center space-x-8 mb-8">
+                          {/* <div className="flex items-center space-x-8 mb-8">
                             <div className="text-center">
                               <div className="text-3xl md:text-4xl font-bold">{slide.stats.primary}</div>
                               <div className="text-sm text-white/80">{slide.stats.primaryLabel}</div>
@@ -1204,7 +1204,7 @@ const HeroCarousel = () => {
                               <div className="text-3xl md:text-4xl font-bold">{slide.stats.secondary}</div>
                               <div className="text-sm text-white/80">{slide.stats.secondaryLabel}</div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                         
                         {/* Right side icons */}

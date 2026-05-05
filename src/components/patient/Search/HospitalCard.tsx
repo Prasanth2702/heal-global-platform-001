@@ -457,7 +457,8 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                           disabled={!selectedSlot}
                           onClick={() => onDepartmentBookNow(selectedSlot!, selectedDay, dept)}
                         >
-                          Book Appointment without Payment
+                          Book Appointment
+                          {/* Book Appointment without Payment */}
                         </Button>
                       </>
                     )}

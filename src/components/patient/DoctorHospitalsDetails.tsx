@@ -2144,7 +2144,8 @@ selectedDate.setDate(
     }
   }}
 >
-  Book Appointment without Payment
+  Book Appointment
+  {/* Book Appointment without Payment */}
 </Button>
                                                     </>
                                                   )}

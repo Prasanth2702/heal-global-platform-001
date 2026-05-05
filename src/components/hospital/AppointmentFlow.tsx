@@ -409,6 +409,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import Loader1 from "../ui/Loader1";
+import { Link } from "react-router-dom";
 
 interface AppointmentFlow {
   id: string;
@@ -438,6 +439,7 @@ const AppointmentFlow = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [departments, setDepartments] = useState<string[]>([]);
   const [facilityId, setFacilityId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Fetch facility ID on mount
   // useEffect(() => {
@@ -475,6 +477,7 @@ useEffect(() => {
 
     if (!profile) return;
 
+setUserRole(profile.role);
     /* -----------------------------
     STEP 2 : ADMIN
     ------------------------------*/
@@ -1258,12 +1261,17 @@ const handleFetchError = (error: any) => {
   //     </Card>
   //   </div>
   // );
+  const appointmentRoute =
+   userRole=== "hospital_admin"
+    ? "/dashboard/facility/appointments"
+    : "/dashboard/staff/appointments";
 
   return (
   <div className="space-y-4 sm:space-y-6">
     {/* Stats Cards - responsive grid */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <Card>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
+      <Link to={appointmentRoute} className="block cursor-pointer">
+      <Card className="bg-blue-50 border-blue-100">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">Total Appointments</CardTitle>
           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -1273,8 +1281,9 @@ const handleFetchError = (error: any) => {
           <p className="text-xs text-muted-foreground">Today's schedule</p>
         </CardContent>
       </Card>
+      </Link>
 
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">Checked In</CardTitle>
           <User className="h-4 w-4 text-muted-foreground" />
@@ -1283,9 +1292,9 @@ const handleFetchError = (error: any) => {
           <div className="text-xl sm:text-2xl font-bold">{checkedInCount}</div>
           <p className="text-xs text-muted-foreground">Waiting for consultation</p>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">In Consultation</CardTitle>
           <AlertCircle className="h-4 w-4 text-muted-foreground" />
@@ -1294,9 +1303,9 @@ const handleFetchError = (error: any) => {
           <div className="text-xl sm:text-2xl font-bold">{inConsultationCount}</div>
           <p className="text-xs text-muted-foreground">Currently with doctor</p>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">Avg. Wait Time</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -1305,7 +1314,7 @@ const handleFetchError = (error: any) => {
           <div className="text-xl sm:text-2xl font-bold">{Math.round(averageWaitTime) || 0}min</div>
           <p className="text-xs text-muted-foreground">Average waiting time</p>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
 
     {/* Filters - responsive wrap */}
@@ -1345,8 +1354,8 @@ const handleFetchError = (error: any) => {
       </Select>
     </div>
 
-    <Card>
-      <CardHeader>
+    <Card >
+      <CardHeader className="bg-green-100">
         <CardTitle className="flex items-center text-base sm:text-lg">
           <Calendar className="mr-2 h-5 w-5" />
           Patient Flow & Check-ins
@@ -1359,8 +1368,8 @@ const handleFetchError = (error: any) => {
         {/* Desktop table view - hidden on mobile/tablet */}
         <div className="hidden md:block overflow-x-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
+            <TableHeader className="bg-blue-100">
+              <TableRow >
                 <TableHead>Patient Info</TableHead>
                 <TableHead>Department & Doctor</TableHead>
                 <TableHead>Appointment Time</TableHead>
@@ -1372,14 +1381,14 @@ const handleFetchError = (error: any) => {
             </TableHeader>
             <TableBody>
               {filteredAppointments.length === 0 ? (
-                <TableRow>
+                <TableRow className="bg-gray-150">
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No appointments found
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAppointments.map((appointment) => (
-                  <TableRow key={appointment.id}>
+                  <TableRow key={appointment.id} className="bg-gray-150">
                     <TableCell>
                       <div>
                         <p className="font-medium">{appointment.patientName}</p>
@@ -1479,7 +1488,7 @@ const handleFetchError = (error: any) => {
             </div>
           ) : (
             filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="border rounded-lg p-4 bg-white shadow-sm space-y-3">
+              <div key={appointment.id} className="border rounded-lg p-4 bg-white shadow-sm space-y-3hover:bg-gray-50 transition">
                 {/* Patient & time row */}
                 <div className="flex justify-between items-start">
                   <div>

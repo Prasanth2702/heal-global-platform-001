@@ -656,8 +656,8 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
           <FacilityProfile />
         </TabsContent> */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <Card className="bg-orange-100">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Departments</CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -668,7 +668,7 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-green-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -679,7 +679,7 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -710,7 +710,7 @@ const trackButtonClick = (buttonName: string, additionalData = {}) => {
                 <div className="text-2xl font-bold">{overviewStats.activePatients}</div>
                 <p className="text-xs text-muted-foreground">Under treatment</p>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

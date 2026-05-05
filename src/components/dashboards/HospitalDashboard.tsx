@@ -19,6 +19,7 @@ import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import CreateBilling from "../facility/CreateBilling";
 import { FacilityLimitDashboard } from "../facility/limitchecker/FacilityLimitDashboard";
+import { Link } from "react-router-dom";
 
 interface Appointment {
   id: string;
@@ -375,23 +376,28 @@ return (
       {/* Desktop/Tablet tab bar - hidden on mobile */}
       <div className="hidden md:block">
         <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
-          <TabsTrigger value="overview" className="flex items-center space-x-2" onClick={() => trackButtonClick("Overview Tab")}>
+          <TabsTrigger value="overview" className="flex items-center space-x-2  data-[state=active]:bg-blue-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Overview Tab")}>
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="departments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Departments Tab")}>
+          <TabsTrigger value="departments" className="flex items-center space-x-2 data-[state=active]:bg-yellow-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Departments Tab")}>
             <Building2 className="h-4 w-4" />
             <span className="hidden sm:inline">Departments</span>
           </TabsTrigger>
-          <TabsTrigger value="staff" className="flex items-center space-x-2" onClick={() => trackButtonClick("Staff Tab")}>
+          <TabsTrigger value="staff" className="flex items-center space-x-2 data-[state=active]:bg-green-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Staff Tab")}>
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Staff</span>
           </TabsTrigger>
-          <TabsTrigger value="timeslots" className="flex items-center space-x-2" onClick={() => trackButtonClick("Time Slots Tab")}>
+          <TabsTrigger value="timeslots" className="flex items-center space-x-2 data-[state=active]:bg-orange-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Time Slots Tab")}>
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Time Slots</span>
           </TabsTrigger>
-          <TabsTrigger value="appointments" className="flex items-center space-x-2" onClick={() => trackButtonClick("Appointments Tab")}>
+          <TabsTrigger value="appointments" className="flex items-center space-x-2 data-[state=active]:bg-red-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Appointments Tab")}>
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Appointments</span>
           </TabsTrigger>
@@ -399,7 +405,8 @@ return (
             <Calendar1 className="h-4 w-4" />
             <span className="hidden sm:inline">My Billing Item</span>
           </TabsTrigger> */}
-          <TabsTrigger value="profile" className="flex items-center space-x-2" onClick={() => trackButtonClick("Profile Tab")}>
+          <TabsTrigger value="profile" className="flex items-center space-x-2 data-[state=active]:bg-blue-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
           </TabsTrigger>
@@ -485,7 +492,8 @@ return (
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
+            <Link to="/dashboard/facility/departments" className="block cursor-pointer">
+            <Card className="bg-orange-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Departments</CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -495,8 +503,9 @@ return (
                 <p className="text-xs text-muted-foreground">Active departments</p>
               </CardContent>
             </Card>
-
-            <Card>
+            </Link>
+<Link to="/dashboard/facility/staff" className="block cursor-pointer">
+            <Card className="bg-green-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -506,8 +515,8 @@ return (
                 <p className="text-xs text-muted-foreground">Medical professionals</p>
               </CardContent>
             </Card>
-
-            <Card>
+</Link>
+            {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -516,9 +525,9 @@ return (
                 <div className="text-2xl font-bold">{overviewStats.todayAppointments}</div>
                 <p className="text-xs text-muted-foreground">Scheduled for today</p>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card>
+            {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -527,9 +536,9 @@ return (
                 <div className="text-2xl font-bold">₹{(overviewStats.monthlyRevenue / 100000).toFixed(1)}L</div>
                 <p className="text-xs text-muted-foreground">This month</p>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card>
+            {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -538,18 +547,18 @@ return (
                 <div className="text-2xl font-bold">{overviewStats.activePatients}</div>
                 <p className="text-xs text-muted-foreground">Under treatment</p>
               </CardContent>
-            </Card>
-            <Card>
+            </Card> */}
+            <Card className="bg-gradient-facility">
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium">Page Views</CardTitle>
+    <CardTitle className="text-sm font-medium text-white">Website Views</CardTitle>
     <Activity className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
-    <div className="text-2xl font-bold">
+    <div className="text-2xl font-bold text-white">
       {loading ? "..." : overviewStats.pageViews}
     </div>
-    <p className="text-xs text-muted-foreground">
-      Today's patient visits
+    <p className="text-xs text-muted-foreground text-white">
+      Today's website visits
     </p>
   </CardContent>
 </Card>

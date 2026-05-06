@@ -1529,7 +1529,12 @@ const getLiveStatus = (booking: BedBooking) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {bookings.filter(b => b.status.toLowerCase() === "confirmed").length}
+                    {bookings.filter(b => {
+  const status = b.status?.toLowerCase();
+  return status === "occupied" ;
+}).length}
+                    {/* {bookings.filter(b => b.status.toLowerCase() === "occupied").length} */}
+                    {/* {bookings.filter(b => b.status.toLowerCase() === "confirmed").length} */}
                   </p>
                   <p className="text-sm text-gray-500">Confirmed</p>
                 </div>
@@ -1545,7 +1550,12 @@ const getLiveStatus = (booking: BedBooking) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {bookings.filter(b => b.status.toLowerCase() === "pending").length}
+                    {bookings.filter(b => {
+  const status = b.status?.toLowerCase();
+  return status === "reserved" || status === "pending";
+}).length}
+                    {/* {bookings.filter(b => b.status.toLowerCase() === "reserved").length} */}
+                    {/* {bookings.filter(b => b.status.toLowerCase() === "pending").length} */}
                   </p>
                   <p className="text-sm text-gray-500">Pending</p>
                 </div>

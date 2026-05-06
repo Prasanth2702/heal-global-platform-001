@@ -97,6 +97,7 @@ const createSlug = (text: string) => {
     .replace(/^-+|-+$/g, '');
 };
 const [isBookingBlocked, setIsBookingBlocked] = useState(false);
+
 useEffect(() => {
   if (facility?.id) {
     checkBookingStatus(facility.id);
@@ -144,7 +145,11 @@ const slotStatus = await checkSlotAvailability(
   dayOfWeek // ✅ correct
 );
 
-    if (!slotStatus || slotStatus.count <= 0) {
+    // if (!slotStatus || slotStatus.count <= 0) {
+    if (
+  !slotStatus ||
+  slotStatus.booked_count >= slotStatus.max_appointments
+) {
       toast({
         title: "Slot Full",
         description: "This time slot is already fully booked.",
@@ -411,7 +416,7 @@ if (slotError) {
     const [bookings, setBookings] = useState<any[]>([]);
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
     const [selectedDay, setSelectedDay] = useState<number>(0);
-    
+    const [slotAvailability, setSlotAvailability] = useState<Record<string, any>>({});
   
  const toggleExpandDepartment = async (department: Department) => {
     if (expandedTimeSlotId === department.id) {
@@ -505,6 +510,40 @@ newDate.setDate(newDate.getDate() + dayOffset);
     setBookingInfo(bookingData);
     setConfirmOpen(true);
   };
+
+  const fetchAvailabilityForDay = async (dayIndex: number) => {
+  const dayOffset = dayIndex + 1;
+
+  const selectedDate = new Date();
+  selectedDate.setDate(selectedDate.getDate() + dayOffset);
+
+  const dateISO = selectedDate.toISOString().split("T")[0];
+
+  const dayOfWeek = selectedDate.toLocaleDateString("en-US", {
+    weekday: "long",
+  });
+
+  const slotsForDay = timeSlots.filter(
+    (s) => s.day_of_week === dayOfWeek
+  );
+
+  const results: Record<string, any> = {};
+
+  await Promise.all(
+    slotsForDay.map(async (slot) => {
+      const res = await checkSlotAvailability(
+        slot.id,
+        dateISO,
+        dayOfWeek
+      );
+      if (res) results[slot.id] = res;
+    })
+  );
+
+  setSlotAvailability(results);
+
+  return { selectedDate, dateISO, dayOfWeek };
+};
 
   if (loading) {
     return (
@@ -726,9 +765,11 @@ newDate.setDate(newDate.getDate() + dayOffset);
                                                                       return (
                                                                         <div key={index} className="min-w-[110px]">
                                                                           <button
-                                                                            onClick={() => {
+                                                                            onClick={ async () => {
                                                                               setSelectedDay(index);
                                                                               setSelectedSlot(null);
+                                                                               await fetchAvailabilityForDay(index);
+  
                                                                             }}
                                                                             className={`w-full px-3 py-2 rounded-lg text-center transition
                                                                               ${
@@ -742,9 +783,12 @@ newDate.setDate(newDate.getDate() + dayOffset);
                                                                                   : "border-gray-200"
                                                                               }`}
                                                                           >
+
+                                                                            
                                                                             <div className="text-xs font-medium">
                                                                               {label}
                                                                             </div>
+                                                                            
                                                                             <div className="text-lg font-bold mt-1">
                                                                               {dayNumber}
                                                                             </div>
@@ -763,6 +807,10 @@ newDate.setDate(newDate.getDate() + dayOffset);
                                                                       );
                                                                     })}
                                                                   </div>
+
+                
+
+
                               
                                                                   <div className="mt-4">
                                                                     {(() => {
@@ -810,7 +858,7 @@ selectedDate.setDate(
                               
                                                                       return (
                                                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                                                          {availableSlots.map((slot) => {
+                                                                          {/* {availableSlots.map((slot) => {
                                                                             const isSelected =
                                                                               selectedSlot?.id === slot.id;
                                                                             return (
@@ -843,9 +891,137 @@ selectedDate.setDate(
                                                                                 </div>
                                                                               </div>
                                                                             );
-                                                                          })}
+                                                                          })} */}
+                                                                          {availableSlots.map((slot) => {
+  const availability = slotAvailability[slot.id];
+
+  const isFull =
+    availability &&
+    availability.booked_count >= availability.max_appointments;
+
+  const remaining =
+    availability
+      ? availability.max_appointments - availability.booked_count
+      : null;
+
+  const isSelected = selectedSlot?.id === slot.id;
+
+  return (
+    <div
+      key={slot.id}
+      onClick={() => {
+        if (!isFull) setSelectedSlot(slot);
+      }}
+      className={`
+        p-2 rounded-md text-sm transition
+        ${slot.slot_type === "clinic" ? "bg-green-50" : "bg-blue-50"}
+        ${isFull ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        ${isSelected ? "border-2 border-green-600" : "border border-gray-300"}
+      `}
+    >
+      <div className="font-medium">
+        {formatTimePretty(slot.start_time)} -{" "}
+        {formatTimePretty(slot.end_time)}
+      </div>
+
+      <div className="text-[11px] text-gray-600 capitalize">
+        {slot.slot_type}
+      </div>
+
+      {/* ✅ STATUS */}
+      <div className="text-[11px] mt-1 font-semibold">
+        {availability ? (
+          isFull ? (
+            <span className="text-red-500">Full</span>
+          ) : (
+            <span className="text-green-600">
+              {remaining} left
+            </span>
+          )
+        ) : (
+          <span className="text-gray-400">Checking...</span>
+        )}
+      </div>
+
+                                           <div className="text-[11px] mt-1 font-semibold">
+  {availability ? (
+    availability.booked_count >= availability.max_appointments ? (
+      <span className="text-red-500">
+        Full ({availability.booked_count}/{availability.max_appointments})
+      </span>
+    ) : (
+      <span className="text-green-600">
+        {availability.booked_count}/{availability.max_appointments} booked
+      </span>
+    )
+  ) : (
+    <span className="text-gray-400">Checking...</span>
+  )}
+</div>
+      
+    </div>
+  );
+})}
                               
-                                                                          {availableSlots.length === 0 && (
+                              {/* {availableSlots.map((slot) => {
+  const availability = slotAvailability[slot.id];
+
+  const isFull =
+    availability &&
+    availability.booked_count >= availability.max_appointments;
+
+  const remaining =
+    availability
+      ? availability.max_appointments - availability.booked_count
+      : null;
+
+  const isSelected = selectedSlot?.id === slot.id;
+
+  return (
+    <div  className={`w-full px-3 py-2 rounded-lg text-center transition
+                                                                              bg-green text-white-700
+                                                                             border-green-200
+                                                                              }`}>
+     <div className="text-[11px] mt-1 font-semibold">
+        {availability ? (
+          isFull ? (
+            <span className="text-red-500">Full</span>
+          ) : (
+            <span className="text-green-600">
+              {remaining} left
+            </span>
+          )
+        ) : (
+          <span className="text-gray-400">Checking...</span>
+        )}
+      </div>
+
+                                             <div className="text-[11px] mt-1 font-semibold">
+  {availability ? (
+    availability.booked_count >= availability.max_appointments ? (
+      <span className="text-red-500">
+        Full ({availability.booked_count}/{availability.max_appointments})
+      </span>
+    ) : (
+      <span className="text-green-600">
+        {availability.booked_count}/{availability.max_appointments} booked
+      </span>
+    )
+  ) : (
+    <span className="text-gray-400">Checking...</span>
+  )}
+</div>
+</div>
+                                                                    )})} */}
+                              
+                                                                          {/* {availableSlots.length === 0 && ( */}
+                                                                            {availableSlots.filter((slot) => {
+  const availability = slotAvailability[slot.id];
+  return (
+    availability &&
+    availability.booked_count < availability.max_appointments
+  );
+}).length === 0 && (
                                                                             <p className="text-red-500 text-sm col-span-full text-center">
                                                                               No available slots for this day.
                                                                             </p>
@@ -854,7 +1030,8 @@ selectedDate.setDate(
                                                                       );
                                                                     })()}
                                                                   </div>
-                              
+
+                                                                  
                                                                   {!selectedSlot && (
                                                                     <p className="text-gray-500 text-xs mt-2">
                                                                       Please select a slot to book an appointment.

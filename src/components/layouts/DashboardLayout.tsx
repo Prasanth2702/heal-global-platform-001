@@ -268,7 +268,7 @@ const checkBedManagementDepartment = async () => {
           label: "Payment details",
           icon: CreditCard,
         },
-         { path: "/dashboard/doctor/banner", label: "Banner", icon: Banana },
+        //  { path: "/dashboard/doctor/banner", label: "Banner", icon: Banana },
       ],
   //     routes1: [
   //     {

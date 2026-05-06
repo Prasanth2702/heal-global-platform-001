@@ -5481,12 +5481,12 @@ const ViewFacility: React.FC = () => {
                     Patient Bookings
                   </Nav.Link>
                 </Nav.Item>
-                <Nav.Item>
+                {/* <Nav.Item>
                   <Nav.Link eventKey="reports" className="d-flex align-items-center">
                     <Activity size={18} className="me-2" />
                     Analytics & Reports
                   </Nav.Link>
-                </Nav.Item>
+                </Nav.Item> */}
               </Nav>
               
             </Card.Header>

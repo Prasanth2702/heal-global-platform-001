@@ -977,20 +977,47 @@ const ForgotPassword = () => {
 const [showNewPassword, setShowNewPassword] = useState(false);
 const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // Check if we have a recovery token in the URL hash (Supabase puts it there)
-  useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get("access_token");
-    const type = hashParams.get("type");
+  // useEffect(() => {
+  //   const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  //   const accessToken = hashParams.get("access_token");
+  //   const type = hashParams.get("type");
 
-    if (accessToken && type === "recovery") {
-      // Supabase will already have set the session, but we ensure it
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: hashParams.get("refresh_token") || "",
-      });
-      setStep("newPassword");
-    }
-  }, []);
+  //   if (accessToken && type === "recovery") {
+  //     // Supabase will already have set the session, but we ensure it
+  //     supabase.auth.setSession({
+  //       access_token: accessToken,
+  //       refresh_token: hashParams.get("refresh_token") || "",
+  //     });
+  //     setStep("newPassword");
+  //   }
+  // }, []);
+
+  useEffect(() => {
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const accessToken = hashParams.get("access_token");
+  const refreshToken = hashParams.get("refresh_token");
+  const type = hashParams.get("type");
+
+  if (accessToken && type === "recovery") {
+    // Set session explicitly
+    supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken || "",
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Session error:", error);
+        toast({
+          title: "Invalid or expired link",
+          description: "Please request a new password reset link.",
+          variant: "destructive",
+        });
+        navigate(`/login/${userType}`);
+      } else {
+        setStep("newPassword");
+      }
+    });
+  }
+}, [userType, navigate, toast]);
 
   const userTypeConfig: Record<
     string,

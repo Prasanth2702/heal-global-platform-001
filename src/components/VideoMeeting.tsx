@@ -1077,6 +1077,46 @@ if (appointmentContext) {
       meetingInitialized.current = false;
     };
   }, [apiKey, meetingId, sessionId, name, micEnabled, webcamEnabled, containerId, isHost, onMeetingLeave, containerReady, meetingTitle, isRejoining, contextLoaded]);
+const handleRefreshData = async () => {
+  try {
+    setLoadingDetails(true);
+
+    // Refresh documents
+    await fetchDocuments();
+
+    // Refresh appointment context
+    const context = await getAppointmentContext();
+
+    // Refresh details based on role
+    if (userRole === "doctor" && context?.patient_id) {
+      await fetchEnhancedPatientDetails(context.patient_id);
+    }
+
+    if (userRole === "patient" && context?.doctor_id) {
+      await fetchEnhancedDoctorDetails(context.doctor_id);
+    }
+
+    // Refresh facility
+    if (context?.facility_id) {
+      await fetchFacilityDetails(context.facility_id);
+    }
+
+    toast({
+      title: "Refreshed",
+      description: "Data updated successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Error",
+      description: "Failed to refresh data",
+      variant: "destructive",
+    });
+  } finally {
+    setLoadingDetails(false);
+  }
+};
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", position: "relative" }}>
@@ -1093,6 +1133,8 @@ if (appointmentContext) {
               👤 Doctor Information
             </button>
           )}
+
+         
         </div>
       </div>
 
@@ -1105,6 +1147,19 @@ if (appointmentContext) {
           <div style={{ backgroundColor: "white", borderRadius: "8px", width: "90%", maxWidth: "800px", maxHeight: "80vh", overflow: "auto", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3>{userRole === "doctor" ? "Patient Information" : "Doctor Information"}</h3>
+               <button
+    onClick={handleRefreshData}
+    style={{
+      padding: "4px 10px",
+      backgroundColor: "#16a34a",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+    }}
+  >
+    🔄 Refresh
+  </button>
               <button onClick={() => setShowDetailsModal(false)} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer" }}>×</button>
             </div>
             {loadingDetails ? <Loader2 /> : renderDetailsContent(userRole === "doctor" ? "patient" : "doctor")}
@@ -1169,6 +1224,19 @@ if (appointmentContext) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", borderBottom: "1px solid #dee2e6" }}>
               <h3>{selectedDocument.name}</h3>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                 <button
+    onClick={handleRefreshData}
+    style={{
+      padding: "4px 10px",
+      backgroundColor: "#16a34a",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+    }}
+  >
+    🔄 Refresh
+  </button>
                 <button onClick={zoomOut} style={{ padding: "4px 8px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Zoom Out</button>
                 <span style={{ minWidth: "60px", textAlign: "center" }}>{Math.round(zoomLevel * 100)}%</span>
                 <button onClick={zoomIn} style={{ padding: "4px 8px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Zoom In</button>
@@ -1217,6 +1285,19 @@ if (appointmentContext) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", borderBottom: "1px solid #dee2e6" }}>
               <h3>AI Summary: {selectedDocument?.name}</h3>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                 <button
+    onClick={handleRefreshData}
+    style={{
+      padding: "4px 10px",
+      backgroundColor: "#16a34a",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+    }}
+  >
+    🔄 Refresh
+  </button>
                 <button onClick={() => { setShowSummaryModal(false); setShowDocumentViewerModal(false); setShowDetailsModal(false)}} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer" }}>×</button>
               </div>
             </div>

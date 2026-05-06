@@ -1907,7 +1907,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, Phone, Globe, Heart, Shield, Sparkles, User, Mail, Lock, MapPin, PhoneCall, AlertCircle, Pill, Droplet, ArrowLeft, ArrowRight, Upload, Camera, Check } from 'lucide-react';
+import { CalendarIcon, Phone, Globe, Heart, Shield, Sparkles, User, Mail, Lock, MapPin, PhoneCall, AlertCircle, Pill, Droplet, ArrowLeft, ArrowRight, Upload, Camera, Check, EyeOff, Eye } from 'lucide-react';
 import AuthLayout from './AuthLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Patient } from '@/Models/Patient';
@@ -2098,7 +2098,8 @@ const PatientRegistration = () => {
   const [profileImage, setProfileImage] = useState<string>("");
   const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: string}>>([]);
   const [user, setUser] = useState<any>(null);
-  
+  const [showPassword, setShowPassword] = useState(false);
+const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   // Store Step 1 Data After Submission
   const [step1Completed, setStep1Completed] = useState(false);
   const [savedUserId, setSavedUserId] = useState<string>('');
@@ -3214,7 +3215,7 @@ const earlyCompleteRegistration = async () => {
         {errors.phoneNumber && <p className="text-red-500 text-xs">{errors.phoneNumber}</p>}
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">
           Password
         </Label>
@@ -3242,7 +3243,64 @@ const earlyCompleteRegistration = async () => {
           placeholder="••••••"
         />
         {errors.repeatPassword && <p className="text-red-500 text-xs">{errors.repeatPassword}</p>}
-      </div>
+      </div> */}
+      {/* Password Field with Eye Toggle */}
+<div className="space-y-2">
+  <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">
+    Password
+  </Label>
+  <div className="relative">
+    <Input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className={`border-2 ${errors.password ? "border-red-500" : "border-gray-200"} focus:border-blue-500 pr-10`}
+      placeholder="••••••"
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showPassword ? (
+        <EyeOff className="h-4 w-4" />
+      ) : (
+        <Eye className="h-4 w-4" />
+      )}
+    </button>
+  </div>
+  {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+</div>
+
+{/* Confirm Password Field with Eye Toggle */}
+<div className="space-y-2">
+  <Label htmlFor="repeatpassword" className="label-required text-sm font-semibold text-gray-700">
+    Confirm Password
+  </Label>
+  <div className="relative">
+    <Input
+      id="repeatpassword"
+      type={showRepeatPassword ? "text" : "password"}
+      value={repeatPassword}
+      onChange={(e) => setRepeatPassword(e.target.value)}
+      className={`border-2 ${errors.repeatPassword ? "border-red-500" : "border-gray-200"} focus:border-blue-500 pr-10`}
+      placeholder="••••••"
+    />
+    <button
+      type="button"
+      onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showRepeatPassword ? (
+        <EyeOff className="h-4 w-4" />
+      ) : (
+        <Eye className="h-4 w-4" />
+      )}
+    </button>
+  </div>
+  {errors.repeatPassword && <p className="text-red-500 text-xs">{errors.repeatPassword}</p>}
+</div>
 
       <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
         <span className="font-semibold">Password must contain:</span>

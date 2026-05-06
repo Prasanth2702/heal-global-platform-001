@@ -958,7 +958,7 @@ import AuthLayout from "./AuthLayout";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, Mail, ArrowLeft, Loader2, EyeOff, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ResetStep = "email" | "newPassword";
@@ -974,7 +974,8 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-
+const [showNewPassword, setShowNewPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // Check if we have a recovery token in the URL hash (Supabase puts it there)
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -1285,7 +1286,7 @@ const ForgotPassword = () => {
               </AlertDescription>
             </Alert>
 
-            <div>
+            {/* <div>
               <Label htmlFor="new-password">New Password</Label>
               <Input
                 id="new-password"
@@ -1312,7 +1313,56 @@ const ForgotPassword = () => {
                 required
                 disabled={loading}
               />
-            </div>
+            </div> */}
+
+            <div>
+  <Label htmlFor="new-password">New Password</Label>
+  <div className="relative">
+    <Input
+      id="new-password"
+      type={showNewPassword ? "text" : "password"}
+      value={newPassword}
+      onChange={(e) => setNewPassword(e.target.value)}
+      placeholder="Enter new password"
+      required
+      disabled={loading}
+      className="pr-10"
+    />
+    <button
+      type="button"
+      onClick={() => setShowNewPassword(!showNewPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+  <p className="text-xs text-muted-foreground mt-1">
+    Password must be at least 6 characters long
+  </p>
+</div>
+
+<div>
+  <Label htmlFor="confirm-password">Confirm New Password</Label>
+  <div className="relative">
+    <Input
+      id="confirm-password"
+      type={showConfirmPassword ? "text" : "password"}
+      value={confirmPassword}
+      onChange={(e) => setConfirmPassword(e.target.value)}
+      placeholder="Confirm new password"
+      required
+      disabled={loading}
+      className="pr-10"
+    />
+    <button
+      type="button"
+      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+</div>
 
             <Button
               type="submit"
@@ -1340,8 +1390,8 @@ const ForgotPassword = () => {
               <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
               <p className="text-muted-foreground">
                 Having trouble? Contact support at{" "}
-                <a href="mailto:support@example.com" className="text-primary hover:underline">
-                  support@example.com
+                <a href="support@pmhssmarthealth.com" className="text-primary hover:underline">
+                  support@pmhssmarthealth.com
                 </a>
               </p>
             </div>

@@ -2017,7 +2017,7 @@ import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import mixpanelInstance from "@/utils/mixpanel";
 import { Country, State } from "country-state-city";
-import { Camera, Check, Upload } from "lucide-react";
+import { Camera, Check, Eye, EyeOff, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -2221,12 +2221,15 @@ const FacilityRegistration = () => {
   const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: string}>>([]);
   const [user, setUser] = useState<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
-const [showMap, setShowMap] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
+const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const facilityTypes = [
     "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
     "Homeopathy Clinic", "Physiotherapy Center", "Dental Clinic",
     "Eye Care Center", "Maternity Home", "Nursing Home", "Rehabilitation Center"
   ];
+  
 
   const getDepartmentsByFacilityType = (facilityType: string) => {
     const departmentMap: { [key: string]: string[] } = {
@@ -3476,7 +3479,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         {renderFieldError('phoneNumber')}
       </div>
 
-      <div>
+      {/* <div>
         <Label className="label-required" htmlFor="password">Password</Label>
         <Input
           id="password"
@@ -3521,7 +3524,71 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           placeholder="Enter your password again"
         />
         {renderFieldError('repeatPassword')}
-      </div>
+      </div> */}
+      <div>
+  <Label className="label-required" htmlFor="password">Password</Label>
+  <div className="relative">
+    <Input
+      id="password"
+      value={password}
+      type={showPassword ? "text" : "password"}
+      onChange={(e) => {
+        setPassword(e.target.value);
+        if (touchedFields.password) {
+          const error = validateField('password', e.target.value);
+          setFieldErrors(prev => ({ ...prev, password: error }));
+        }
+        if (touchedFields.repeatPassword && repeatPassword) {
+          const error = validateField('repeatPassword', repeatPassword);
+          setFieldErrors(prev => ({ ...prev, repeatPassword: error }));
+        }
+      }}
+      onBlur={() => handleBlur('password')}
+      className={`pr-10 ${touchedFields.password && fieldErrors.password ? "border-red-500" : ""}`}
+      placeholder="Enter your password"
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+  {renderFieldError('password')}
+  <p className="text-xs text-gray-500 mt-1">
+    Password must contain: minimum 6 characters, 1 letter, 1 number, 1 special character (@$!%*?&)
+  </p>
+</div>
+
+<div>
+  <Label className="label-required" htmlFor="repeatpassword">Repeat Password</Label>
+  <div className="relative">
+    <Input
+      id="repeatpassword"
+      value={repeatPassword}
+      type={showRepeatPassword ? "text" : "password"}
+      onChange={(e) => {
+        setRepeatPassword(e.target.value);
+        if (touchedFields.repeatPassword) {
+          const error = validateField('repeatPassword', e.target.value);
+          setFieldErrors(prev => ({ ...prev, repeatPassword: error }));
+        }
+      }}
+      onBlur={() => handleBlur('repeatPassword')}
+      className={`pr-10 ${touchedFields.repeatPassword && fieldErrors.repeatPassword ? "border-red-500" : ""}`}
+      placeholder="Enter your password again"
+    />
+    <button
+      type="button"
+      onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showRepeatPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+  {renderFieldError('repeatPassword')}
+</div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>

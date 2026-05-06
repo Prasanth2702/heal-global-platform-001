@@ -2013,7 +2013,9 @@ import {
   Stethoscope, GraduationCap, Award, 
   Clock, Languages, IndianRupee, FileText,
   ArrowLeft, ArrowRight, Heart, Shield, Sparkles,
-  Calendar, BookOpen, Briefcase, Camera, Upload, CheckCircle
+  Calendar, BookOpen, Briefcase, Camera, Upload, CheckCircle,
+  EyeOff,
+  Eye
 } from 'lucide-react';
 
 import AuthLayout from "./AuthLayout";
@@ -2178,7 +2180,9 @@ const DoctorRegistration = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 const [showMap, setShowMap] = useState(false);
-  // Time slot states
+const [showPassword, setShowPassword] = useState(false);
+const [showRepeatPassword, setShowRepeatPassword] = useState(false);  
+// Time slot states
   const [selectedDay, setSelectedDay] = useState<string>('Monday');
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const [slotsByDay, setSlotsByDay] = useState<{ [key: string]: { clinic: string[], tele: string[] } }>(
@@ -3446,7 +3450,7 @@ const earlyCompleteRegistration = async () => {
         {errors.phoneNumber && <p className="text-red-500 text-xs">{errors.phoneNumber}</p>}
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">
           Password
         </Label>
@@ -3474,7 +3478,54 @@ const earlyCompleteRegistration = async () => {
           placeholder="••••••"
         />
         {errors.repeatPassword && <p className="text-red-500 text-xs">{errors.repeatPassword}</p>}
-      </div>
+      </div> */}
+      <div className="space-y-2">
+  <Label htmlFor="password" className="label-required text-sm font-semibold text-gray-700">
+    Password
+  </Label>
+  <div className="relative">
+    <Input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className={`border-2 ${errors.password ? "border-red-500" : "border-gray-200"} pr-10`}
+      placeholder="••••••"
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+  {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+</div>
+
+<div className="space-y-2">
+  <Label htmlFor="repeatpassword" className="label-required text-sm font-semibold text-gray-700">
+    Confirm Password
+  </Label>
+  <div className="relative">
+    <Input
+      id="repeatpassword"
+      type={showRepeatPassword ? "text" : "password"}
+      value={repeatPassword}
+      onChange={(e) => setRepeatPassword(e.target.value)}
+      className={`border-2 ${errors.repeatPassword ? "border-red-500" : "border-gray-200"} pr-10`}
+      placeholder="••••••"
+    />
+    <button
+      type="button"
+      onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+    >
+      {showRepeatPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+  {errors.repeatPassword && <p className="text-red-500 text-xs">{errors.repeatPassword}</p>}
+</div>
 
       <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
         <span className="font-semibold">Password must contain:</span>

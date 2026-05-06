@@ -22,7 +22,6 @@ import PaymentSystemPage from "./pages/PaymentSystemPage";
 import ApiSetupPage from "./pages/ApiSetupPage";
 import QATestingPage from "./pages/QATestingPage";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
-import InstallPrompt from "./components/pwa/InstallPrompt";
 import MaintenancePage from "./pages/MaintenancePage";
 import { PopupProvider } from "@/contexts/popup-context";
 import DoctorProfile from "./components/doctor/DoctorProfile";
@@ -175,7 +174,6 @@ const App = () => {
               {/* <CookiePopup /> */}
               <Toaster />
               <Sonner />
-              {/* <InstallPrompt /> */}
               <BrowserRouter>
               <AutoLogoutWrapper/>
               {/* <Location/> */}

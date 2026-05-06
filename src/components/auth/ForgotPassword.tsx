@@ -1068,6 +1068,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const config =
     userTypeConfig[userType as keyof typeof userTypeConfig] ||
     userTypeConfig.patient;
+    
 
   // Determine which roles are allowed for this userType
   const getAllowedRoles = (): string[] => {

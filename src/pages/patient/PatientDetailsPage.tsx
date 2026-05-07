@@ -1474,8 +1474,8 @@ const getLiveStatus = (booking: BedBooking) => {
   const getCustomStatusMessage = (booking: BedBooking) => {
   const status = booking.status?.toLowerCase();
 
-  if (status === "occupied" || status === "admitted") {
-    return "Your booking is confirmed. Please call early morning to confirm your bed.";
+  if (status === "reserved" || status === "admitted") {
+    return "Your booking request has been successfully confirmed at the platform level. However, bed availability and admission readiness may change based on the facility’s real-time capacity and operational status. We strongly recommend contacting the facility directly before your visit to receive a pre-arrival confirmation regarding bed availability, admission timing, and any required documents or procedures. This will help ensure a smoother and more efficient admission process.";
   }
 
   return null;
@@ -1915,15 +1915,20 @@ const getLiveStatus = (booking: BedBooking) => {
                             </>
                           )}
                         </div>
-                      {customMessage && (
-  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-    <p className="text-green-700 text-sm font-medium">
+       {customMessage && (
+  <div className="mt-3 p-4 bg-green-100 border border-green-400 rounded-xl shadow-sm">
+    <p className="text-green-900 text-sm font-semibold leading-relaxed">
       {customMessage}
     </p>
-    <p className="text-sm">
-      <br />
-                                  <span className="text-gray-500"> Phone : {booking.facility_phone}</span>
-                                </p>
+
+    <div className="mt-3 pt-2 border-t border-green-300">
+      <p className="text-sm font-medium text-green-800">
+        Phone:
+        <span className="ml-1 text-gray-700 font-semibold">
+          {booking.facility_phone}
+        </span>
+      </p>
+    </div>
   </div>
 )}
                       </div>

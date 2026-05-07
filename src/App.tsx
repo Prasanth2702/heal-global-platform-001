@@ -104,6 +104,8 @@ import FacilityLimitCheckerView from "./components/facility/limitchecker/Facilit
 import FacilityPendingViewPage from "./components/facility/FacilityPendingViewPage";
 import FacilityPendingStaffViewPage from "./components/facility/FacilityPendingStaffViewPage";
 import ErrorBoundary from "./ErrorBoundary";
+import WardDashboardPageStaff from "./pages/WardDashboardPageStaff";
+import WardDashboardPageView from "./pages/WardDashboardPageView";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -285,7 +287,11 @@ const App = () => {
                   />
                   <Route
                     path="/dashboard/facility/ward-management"
-                    element={<WardDashboardPage />}
+                    element={<WardDashboardPageView />}
+                  />
+                  <Route
+                    path="/dashboard/staff/ward-management"
+                    element={<WardDashboardPageStaff />}
                   />
                   <Route path="/dashboard/staff/booking_bed" element={<ViewFacilityStaff />} />
                   {/* <Route

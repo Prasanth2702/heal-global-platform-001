@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import WardBedManagement from "@/components/ward-management/WardBedManagement";
 
 const WardDashboardPage = () => {
@@ -84,7 +83,6 @@ const WardDashboardPage = () => {
         .from("facility_staff")
         .select("facility_id")
         .eq("user_id", userId)
-        .eq("is_active", true)
         .maybeSingle();
 
       if (error) {
@@ -108,20 +106,17 @@ const WardDashboardPage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout userType="facility">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading facility information...</p>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   if (!facilityId) {
     return (
-      <DashboardLayout userType="facility">
         <div className="p-6">
           <div className="max-w-md mx-auto text-center">
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -141,12 +136,10 @@ const WardDashboardPage = () => {
             </div>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout userType="facility">
       <div className="p-4 md:p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -165,7 +158,6 @@ const WardDashboardPage = () => {
           />
         
       </div>
-    </DashboardLayout>
   );
 };
 

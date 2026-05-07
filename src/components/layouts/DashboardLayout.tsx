@@ -461,6 +461,16 @@ const checkBedManagementDepartment = async () => {
           label: "My Profile",
           icon: FileText,
         },
+          {
+        path: "/dashboard/staff/booking_bed",
+        label: "Bed Bookings",
+        icon: Bed,
+      },
+      // {
+      //   path: "/dashboard/staff/ward-management",
+      //   label: "Ward Management",
+      //   icon: WalletCards,
+      // },
       ],
 
     },

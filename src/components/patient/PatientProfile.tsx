@@ -43,6 +43,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
+import { Progress } from '../ui/progress';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -92,6 +93,66 @@ const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
 const [pendingDocs, setPendingDocs] = useState<File[]>([]);
 const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+const [storageUsage, setStorageUsage] = useState<{
+  total_gb: number;
+  storage_limit_gb: number;
+  utilization_percentage: number;
+  remaining_gb: number;
+  is_exceeded: boolean;
+  file_count: number;
+  loading: boolean;
+  error: string | null;
+  storage_limit_mb:number;
+}>({
+  total_gb: 0,
+  storage_limit_gb: 0,
+  utilization_percentage: 0,
+  remaining_gb: 0,
+  is_exceeded: false,
+  file_count: 0,
+  loading: false,
+  error: null,
+  storage_limit_mb:0,
+});
+
+// Add this effect after the fetchProfile effect (inside the same useEffect or separate)
+useEffect(() => {
+  const fetchStorageUsage = async () => {
+    if (!user?.id) return;
+    setStorageUsage(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("No access token");
+
+      const response = await fetch(
+        `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/calculate-storage-usage?owner_id=${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      setStorageUsage({
+        ...data,
+        loading: false,
+        error: null,
+      });
+    } catch (err: any) {
+      console.error("Storage usage error:", err);
+      setStorageUsage(prev => ({
+        ...prev,
+        loading: false,
+        error: err.message || "Could not load storage info",
+      }));
+    }
+  };
+
+  if (user?.id) fetchStorageUsage();
+}, [user]);
 
 
   useEffect(() => {
@@ -813,6 +874,99 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                           )}
                         </div>
                       )}
+
+                      {/* Storage Usage Indicator */}
+<div className="hidden md:block">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 min-w-[200px]">
+    {storageUsage.loading ? (
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        <span className="text-xs text-gray-500">Loading storage...</span>
+      </div>
+    ) : storageUsage.error ? (
+      <div className="text-xs text-red-500">⚠️ {storageUsage.error}</div>
+    ) : (
+      <>
+        <>
+  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-3 shadow-sm">
+    
+    {/* Header */}
+    <div className="flex justify-between items-center text-xs mb-2">
+      <span className="font-semibold text-blue-900">
+        Storage Utilization
+      </span>
+
+      <span
+        className={`font-medium px-2 py-1 rounded-md ${
+          storageUsage.is_exceeded
+            ? "bg-red-100 text-red-700"
+            : storageUsage.utilization_percentage > 80
+            ? "bg-yellow-100 text-yellow-700"
+            : "bg-green-100 text-green-700"
+        }`}
+      >
+        {storageUsage.total_gb.toFixed(1)} Mb /{" "}
+        {storageUsage.storage_limit_mb} Mb
+      </span>
+    </div>
+
+    {/* Progress */}
+    <div className="bg-white rounded-full p-[2px]">
+      <Progress
+        value={storageUsage.utilization_percentage}
+        className="h-2 bg-gray-100"
+        indicatorClassName={
+          storageUsage.utilization_percentage > 90
+            ? "bg-red-500"
+            : storageUsage.utilization_percentage > 70
+            ? "bg-yellow-500"
+            : "bg-green-500"
+        }
+      />
+    </div>
+
+    {/* Footer */}
+    <div className="flex justify-between items-center text-[11px] mt-2">
+      <span className="text-gray-600 font-medium">
+        {storageUsage.utilization_percentage.toFixed(0)}% used
+      </span>
+
+      <span className="text-green-700 font-medium">
+        {storageUsage.remaining_gb.toFixed(1)} Mb free
+      </span>
+    </div>
+
+    {/* Warning */}
+    {storageUsage.is_exceeded && (
+      <div className="mt-2 bg-red-50 border border-red-200 text-red-700 text-[11px] px-2 py-1 rounded-md">
+        ⚠️ Storage limit exceeded. Please remove unused files or upgrade storage.
+      </div>
+    )}
+  </div>
+</>
+      </>
+    )}
+  </div>
+</div>
+
+{/* Mobile storage indicator (simplified) */}
+<div className="md:hidden mt-2">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+    {storageUsage.loading ? (
+      <Loader2 className="h-4 w-4 animate-spin text-blue-500 mx-auto" />
+    ) : storageUsage.error ? (
+      <span className="text-xs text-red-500">⚠️ Storage error</span>
+    ) : (
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="font-medium">Storage</span>
+        <span>{storageUsage.total_gb.toFixed(1)}/{storageUsage.storage_limit_gb} GB</span>
+        <span className={`${storageUsage.utilization_percentage > 90 ? "text-red-600" : "text-gray-500"}`}>
+          {storageUsage.utilization_percentage.toFixed(0)}%
+        </span>
+      </div>
+    )}
+  </div>
+</div>
                       </div>
         </CardContent>
       </Card>

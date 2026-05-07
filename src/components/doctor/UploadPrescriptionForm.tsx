@@ -39,6 +39,9 @@ const [documentType, setDocumentType] = useState<string>(
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState<string>('');
 const [patientConsent, setPatientConsent] = useState<"yes" | "no" | null>("yes");
+const [storageUsage, setStorageUsage] = useState<any | null>(null);
+const [storageLoading, setStorageLoading] = useState(false);
+
 const isUploadDisabled =
   isUploading ||
   files.length === 0 ||
@@ -72,6 +75,64 @@ useEffect(() => {
     if (autoCloseTimeout.current) clearTimeout(autoCloseTimeout.current);
   };
 }, []);
+
+
+// ============================
+// ADD THIS FUNCTION
+// ============================
+const fetchStorageUsage = async () => {
+  try {
+    setStorageLoading(true);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+
+    if (!accessToken) return;
+
+    // owner id based on uploader
+    let ownerId = "";
+
+    if (uploadedBy === "doctor" && doctorId) {
+      ownerId = doctorId;
+    } else if (uploadedBy === "patient" && patientId) {
+      ownerId = patientId;
+    } else if (uploadedBy === "department" && depertmentId) {
+      ownerId = depertmentId;
+    }
+
+    if (!ownerId) return;
+
+    const response = await fetch(
+      `https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/calculate-storage-usage?owner_id=${ownerId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch storage usage");
+    }
+
+    setStorageUsage(result);
+  } catch (err) {
+    console.error("Storage usage error:", err);
+  } finally {
+    setStorageLoading(false);
+  }
+};
+
+// ============================
+// AUTO CALL EDGE FUNCTION
+// ============================
+useEffect(() => {
+  fetchStorageUsage();
+}, [uploadedBy, doctorId, patientId, depertmentId]);
 
 // const handleSubmit = async (e: React.FormEvent) => {
 //   e.preventDefault();
@@ -347,6 +408,98 @@ const renderStepContent = () => {
 
             {/* )} */}
         </div>
+
+         {storageUsage && (
+    <div
+      className={`
+        min-w-[260px]
+        rounded-xl
+        border
+        p-4
+        shadow-sm
+        transition-all
+        ${
+          storageUsage.is_exceeded
+            ? "bg-red-50 border-red-200"
+            : storageUsage.utilization_percentage > 80
+            ? "bg-yellow-50 border-yellow-200"
+            : "bg-emerald-50 border-emerald-200"
+        }
+      `}
+    >
+      <div className="flex justify-between items-center text-xs mb-2">
+        <span className="font-semibold text-gray-700">
+          Storage Usage
+        </span>
+
+        <span
+          className={`
+            font-bold
+            ${
+              storageUsage.is_exceeded
+                ? "text-red-600"
+                : storageUsage.utilization_percentage > 80
+                ? "text-yellow-700"
+                : "text-emerald-700"
+            }
+          `}
+        >
+          {storageUsage.total_mb.toFixed(1)} Mb /
+          {" "}
+          {storageUsage.storage_limit_mb} Mb
+        </span>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+        <div
+          className={`
+            h-full transition-all duration-500
+            ${
+              storageUsage.is_exceeded
+                ? "bg-red-500"
+                : storageUsage.utilization_percentage > 80
+                ? "bg-yellow-500"
+                : "bg-emerald-500"
+            }
+          `}
+          style={{
+            width: `${Math.min(
+              storageUsage.utilization_percentage,
+              100
+            )}%`,
+          }}
+        />
+      </div>
+
+      <div className="flex justify-between items-center mt-2 text-[11px] text-gray-600">
+        <span>
+          {storageUsage.utilization_percentage.toFixed(0)}% used
+        </span>
+
+        <span>
+          {storageUsage.remaining_mb.toFixed(1)} Mb free
+        </span>
+      </div>
+
+      {/* STATUS MESSAGE */}
+      <div className="mt-2">
+        {storageUsage.is_exceeded ? (
+          <div className="bg-red-100 text-red-700 text-[11px] px-2 py-1 rounded-md font-medium">
+            ⚠ Storage limit exceeded
+          </div>
+        ) : storageUsage.utilization_percentage > 80 ? (
+          <div className="bg-yellow-100 text-yellow-700 text-[11px] px-2 py-1 rounded-md font-medium">
+            ⚠ Storage almost full
+          </div>
+        ) : (
+          <div className="bg-emerald-100 text-emerald-700 text-[11px] px-2 py-1 rounded-md font-medium">
+            ✓ Storage available
+          </div>
+        )}
+      </div>
+    </div>
+  )}
 
         {/* File Upload */}
         <div>

@@ -812,7 +812,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File, GraduationCap, Award, IndianRupee, Briefcase, Star, Users } from 'lucide-react';
+import { User, Mail, Phone, Edit, Save, X, Camera, Shield, Home, Loader2, Trash2, Download, Eye, FileText, Upload, File, GraduationCap, Award, IndianRupee, Briefcase, Star, Users, CheckCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
@@ -854,7 +854,7 @@ export interface MedicalProfessional {
   city: string;
   state: string;
   pincode: string;
-  
+  profile_visibility:boolean;
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
    education?: Array<{
@@ -915,6 +915,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     country_code: '',
     documentUrl: '',
     documentName: '',
+    profile_visibility: true,
   });
   const [showOutdatedWarning, setShowOutdatedWarning] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -933,7 +934,14 @@ const [specializations, setSpecializations] = useState<string[]>([]);
 const [workExperience, setWorkExperience] = useState<Array<{position: string; hospital: string; duration: string}>>([]);
 const [publications, setPublications] = useState<Array<{title: string; journal: string; year: string}>>([]);
 const [memberships, setMemberships] = useState<string[]>([]);
-  useEffect(() => {
+  const [showAccountDialog, setShowAccountDialog] = useState(false);
+const [appointmentCheckLoading, setAppointmentCheckLoading] = useState(false);
+const [hasAppointments, setHasAppointments] = useState<boolean | null>(null);
+const [updatingVisibility, setUpdatingVisibility] = useState(false);
+const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+const [pendingVisibility, setPendingVisibility] = useState<boolean | null>(null);
+
+useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
@@ -1002,7 +1010,7 @@ const [memberships, setMemberships] = useState<string[]>([]);
           aboutYourself: medicalData?.about_yourself || '',
           kycVerified: medicalData?.kyc_verified || false,
           languagesKnown: medicalData?.languages_known || '',
-          
+          profile_visibility: medicalData?.profile_visibility || true,
           // Address fields
           city: medicalData?.city || '',
           state: medicalData?.state || '',
@@ -1418,6 +1426,8 @@ if (pendingDocs.length > 0 && user) {
 
   };
 
+
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
@@ -1465,6 +1475,72 @@ if (pendingDocs.length > 0 && user) {
       });
     }
   };
+
+
+  // Toggle profile visibility
+const updateProfileVisibility = async (visible: boolean) => {
+  if (!user) return;
+  setUpdatingVisibility(true);
+  const { error } = await supabase
+    .from('medical_professionals')
+    .update({ profile_visibility: visible })
+    .eq('user_id', user.id);
+  if (!error) {
+    setProfileData(prev => ({ ...prev, profile_visibility: visible }));
+    toast({
+      title: 'Success',
+      description: `Profile visibility set to ${visible ? 'visible' : 'hidden'}`,
+    });
+    setShowAccountDialog(false);
+  } else {
+    toast({ title: 'Error', description: error.message, variant: 'destructive' });
+  }
+  setUpdatingVisibility(false);
+};
+
+// Request confirmation before updating
+const requestVisibilityChange = (visible: boolean) => {
+  setPendingVisibility(visible);
+  setShowConfirmDialog(true);
+};
+
+// Actually update visibility after confirmation
+const confirmVisibilityUpdate = async () => {
+  if (pendingVisibility === null) return;
+  if (!user) return;
+
+  setUpdatingVisibility(true);
+  const { error } = await supabase
+    .from('medical_professionals')
+    .update({ profile_visibility: pendingVisibility })
+    .eq('user_id', user.id);
+
+  if (!error) {
+    setProfileData(prev => ({ ...prev, profile_visibility: pendingVisibility! }));
+    toast({
+      title: 'Success',
+      description: `Profile visibility set to ${pendingVisibility ? 'visible' : 'hidden'}`,
+    });
+    setShowAccountDialog(false);
+  } else {
+    toast({ title: 'Error', description: error.message, variant: 'destructive' });
+  }
+
+  setUpdatingVisibility(false);
+  setShowConfirmDialog(false);
+  setPendingVisibility(null);
+};
+
+// Cancel confirmation
+const cancelVisibilityUpdate = () => {
+  setShowConfirmDialog(false);
+  setPendingVisibility(null);
+};
+
+// Open dialog (no automatic update)
+const handleViewAccount = () => {
+  setShowAccountDialog(true);
+};
 
   if (loading) {
     return (
@@ -1754,7 +1830,14 @@ if (pendingDocs.length > 0 && user) {
         </p>
       </div>
     </div>
-
+    <div className="flex items-center space-x-2"></div>
+  <Button
+    variant="outline"
+    onClick={handleViewAccount}
+    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+  >
+    Profile Visibility Setting
+  </Button>
     {/* Edit Button Desktop Only */}
     <Button
       onClick={isEditing ? handleSave : () => setIsEditing(true)}
@@ -1881,6 +1964,162 @@ if (pendingDocs.length > 0 && user) {
             </div>
         </CardContent>
       </Card>
+
+      {/* Account Info Popup */}
+{/* <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Profile Visibility Status</DialogTitle>
+      <DialogDescription>
+        Your profile is visible to everyone and would be available for Appointment bookings and Bed bookings.
+      </DialogDescription>
+      <DialogDescription>
+        Your profile is hidden and would be not available for Appointment bookings and Bed bookings.
+      </DialogDescription>
+
+Change your profile visibilty 
+
+    </DialogHeader>
+
+    <div className="py-4 text-center">
+      {appointmentCheckLoading ? (
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
+      ) : (
+        <div className="space-y-4">
+          {hasAppointments === true && (
+            <>
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+              <p className="text-green-700 font-medium">
+                ✅ You have existing appointments.
+              </p>
+              <p className="text-sm text-gray-600">
+                Your profile is currently <strong>visible</strong> to patients.
+              </p>
+            </>
+          )}
+
+          {hasAppointments === false && (
+            <>
+              <Clock className="h-12 w-12 text-orange-500 mx-auto" />
+              <p className="text-orange-700 font-medium">
+                ⚠️ Your is fres the Appointment (No appointments yet)
+              </p>
+              <p className="text-sm text-gray-600">
+                You can hide your profile to avoid unnecessary exposure.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => updateProfileVisibility(false)}
+                disabled={updatingVisibility}
+                className="w-full mt-2"
+              >
+                {updatingVisibility ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Hide Profile (No Appointments)"
+                )}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </div>
+  </DialogContent>
+</Dialog> */}
+
+<Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Profile Visibility Status</DialogTitle>
+      <DialogDescription>
+        Manage whether patients can see your profile and book appointments/beds.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="py-4 text-center">
+      {profileData.profile_visibility === true ? (
+        <div className="space-y-4">
+          <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+          <p className="text-green-700 font-medium">
+            ✅ Your profile is currently <strong>visible</strong>.
+          </p>
+          <p className="text-sm text-gray-600">
+            Patients can find you for appointment bookings and bed bookings.
+          </p>
+          <Button
+            variant="destructive"
+            onClick={() => requestVisibilityChange(false)}
+            disabled={updatingVisibility}
+            className="w-full"
+          >
+            {updatingVisibility ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Hide Profile"
+            )}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <Clock className="h-12 w-12 text-orange-500 mx-auto" />
+          <p className="text-orange-700 font-medium">
+            ⚠️ Your profile is currently <strong>hidden</strong>.
+          </p>
+          <p className="text-sm text-gray-600">
+            Patients cannot book appointments or beds from your profile.
+          </p>
+          <Button
+            onClick={() => requestVisibilityChange(true)}
+            disabled={updatingVisibility}
+            className="w-full bg-green-600 hover:bg-green-700"
+          >
+            {updatingVisibility ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Make Profile Visible"
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
+
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </div>
+  </DialogContent>
+</Dialog>
+<Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+  <DialogContent className="sm:max-w-sm">
+    <DialogHeader>
+      <DialogTitle>Confirm Action</DialogTitle>
+      <DialogDescription>
+        {pendingVisibility === true 
+          ? "Are you sure you want to make your profile visible? Patients will be able to book appointments and beds."
+          : "Are you sure you want to hide your profile? Patients will no longer see your profile or book appointments/beds."}
+      </DialogDescription>
+    </DialogHeader>
+    <div className="flex gap-3 justify-end mt-4">
+      <Button variant="outline" onClick={cancelVisibilityUpdate}>
+        No, Cancel
+      </Button>
+      <Button 
+        onClick={confirmVisibilityUpdate}
+        className={pendingVisibility === true ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+      >
+        Yes, Confirm
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
         <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
         <DialogContent className={cn(
           "p-0 overflow-hidden",

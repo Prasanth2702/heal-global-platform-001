@@ -276,7 +276,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                         size="sm"
                         onClick={() => onViewDepartment(dept)}
                       >
-                        View Departments
+                        View Time Slots availability for this department
                       </Button>
                     </>
                   {/* )} */}

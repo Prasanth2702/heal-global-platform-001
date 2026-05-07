@@ -230,6 +230,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import Loader2 from "./ui/Loader2";
 import UploadPrescriptionForm from "./doctor/UploadPrescriptionForm";
+import rollbar from "@/lib/rollbar";
 
 export interface VideoMeetingProps {
   apiKey: string;
@@ -375,7 +376,17 @@ const [contextLoaded, setContextLoaded] = useState(false);
   // AI Summary state
   const [selectedSummary, setSelectedSummary] = useState<string>("");
   const [summaryLoading, setSummaryLoading] = useState(false);
-  
+  useEffect(() => {
+  if (userId) {
+    rollbar.configure({
+      payload: {
+        person: {
+          id: userId,
+        },
+      },
+    });
+  }
+}, [userId, userRole]);
   // Zoom state for document viewer
   const [zoomLevel, setZoomLevel] = useState(1);
   
@@ -476,6 +487,12 @@ const [contextLoaded, setContextLoaded] = useState(false);
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
+
+       rollbar.error("Fetch documents failed", {
+    appointmentId,
+    userRole,
+    error: error?.message,
+  });
     }
   };
 
@@ -501,6 +518,12 @@ const [contextLoaded, setContextLoaded] = useState(false);
       });
     } catch (error) {
       console.error("Error fetching patient details:", error);
+      
+      rollbar.error("Fetch patient details failed", {
+    patientUserId,
+    error: error?.message,
+  });
+      
       toast({ title: "Error", description: "Could not load patient details", variant: "destructive" });
     } finally {
       setLoadingDetails(false);
@@ -588,6 +611,11 @@ const [contextLoaded, setContextLoaded] = useState(false);
      
     } catch (error: any) {
       console.error("Error fetching AI summary:", error);
+      rollbar.warning("AI summary failed", {
+    documentId,
+    fileName,
+    error: error?.message,
+  });
       toast({ title: "Summary Error", description: error.message || "Could not generate summary", variant: "destructive" });
       return null;
     } finally {
@@ -642,6 +670,11 @@ const [contextLoaded, setContextLoaded] = useState(false);
       setShowSummaryModal(false);
     } catch (error) {
       console.error("Error viewing document:", error);
+      rollbar.error("Document view failed", {
+    documentId: document.id,
+    filePath: document.file_path,
+    error: error?.message,
+  });
       toast({ title: "Error", description: "Failed to load document", variant: "destructive" });
     } finally {
       setLoadingDetails(false);
@@ -1056,6 +1089,12 @@ if (appointmentContext) {
         }, 1000);
       } catch (error) {
         console.error("Error initializing VideoSDK meeting:", error);
+       rollbar.critical("Meeting initialization failed", {
+    meetingId,
+    userId,
+    isHost,
+    error: error?.message,
+  });
       }
     };
 
@@ -1108,6 +1147,13 @@ const handleRefreshData = async () => {
 
   } catch (error) {
     console.error(error);
+
+    rollbar.error("Refresh data failed", {
+    appointmentId,
+    userRole,
+    error: error?.message,
+  });
+
     toast({
       title: "Error",
       description: "Failed to refresh data",

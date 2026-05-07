@@ -1925,6 +1925,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import rollbar from '@/lib/rollbar';
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -2514,6 +2515,11 @@ const saveStep1Data = async () => {
     });
 
     if (signUpError) {
+      rollbar.warning("Signup Failed", {
+  message: signUpError.message,
+  email: formData.emailAddress,
+});
+
       toast({
         title: 'Registration Failed',
         description: signUpError.message,
@@ -2669,6 +2675,11 @@ if (patientError) {
         }
       }
     } catch (emailError) {
+      rollbar.error("Welcome Email Failed", {
+  error: emailError,
+  userId,
+});
+
       console.error('Error calling welcome email function:', emailError);
       // Don't block registration if email fails
       toast({
@@ -2696,6 +2707,12 @@ if (patientError) {
     
   } catch (error) {
     console.error('Error saving step 1:', error);
+    rollbar.error("Step1 Save Failed", {
+    error: error?.message,
+    stack: error?.stack,
+    email: formData.emailAddress,
+    step: 1,
+  });
     toast({
       title: 'Error',
       description: 'Failed to save personal information',
@@ -2787,6 +2804,11 @@ if (patientError) {
         userId: userId,
       });
 
+      rollbar.info("Patient Registration Success", {
+  userId,
+  email: formData.emailAddress,
+});
+
       toast({
         title: '🎉 Registration Successful!',
         description: 'Welcome to Gen Z era Medical Platform.',
@@ -2797,6 +2819,12 @@ if (patientError) {
       
     } catch (error) {
       console.error('Error saving remaining data:', error);
+      rollbar.critical("Final Registration Failed", {
+    error: error?.message,
+    stack: error?.stack,
+    user,
+    step: "final",
+  });
       toast({
         title: 'Error',
         description: 'Failed to complete registration',
@@ -2893,6 +2921,10 @@ const earlyCompleteRegistration = async () => {
       .upload(filePath, file);
 
     if (uploadError) {
+      rollbar.error("Profile Image Upload Failed", {
+  message: uploadError.message,
+  userId: user?.id,
+});
       toast({
         title: "Upload failed",
         description: uploadError.message,
@@ -3072,6 +3104,10 @@ const earlyCompleteRegistration = async () => {
       
     } catch (err) {
       console.error('Upload error:', err);
+      rollbar.error("Document Upload Failed", {
+  error: err,
+  userId: user?.id,
+});
       toast({
         title: "Upload Failed",
         description: "An unexpected error occurred.",

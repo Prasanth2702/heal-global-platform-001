@@ -960,6 +960,7 @@ import mixpanelInstance from "@/utils/mixpanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Mail, ArrowLeft, Loader2, EyeOff, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import rollbar from "@/lib/rollbar";
 
 type ResetStep = "email" | "newPassword";
 
@@ -1158,6 +1159,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
       mixpanelInstance.track("Forgot Password - Reset Email Sent", { email, userType });
     } catch (error: any) {
       console.error("Error sending reset email:", error);
+      rollbar.error("Forgot Password - Send Reset Error", error);
       toast({
         title: "Failed to send reset email",
         description: error.message || "An error occurred. Please try again.",

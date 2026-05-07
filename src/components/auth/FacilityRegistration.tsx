@@ -2027,6 +2027,7 @@ import {
 } from "@/components/ui/dialog";
 import MapComponent from "@/location/MapComponent";
 import GooglePlaceSearchRegister from "@/location/GooglePlaceSearchRegister";
+import rollbar from "@/lib/rollbar";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -2645,6 +2646,10 @@ const earlyCompleteRegistration = async () => {
     });
 
     if (signUpError) {
+      rollbar.error("Supabase SignUp Error", signUpError, {
+    email: formData.emailAddress,
+    facilityName: formData.facilityName,
+  });
       toast({
         title: 'Registration Failed',
         description: signUpError.message,
@@ -2731,6 +2736,10 @@ const earlyCompleteRegistration = async () => {
       .single();
 
     if (facilityError) {
+      rollbar.error("Facility Creation Failed", facilityError, {
+    userId,
+    formData,
+  });
       console.error('Error creating facility:', facilityError);
       toast({
         title: 'Facility Creation Issue',
@@ -2849,6 +2858,11 @@ try {
     
   } catch (error) {
     console.error('Error saving step 1:', error);
+    
+    rollbar.critical("Unexpected Error in saveStep1Data", error, {
+    formData,
+    userId,
+  });
     toast({
       title: 'Error',
       description: 'Failed to save facility information',

@@ -74,6 +74,8 @@
 //   }
 // }
 
+
+// services/contactApi.ts
 import { supabase } from "@/integrations/supabase/client"
 
 // Types
@@ -95,17 +97,32 @@ export const sendContactEnquiry = async (formData: ContactFormData): Promise<Api
   try {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
-    const anonKey = import.meta.env.VITE_SUPABASE_CONTACT_ANON_KEY;
 
+    // const headers: Record<string, string> = {
+    //   "Content-Type": "application/json",
+    //   "apikey": anonKey,                // Always send anon key
+    // };
+
+    // // Only add Authorization header if we have a real JWT
+    // if (token) {
+    //   headers["Authorization"] = `Bearer ${token}`;
+    // }
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "apikey": anonKey,                // Always send anon key
-    };
+  "Content-Type": "application/json",
+};
 
-    // Only add Authorization header if we have a real JWT
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+// If user is logged in, use Authorization token
+if (token) {
+  headers["Authorization"] = `Bearer ${token}`;
+} else {
+  //const anonKey = import.meta.env.VITE_SUPABASE_CONTACT_ANON_KEY; Guest user: send apikey instead (no Authorization header)
+ const anonKey = import.meta.env.VITE_SUPABASE_CONTACT_ANON_KEY;
+  if (anonKey) {
+    headers["apikey"] = anonKey;
+  } else {
+    return { success: false, error: "Configuration error." };
+  }
+}
 
     const response = await fetch(
       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/send-contact-email",

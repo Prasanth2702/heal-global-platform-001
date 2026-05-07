@@ -30,13 +30,46 @@ const Contact = () => {
       [name]: value,
     }));
   };
-const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
+  // ✅ Terms check
   if (!agreed) {
     setSubmitStatus({
       success: false,
       message: "Please agree to the terms and conditions",
+    });
+    return;
+  }
+
+  // ✅ Name validation
+  if (!formData.name.trim()) {
+    setSubmitStatus({ success: false, message: "Name is required" });
+    return;
+  }
+
+  // ✅ Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    setSubmitStatus({ success: false, message: "Invalid email address" });
+    return;
+  }
+
+  // ✅ Message validation
+  if (formData.message.trim().length < 10) {
+    setSubmitStatus({
+      success: false,
+      message: "Message must be at least 10 characters",
+    });
+    return;
+  }
+
+  // ✅ Subject validation
+  if (!formData.subject.trim()) {
+    setSubmitStatus({
+      success: false,
+      message: "Subject is required",
     });
     return;
   }
@@ -70,6 +103,47 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   setIsSubmitting(false);
 };
+
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (!agreed) {
+//     setSubmitStatus({
+//       success: false,
+//       message: "Please agree to the terms and conditions",
+//     });
+//     return;
+//   }
+
+//   setIsSubmitting(true);
+//   setSubmitStatus({ success: false, message: "" });
+
+//   const result = await sendContactEnquiry(formData);
+
+//   if (result.success) {
+//     setSubmitStatus({
+//       success: true,
+//       message: result.message,
+//     });
+
+//     setFormData({
+//       name: "",
+//       email: "",
+//       message: "",
+//       subject: "",
+//       phone: "",
+//     });
+
+//     setAgreed(false);
+//   } else {
+//     setSubmitStatus({
+//       success: false,
+//       message: result.error || "Something went wrong",
+//     });
+//   }
+
+//   setIsSubmitting(false);
+// };
 
   // const handleSubmit = async (e: React.FormEvent) => {
   //   e.preventDefault();
@@ -273,7 +347,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <span>
                           By clicking you agree to our{" "}
                           <a
-                            href="/terms-of-service"
+                            href="/terms"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"

@@ -898,6 +898,7 @@ import OTPLogin from "./OTPLogin";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
 import { Eye, EyeOff } from "lucide-react";
+import rollbar from "@/lib/rollbar";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -913,6 +914,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const from = location.state?.from;
 
+  
   // Map URL userType params to actual profile roles
   const getExpectedRoles = (userTypeParam: string): string[] => {
     if (userTypeParam === 'facility' || userTypeParam === 'facility-admin' || userTypeParam === 'facility-staff') {
@@ -1025,6 +1027,10 @@ const LoginForm = () => {
       const emailExists = await emailExistsAnyRole(email);
 
       if (!emailExists) {
+          rollbar.warning("Login attempt with non-existing email", {
+    email,
+    userType,
+  });
         toast({
           title: "Email not found",
           description: "No account exists with this email. Please sign up first.",
@@ -1050,6 +1056,11 @@ const LoginForm = () => {
         //   description: `If the email is already registered. Please go to right portal login page.`,
         //   variant: "destructive"
         // });
+        rollbar.warning("Login role mismatch", {
+        email,
+        attemptedUserType: userType,
+      });
+
         toast({
   title: "Login Error",
   description: "If you registered already, Please choose the correct login type (Patient / Doctor / Facility).",
@@ -1072,6 +1083,13 @@ const LoginForm = () => {
       });
 
       if (error) {
+
+        rollbar.error("Invalid login credentials", {
+    email,
+    userType,
+    error: error.message,
+  });
+        
         toast({
           title: "Login failed",
           description: "Invalid email or password. Please try again",
@@ -1104,6 +1122,21 @@ const LoginForm = () => {
       setTimeout(() => {
         navigate(redirectPath, { replace: true });
       }, 1500);
+
+} catch (err: any) {
+    // ✅ Unexpected error logging
+    rollbar.critical("Unexpected login error", {
+      email: formData.email,
+      userType,
+      error: err?.message,
+    });
+
+    toast({
+      title: "Something went wrong",
+      description: "Please try again later.",
+      variant: "destructive"
+    });
+
     } finally {
       setIsLoading(false);
     }

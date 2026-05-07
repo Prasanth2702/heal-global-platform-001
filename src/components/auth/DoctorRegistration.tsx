@@ -2027,6 +2027,7 @@ import { Progress } from "@/components/ui/progress";
 import GooglePlaceSearch from "@/location/GooglePlaceSearch";
 import MapComponent from "@/location/MapComponent";
 import GooglePlaceSearchRegister from "@/location/GooglePlaceSearchRegister";
+import rollbar from "@/lib/rollbar";
 
 const countryCodes = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -2819,6 +2820,10 @@ const handleSignUp = async () => {
         }
       }
     } catch (emailError) {
+      rollbar.warning("Welcome email failed", {
+    error: emailError,
+    userId,
+  });
       console.error('Error calling welcome email function:', emailError);
     }
 
@@ -2837,6 +2842,12 @@ const handleSignUp = async () => {
     
   } catch (error) {
     console.error('Error saving step 1:', error);
+
+    rollbar.error("Doctor Step 1 Signup Failed", {
+    error,
+    email: formData.emailAddress,
+  });
+
     toast({
       title: 'Error',
       description: 'Failed to save personal information',
@@ -2898,6 +2909,10 @@ const handleSignUp = async () => {
         }, { onConflict: 'user_id' });
 
       if (medProfError) {
+        rollbar.error("Medical professional upsert failed", {
+    error: medProfError,
+    userId,
+  });
         console.error('Error saving medical professional:', medProfError);
         toast({
           title: "Error",
@@ -2993,6 +3008,11 @@ const handleSignUp = async () => {
       
     } catch (error) {
       console.error("Error completing registration:", error);
+      rollbar.critical("Doctor registration final submit failed", {
+    error,
+    userId,
+    formData,
+  });
       toast({
         title: "Error",
         description: "Failed to complete registration. Please try again.",
@@ -3042,6 +3062,11 @@ const handleSignUp = async () => {
       });
     } catch (error: any) {
       console.error('Upload error:', error);
+      rollbar.error("Profile image upload failed", {
+    error,
+    userId,
+    fileName: file?.name,
+  });
       toast({
         title: "Upload Failed",
         description: error.message,

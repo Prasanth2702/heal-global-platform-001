@@ -279,6 +279,8 @@ const slotStatus = await checkSlotAvailability(
 
     const result = await response.json();
 
+    console.log("result", result)
+
     if (!response.ok || !result.success) {
       throw new Error(result.error || "Failed to check slot");
     }
@@ -395,6 +397,15 @@ if (slotError) {
 } else {
   setHasTimeSlots((slotCheck?.length || 0) > 0);
 }
+
+const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) return;
+const { data: bookingsData, error: bookingsError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("patient_id", user.id)
+
   } catch (error) {
     console.error("Error fetching department details:", error);
   } finally {

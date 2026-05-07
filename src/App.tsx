@@ -103,6 +103,7 @@ import LocationPage from "./location/LocationPage";
 import FacilityLimitCheckerView from "./components/facility/limitchecker/FacilityLimitCheckerView";
 import FacilityPendingViewPage from "./components/facility/FacilityPendingViewPage";
 import FacilityPendingStaffViewPage from "./components/facility/FacilityPendingStaffViewPage";
+import ErrorBoundary from "./ErrorBoundary";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -435,5 +436,12 @@ const App = () => {
   );
 };
 
-export default App;
+// export default App;
 
+const AppRoot = () => (
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
+
+export default AppRoot;

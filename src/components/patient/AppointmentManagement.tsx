@@ -4559,7 +4559,7 @@ export default function AppointmentManagement() {
                   onClick={() => setActiveTab("doctor")} 
                   className={`w-full md:w-auto transition-all duration-200 ${activeTab === "doctor" ? "bg-gradient-to-r from-green-600 to-green-500 shadow-md text-white" : "border-green-200 text-green-700 hover:bg-green-50"} ${responsive.buttonText}`}
                 >
-                  👨‍⚕️ Professional
+                  👨‍⚕️ Doctors / Specialists
                 </Button>
                 <Button 
                 size="sm" 
@@ -4567,7 +4567,7 @@ export default function AppointmentManagement() {
                   onClick={() => setActiveTab("hospital")} 
                   className={`w-full md:w-auto transition-all duration-200 ${activeTab === "hospital" ? "bg-gradient-to-r from-blue-600 to-blue-500 shadow-md text-white" : "border-blue-200 text-blue-700 hover:bg-blue-50"} ${responsive.buttonText}`}
                 >
-                  🏥 Facility
+                  🏥 Facility / Services
                 </Button>
             </div>
 

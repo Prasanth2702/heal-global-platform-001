@@ -2383,7 +2383,7 @@ const [step1Success, setStep1Success] = useState(false);
   };
 
   const validatePassword = (password: string) => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[.@$!%*?&])[A-Za-z\d.@$!%*?&]{6,}$/;
 
     if (!password) {
       return "Password is required";
@@ -3557,7 +3557,7 @@ const earlyCompleteRegistration = async () => {
         <br />• Minimum 6 characters
         <br />• At least 1 letter
         <br />• At least 1 number
-        <br />• At least 1 special character (@$!%*?&)
+        <br />• At least 1 special character (.@$!%*?&)
       </p>
 
       

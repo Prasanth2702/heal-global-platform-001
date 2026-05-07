@@ -2298,7 +2298,7 @@ const [showRepeatPassword, setShowRepeatPassword] = useState(false);
       case 'password':
         if (!value) return "Password is required";
         if (value.length < 6) return "Password must be at least 6 characters";
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[.@$!%*?&])[A-Za-z\d.@$!%*?&]{6,}$/;
         if (!passwordRegex.test(value)) return "Password must contain letter, number and special character";
         return "";
       case 'repeatPassword':
@@ -2858,7 +2858,7 @@ try {
     
   } catch (error) {
     console.error('Error saving step 1:', error);
-    
+
     rollbar.critical("Unexpected Error in saveStep1Data", error, {
     formData,
     userId,
@@ -3571,7 +3571,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   </div>
   {renderFieldError('password')}
   <p className="text-xs text-gray-500 mt-1">
-    Password must contain: minimum 6 characters, 1 letter, 1 number, 1 special character (@$!%*?&)
+    Password must contain: minimum 6 characters, 1 letter, 1 number, 1 special character (.@$!%*?&)
   </p>
 </div>
 

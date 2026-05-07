@@ -45,7 +45,7 @@ const helpDatabase: Record<string, HelpContent> = {
   },
   {
     q: "Is there a minimum password requirement?",
-    a: "Yes – at least 6 characters, including one letter, one number, and one special character (@$!%*?&)."
+    a: "Yes – at least 6 characters, including one letter, one number, and one special character (.@$!%*?&)."
   },
   {
     q: "Do I have to upload medical documents?",

@@ -4209,7 +4209,8 @@ export default function AppointmentManagement() {
     doctorName: "",
     appointmentId: "",
   });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [doctorUserId, setDoctorUserId] = useState<string>("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const apiKey = import.meta.env.VITE_VIDEOSDK_API_KEY;

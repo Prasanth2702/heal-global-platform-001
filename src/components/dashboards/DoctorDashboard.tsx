@@ -36,6 +36,9 @@ const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
 const [doctorViews, setDoctorViews] = useState(0);
 const [professionalId, setProfessionalId] = useState<string | null>(null);
 const [planName, setPlanName] = useState<string | null>(null);
+const [profileVisible, setProfileVisible] = useState(true);
+const [loadingVisibility, setLoadingVisibility] = useState(true);
+
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -52,7 +55,7 @@ useEffect(() => {
       // Step 1: Get doctor's medical professional record
       const { data: doctorData, error: doctorError } = await supabase
         .from("medical_professionals")
-        .select("id")
+        .select("id,profile_visibility")
         .eq("user_id", user.id)
         .single();
 
@@ -61,6 +64,7 @@ useEffect(() => {
         setLoading(false);
         return;
       }
+      setProfileVisible(doctorData?.profile_visibility );
 
       // Step 2: Fetch appointments separately
       await fetchAppointments(doctorData.id);
@@ -87,6 +91,7 @@ setDoctorViews(totalViews);
       console.error("Error fetching doctor data:", error);
     } finally {
       setLoading(false);
+       setLoadingVisibility(false);
     }
   };
 
@@ -775,6 +780,17 @@ if (activeTab !== "overview") {
           </div>
         </div>
 
+  {loadingVisibility ? (
+  <div>Loading...</div>
+) : profileVisible === false? (
+  <div className="w-full p-4 rounded-lg border border-red-200 bg-red-50 text-center mb-4">
+    <p className="text-red-600 font-medium">
+      Your profile status is Hidden. Hence it is unavailable for new appointment bookings.
+    </p>
+
+  </div>
+) : null}
+
          {activeTab === "appointments" && <DoctorAppointmentManagement />}
         {activeTab === "schedule" && <DoctorSchedulePage />}
         {activeTab === "analytics" && <EarningsAnalytics />}
@@ -888,6 +904,17 @@ if (activeTab !== "overview") {
               Payments
             </Button>
           </div>
+
+           {loadingVisibility ? (
+  <div>Loading...</div>
+) : profileVisible === false? (
+  <div className="w-full p-4 rounded-lg border border-red-200 bg-red-50 text-center mb-4">
+    <p className="text-red-600 font-medium">
+      Your profile status is Hidden. Hence it is unavailable for new appointment bookings.
+    </p>
+
+  </div>
+) : null}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

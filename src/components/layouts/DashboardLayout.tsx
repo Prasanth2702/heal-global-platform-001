@@ -8,7 +8,14 @@ import { register } from "module";
 import Footer from "@/pages/alldetails/Footer";
 import Loader3 from "../ui/Loader3";
 import logodashboard from "../../image/pmhs_logo_small.png";
-
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userType: "patient" | "doctor" | "facility" | "admin" |"hospital_staff"  ;
@@ -22,6 +29,9 @@ const DashboardLayout = ({ children, userType }: DashboardLayoutProps) => {
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasBedManagement, setHasBedManagement] = useState(false);
+  const [availableToday, setAvailableToday] = useState("all");
+const [selectedFee, setSelectedFee] = useState("all");
+const [selectedTimeSlot, setSelectedTimeSlot] = useState("all");
 
   // Check if user is authenticated
   useEffect(() => {
@@ -581,6 +591,7 @@ const checkBedManagementDepartment = async () => {
             Logout
           </Button>
         </div>
+        
         {/* Sidebar Footer */}
 {/* <div className="p-4 border-t">
   {user ? (

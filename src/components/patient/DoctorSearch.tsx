@@ -4173,6 +4173,12 @@ export interface Doctor {
   state?: string;
   latitude?: number;
   longitude?: number;
+  profile_visibility: boolean;
+  workExperience?: {
+    position: string;
+    hospital: string;
+    duration: string;
+  }[];
 }
 
 export interface BookingInfo {
@@ -4223,7 +4229,7 @@ export interface Facility {
   total_beds: number;
   rating: number;
   total_reviews: number;
-  is_verified: boolean;
+  profile_visibility: boolean;
   established_year: number;
   website: string;
   insurance_partners: string;
@@ -4375,7 +4381,21 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
       }
     });
   };
-
+  
+const toArray = (value: any): any[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        // Not a JSON string, treat as single string
+        return [value];
+      }
+    }
+    return [value];
+  };
 
   // Data Fetching
   const fetchDoctors = async () => {
@@ -4388,7 +4408,9 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
           avatar_url,
           user_id
         )
-      `);
+      `)
+      .eq("profile_visibility", true);
+
       if (error) throw error;
       const mapped = data.map((item: any) => {
         const fullName = item.medical_professionals_user_id_fkey
@@ -4414,6 +4436,8 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
           description: item.description || item.about_yourself || "No description provided.",
           latitude: item.latitude,
           longitude: item.longitude,
+          profile_visibility: item.profile_visibility,
+          workExperience: toArray(item.work_experience),
         } as Doctor;
       });
       setDoctors(mapped);
@@ -4427,7 +4451,8 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
     try {
       const { data: facilitiesData, error: facilitiesError } = await supabase
         .from("facilities")
-        .select(`id, facility_name, facility_type, license_number, city, state, pincode, total_beds, rating, total_reviews, is_verified, established_year, insurance_partners, about_facility, website, latitude, longitude`);
+        .select(`id, facility_name, facility_type, license_number, city, state, pincode, total_beds, rating, total_reviews, profile_visibility, established_year, insurance_partners, about_facility, website, latitude, longitude`)
+        .eq("profile_visibility", true);
       if (facilitiesError) throw facilitiesError;
       if (facilitiesData) {
         const enhancedFacilities = facilitiesData.map(facility => ({
@@ -5017,8 +5042,8 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
         selectedSpecialty={selectedSpecialty}
         setSelectedSpecialty={setSelectedSpecialty}
         activeFilterTab={activeFilterTab}
-        setActiveFilterTab={setActiveFilterTab}
-        // setActiveFilterTab={handleSetActiveFilterTab}
+        // setActiveFilterTab={setActiveFilterTab}
+        setActiveFilterTab={handleSetActiveFilterTab}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
         onSearch={handleSearch}
@@ -5078,6 +5103,30 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
           {activeFilterTab === "all" && <>Found <span className="text-blue-600">{filteredDoctors.length}</span> doctors & <span className="text-green-600">{combinedFacilities.length}</span> hospitals</>}
         </h3>
       </div>
+
+      <SearchHeader
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        locationFilter={locationFilter}
+        setLocationFilter={setLocationFilter}
+        selectedSpecialty={selectedSpecialty}
+        setSelectedSpecialty={setSelectedSpecialty}
+        activeFilterTab={activeFilterTab}
+        // setActiveFilterTab={setActiveFilterTab}
+        setActiveFilterTab={handleSetActiveFilterTab}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        onSearch={handleSearch}
+        onDetectLocation={detectCurrentLocation}
+        doctorSpecialties={doctorSpecialties}
+        hospitalDepartments={hospitalDepartments}
+        cities={cities}
+        facilityType={facilityType}
+        setFacilityType={setFacilityType}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        // setSelectedLocation={setSelectedLocation} 
+      />
 
       {/* Results Sections */}
   {/* {activeFilterTab !== "hospitals" && (

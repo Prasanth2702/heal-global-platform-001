@@ -4124,7 +4124,7 @@ const earlyCompleteRegistration = async () => {
             />
             <Label htmlFor="document-upload" className="cursor-pointer">
               <Upload className="mx-auto h-8 w-8 mb-2 text-gray-400" />
-              <p className="text-sm text-gray-600">Click to upload documents or drag and drop</p>
+              <p className="text-sm text-gray-600">Click to upload Government ID</p>
               <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 10MB each</p>
             </Label>
           </div>

@@ -217,13 +217,13 @@ const totalAmount =
               </span>
             </div> */}
             <div className="flex justify-between text-gray-600">
-<span>Platform Fee</span>
+<span>Consultation Fee</span>
   <span>₹{appointmentDetails.consultation_fee}</span>
 </div>
 
 {!isFreeConsultation && (
   <div className="flex justify-between text-gray-600">
-    <span>Consultation Fee</span>
+    <span>Platform Fee</span>
     <span>₹150</span>
   </div>
 )}

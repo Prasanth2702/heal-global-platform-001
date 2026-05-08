@@ -75,6 +75,7 @@ interface Doctor {
   rating: number;
   experience: string;
   location?: string;
+  bannerUrl?: string;
   consultationFee: number;
   availability: string;
   hospital?: string;
@@ -943,6 +944,7 @@ const fetchDoctorDetails = async (doctorData: any) => {
     availability: availabilityData?.length ? "Available Today" : "Next Available: Tomorrow",
     hospital: hospitalName,
     location: location,
+    bannerUrl: doctorData.banner_url,
     email: doctorData.email || "",
     phone_number: doctorData.phone_number || "",
     image: doctorData.medical_professionals_user_id_fkey?.avatar_url || "",
@@ -1555,7 +1557,18 @@ const handleBookAppointmentClick = () => {
 
         {/* Doctor Profile Header */}
         <Card className="mb-8 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32"></div>
+          <div className="relative">
+  {doctor.bannerUrl ? (
+    <img 
+      src={doctor.bannerUrl}
+      alt={doctor.name}
+      className="w-full h-full object-cover rounded-t-lg"
+    />
+  ) : (
+    <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32"></div>
+  )}
+</div>
+          {/* <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32"></div> */}
           <CardContent className="relative pt-0">
             <div className="flex flex-col md:flex-row gap-6 -mt-16">
               {/* <img
@@ -1593,12 +1606,38 @@ const handleBookAppointmentClick = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     {/* <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1> */}
-<h1 
+{/* <h1 
   className="text-3xl font-bold"
-  style={{ color: window.innerWidth >= 768 ? 'white' : 'black' }}
+  style={{ 
+    color: doctor.bannerUrl
+      ? '#2563eb' // blue color when image exists
+      : window.innerWidth >= 768 
+        ? 'white' 
+        : 'black'
+  }}
+  
 >
+  
   {doctor.name}
-</h1>
+</h1> */}
+<div
+  style={{
+    backgroundColor: doctor.bannerUrl
+      ? '#2563eb'   // blue background when image exists
+      : window.innerWidth >= 768
+      ? 'transparent' // or some other color on desktop without image
+      : 'transparent',
+    display: 'inline-block',  // so the box only takes the width of the text
+    padding: '0.5rem 1rem',
+    borderRadius: '0.5rem',
+    // optional: add text color inside the box
+    color: doctor.bannerUrl ? 'white' : (window.innerWidth >= 768 ? 'white' : 'black')
+  }}
+>
+  <h1 className="text-3xl font-bold">
+     {doctor.name}
+  </h1>
+</div>
                     <p className="text-xl text-blue-600 mt-1">{doctor.specialty}</p>
                     {doctor.email && (
       <div className="flex items-center gap-2 mt-1">

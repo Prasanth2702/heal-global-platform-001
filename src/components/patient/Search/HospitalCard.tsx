@@ -68,7 +68,7 @@ export interface Facility {
   total_beds: number;
   rating: number;
   total_reviews: number;
-  is_verified: boolean;
+  profile_visibility: boolean;
   established_year: number;
   website: string;
   insurance_partners: string;
@@ -156,7 +156,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
               <span className="font-semibold">{facility.rating}</span>
               <span className="text-xs text-green-100">({facility.total_reviews})</span>
             </div> */}
-            {facility.is_verified && (
+            {facility.profile_visibility && (
               <Badge className="bg-green-500 text-white">Verified</Badge>
             )}
           </div>

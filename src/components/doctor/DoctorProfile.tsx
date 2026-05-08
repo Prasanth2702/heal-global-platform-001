@@ -854,6 +854,7 @@ export interface MedicalProfessional {
   city: string;
   state: string;
   pincode: string;
+   bannerUrl?: string;
   profile_visibility:boolean;
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
@@ -941,6 +942,8 @@ const [updatingVisibility, setUpdatingVisibility] = useState(false);
 const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 const [pendingVisibility, setPendingVisibility] = useState<boolean | null>(null);
 
+const [bannerUrl, setBannerUrl] = useState('');
+
 useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -1010,7 +1013,8 @@ useEffect(() => {
           aboutYourself: medicalData?.about_yourself || '',
           kycVerified: medicalData?.kyc_verified || false,
           languagesKnown: medicalData?.languages_known || '',
-          profile_visibility: medicalData?.profile_visibility || true,
+          profile_visibility: medicalData?.profile_visibility,
+          bannerUrl: medicalData?.banner_url || '',
           // Address fields
           city: medicalData?.city || '',
           state: medicalData?.state || '',
@@ -1336,6 +1340,7 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
         state: profileData.state,
         pincode: profileData.pincode,
         country_code: profileData.country_code,
+         banner_url: bannerUrl,
           // consultation_fee: finalFee,
   education: educationList,
   certifications: certificationsList,
@@ -1505,25 +1510,135 @@ const requestVisibilityChange = (visible: boolean) => {
 };
 
 // Actually update visibility after confirmation
+// const confirmVisibilityUpdate = async () => {
+//   if (pendingVisibility === null) return;
+//   if (!user) return;
+
+//   setUpdatingVisibility(true);
+//   const { error } = await supabase
+//     .from('medical_professionals')
+//     .update({ profile_visibility: pendingVisibility })
+//     .eq('user_id', user.id);
+
+//   if (!error) {
+//     setProfileData(prev => ({ ...prev, profile_visibility: pendingVisibility! }));
+//     toast({
+//       title: 'Success',
+//       description: `Profile visibility set to ${pendingVisibility ? 'visible' : 'hidden'}`,
+//     });
+//     setShowAccountDialog(false);
+//   } else {
+//     toast({ title: 'Error', description: error.message, variant: 'destructive' });
+//   }
+
+//   setUpdatingVisibility(false);
+//   setShowConfirmDialog(false);
+//   setPendingVisibility(null);
+// };
 const confirmVisibilityUpdate = async () => {
   if (pendingVisibility === null) return;
   if (!user) return;
 
   setUpdatingVisibility(true);
+
+  // Store old status before update
+  const oldStatus = profileData?.profile_visibility ? "visible" : "hidden";
+
+  // New status
+  const newStatus = pendingVisibility ? "visible" : "hidden";
+
   const { error } = await supabase
-    .from('medical_professionals')
+    .from("medical_professionals")
     .update({ profile_visibility: pendingVisibility })
-    .eq('user_id', user.id);
+    .eq("user_id", user.id);
 
   if (!error) {
-    setProfileData(prev => ({ ...prev, profile_visibility: pendingVisibility! }));
+    // Update local state
+    setProfileData((prev) => ({
+      ...prev,
+      profile_visibility: pendingVisibility!,
+    }));
+
     toast({
-      title: 'Success',
-      description: `Profile visibility set to ${pendingVisibility ? 'visible' : 'hidden'}`,
+      title: "Success",
+      description: `Profile visibility set to ${newStatus}`,
     });
+
+    // ✅ Auto call Supabase Edge Function after success
+//  try {
+//   console.log("Calling visibility notification function...");
+
+//   const {
+//     data: { session },
+//     error: sessionError,
+//   } = await supabase.auth.getSession();
+
+//   if (sessionError) {
+//     console.error("Session Error:", sessionError);
+//     throw sessionError;
+//   }
+
+//   const token = session?.access_token;
+
+//   console.log("TOKEN:", token);
+
+//   if (!token) {
+//     throw new Error("No access token found");
+//   }
+
+//   const response = await fetch(
+//     "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/send-doctors-visibility-notification",
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify({
+//         doctor_id: user.id,
+//         profile_status: newStatus,
+//         initiated_by: user.id,
+//         // reason:
+//         //   newStatus === "hidden"
+//         //     ? "Doctor temporarily hidden profile"
+//         //     : "Doctor enabled profile visibility",
+//         // old_status: oldStatus,
+//       }),
+//     }
+//   );
+
+//   console.log("Response Status:", response.status);
+
+//   const result = await response.text();
+
+//   console.log("Function Result:", result);
+
+//   if (!response.ok) {
+//     throw new Error(result);
+//   }
+
+//   toast({
+//     title: "Notification Sent",
+//     description: "Visibility notification triggered successfully",
+//   });
+
+// } catch (err: any) {
+//   console.error("EDGE FUNCTION ERROR:", err);
+
+//   toast({
+//     title: "Function Error",
+//     description: err.message || "Something went wrong",
+//     variant: "destructive",
+//   });
+// }
+
     setShowAccountDialog(false);
   } else {
-    toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    toast({
+      title: "Error",
+      description: error.message,
+      variant: "destructive",
+    });
   }
 
   setUpdatingVisibility(false);
@@ -1612,6 +1727,39 @@ const handleViewAccount = () => {
   //     setUploading(false);
   //     event.target.value = '';
   //   };
+
+  
+    const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+  
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file', description: 'Please upload an image.', variant: 'destructive' });
+      return;
+    }
+  
+    setUploading(true);
+    const filePath = `${user.id}/${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage
+      .from('doctors_public_images')
+      .upload(filePath, file);
+  
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setUploading(false);
+      return;
+    }
+  
+    const { data: urlData } = supabase.storage
+      .from('doctors_public_images')
+      .getPublicUrl(filePath);
+  
+    setBannerUrl(urlData.publicUrl);
+    setProfileData(prev => ({ ...prev, bannerUrl: urlData.publicUrl }));
+    toast({ title: 'Banner uploaded', description: 'Doctor banner updated.' });
+    setUploading(false);
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const files = event.target.files;
   if (!files) return;
@@ -2217,6 +2365,62 @@ Change your profile visibilty
 
   </DialogContent>
 </Dialog>
+
+<Card className="border-0 shadow-lg">
+  <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <CardTitle className="text-xl">Doctor Banner</CardTitle>
+  </CardHeader>
+  <CardContent className="p-6 space-y-6">
+    <div className="grid grid-cols-1 gap-6">
+      <div>
+        <Label className="text-sm font-semibold text-gray-700">Banner Image</Label>
+        <div className="relative mt-2">
+          {bannerUrl ? (
+            <div className="relative rounded-lg overflow-hidden border">
+              <img
+                src={bannerUrl}
+                alt="Facility Banner"
+                className="w-full h-48 object-cover"
+              />
+              {isEditing && (
+                <div
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer"
+                  onClick={() => document.getElementById('bannerUpload')?.click()}
+                >
+                  <Camera className="h-8 w-8 text-white" />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition"
+              onClick={() => isEditing && document.getElementById('bannerUpload')?.click()}
+            >
+              <Camera className="h-10 w-10 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500">
+                {isEditing ? 'Click to upload banner image' : 'No banner uploaded'}
+              </p>
+            </div>
+          )}
+          <input
+            id="bannerUpload"
+            type="file"
+            accept="image/*"
+            onChange={handleBannerUpload}
+            className="hidden"
+            disabled={!isEditing || uploading}
+          />
+        </div>
+        {isEditing && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Recommended size: 1200×400px. Max 5MB.
+          </p>
+        )}
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
 <Card className="border-0 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
           <CardTitle className="flex items-center text-xl">

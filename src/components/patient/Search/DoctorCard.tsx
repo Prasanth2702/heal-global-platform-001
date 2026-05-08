@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Clock, ChevronRight, Calendar } from "lucide-react";
+import { MapPin, Star, Clock, ChevronRight, Calendar, ExpandIcon } from "lucide-react";
 
 export interface Doctor {
   id: string;
@@ -25,7 +25,12 @@ export interface Doctor {
   pincode?: number;
     about_yourself?: string;
   medical_school?: string;
-
+profile_visibility: boolean;
+ workExperience?: {
+    position: string;
+    hospital: string;
+    duration: string;
+  }[];
 }
 
 export interface BookingInfo {
@@ -76,7 +81,7 @@ export interface Facility {
   total_beds: number;
   rating: number;
   total_reviews: number;
-  is_verified: boolean;
+  profile_visibility: boolean;
   established_year: number;
   website: string;
   insurance_partners: string;
@@ -123,6 +128,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
   formatDayLabel,
   formatDateNumber,
   formatTimePretty,
+  
 }) => {
   return (
   <div >
@@ -181,6 +187,24 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
       <div className="flex items-start gap-2">
         <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
+          <p className="text-sm font-medium text-gray-700">Work Experience</p>
+          <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
+   {doctor.workExperience && doctor.workExperience.length > 0 ? (
+    doctor.workExperience?.map((work, index) => (
+    <div key={index} className="relative pl-8 pb-6 border-l-2 border-blue-200 last:pb-0">
+      <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-blue-600"></div>
+      <p className="font-semibold text-lg">{work.position},{work.hospital},{work.duration}</p>
+    </div>
+  )) ) : (
+    <span className="text-gray-400">No experience data</span>
+  )}
+</p>
+        </div>
+      </div>
+    </div>
+      {/* <div className="flex items-start gap-2">
+        <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
           <p className="text-sm font-medium text-gray-700">Address</p>
           <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
             {[
@@ -196,8 +220,19 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
           </p>
         </div>
       </div>
-    </div>
+    </div> */}
 
+    {/* Consultation Fee */}
+    <div className="mt-3 flex items-center justify-between">
+      <div className="flex items-center gap-1">
+        <ExpandIcon className="h-3.5 w-3.5 text-gray-400" />
+        <span className="text-xs text-gray-500">Experience</span>
+      </div>
+      <span className="text-green-600 font-bold text-base">
+        {doctor.experience }
+       
+      </span>
+    </div>
     {/* Consultation Fee */}
     <div className="mt-3 flex items-center justify-between">
       <div className="flex items-center gap-1">
@@ -206,7 +241,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
       </div>
       <span className="text-green-600 font-bold text-base">
         {doctor.consultationFee && doctor.consultationFee > 0 ? (
-          <>₹{doctor.consultationFee + 150 }</>
+          <>₹{doctor.consultationFee }</>
         ) : (
           <span className="text-blue-600 text-sm font-medium">Free Consult</span>
         )}

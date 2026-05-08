@@ -568,7 +568,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check, Loader2, Trash2, File } from 'lucide-react';
+import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check, Loader2, Trash2, File, CheckCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
@@ -612,6 +612,7 @@ export interface MedicalFacility {
   documentUrl?: string; // Add this for PDF documents
   documentName?: string; // Store the original filename
   bannerUrl?: string;
+  profile_visibility:boolean;
 }
 
 interface UploadedDocument {
@@ -659,6 +660,7 @@ const FacilityProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     documentUrl: '',
     documentName: '',
     country_code:'',
+    profile_visibility: true,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [user, setUser] = useState<SupabaseUser>(null);
@@ -671,6 +673,11 @@ const [pendingDocs, setPendingDocs] = useState<File[]>([]);
 const [showUploadPopup, setShowUploadPopup] = useState(false);
 const [saving, setSaving] = useState(false);
 const [bannerUrl, setBannerUrl] = useState('');
+const [updatingVisibility, setUpdatingVisibility] = useState(false);
+const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+const [pendingVisibility, setPendingVisibility] = useState<boolean | null>(null);
+ const [showAccountDialog, setShowAccountDialog] = useState(false);
+const [appointmentCheckLoading, setAppointmentCheckLoading] = useState(false);
 
   useEffect(() => {
     async function fetchFacilityProfile() {
@@ -747,6 +754,8 @@ const [bannerUrl, setBannerUrl] = useState('');
           website: facilitiesData.website,
           aboutFacility: facilitiesData.about_facility,
           bannerUrl: facilitiesData.banner_url || '',
+          
+          profile_visibility: facilitiesData?.profile_visibility ,
         }));
         setBannerUrl(facilitiesData.banner_url || '');
       }
@@ -923,6 +932,7 @@ const fetchUserDocuments = async (userId: string) => {
       website: profileData.website,
       about_facility: profileData.aboutFacility,
        banner_url: bannerUrl,
+
     };
 
     const { error: profilesUpdateError } = await supabase
@@ -1291,6 +1301,54 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
     }
   };
 
+  const confirmVisibilityUpdate = async () => {
+  if (pendingVisibility === null) return;
+  if (!user) return;
+
+  setUpdatingVisibility(true);
+  
+  // ✅ Only update profile_visibility, do NOT touch admin_user_id
+  const { error } = await supabase
+    .from('facilities')
+    .update({ profile_visibility: pendingVisibility })
+    .eq('admin_user_id', user.id);
+
+  if (!error) {
+    // Update local state immediately
+    setProfileData(prev => ({ ...prev, profile_visibility: pendingVisibility }));
+    toast({
+      title: 'Success',
+      description: `Profile visibility set to ${pendingVisibility ? 'visible' : 'hidden'}`,
+    });
+    setShowAccountDialog(false);   // close main dialog
+  } else {
+    toast({
+      title: 'Error',
+      description: error.message,
+      variant: 'destructive',
+    });
+  }
+
+  setUpdatingVisibility(false);
+  setShowConfirmDialog(false);
+  setPendingVisibility(null);
+};
+// Request confirmation before updating
+const requestVisibilityChange = (visible: boolean) => {
+  setPendingVisibility(visible);
+  setShowConfirmDialog(true);
+};
+
+  // Cancel confirmation
+const cancelVisibilityUpdate = () => {
+  setShowConfirmDialog(false);
+  setPendingVisibility(null);
+};
+  // Open dialog (no automatic update)
+const handleViewAccount = () => {
+  setShowAccountDialog(true);
+};
+
   return (
     // <div className="max-w-4xl mx-auto space-y-6 m-2 sm:m-4 lg:m-6">
       <div className="max-w-4xl mx-auto space-y-6 m-3 md:m-3">
@@ -1360,7 +1418,14 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
         </p>
       </div>
     </div>
-
+ <div className="flex items-center space-x-2"></div>
+  <Button
+    variant="outline"
+    onClick={handleViewAccount}
+    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+  >
+    Profile Visibility Setting
+  </Button>
     <Button
       onClick={() => {
         mixpanelInstance.track('Facility Profile Edit Click', {
@@ -1392,7 +1457,6 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
 )}
 
     </Button>
-
   </div>
 </div>
 
@@ -1544,6 +1608,94 @@ const handleDeleteDocument = async (doc: UploadedDocument) => {
           </div>
         </DialogContent>
       </Dialog> */}
+
+      <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Profile Visibility Status</DialogTitle>
+            <DialogDescription>
+              Manage whether patients can see your profile and book appointments/beds.
+            </DialogDescription>
+          </DialogHeader>
+      
+          <div className="py-4 text-center">
+            {profileData.profile_visibility === true ? (
+              <div className="space-y-4">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+                <p className="text-green-700 font-medium">
+                  ✅ Your profile is currently <strong>visible</strong>.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Patients can find you for appointment bookings and bed bookings.
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={() => requestVisibilityChange(false)}
+                  disabled={updatingVisibility}
+                  className="w-full"
+                >
+                  {updatingVisibility ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Hide Profile"
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Clock className="h-12 w-12 text-orange-500 mx-auto" />
+                <p className="text-orange-700 font-medium">
+                  ⚠️ Your profile is currently <strong>hidden</strong>.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Patients cannot book appointments or beds from your profile.
+                </p>
+                <Button
+                  onClick={() => requestVisibilityChange(true)}
+                  disabled={updatingVisibility}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {updatingVisibility ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Make Profile Visible"
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+      
+          <div className="flex justify-end mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirm Action</DialogTitle>
+            <DialogDescription>
+              {pendingVisibility === true 
+                ? "Are you sure you want to make your profile visible? Patients will be able to book appointments and beds."
+                : "Are you sure you want to hide your profile? Patients will no longer see your profile or book appointments/beds."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 justify-end mt-4">
+            <Button variant="outline" onClick={cancelVisibilityUpdate}>
+              No, Cancel
+            </Button>
+            <Button 
+              onClick={confirmVisibilityUpdate}
+              className={pendingVisibility === true ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+            >
+              Yes, Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
   <DialogContent className={cn(
     "p-0 overflow-hidden",

@@ -565,14 +565,15 @@ const LandingPage = () => {
       features: ["Book Appointments", "Digital Medical Records", "Health Timeline", "Emergency SOS"]
     },
     {
-      title: "Medical Professionals", 
+      title: "Doctors Portal", 
+      // title: "Medical Professionals", 
       description: "Manage your practice, access patient records, and provide teleconsultations",
       icon: User,
       variant: "doctor" as const,
       features: ["Patient Management", "e-Prescriptions", "Teleconsultation", "Revenue Dashboard"]
     },
     {
-      title: "Medical Facilities",
+      title: "Facilities Portal",
       description: "Streamline operations, manage departments, and track facility analytics",
       icon: Calendar,
       variant: "facility" as const,

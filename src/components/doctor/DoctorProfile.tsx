@@ -1565,72 +1565,72 @@ const confirmVisibilityUpdate = async () => {
     });
 
     // ✅ Auto call Supabase Edge Function after success
-//  try {
-//   console.log("Calling visibility notification function...");
+ try {
+  console.log("Calling visibility notification function...");
 
-//   const {
-//     data: { session },
-//     error: sessionError,
-//   } = await supabase.auth.getSession();
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-//   if (sessionError) {
-//     console.error("Session Error:", sessionError);
-//     throw sessionError;
-//   }
+  if (sessionError) {
+    console.error("Session Error:", sessionError);
+    throw sessionError;
+  }
 
-//   const token = session?.access_token;
+  const token = session?.access_token;
 
-//   console.log("TOKEN:", token);
+  console.log("TOKEN:", token);
 
-//   if (!token) {
-//     throw new Error("No access token found");
-//   }
+  if (!token) {
+    throw new Error("No access token found");
+  }
 
-//   const response = await fetch(
-//     "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/send-doctors-visibility-notification",
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${token}`,
-//       },
-//       body: JSON.stringify({
-//         doctor_id: user.id,
-//         profile_status: newStatus,
-//         initiated_by: user.id,
-//         // reason:
-//         //   newStatus === "hidden"
-//         //     ? "Doctor temporarily hidden profile"
-//         //     : "Doctor enabled profile visibility",
-//         // old_status: oldStatus,
-//       }),
-//     }
-//   );
+  const response = await fetch(
+    "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/send-doctors-visibility-notification",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        doctor_id: user.id,
+        profile_status: newStatus,
+        initiated_by: user.id,
+        // reason:
+        //   newStatus === "hidden"
+        //     ? "Doctor temporarily hidden profile"
+        //     : "Doctor enabled profile visibility",
+        // old_status: oldStatus,
+      }),
+    }
+  );
 
-//   console.log("Response Status:", response.status);
+  console.log("Response Status:", response.status);
 
-//   const result = await response.text();
+  const result = await response.text();
 
-//   console.log("Function Result:", result);
+  console.log("Function Result:", result);
 
-//   if (!response.ok) {
-//     throw new Error(result);
-//   }
+  if (!response.ok) {
+    throw new Error(result);
+  }
 
-//   toast({
-//     title: "Notification Sent",
-//     description: "Visibility notification triggered successfully",
-//   });
+  toast({
+    title: "Notification Sent",
+    description: "Visibility notification triggered successfully",
+  });
 
-// } catch (err: any) {
-//   console.error("EDGE FUNCTION ERROR:", err);
+} catch (err: any) {
+  console.error("EDGE FUNCTION ERROR:", err);
 
-//   toast({
-//     title: "Function Error",
-//     description: err.message || "Something went wrong",
-//     variant: "destructive",
-//   });
-// }
+  toast({
+    title: "Function Error",
+    description: err.message || "Something went wrong",
+    variant: "destructive",
+  });
+}
 
     setShowAccountDialog(false);
   } else {

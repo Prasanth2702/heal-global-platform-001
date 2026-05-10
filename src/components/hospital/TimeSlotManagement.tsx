@@ -2193,11 +2193,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2, Clock, Calendar, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Clock, Calendar, Users, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import mixpanelInstance from "@/utils/mixpanel";
 import { useUser } from "@/hooks/useUser"; // Import useUser hook
 import Loader3 from "../ui/Loader3";
+import { sendContactEnquiry } from "@/services/contactApi";
+import { Textarea } from "../ui/textarea";
+
+type SlotType = "clinic" | "tele" | null;
 
 interface TimeSlot {
   id: string;
@@ -2211,7 +2215,7 @@ interface TimeSlot {
   slotDuration: number;
   breakTime: number;
   isActive: boolean;
-  appointmentType: "consultation" | "procedure" | "emergency" | "followup";
+  appointmentType: "consultation" | "procedure" | "emergency" | "followup" |"teleconsultation";
 }
 
 interface Department {
@@ -2271,11 +2275,28 @@ const TimeSlotManagement = () => {
   ];
   const appointmentTypes = [
     "consultation",
-    "procedure",
-    "emergency",
-    "followup",
-    "booking",
+    "teleconsultation"
+    // "procedure",
+    // "emergency",
+    // "followup",
+    // "booking",
   ];
+
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    subject: "",
+    message: "",
+  });
+  const openContactDialog = () => {
+    setContactForm({
+      name: `${userFacility?.facility_name} `.trim(),
+      subject: "",
+      message: "",
+    });
+    setShowContactDialog(true);
+  };
 
   const trackTimeSlotAction = (action: string, slotData?: any, additionalData = {}) => {
     mixpanelInstance.track('Time Slot Management Action', {
@@ -2340,10 +2361,17 @@ const TimeSlotManagement = () => {
         .from("departments")
         .select("*")
         .eq("facility_id", userFacility.id) // Filter by user's facility ID
-        .eq("is_active", true);
-
+        .eq("is_active", true)
+.neq("name", "Bed Management");
       if (deptError) throw deptError;
-      setDepartments(departmentsData || []);
+      const filteredDepartments =
+  (departmentsData || []).filter(
+    (dept) =>
+      dept.name !== "Bed Management" &&
+      dept.type !== "Bed Management"
+  );
+
+setDepartments(filteredDepartments);
 
       // Fetch slots for user's facility only
       const { data, error } = await supabase
@@ -2650,6 +2678,58 @@ const TimeSlotManagement = () => {
     setSelectedDepartmentType(value);
   };
 
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (!contactForm.name.trim()) {
+      toast({ title: "Missing name", description: "Please enter your name.", variant: "destructive" });
+      return;
+    }
+    if (!contactForm.subject.trim()) {
+      toast({ title: "Missing subject", description: "Please enter a subject.", variant: "destructive" });
+      return;
+    }
+    if (contactForm.message.trim().length < 10) {
+      toast({ title: "Message too short", description: "Message must be at least 10 characters.", variant: "destructive" });
+      return;
+    }
+  
+    setContactSubmitting(true);
+    try {
+      // Get current user profile data (email, phone) if needed
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = user?.email || "";
+      const userPhone = ""; // you can fetch from profiles if available
+  
+      const result = await sendContactEnquiry({
+        name: contactForm.name,
+        email: userEmail,
+        phone: userPhone,
+        subject: contactForm.subject,
+        message: contactForm.message,
+      });
+  
+      if (result.success) {
+        toast({
+          title: "Message sent",
+          description: "Thank you! We'll get back to you soon.",
+          className: "bg-green-500 text-white",
+        });
+        setShowContactDialog(false);
+        setContactForm({ name: "", subject: "", message: "" });
+      } else {
+        throw new Error(result.error || "Failed to send message");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
  
 
   if (!userFacility && !isLoading) {
@@ -2724,11 +2804,37 @@ return (
                           {dept.type}{dept.name}
                         </SelectItem>
                       ))}
+                      <SelectItem value="other">
+        Other
+      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                  {formData.department_id === "other" && (
+    <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-3">
 
-                {!editingSlot && (
+      <h3 className="font-semibold text-blue-800">
+        Department Not Available
+      </h3>
+
+      <p className="text-sm text-blue-700 mt-1">
+        Please contact support to add a new department or service.
+      </p>
+
+      <Button
+        type="button"
+        className="mt-4"
+          onClick={
+          openContactDialog
+        }
+      >
+        Contact Support
+      </Button>
+    </div>
+  )}
+{formData.department_id !== "other" && (
+<>
+                { !editingSlot && (
                   <div className="grid gap-2">
                     <Label>Days of Week</Label>
                     <div className="grid grid-cols-2 gap-2">
@@ -2857,27 +2963,91 @@ return (
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      {/* <SelectContent>
                         {appointmentTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type.charAt(0).toUpperCase() + type.slice(1)}
                           </SelectItem>
                         ))}
-                      </SelectContent>
+                      </SelectContent> */}
+                      <SelectContent>
+                                <SelectItem value="consultation">Consultation</SelectItem>
+                                <SelectItem value="tele">TeleConsultation</SelectItem>
+                              </SelectContent>
                     </Select>
+
+                   
                   </div>
                 </div>
+
+                </>
+)}
               </div>
+              {formData.department_id !== "other" && (
               <DialogFooter>
                 <Button type="submit">
                   {editingSlot ? "Update Time Slot" : "Create Time Slots"}
                 </Button>
               </DialogFooter>
+              )}
             </form>
           </DialogContent>
         </Dialog>
     </div>
-
+  {/* Contact Support Dialog */}
+<Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Contact Support</DialogTitle>
+      <DialogDescription>
+        You have reached the maximum number of departments for your plan.
+        Send us a message to request a limit increase.
+      </DialogDescription>
+    </DialogHeader>
+    <form onSubmit={handleContactSubmit} className="space-y-4 mt-4">
+      <div>
+        <Label htmlFor="contactName">Your Name *</Label>
+        <Input
+          id="contactName"
+          value={contactForm.name}
+          onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="Enter your name"
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="contactSubject">Subject *</Label>
+        <Input
+          id="contactSubject"
+          value={contactForm.subject}
+          onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+          placeholder="e.g., Department limit increase"
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="contactMessage">Message *</Label>
+        <Textarea
+          id="contactMessage"
+          rows={4}
+          value={contactForm.message}
+          onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+          placeholder="Please describe your need for additional departments..."
+          required
+        />
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={() => setShowContactDialog(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={contactSubmitting}>
+          {contactSubmitting ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
+          Send Message
+        </Button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
     {/* Filters – unchanged */}
     <div className="flex flex-col sm:flex-row gap-4">
       <div className="space-y-2">

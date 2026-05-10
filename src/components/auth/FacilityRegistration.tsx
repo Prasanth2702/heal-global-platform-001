@@ -2236,7 +2236,7 @@ const [showRepeatPassword, setShowRepeatPassword] = useState(false);
     const departmentMap: { [key: string]: string[] } = {
       'hospital': [
         "General Medicine", "Cardiology", "Neurology", "Orthopedics", "Pediatrics",
-        "Gynecology", "Surgery", "Emergency", "ICU", "Radiology", "Pathology",
+        "Gynecology", "Surgery", "Emergency", "Radiology", "Pathology",
         "Dermatology", "ENT", "Ophthalmology", "Psychiatry", "Physiotherapy"
       ],
       'clinic': [

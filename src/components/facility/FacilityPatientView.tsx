@@ -2467,6 +2467,7 @@ interface FacilityProfile {
   email?: string;
   phone_number?: string;
   departments?: Department[];
+   host_joined?: boolean;
 }
 
 export interface Department {
@@ -2485,6 +2486,7 @@ export interface Department {
   price_per_day?: number;
   has_variable_pricing?: boolean;
   staff_count?: number;
+   host_joined?: boolean;
 }
 
 interface Appointment {
@@ -2603,7 +2605,7 @@ const [showFinalConfirm, setShowFinalConfirm] = useState(false);
     meetingId: string;
     participantName: string;
     appointmentId: string;
-    userRole: "patient" | "doctor";
+    userRole: "patient" | "doctor" |"facility";
   }>({
     showMeeting: false,
     meetingId: "",
@@ -3568,7 +3570,8 @@ const loadPatientData = async (patientRecord: any) => {
         patient_id,
         department_id,
         document_requested,
-        appointment_date
+        appointment_date,
+         host_joined
       `)
       .eq("facility_id", facilityRecord.id)
       .order("appointment_date", { ascending: false })
@@ -3587,6 +3590,7 @@ const loadPatientData = async (patientRecord: any) => {
         department_name: department?.name || "N/A",
         doctor_name: "N/A",
         doctor_specialty: "General",
+        host_joined: apt.host_joined || false,
       };
     });
 
@@ -3620,6 +3624,7 @@ const loadPatientData = async (patientRecord: any) => {
         department_name: `Wards: ${wardCount || 0}`,
         doctor_name: `Beds: ${bedCount || 0}`,
         doctor_specialty: "",
+        host_joined:  false,
       } as any,
     ]);
 
@@ -3645,7 +3650,8 @@ const loadPatientData = async (patientRecord: any) => {
           reminder_sent,
           payment_requested,
           document_requested,
-          created_at
+          created_at,
+          host_joined
         `)
         .eq("id", appointmentId)
         .single();
@@ -3711,6 +3717,7 @@ const loadPatientData = async (patientRecord: any) => {
           payment_requested: aptData.payment_requested,
           document_requested: aptData.document_requested, // ✅ crucial field
           createdAt: aptData.created_at,
+          host_joined: aptData.host_joined,
         });
       }
     }
@@ -4223,7 +4230,7 @@ useEffect(() => {
 
   
 
-  const handleJoinVideo = (appointment: Appointment, userRole: "patient" | "doctor") => {
+  const handleJoinVideo = (appointment: Appointment, userRole: "patient" | "doctor" | "facility") => {
     if (!appointment.video_room_id) {
       toast({ title: "Error", description: "No video room available for this appointment", variant: "destructive" });
       return;
@@ -4239,15 +4246,27 @@ useEffect(() => {
       setJoiningVideo(true);
   try {
 
-    const participantName = userRole === "patient" && patient
-      ? `${patient.first_name} ${patient.last_name}`
-      : userRole === "doctor" && doctorProfile
-      ? `Dr. ${doctorProfile.first_name} ${doctorProfile.last_name}`
-      : "";
-      
-       if (userRole === "doctor") {
-      handleJoinMeeting(); // fire-and-forget
+    let participantName = "";
+    if (userRole === "patient" && patient) {
+      participantName = `${patient.first_name} ${patient.last_name}`;
+    } else if (userRole === "doctor" && doctorProfile) {
+      participantName = `Dr. ${doctorProfile.first_name} ${doctorProfile.last_name}`;
+    } else if (userRole === "facility" && facility) {
+      participantName = facility.facility_name;
     }
+
+    if (userRole === "doctor" || userRole === "facility") {
+      handleJoinMeeting(); // update host_joined
+    }
+    // const participantName = userRole === "patient" && patient
+    //   ? `${patient.first_name} ${patient.last_name}`
+    //   : userRole === "doctor" && doctorProfile
+    //   ? `Dr. ${doctorProfile.first_name} ${doctorProfile.last_name}`
+    //   : "";
+      
+    //    if (userRole === "doctor") {
+    //   handleJoinMeeting(); // fire-and-forget
+    // }
     setVideoMeeting({
       showMeeting: true,
       meetingId: appointment.video_room_id,
@@ -4268,7 +4287,7 @@ useEffect(() => {
     return (
       <div className="inset-0 bg-white">
         <VideoMeeting
-          isHost={videoMeeting.userRole === "doctor"}
+          isHost={videoMeeting.userRole !== "patient"}
           apiKey={apiKey}
           meetingId={videoMeeting.meetingId}
           name={videoMeeting.participantName}
@@ -4276,7 +4295,7 @@ useEffect(() => {
           micEnabled={true}
           webcamEnabled={true}
           containerId="video-container"
-          meetingTitle={`Consultation with ${videoMeeting.userRole === "patient" ? "Doctor" : "Patient"}`}
+          meetingTitle={`Consultation with ${videoMeeting.userRole}`}
           appointmentId={videoMeeting.appointmentId}
           userId={userId || ""}
           userRole={videoMeeting.userRole}
@@ -4289,6 +4308,7 @@ useEffect(() => {
   const isCompleted = currentAppointment?.status === "completed";
   const isCancelled = currentAppointment?.status === "cancelled";
   const isDoctor = userRole === "doctor";
+  const isFacility = userRole === "facility";
 
   const PaymentCompleted = async () => {
     if (!appointmentId) {
@@ -4319,17 +4339,39 @@ useEffect(() => {
     }
   };
 
+  // const handleJoinMeeting = async () => {
+  //   setJoiningMeeting(true);
+  //   if (!appointmentId || !userId) return;
+  //   const { error } = await supabase
+  //     .from("appointments")
+  //     .update({ host_joined: true })
+  //     .eq("id", appointmentId)
+  //     .eq("doctor_id", userId)
+  //     .eq("facility_id",userId);
+  //   if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+  //   setJoiningMeeting(false);
+  // };
+
   const handleJoinMeeting = async () => {
-    setJoiningMeeting(true);
-    if (!appointmentId || !userId) return;
-    const { error } = await supabase
-      .from("appointments")
-      .update({ host_joined: true })
-      .eq("id", appointmentId)
-      .eq("doctor_id", userId);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    setJoiningMeeting(false);
-  };
+  setJoiningMeeting(true);
+  if (!appointmentId || !userId) return;
+
+  let updateQuery = supabase
+    .from("appointments")
+    .update({ host_joined: true })
+    .eq("id", appointmentId);
+
+  if (userRole === "doctor") {
+    updateQuery = updateQuery.eq("doctor_id", userId);
+  } else if (userRole === "facility") {
+    // Facility as host – update by facility_id (or admin_user_id)
+    updateQuery = updateQuery.eq("facility_id", currentAppointment?.facility_id);
+  }
+
+  const { error } = await updateQuery;
+  if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+  setJoiningMeeting(false);
+};
 
   const cancelAppointment = async () => {
     if (!cancelReason.trim()) {
@@ -5527,6 +5569,69 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
   </Card>
 )}
 
+{(currentUserRole === "hospital_admin" || currentUserRole === "hospital_staff") && currentAppointment && currentAppointment.type === "teleconsultation" && currentAppointment.status === "confirmed" && (
+  <Card className="relative border-0 shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <Telescope className="h-5 w-5" />
+        Start Tele Consultation Meeting
+      </CardTitle>
+    </div>
+    <CardHeader className="pb-2">
+      <CardTitle className="flex items-center text-base">
+        <Video className="mr-2 h-5 w-5 text-sky-600" /> Upcoming Teleconsultation
+      </CardTitle>
+      <CardDescription>
+        Scheduled on {new Date(currentAppointment.appointment_date).toLocaleDateString()}
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {/* Main action buttons row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button
+          onClick={() => {
+            handleJoinVideo(currentAppointment, "facility");
+            handleJoinMeeting();
+          }}
+          disabled={joiningVideo}
+          className="flex-1"
+        >
+          {joiningVideo ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Video className="mr-2 h-4 w-4" />
+          )}
+          {joiningVideo ? "Starting..." : "Start Tele Consultation"}
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={() => setOpenCancel(true)}
+          disabled={isCompleted || isCancelled}
+          className="flex-1"
+        >
+          Cancel Appointment
+        </Button>
+      </div>
+      {/* Mark as Completed button – below for clarity */}
+      <Button
+        variant="doctor"
+        onClick={() => setOpenComplete(true)}
+        disabled={isCompleted || isCancelled || !isAppointmentTimePassed()}
+        className="w-full sm:w-auto"
+      >
+        Mark as Completed
+      </Button>
+      {/* Warning message */}
+      <div className="mt-2 p-3 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-900 flex items-start gap-2">
+        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+        <div className="text-sm">
+          <CompletionMessage />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
             {/* Medical Documents Card - only if document_requested true */}
             {/* {currentAppointment?.document_requested === true && ( */}
               <Card className="relative border-0 shadow-lg overflow-hidden">
@@ -6366,6 +6471,54 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
 )}
               </Card>
             {/* )} */}
+
+    {currentAppointment?.type === "teleconsultation" && currentAppointment?.status === "confirmed" && (
+  <Card className="bg-sky-50/40 border-sky-100 sm:col-span-2">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
+      <CardTitle className="text-white flex items-center gap-2">
+        <Telescope className="h-5 w-5" />
+        Join Tele Consultation Meeting
+      </CardTitle>
+    </div>
+    <CardContent className="p-4 flex flex-col items-center text-center">
+      <Video className="h-8 w-8 text-sky-600 mb-2" />
+      <h3 className="font-semibold">Tele Consultation</h3>
+      <p className="text-xs text-muted-foreground mb-3">Join the live session as host</p>
+      <div className="mt-2 mb-4">
+        {meetingEnded ? (
+          <p className="text-sm text-red-600 font-medium">This consultation session has ended</p>
+        ) : currentAppointment?.host_joined ? (
+          <p className="text-sm text-green-600 font-medium">You have joined the session. Patient can now join.</p>
+        ) : (
+          <p className="text-sm text-blue-600 font-medium">You are the host. Click below to start the meeting.</p>
+        )}
+      </div>
+      <Button
+        onClick={() => {
+          mixpanelInstance.track("Facility Join Tele Consultation", {
+            appointmentId: currentAppointment.id,
+            timestamp: new Date().toISOString(),
+          });
+          handleJoinVideo(currentAppointment, "facility");
+        }}
+        disabled={joiningVideo || meetingEnded}
+        className="w-full"
+      >
+        {meetingEnded ? (
+          "Consultation Ended"
+        ) : joiningVideo ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Joining...
+          </>
+        ) : (
+          <>
+            <Video className="mr-2 h-4 w-4" /> Join Tele Consultation
+          </>
+        )}
+      </Button>
+    </CardContent>
+  </Card>
+)}
 
             {/* {currentAppointment?.document_requested === true && ( */}
               <Card className=" relative border-0 shadow-lg overflow-hidden">

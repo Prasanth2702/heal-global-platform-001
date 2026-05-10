@@ -4885,6 +4885,7 @@ import AnalyticsReportsPage from "@/components/facility/AnalyticsReportsPage";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+import BedBookingPatient from "@/components/facility/BedBookingPatient";
 
 interface Facility {
   id: string;
@@ -5567,6 +5568,9 @@ const ViewFacility: React.FC = () => {
                 <Tab.Pane eventKey="bed-bookings">
                   <BedBookingManagementPage />
                 </Tab.Pane>
+                {/* <Tab.Pane eventKey="patients">
+                  <BedBookingPatient />
+                </Tab.Pane> */}
                 <Tab.Pane eventKey="patients">
                   <PatientBookingsPage />
                 </Tab.Pane>

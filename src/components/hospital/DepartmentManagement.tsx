@@ -352,6 +352,8 @@ import {
   ChevronRight,
   ChevronLeft,
   PhoneIcon,
+  Loader,
+  MessageCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -373,6 +375,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Loader2 from "../ui/Loader2";
 import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+import { sendContactEnquiry } from "@/services/contactApi";
 
 interface Profile {
   id: string;
@@ -484,8 +487,15 @@ const [editingSlot, setEditingSlot] = useState<any>(null);
  const [isCreatingUser, setIsCreatingUser] = useState(false);
 // Add these constants
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const appointmentTypes = ["consultation", "followup", "emergency", "checkup"];
-
+// const appointmentTypes = ["consultation", "followup", "emergency", "checkup"];
+    const appointmentTypes = [
+    "consultation",
+    "teleconsultation"
+    // "procedure",
+    // "emergency",
+    // "followup",
+    // "booking",
+  ];
 // Add these functions
 const trackTimeSlotAction = (action: string, slotData?: any, additionalData = {}) => {
   mixpanelInstance.track('Time Slot Management Action', {
@@ -548,7 +558,6 @@ const departmentOptions = [
   "Gynecology",
   "Surgery",
   "Emergency",
-  "ICU",
   "Radiology",
   "Pathology",
   "Dermatology",
@@ -561,12 +570,28 @@ const departmentOptions = [
   "Homeopathy",
   "Dietetics",
   "Laboratory",
-  "Bed Management"
+  "Bed Management",
+  "Other"
 ];
 // Make sure you have access to the departments state and userFacility
 // You already have these from your code:
 // const [departments, setDepartments] = useState<Department[]>([]);
 // const [userFacility, setUserFacility] = useState<Facility | null>(null);
+const [showContactDialog, setShowContactDialog] = useState(false);
+const [contactSubmitting, setContactSubmitting] = useState(false);
+const [contactForm, setContactForm] = useState({
+  name: "",
+  subject: "",
+  message: "",
+});
+const openContactDialog = () => {
+  setContactForm({
+    name: `${userFacility?.facility_name} `.trim(),
+    subject: "",
+    message: "",
+  });
+  setShowContactDialog(true);
+};
 const [currentStep, setCurrentStep] = useState(2);
 const [departmentCreated, setDepartmentCreated] = useState(false);
 const [timeCreated, setTimeCreated] = useState(false);
@@ -619,6 +644,7 @@ const [timeCreated, setTimeCreated] = useState(false);
   status: "active",
   role: "hospital_staff",
   });
+
 
   const trackDepartmentAction = (action: string, departmentData?: any, additionalData = {}) => {
   mixpanelInstance.track('Department Management Action', {
@@ -1188,6 +1214,7 @@ setIsLoading(true); // Add this line
       start_time: formData.startTime,
       end_time: formData.endTime,
       slot_type: formData.appointmentType,
+      max_appointments: formData.maxAppointments,
       day_of_week: day,
       is_available: true,
       created_at: new Date().toISOString(),
@@ -1705,6 +1732,59 @@ const getFieldValue = (field: string): any => {
   }
 };
 
+const handleContactSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!contactForm.name.trim()) {
+    toast({ title: "Missing name", description: "Please enter your name.", variant: "destructive" });
+    return;
+  }
+  if (!contactForm.subject.trim()) {
+    toast({ title: "Missing subject", description: "Please enter a subject.", variant: "destructive" });
+    return;
+  }
+  if (contactForm.message.trim().length < 10) {
+    toast({ title: "Message too short", description: "Message must be at least 10 characters.", variant: "destructive" });
+    return;
+  }
+
+  setContactSubmitting(true);
+  try {
+    // Get current user profile data (email, phone) if needed
+    const { data: { user } } = await supabase.auth.getUser();
+    const userEmail = user?.email || "";
+    const userPhone = ""; // you can fetch from profiles if available
+
+    const result = await sendContactEnquiry({
+      name: contactForm.name,
+      email: userEmail,
+      phone: userPhone,
+      subject: contactForm.subject,
+      message: contactForm.message,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Message sent",
+        description: "Thank you! We'll get back to you soon.",
+        className: "bg-green-500 text-white",
+      });
+      setShowContactDialog(false);
+      setContactForm({ name: "", subject: "", message: "" });
+    } else {
+      throw new Error(result.error || "Failed to send message");
+    }
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Something went wrong. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setContactSubmitting(false);
+  }
+};
+
 const handleBlur = (field: string) => {
   setTouchedFields(prev => ({ ...prev, [field]: true }));
   const error = validateField(field, getFieldValue(field));
@@ -1916,7 +1996,14 @@ const getSubmitHandler = () => {
         <>
         <DialogHeader>
           <DialogTitle>
-            {editingDepartment ? "Edit Staff Department" : "Add Staff Department"}
+            {/* {editingDepartment ? "Edit Staff Department" : "Add Staff Department"} */}
+             {editingDepartment 
+      ? "Edit Staff Department" 
+      : currentStep === 1 
+        ? "Create the Department" 
+        : currentStep === 2 
+          ? "Add time slots for created Department" 
+          : "Create staff in this Department"}
           </DialogTitle>
           <DialogDescription>
             {editingDepartment
@@ -2005,7 +2092,41 @@ const getSubmitHandler = () => {
               </div>
             )}
           </div>
-          
+           {formData.name === "Other" ? (
+
+    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 text-center shadow-sm">
+
+      <div className="flex justify-center mb-4">
+        <div className="bg-blue-100 p-3 rounded-full">
+          <MessageCircle className="h-8 w-8 text-blue-600" />
+        </div>
+      </div>
+
+      <h3 className="text-lg font-semibold text-blue-900">
+        Need a Custom Department?
+      </h3>
+
+      <p className="text-sm text-blue-700 mt-2 leading-relaxed">
+        The selected department is not available right now.
+        Please contact our support team to request a new department
+        for your facility.
+      </p>
+
+      <Button
+        type="button"
+        className="mt-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+        onClick={
+          openContactDialog
+        }
+      >
+        Contact Support
+      </Button>
+
+    </div>
+
+  ) : (
+
+    <>
           <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -2106,6 +2227,7 @@ const getSubmitHandler = () => {
               placeholder="e.g., MRI Machine, X-ray Machine, ECG"
             />
           </div>
+          </>)}
         </>
       )}
     </div>
@@ -2115,6 +2237,7 @@ const getSubmitHandler = () => {
         <div className="grid gap-2">
             <Label htmlFor="name">Department / Services</Label>
             {!isEditMode ? (
+              <>
               <select
                 id="name"
                 value={formData.name}
@@ -2133,6 +2256,7 @@ const getSubmitHandler = () => {
                     </option>
                 ))}
               </select>
+              </>
             ) : (
               <div className="flex h-10 w-full items-center rounded-md border px-3 text-sm bg-gray-100">
                 {formData.name || "No department selected"}
@@ -2370,7 +2494,7 @@ const getSubmitHandler = () => {
               }))
             }
             placeholder="10"
-            min="1"
+            min="10"
             required
           />
         </div>
@@ -2885,8 +3009,9 @@ const getSubmitHandler = () => {
     </>
   )}
 </DialogFooter> */}
+{formData.name !== "Other" &&(
 <DialogFooter className="gap-2">
-  {currentStep === 1 && editingDepartment ? (
+  {currentStep === 1 && editingDepartment  ? (
     // Edit mode - Show Update button only
     <>
       {/* <Button type="button" variant="outline" onClick={resetForm}>
@@ -3011,6 +3136,7 @@ const getSubmitHandler = () => {
     </>
   ) : null}
 </DialogFooter>
+)}
 </form>
 </>
           )}
@@ -3217,7 +3343,60 @@ const getSubmitHandler = () => {
     </Dialog> */}
   </div>
 </div>
-      
+      {/* Contact Support Dialog */}
+<Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Contact Support</DialogTitle>
+      <DialogDescription>
+        You have reached the maximum number of departments for your plan.
+        Send us a message to request a limit increase.
+      </DialogDescription>
+    </DialogHeader>
+    <form onSubmit={handleContactSubmit} className="space-y-4 mt-4">
+      <div>
+        <Label htmlFor="contactName">Your Name *</Label>
+        <Input
+          id="contactName"
+          value={contactForm.name}
+          onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="Enter your name"
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="contactSubject">Subject *</Label>
+        <Input
+          id="contactSubject"
+          value={contactForm.subject}
+          onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+          placeholder="e.g., Department limit increase"
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="contactMessage">Message *</Label>
+        <Textarea
+          id="contactMessage"
+          rows={4}
+          value={contactForm.message}
+          onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+          placeholder="Please describe your need for additional departments..."
+          required
+        />
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={() => setShowContactDialog(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={contactSubmitting}>
+          {contactSubmitting ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
+          Send Message
+        </Button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
 
       {/* <Card>
         <CardHeader>

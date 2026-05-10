@@ -999,7 +999,7 @@ const Header = () => {
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex h-16 sm:h-20 items-center justify-between">
             {/* Logo */}
-            <Link 
+            {/* <Link 
               to="/" 
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity" 
               onClick={closeMobileMenu}
@@ -1010,6 +1010,41 @@ const Header = () => {
                 className="h-20 w-20 sm:h-24 sm:w-24 md:h-32 md:w-32 lg:h-36 lg:w-36 object-contain"
               />
             </Link>
+            <p>Poore Parivaar Ki Sehat, Ek App Mein.</p> */}
+           <div className="flex flex-col items-center justify-center text-center">
+  <Link
+    to="/"
+    className="flex flex-col items-center hover:opacity-80 transition-opacity"
+    onClick={closeMobileMenu}
+  >
+    {/* Logo */}
+    <img
+      src={logoheader}
+      alt="PMHS Smart Health"
+      className="
+       h-9 w-18 sm:h-10 sm:w-24 md:h-10 md:w-30 lg:h-14 lg:w-30
+        object-contain
+      "
+    />
+
+    {/* Text */}
+    {logoheader && (
+      <p
+        className="
+          text-[10px]
+          font-medium
+          text-green-900
+          leading-tight
+          text-center
+        "
+      >
+        Poore Parivaar Ki Sehat,
+        <br/>
+        Ek App Mein.
+      </p>
+    )}
+  </Link>
+</div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1 lg:space-x-2 xl:space-x-3">

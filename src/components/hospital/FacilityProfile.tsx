@@ -568,7 +568,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check, Loader2, Trash2, File, CheckCircle, Clock } from 'lucide-react';
+import { X, Edit, Save, Phone, Mail, MapPin, Camera, FileText, Download, Eye, Upload, Check, Loader2, Trash2, File, CheckCircle, Clock, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { isValidPhoneNumber } from "@/utils/phoneValidation";
@@ -583,6 +583,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { sendContactEnquiry } from '@/services/contactApi';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface MedicalFacility {
   facilityName: string;
@@ -678,7 +680,34 @@ const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 const [pendingVisibility, setPendingVisibility] = useState<boolean | null>(null);
  const [showAccountDialog, setShowAccountDialog] = useState(false);
 const [appointmentCheckLoading, setAppointmentCheckLoading] = useState(false);
+// Contact popup states
+const [showContactDialog, setShowContactDialog] = useState(false);
+const [contactForm, setContactForm] = useState({
+  name: "",
+  subject: "",
+  message: "",
+});
+const [contactSubmitting, setContactSubmitting] = useState(false);
 
+  const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
+const openContactDialog = () => {
+  setContactForm({
+    name: `${profileData.facilityName} `.trim(),
+    subject: "",
+    message: "",
+  });
+  setShowContactDialog(true);
+};
+  const facilityTypes = [
+    "Hospital", "Clinic", "Diagnostic Center", "Pharmacy", "Ayurveda Center",
+    "Homeopathy Clinic", "Physiotherapy Center", "Dental Clinic",
+    "Eye Care Center", "Maternity Home", "Nursing Home", "Rehabilitation Center"
+  ];
+  
+const handleContactInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  setContactForm(prev => ({ ...prev, [name]: value }));
+};
   useEffect(() => {
     async function fetchFacilityProfile() {
       const {
@@ -1003,6 +1032,57 @@ const fetchUserDocuments = async (userId: string) => {
   setSaving(false);
   };
 
+   const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    // Basic validation
+    if (!contactForm.name.trim()) {
+      toast({ title: "Missing name", description: "Please enter your name.", variant: "destructive" });
+      return;
+    }
+    if (!contactForm.subject.trim()) {
+      toast({ title: "Missing subject", description: "Please enter a subject.", variant: "destructive" });
+      return;
+    }
+    if (contactForm.message.trim().length < 10) {
+      toast({ title: "Message too short", description: "Message must be at least 10 characters.", variant: "destructive" });
+      return;
+    }
+  
+    setContactSubmitting(true);
+    try {
+      // Use your existing sendContactEnquiry service (it expects email, phone, etc.)
+      // We'll adapt by sending the doctor's email and a default phone
+      const result = await sendContactEnquiry({
+        name: contactForm.name,
+        email: profileData.emailAddress,   // use doctor's email
+        phone: profileData.phoneNumber,
+        subject: contactForm.subject,
+        message: contactForm.message,
+      });
+  
+      if (result.success) {
+        toast({
+          title: "Message sent",
+          description: "Thank you! We'll get back to you soon.",
+          className: "bg-green-500 text-white",
+        });
+        setShowContactDialog(false);
+        setContactForm({ name: "", subject: "", message: "" });
+      } else {
+        throw new Error(result.error || "Failed to send message");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     mixpanelInstance.track('Facility Profile Image Upload Attempt');
     const file = event.target.files?.[0];
@@ -1084,6 +1164,11 @@ const fetchUserDocuments = async (userId: string) => {
   toast({ title: 'Banner uploaded', description: 'Facility banner updated.' });
   setUploading(false);
 };
+
+ const handleFacilityTypeChange = (value: string) => {
+    setProfileData({ ...profileData, facilityType: value });
+  
+  };
 
 //  const [uploadedDocs, setUploadedDocs] = useState<Array<{name: string, type: 'patient' | 'doctor' | 'facility'}>>([]);
 
@@ -1352,7 +1437,59 @@ const handleViewAccount = () => {
   return (
     // <div className="max-w-4xl mx-auto space-y-6 m-2 sm:m-4 lg:m-6">
       <div className="max-w-4xl mx-auto space-y-6 m-3 md:m-3">
+<Card className="w-full border-0 shadow-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white rounded-3xl overflow-hidden">
+  <CardContent className="p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
 
+    {/* Left Content */}
+    <div className="flex-1">
+      
+      {/* Top Badge */}
+      <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-5">
+        ✨ Quick & Easy Support
+      </div>
+
+      {/* Heading */}
+      <h2 className="text-3xl md:text-3xl font-bold leading-tight mb-4">
+        Contact Our Support Team Anytime
+      </h2>
+
+      {/* Description */}
+      <p className="text-white/90 text-sm md:text-lg leading-relaxed max-w-2xl">
+        Need help with appointments, bookings, departments, or services?  
+        Our support team is ready to assist you quickly and easily.
+      </p>
+
+
+      {/* Buttons */}
+      <div className="flex flex-wrap gap-4 mt-8">
+        <Button
+         onClick={openContactDialog}
+  variant="outline"
+          className="bg-white text-indigo-700 hover:bg-gray-100 font-semibold rounded-xl px-8 py-6 text-base"
+        >
+          Contact Support
+        </Button>
+
+       
+      </div>
+    </div>
+
+    {/* Right Side Illustration */}
+    <div className="flex items-center justify-center">
+      <div className="relative">
+        
+        {/* Glow Effect */}
+        <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full"></div>
+
+        {/* Icon Circle */}
+        <div className="relative w-36 h-36 md:w-48 md:h-48 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
+          <User className="w-16 h-16 md:w-24 md:h-24 text-white" />
+        </div>
+      </div>
+    </div>
+
+  </CardContent>
+</Card>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
 
@@ -1608,6 +1745,62 @@ const handleViewAccount = () => {
           </div>
         </DialogContent>
       </Dialog> */}
+
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact Support</DialogTitle>
+            <DialogDescription>
+              Send us your questions or feedback. We'll respond within 24 hours.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleContactSubmit} className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="contactName">Facility Name *</Label>
+              <Input
+                id="contactName"
+                name="name"
+                value={contactForm.name}
+                onChange={handleContactInputChange}
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="contactSubject">Subject *</Label>
+              <Input
+                id="contactSubject"
+                name="subject"
+                value={contactForm.subject}
+                onChange={handleContactInputChange}
+                placeholder="e.g., Appointment issue, Billing question"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="contactMessage">Message *</Label>
+              <Textarea
+                id="contactMessage"
+                name="message"
+                rows={4}
+                value={contactForm.message}
+                onChange={handleContactInputChange}
+                placeholder="Please describe your issue or question in detail..."
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowContactDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={contactSubmitting}>
+                {contactSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Send Message
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
         <DialogContent className="sm:max-w-md">
@@ -1874,12 +2067,27 @@ const handleViewAccount = () => {
             <div>
               <Label htmlFor="facilityType" className="text-sm font-semibold text-gray-700">Facility Type</Label>
               {isEditing ? (
-                <Input
-                  id="facilityType"
-                  value={profileData.facilityType}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, facilityType: e.target.value }))}
-                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
-                />
+                // <Input
+                //   id="facilityType"
+                //   value={profileData.facilityType}
+                //   onChange={(e) => setProfileData(prev => ({ ...prev, facilityType: e.target.value }))}
+                //   className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                // />
+                <Select 
+                          value={profileData.facilityType} 
+                          onValueChange={handleFacilityTypeChange}
+                        >
+                          <SelectTrigger className={touchedFields.facilityType ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Select facility type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {facilityTypes.map((type) => (
+                              <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, '-')}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
               ) : (
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.facilityType}</p>
               )}

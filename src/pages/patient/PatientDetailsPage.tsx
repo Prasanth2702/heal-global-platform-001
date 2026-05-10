@@ -1645,14 +1645,14 @@ const getLiveStatus = (booking: BedBooking) => {
                           <CardTitle className="text-xl">
                             Booking #{booking.booking_reference}
                           </CardTitle>
-                          <Badge className={getStatusColor(booking.status)} variant="outline">
+                          {/* <Badge className={getStatusColor(booking.status)} variant="outline">
                             <span className="flex items-center space-x-1">
                               {getStatusIcon(booking.status)}
                               <span>
                                 {formatForDisplay(booking.status)}
                               </span>
                             </span>
-                          </Badge>
+                          </Badge> */}
                         </div>
                         <CardDescription>
                           Created on {formatDate(booking.created_at)}
@@ -1660,6 +1660,9 @@ const getLiveStatus = (booking: BedBooking) => {
                         </CardDescription>
                       </div>
                       <div className="flex flex-wrap gap-2">
+                        <Badge className={getPriorityColor(booking.admission_type)}>
+                          Status : {formatForDisplay(booking.admission_type)} 
+                        </Badge>
                         <Badge className={getPriorityColor(booking.priority)}>
                           {formatForDisplay(booking.priority)} PRIORITY
                         </Badge>
@@ -1840,7 +1843,7 @@ const getLiveStatus = (booking: BedBooking) => {
                       {/* Insurance & Details Column */}
                       <div className="space-y-4">
                         <div className="space-y-3">
-                          <div className="flex items-start space-x-3">
+                          {/* <div className="flex items-start space-x-3">
                             <div className="p-2 bg-green-100 rounded-lg">
                               <Shield className="h-5 w-5 text-green-600" />
                             </div>
@@ -1872,9 +1875,9 @@ const getLiveStatus = (booking: BedBooking) => {
                                 )}
                               </div>
                             </div>
-                          </div>
+                          </div> */}
 
-                          <Separator />
+                          {/* <Separator />
 
                           <div className="space-y-3">
                             <div className="flex items-start space-x-3">
@@ -1897,7 +1900,7 @@ const getLiveStatus = (booking: BedBooking) => {
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
 
                           {booking.special_requirements && booking.special_requirements.length > 0 && (
                             <>

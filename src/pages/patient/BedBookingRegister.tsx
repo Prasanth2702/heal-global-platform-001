@@ -607,7 +607,7 @@ const tomorrowDate = tomorrow.toISOString().split("T")[0];
               </label>
             </div>
           </div>
-          <div className="bg-green-50 rounded-lg p-4">
+          <div className="bg-green-200 rounded-lg p-4">
             <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input

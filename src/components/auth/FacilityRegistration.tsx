@@ -4250,10 +4250,15 @@ const Step1SuccessPage = ({ onContinue }: { onContinue: () => void }) => {
 
   return (
     <AuthLayout
-      title="Medical Facility Registration"
+      title="Facility Registration"
       description="Register your healthcare facility on our platform"
       userType="facility"
     >
+    {/* <AuthLayout
+      title="Medical Facility Registration"
+      description="Register your healthcare facility on our platform"
+      userType="facility"
+    > */}
       <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl">
         <StepIndicator />
         

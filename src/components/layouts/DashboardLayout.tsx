@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor, History, DownloadCloudIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -242,7 +242,12 @@ const checkBedManagementDepartment = async () => {
         {
           path: "/dashboard/patient/my-documents",
           label: "My Documents",
-          icon: CreditCard,
+          icon: DownloadCloudIcon,
+        },
+        {
+          path: "/dashboard/patient/chat-history",
+          label: "Chat History",
+          icon: History,
         },
       ],
   //     routes1: [

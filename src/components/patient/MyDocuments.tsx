@@ -109,6 +109,10 @@ const [storageUsage, setStorageUsage] = useState<{
   error: null,
   storage_limit_mb:0,
 });
+
+const [currentPage, setCurrentPage] = useState(1);
+const documentsPerPage = 10;
+
 useEffect(() => {
   const fetchStorageUsage = async () => {
     try {
@@ -211,6 +215,8 @@ useEffect(() => {
     }
     setLoading(false);
   };
+  
+
 
   // Real-time subscription for changes to documents owned by the user
   useEffect(() => {
@@ -304,6 +310,15 @@ useEffect(() => {
     if (activeTab === "all") return true;
     return doc.type === activeTab;
   });
+
+   // Pagination Logic
+const totalPages = Math.ceil(filteredDocuments.length / documentsPerPage);
+
+const startIndex = (currentPage - 1) * documentsPerPage;
+const endIndex = startIndex + documentsPerPage;
+
+const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
+
 
   // Loading state
   if (loading) {
@@ -414,7 +429,10 @@ useEffect(() => {
   </div>
 </div>
 
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => {
+    setActiveTab(value);
+    setCurrentPage(1);
+  }}>
        <TabsList className="mb-6 flex flex-wrap gap-2 bg-transparent">
   {[
     { value: "all", label: "All", color: "bg-gray-100 text-gray-700 data-[state=active]:bg-gray-700 data-[state=active]:text-white" },
@@ -450,7 +468,7 @@ useEffect(() => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDocuments.map((doc) => (
+                {paginatedDocuments.map((doc) => (
                   <TableRow key={doc.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -495,23 +513,64 @@ useEffect(() => {
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="ghost"
                         size="sm"
                         disabled
                       >
                         <Share2 className="h-4 w-4" />
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
+                {/* Pagination */}
               </TableBody>
             </Table>
+            <div className="mb-3">
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+    
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((prev) => prev - 1)}
+    >
+      Previous
+    </Button>
+
+    {Array.from({ length: totalPages }).map((_, index) => (
+      <Button
+        key={index}
+        size="sm"
+        variant={currentPage === index + 1 ? "default" : "outline"}
+        onClick={() => setCurrentPage(index + 1)}
+        className={
+          currentPage === index + 1
+            ? "bg-blue-600 text-white"
+            : ""
+        }
+      >
+        {index + 1}
+      </Button>
+    ))}
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((prev) => prev + 1)}
+    >
+      Next
+    </Button>
+  </div>
+)}
+</div>
           </div>
 
           {/* Mobile: Card layout */}
           <div className="md:hidden space-y-4">
-            {filteredDocuments.map((doc) => (
+           {paginatedDocuments.map((doc) => (
               <Card key={doc.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
@@ -565,6 +624,45 @@ useEffect(() => {
                 </CardContent>
               </Card>
             ))}
+            {/* Pagination */}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+    
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((prev) => prev - 1)}
+    >
+      Previous
+    </Button>
+
+    {Array.from({ length: totalPages }).map((_, index) => (
+      <Button
+        key={index}
+        size="sm"
+        variant={currentPage === index + 1 ? "default" : "outline"}
+        onClick={() => setCurrentPage(index + 1)}
+        className={
+          currentPage === index + 1
+            ? "bg-blue-600 text-white"
+            : ""
+        }
+      >
+        {index + 1}
+      </Button>
+    ))}
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((prev) => prev + 1)}
+    >
+      Next
+    </Button>
+  </div>
+)}
           </div>
         </TabsContent>
       </Tabs>

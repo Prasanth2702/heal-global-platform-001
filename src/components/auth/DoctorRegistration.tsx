@@ -4258,10 +4258,15 @@ const earlyCompleteRegistration = async () => {
 
   return (
     <AuthLayout
-      title="Medical Professional Registration"
+      title="Doctor Registration"
       description="Join our network of verified healthcare professionals"
       userType="doctor"
     >
+    {/* <AuthLayout
+      title="Medical Professional Registration"
+      description="Join our network of verified healthcare professionals"
+      userType="doctor"
+    > */}
       <div className="bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 p-6 rounded-xl">
         <StepIndicator />
         

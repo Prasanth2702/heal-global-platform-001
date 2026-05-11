@@ -107,6 +107,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import WardDashboardPageStaff from "./pages/WardDashboardPageStaff";
 import WardDashboardPageView from "./pages/WardDashboardPageView";
 import MyDocumentsView from "./components/patient/MyDocumentsView";
+import PatientChatHistoryView from "./components/patient/PatientChatHistoryView";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -222,6 +223,10 @@ const App = () => {
                   <Route
                     path="/dashboard/patient/my-documents"
                     element={<MyDocumentsView />}
+                  />
+                  <Route
+                    path="/dashboard/patient/chat-history"
+                    element={<PatientChatHistoryView />}
                   />
                   {/* <Route
                     path="/dashboard/patient/my_bed_bookings"

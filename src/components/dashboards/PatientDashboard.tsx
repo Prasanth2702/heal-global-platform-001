@@ -72,6 +72,210 @@ const PatientDashboard = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+const [chatInput, setChatInput] = useState("");
+const [chatLoading, setChatLoading] = useState(false);
+const [sessionId, setSessionId] = useState<string | null>(
+  localStorage.getItem("medical_chat_session_id")
+);
+const [showMessage, setShowMessage] = useState(true);
+// ====================================
+// Add this function inside component
+// ====================================
+
+// const sendMedicalMessage = async () => {
+//   if (!chatInput.trim()) return;
+
+//   try {
+//     setChatLoading(true);
+
+//     // Get current user
+//     const {
+//       data: { user },
+//     } = await supabase.auth.getUser();
+
+//     if (!user) {
+//       console.error("User not logged in");
+//       return;
+//     }
+
+//     // Add user message instantly
+//     const userMessage = {
+//       role: "user",
+//       content: chatInput,
+//     };
+
+//     setChatMessages((prev) => [...prev, userMessage]);
+
+//     const payload: any = {
+//       message: chatInput,
+//       userId: user.id,
+//       userType: "patient",
+//     };
+
+//     // Include existing session_id for continuing conversation
+//     if (sessionId) {
+//       payload.session_id = sessionId;
+//     }
+
+//     const response = await fetch(
+//       "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/medical-chat",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const data = await response.json();
+
+//     console.log("Medical Chat Response:", data);
+
+//     // Save session_id only first time
+//     if (data.session_id && !sessionId) {
+//       setSessionId(data.session_id);
+//       localStorage.setItem(
+//         "medical_chat_session_id",
+//         data.session_id
+//       );
+//     }
+
+//     // Add assistant reply
+//     const assistantMessage = {
+//       role: "assistant",
+//       content:
+//         data.response ||
+//         data.message ||
+//         "Medical assistant replied successfully.",
+//     };
+
+//     setChatMessages((prev) => [...prev, assistantMessage]);
+
+//     setChatInput("");
+//   } catch (error) {
+//     console.error("Medical chat error:", error);
+//   } finally {
+//     setChatLoading(false);
+//   }
+// };
+const sendMedicalMessage = async () => {
+  if (!chatInput.trim()) return;
+
+  try {
+    setChatLoading(true);
+
+    // Get logged user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error("User not logged in");
+      return;
+    }
+
+    // Add user message instantly
+    const userMessage = {
+      role: "user",
+      content: chatInput,
+    };
+
+    setChatMessages((prev) => [...prev, userMessage]);
+
+    // =========================
+    // Payload
+    // =========================
+    const payload: any = {
+      message: chatInput,
+      userId: user.id,
+      userType: "patient",
+    };
+
+    // IMPORTANT:
+    // If session exists -> continue same chat
+    if (sessionId) {
+      payload.sessionId = sessionId;
+    }
+
+    console.log("Sending Payload:", payload);
+
+    // =========================
+    // API CALL
+    // =========================
+    const response = await fetch(
+      "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/medical-chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Medical Chat Response:", data);
+
+    // =========================
+    // SAVE SESSION ID
+    // =========================
+    const returnedSessionId =
+      data.sessionId || data.session_id;
+
+    if (returnedSessionId) {
+      setSessionId(returnedSessionId);
+
+      localStorage.setItem(
+        "medical_chat_session_id",
+        returnedSessionId
+      );
+    }
+
+    // =========================
+    // Assistant Message
+    // =========================
+    const assistantMessage = {
+      role: "assistant",
+      content:
+        data.response ||
+        "Medical assistant replied successfully.",
+    };
+
+    setChatMessages((prev) => [
+      ...prev,
+      assistantMessage,
+    ]);
+
+    // Clear input
+    setChatInput("");
+
+  } catch (error) {
+    console.error("Medical chat error:", error);
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content:
+          "Something went wrong while contacting medical assistant.",
+      },
+    ]);
+  } finally {
+    setChatLoading(false);
+  }
+};
+useEffect(() => {
+  const savedSession = localStorage.getItem(
+    "medical_chat_session_id"
+  );
+
+  if (savedSession) {
+    setSessionId(savedSession);
+  }
+}, []);
 //   useEffect(() => {
 //   const fetchAppointments = async () => {
 //     setLoading(true);
@@ -255,6 +459,30 @@ useEffect(() => {
   fetchDocumentCount();
 }, []);
 
+// Helper to strip markdown formatting from assistant messages
+const cleanMarkdown = (text: string) => {
+  let cleaned = text;
+  
+  // Remove markdown symbols
+  cleaned = cleaned.replace(/\*\*/g, '');
+  cleaned = cleaned.replace(/\*/g, '');
+  cleaned = cleaned.replace(/^#+\s*/gm, '');
+  cleaned = cleaned.replace(/^-\s+/gm, '• ');
+  
+  // Add double newline after each sentence (period + space + capital letter or number)
+  cleaned = cleaned.replace(/(\.\s+)([A-Z0-9])/g, '$1\n\n$2');
+  
+  // Add double newline before numbered items (e.g., "1. ", "2. ")
+  cleaned = cleaned.replace(/(\d+\.\s+)/g, '\n\n$1');
+  
+  // Add double newline before bullet points (•) if not already preceded by newline
+  cleaned = cleaned.replace(/([^\n])(•\s+)/g, '$1\n\n$2');
+  
+  // Collapse multiple newlines to exactly two
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  
+  return cleaned.trim();
+};
 
   useEffect(() => {
     const path = location.pathname;
@@ -990,8 +1218,193 @@ const recentReports = [
           </div>
         </CardContent>
       </Card>
+{showMessage ? (
+  <div className="fixed bottom-4 right-4 z-50 w-[350px]">
+    <div className="bg-white shadow-2xl border border-blue-100 rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+            💬
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">Health Assistant</h3>
+            <p className="text-xs text-blue-100">AI Medical Support</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowMessage(false)}
+          className="text-white hover:text-red-200"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Chat Body */}
+      <div className="h-[350px] overflow-y-auto p-3 bg-gray-50 space-y-3">
+        {chatMessages.length === 0 && (
+          <div className="text-center text-sm text-gray-500 mt-10">
+            Start your medical conversation...
+          </div>
+        )}
+        {chatMessages.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              msg.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow ${
+                msg.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-gray-700 border"
+              }`}
+            >
+              {msg.role === "assistant" ? cleanMarkdown(msg.content) : msg.content}
+            </div>
+          </div>
+        ))}
+        {chatLoading && (
+          <div className="text-xs text-gray-500">Assistant typing...</div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div className="p-3 border-t bg-white">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder="Type your symptoms..."
+            className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                sendMedicalMessage();
+              }
+            }}
+          />
+          <Button
+            onClick={sendMedicalMessage}
+            disabled={chatLoading}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl"
+          >
+            Send
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="fixed bottom-4 right-4 z-50">
+    <button
+      onClick={() => setShowMessage(true)}
+      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+    >
+      <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+        💬
+      </div>
+      <div className="text-left">
+        <h3 className="font-semibold text-sm">Health Assistant</h3>
+        <p className="text-xs text-white/80">AI Medical Support</p>
+      </div>
+    </button>
+  </div>
+)}
     </div>
   );
 };
 
 export default PatientDashboard;
+//       <div className="fixed bottom-4 right-4 z-50 w-[350px]">
+//   <div className="bg-white shadow-2xl border border-blue-100 rounded-2xl overflow-hidden">
+
+//     {/* Header */}
+//     <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 flex justify-between items-center">
+//       <div className="flex items-center gap-2">
+//         <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+//           💬
+//         </div>
+//         <div>
+//           <h3 className="font-semibold text-sm">
+//             Health Assistant
+//           </h3>
+//           <p className="text-xs text-blue-100">
+//             AI Medical Support
+//           </p>
+//         </div>
+//       </div>
+
+//       <button
+//         onClick={() => setShowMessage(false)}
+//         className="text-white hover:text-red-200"
+//       >
+//         ✕
+//       </button>
+//     </div>
+
+//     {/* Chat Body */}
+//     <div className="h-[350px] overflow-y-auto p-3 bg-gray-50 space-y-3">
+
+//       {chatMessages.length === 0 && (
+//         <div className="text-center text-sm text-gray-500 mt-10">
+//           Start your medical conversation...
+//         </div>
+//       )}
+
+//       {chatMessages.map((msg, index) => (
+//         <div
+//           key={index}
+//           className={`flex ${
+//             msg.role === "user"
+//               ? "justify-end"
+//               : "justify-start"
+//           }`}
+//         >
+//           <div
+//             className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow ${
+//               msg.role === "user"
+//                 ? "bg-blue-500 text-white"
+//                 : "bg-white text-gray-700 border"
+//             }`}
+//           >
+//             {msg.role === "assistant" ? cleanMarkdown(msg.content) : msg.content}
+//           </div>
+//         </div>
+//       ))}
+
+//       {chatLoading && (
+//         <div className="text-xs text-gray-500">
+//           Assistant typing...
+//         </div>
+//       )}
+//     </div>
+
+//     {/* Input */}
+//     <div className="p-3 border-t bg-white">
+//       <div className="flex gap-2">
+//         <input
+//           type="text"
+//           value={chatInput}
+//           onChange={(e) => setChatInput(e.target.value)}
+//           placeholder="Type your symptoms..."
+//           className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+//           onKeyDown={(e) => {
+//             if (e.key === "Enter") {
+//               sendMedicalMessage();
+//             }
+//           }}
+//         />
+
+//         <Button
+//           onClick={sendMedicalMessage}
+//           disabled={chatLoading}
+//           className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl"
+//         >
+//           Send
+//         </Button>
+//       </div>
+//     </div>
+//   </div>
+// </div>

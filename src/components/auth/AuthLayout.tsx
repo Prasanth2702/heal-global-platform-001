@@ -253,9 +253,9 @@ const subscriptionPlans = {
     name: "Doctor's Trial Subscription",
     for: "Individual practitioners only",
     features: [
-      "Clinical Consultations Bookings: 25 / month",
-      "Tele Consultations Bookings: 0 / month",
-      "Welcome Offer: One Month"
+       "Up to 25 Clinical Consultation Bookings per Month",
+       "Tele Consultation Bookings not Included",
+       "Monthly Welcome Benefits"
     ],
     icon: <Stethoscope className="h-8 w-8" />,
     price: "Free",
@@ -265,11 +265,12 @@ const subscriptionPlans = {
     name: "Facility Trial Subscription",
     for: "Clinics, Multi‑department hospitals & large facilities",
     features: [
-      "Clinical Consultations: 100 / month",
-      "Tele Consultations: 0 / month",
-      "Departments: 2",
-      "Billing: Free",
-      "Welcome Offer: Monthly"
+      "Up to 100 Clinical Consultation Bookings per Month",
+      "Tele Consultation Bookings not Included",
+      "Access for 2 Departments",
+      "Bed Bookings not Included",
+      "Billing Management not Included",
+      "Monthly Welcome Benefits "
     ],
     icon: <Building2 className="h-8 w-8" />,
     price: "Free",

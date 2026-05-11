@@ -1228,8 +1228,8 @@ const recentReports = [
             💬
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Health Assistant</h3>
-            <p className="text-xs text-blue-100">AI Medical Support</p>
+            <h3 className="font-semibold text-sm">Medical Assistant</h3>
+            <p className="text-xs text-blue-100">AI Medical Information for reference</p>
           </div>
         </div>
         <button
@@ -1293,6 +1293,7 @@ const recentReports = [
             Send
           </Button>
         </div>
+        <p className="text-red-700 text-[15px] mt-3">The responses are for reference not for clinical trials or treatments. Consult your certified practioners for guidance and medications.</p>
       </div>
     </div>
   </div>
@@ -1306,8 +1307,8 @@ const recentReports = [
         💬
       </div>
       <div className="text-left">
-        <h3 className="font-semibold text-sm">Health Assistant</h3>
-        <p className="text-xs text-white/80">AI Medical Support</p>
+        <h3 className="font-semibold text-sm">Medical Assistant</h3>
+        <p className="text-xs text-white/80">AI Medical Information for reference</p>
       </div>
     </button>
   </div>

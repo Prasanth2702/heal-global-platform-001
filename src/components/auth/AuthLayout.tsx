@@ -378,7 +378,7 @@ const AuthLayout = ({ children, title, description, userType = "patient" }: Auth
             {(userType === "doctor" || userType === "facility") ? (
               <div className="max-w-md w-full">
                 <div className="text-center text-white mb-6">
-                  <h1 className="text-4xl font-bold mb-2"> {(userType === "doctor" ? "Doctor's Signup Offer":"Facility Signup Offer" )}</h1>
+                  <h1 className="text-4xl font-bold mb-2"> {(userType === "doctor" ? "Doctor's Signup":"Facility Signup" )}</h1>
                   <h2 className="text-3xl font-bold mb-2"> 🎁 Welcome Offer</h2>
                   <p className="text-white/80">Create your account now.</p>
                 </div>

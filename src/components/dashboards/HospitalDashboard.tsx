@@ -68,7 +68,8 @@ const HospitalDashboard = () => {
 });
   const [userId, setUserId] = useState<string | null>(null);
   const [userType, setUserType] = useState<'admin' | 'staff' | null>(null);
-
+const [loadingVisibility, setLoadingVisibility] = useState(true);
+const [profileVisible, setProfileVisible] = useState(true);
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -97,18 +98,20 @@ const HospitalDashboard = () => {
           // Check if user is a facility admin
           const { data: facility, error: facilityError } = await supabase
             .from('facilities')
-            .select('id')
+            .select('id,profile_visibility')
             .eq('admin_user_id', user.id)
             .maybeSingle();
 
           if (facility) {
             setUserType('admin');
           }
+           setProfileVisible(facility?.profile_visibility );
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
       } finally {
         setLoading(false);
+         setLoadingVisibility(false);
       }
     };
 
@@ -481,6 +484,17 @@ return (
           </Button>
         </div>
       </div>
+       {loadingVisibility ? (
+  <div>Loading...</div>
+) : profileVisible === false? (
+  <div className="w-full p-4 rounded-lg border border-red-200 bg-red-50 text-center mb-4">
+    <p className="text-red-600 font-medium">
+      Your profile status is Hidden. Hence it is unavailable for new appointment bookings.
+    </p>
+
+  </div>
+) : null}
+
 
       {/* Add bottom padding on mobile to avoid content being hidden behind the fixed bar */}
       <div className="pb-20 md:pb-0">

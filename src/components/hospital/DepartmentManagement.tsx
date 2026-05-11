@@ -2513,13 +2513,17 @@ const getSubmitHandler = () => {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            {/* <SelectContent>
               {appointmentTypes.map((type) => (
                 <SelectItem key={type} value={type}>
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </SelectItem>
               ))}
-            </SelectContent>
+            </SelectContent> */}
+             <SelectContent>
+                                            <SelectItem value="consultation">Consultation</SelectItem>
+                                            <SelectItem value="tele">TeleConsultation</SelectItem>
+                                          </SelectContent>
           </Select>
         </div>
       </div>

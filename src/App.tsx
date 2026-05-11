@@ -106,6 +106,7 @@ import FacilityPendingStaffViewPage from "./components/facility/FacilityPendingS
 import ErrorBoundary from "./ErrorBoundary";
 import WardDashboardPageStaff from "./pages/WardDashboardPageStaff";
 import WardDashboardPageView from "./pages/WardDashboardPageView";
+import MyDocumentsView from "./components/patient/MyDocumentsView";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -217,6 +218,10 @@ const App = () => {
                   <Route
                     path="/dashboard/patient/book/patient-facilities"
                     element={<DashboardLayoutPatient />}
+                  />
+                  <Route
+                    path="/dashboard/patient/my-documents"
+                    element={<MyDocumentsView />}
                   />
                   {/* <Route
                     path="/dashboard/patient/my_bed_bookings"

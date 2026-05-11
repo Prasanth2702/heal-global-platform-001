@@ -239,6 +239,11 @@ const checkBedManagementDepartment = async () => {
           label: "Payment History",
           icon: CreditCard,
         },
+        {
+          path: "/dashboard/patient/my-documents",
+          label: "My Documents",
+          icon: CreditCard,
+        },
       ],
   //     routes1: [
   //     {

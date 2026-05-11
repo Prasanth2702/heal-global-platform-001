@@ -2944,7 +2944,7 @@ return (
                         }))
                       }
                       placeholder="10"
-                      min="1"
+                      min="10"
                       required
                     />
                   </div>

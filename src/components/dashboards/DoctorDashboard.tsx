@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File, IndianRupee, PhoneIcon} from "lucide-react";
+import { Calendar, User, Clock, FileText, TrendingUp,Settings, FileLineChart, Bed, Calendar1, DollarSign, Users, File, IndianRupee, PhoneIcon, Telescope} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DoctorProfile from "../doctor/DoctorProfile";
@@ -13,6 +13,15 @@ import { supabase } from "@/integrations/supabase/client";
 import PatientAttendDetails from "../doctor/PatientAttendDetails";
 import Loader1 from "../ui/Loader1";
 import PaymentDetails from "../doctor/PaymentDetails";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import TeleconsultationPage from "../doctor/TeleconsultationPage";
 
 type UsagePayload = {
   consultation_type: string;
@@ -25,7 +34,7 @@ const DoctorDashboard = () => {
 
   const location = useLocation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar"|"payments"|"schedule">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar"|"payments"|"schedule" |"tele">("overview");
   // Add these states at the top with your existing useState
 const [appointments, setAppointments] = useState([]);
 const [patients, setPatients] = useState([]);
@@ -38,7 +47,7 @@ const [professionalId, setProfessionalId] = useState<string | null>(null);
 const [planName, setPlanName] = useState<string | null>(null);
 const [profileVisible, setProfileVisible] = useState(true);
 const [loadingVisibility, setLoadingVisibility] = useState(true);
-
+const [showTelePopup, setShowTelePopup] = useState(false);
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -354,6 +363,7 @@ const transformedAppointments = appointmentsData.map(app => {
       else if (path.includes('/profile')) setActiveTab('profile');
       else if (path.includes('/schedule')) setActiveTab('schedule');
       else if (path.includes('/payments')) setActiveTab('payments');
+      else if (path.includes('/tele')) setActiveTab('tele');
       else setActiveTab('overview');
     }, [location.pathname]);
   
@@ -376,6 +386,7 @@ const transformedAppointments = appointmentsData.map(app => {
         case 'schedule': navigate(`${basePath}/schedule`); break;
         case 'patients': navigate(`${basePath}/patients`); break;
         case 'payments': navigate(`${basePath}/payments-details`); break;
+        case 'tele': navigate(`${basePath}/tele-consultation-booking`); break;
       }
     };
      const trackButtonClick = (buttonName: string, additionalData = {}) => {
@@ -566,10 +577,11 @@ const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
           {limits.clinical.remaining} remaining this month
         </p>
       </div>
+      {limits.tele.max > 0 &&(
       <div>
         <div className="flex justify-between text-sm">
           <span>Tele-Consultations</span>
-          <span>{limits.tele.used} / {limits.tele.max}</span>
+          <span>{limits.tele.used} / {limits.tele.max }</span>
         </div>
         <progress 
           value={limits.tele.used} 
@@ -580,6 +592,7 @@ const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
           {limits.tele.remaining} remaining this month
         </p>
       </div>
+      )}
     </div>
   );
 };
@@ -777,6 +790,15 @@ if (activeTab !== "overview") {
               <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
+            <Button
+              variant={activeTab === "tele" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => {handleTabChange("tele"); trackButtonClick("Tele")}}
+              className={activeTab === "tele" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
+            >
+              <Telescope className="h-4 w-4 mr-1" />
+              Tele consultation booking
+            </Button>
           </div>
         </div>
 
@@ -798,6 +820,7 @@ if (activeTab !== "overview") {
         {activeTab === "patients" && <PatientAttendDetails />}
         {/* {activeTab === "payments" && <PaymentManagement />} */}
         {activeTab === "payments" && <PaymentDetails />}
+        {activeTab === "tele" && <TeleconsultationPage />}
       </div>
     );
   }
@@ -903,7 +926,20 @@ if (activeTab !== "overview") {
               <IndianRupee className="h-4 w-4 mr-1" />
               Payments
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {handleTabChange("tele"); trackButtonClick("Tele")}}
+              className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
+            >
+              <Telescope className="h-4 w-4 mr-1" />
+              Tele consultation booking
+            </Button>
           </div>
+
+           <div className="w-full p-4 rounded-lg border border-green-200 bg-green-50 text-center mb-4">
+    <p className="text-red-600 font-medium"> Tele consultation booking is not availble in your current subscription. Please purchase a subscription or contact </p>
+    </div>
 
            {loadingVisibility ? (
   <div>Loading...</div>
@@ -1013,6 +1049,24 @@ if (activeTab !== "overview") {
       </p>
     </CardDescription>
   </CardHeader>
+</Card>
+<Card 
+  className="cursor-pointer transition-all hover:shadow-md" 
+  onClick={() => setShowTelePopup(true)}
+>
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium text-muted-foreground">
+      Tele Subscription
+    </CardTitle>
+    <CardDescription className="text-2xl font-bold text-doctor">
+      Upgrade / Renew
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p className="text-xs text-muted-foreground">
+      Click to contact support
+    </p>
+  </CardContent>
 </Card>
       </div>
 
@@ -1231,6 +1285,29 @@ if (activeTab !== "overview") {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tele Subscription Popup */}
+<Dialog open={showTelePopup} onOpenChange={setShowTelePopup}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Contact for Tele Subscription</DialogTitle>
+      <DialogDescription>
+        Please reach out to our support team to upgrade or renew your Tele Subscription.
+      </DialogDescription>
+    </DialogHeader>
+    <div className="flex items-center justify-center space-x-2 py-4">
+      <PhoneIcon className="h-5 w-5 text-primary" />
+      <a href="tel:+919886499994" className="text-lg font-medium text-primary underline">
+        +91 98864 99994
+      </a>
+    </div>
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setShowTelePopup(false)}>
+        Close
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </div>
   );
 };

@@ -1468,7 +1468,9 @@ import { Filter } from "lucide-react";
 import { format } from "date-fns";
 import Loader1 from "../ui/Loader1";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+
 // Types
 interface DepartmentInfo {
   id: string;
@@ -1567,7 +1569,7 @@ export default function FacilityAppointmentManagement() {
   // UI state
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "cancelled" | "completed" |"pending">("all");
-
+const navigate = useNavigate();
   // Video meeting state
   const [videoMeeting, setVideoMeeting] = useState<VideoMeetingState>({
     showMeeting: false,
@@ -1577,7 +1579,10 @@ export default function FacilityAppointmentManagement() {
   });
 
   const apiKey = import.meta.env.VITE_VIDEOSDK_API_KEY;
-
+const [isBillingBlocked, setIsBillingBlocked] = useState(false);
+const [billingMessage, setBillingMessage] = useState("");
+const [showContactPopup, setShowContactPopup] = useState(false);
+const [showLimitMessage, setShowLimitMessage] = useState(true);
   // Initialize component
   useEffect(() => {
     initializeUserAndData();
@@ -1922,6 +1927,35 @@ useEffect(() => {
       });
     }
   };
+
+  const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+
+useEffect(() => {
+  const checkBillingAccess = async () => {
+    if (!currentFacilityId) return;
+
+    const result = await checkLimit(currentFacilityId, "all");
+
+    console.log("LIMIT RESULT:", result);
+
+    const staffclinicalLimitMax = limits?.limits?.clinical?.max ?? 0;
+const staffclinicalLimitCurrent = limits?.limits?.clinical?.used ?? 0;
+const isStaffclinicalLimitReached =
+  limits?.limits?.clinical?.allowed === false || (staffclinicalLimitMax - staffclinicalLimitCurrent) <= 0;
+const staffLimitMessage =
+  limits?.message || "You have reached the maximum Appiontment limit.";
+const limitMessage =
+  limits?.message ||
+  "You have reached the maximum Appiontment limit.";
+  };
+    const staffteleLimitMax = limits?.limits?.tele?.max ?? 0;
+const staffteleLimitCurrent = limits?.limits?.tele?.used ?? 0;
+const isStaffteleLimitReached =
+  limits?.limits?.tele?.allowed === false || (staffteleLimitMax - staffteleLimitCurrent) <= 0;
+
+
+  checkBillingAccess();
+}, [currentFacilityId]);
 
   // Enrich appointments with patient and doctor details
   const enrichAppointmentsWithDetails = async (appts: any[]) => {
@@ -2468,7 +2502,19 @@ const getRedirectPath = () => {
           {facilityUser.role === 'hospital_staff' && 'Staff view - Department appointments'}
         </p>
       </div>
-      
+      <div className="flex items-center gap-2">
+            {limits && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Clinical Limit: {limits?.limits?.clinical?.used} / {limits?.limits?.clinical?.max}
+  </div>
+)}
+
+    {limits && (
+  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+    Tele Limit: {limits?.limits?.tele?.used} / {limits?.limits?.tele?.max}
+  </div>
+)}
+      </div>
       <div className="flex items-center gap-3 w-full md:w-auto">
         {/* Department Filter */}
         {(facilityUser.role === 'hospital_admin' || departments.length > 1) && (

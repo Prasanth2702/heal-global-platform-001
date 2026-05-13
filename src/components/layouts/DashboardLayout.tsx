@@ -369,7 +369,7 @@ const checkBedManagementDepartment = async () => {
       },
       {
         path: "/dashboard/facility/ward-management",
-        label: "Ward Management",
+        label: "Ward / Bed Management",
         icon: WalletCards,
       },
       {

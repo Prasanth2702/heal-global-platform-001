@@ -331,6 +331,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   Table,
   TableBody,
@@ -354,6 +355,8 @@ import {
   PhoneIcon,
   Loader,
   MessageCircle,
+  AlertCircle,
+  SubscriptIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -376,6 +379,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Loader2 from "../ui/Loader2";
 import { useFacilityLimit } from "@/hooks/useFacilityLimit";
 import { sendContactEnquiry } from "@/services/contactApi";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -479,6 +483,7 @@ const DepartmentManagement = () => {
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null
   );
+  const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
    const [editingStaff, setEditingStaff] = useState<CombinedStaffData | null>(null);
 // Add these state variables
@@ -512,9 +517,12 @@ useEffect(() => {
   }
 }, [userFacility]);
 
+// const isStaffLimitReached =
+//   limits && limits?.limits?.departments?.allowed === false;
+const deptLimitMax = limits?.limits?.departments?.max ?? 0;
+const deptLimitCurrent = limits?.limits?.departments?.current ?? 0;
 const isStaffLimitReached =
-  limits && limits?.limits?.departments?.allowed === false;
-
+  limits?.limits?.departments?.allowed === false || (deptLimitMax - deptLimitCurrent)<= 0;
 const limitMessage =
   limits?.message ||
   "You have reached the maximum department limit.";
@@ -579,6 +587,7 @@ const departmentOptions = [
 // const [userFacility, setUserFacility] = useState<Facility | null>(null);
 const [showContactDialog, setShowContactDialog] = useState(false);
 const [contactSubmitting, setContactSubmitting] = useState(false);
+const [showLimitMessage, setShowLimitMessage] = useState(false);
 const [contactForm, setContactForm] = useState({
   name: "",
   subject: "",
@@ -592,6 +601,7 @@ const openContactDialog = () => {
   });
   setShowContactDialog(true);
 };
+const [showContactPopup, setShowContactPopup] = useState(false);
 const [currentStep, setCurrentStep] = useState(2);
 const [departmentCreated, setDepartmentCreated] = useState(false);
 const [timeCreated, setTimeCreated] = useState(false);
@@ -1942,7 +1952,10 @@ const getSubmitHandler = () => {
   if (currentStep === 3) return handleSubmitStaff;
 };
 
+
+
   return (
+
   <div className="space-y-6">
       
 <div className="flex items-center justify-between">
@@ -1964,16 +1977,30 @@ const getSubmitHandler = () => {
       <DialogTrigger asChild>
         <Button onClick={() => {
           trackDepartmentAction('add_department_click');
-          resetForm();
-          setCurrentStep(1); // Set to step 1 when opening
+          
+          if (isStaffLimitReached) {
+      setShowLimitMessage(true);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    resetForm();
+    setCurrentStep(1); // Set to step 1 when opening
           setIsAddDialogOpen(true);
+ 
         }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Department
         </Button>
       </DialogTrigger>
+       {!showLimitMessage && (
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
-                    {isStaffLimitReached ? (
+                    {/* {isStaffLimitReached ? (
             <>
               <DialogHeader>
                 <DialogTitle>Subscription Required</DialogTitle>
@@ -1992,7 +2019,8 @@ const getSubmitHandler = () => {
                 <Button onClick={() => setIsAddDialogOpen(false)}>Close</Button>
               </DialogHeader>
             </>
-          ) : (
+          ) : ( */}
+         
         <>
         <DialogHeader>
           <DialogTitle>
@@ -3143,8 +3171,9 @@ const getSubmitHandler = () => {
 )}
 </form>
 </>
-          )}
+          {/* )} */}
       </DialogContent>
+  )}
     </Dialog>
 
     {/* Time Slots Dialog - Keep this separate for adding time slots to existing departments */}
@@ -3401,6 +3430,80 @@ const getSubmitHandler = () => {
     </form>
   </DialogContent>
 </Dialog>
+
+{showLimitMessage &&(
+  <div className="container mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+          <CardTitle>Department Management</CardTitle>
+          <CardDescription>
+            Create and manage hospital departments, assign heads, and configure services.
+          </CardDescription>
+          </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowLimitMessage(false)}
+            >
+              ✕
+            </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 space-y-4 border rounded-lg bg-amber-50 border-amber-200">
+            <AlertCircle className="h-12 w-12 text-amber-600 mx-auto" />
+            <h3 className="text-lg font-semibold text-amber-800">
+              Department Management is not available in your current subscription.
+            </h3>
+            <p className="text-amber-700 max-w-md mx-auto">
+              Please upgrade your subscription plan to create departments,
+              manage services, and enable full department management features.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={() => setShowContactPopup(true)}
+            >
+              <PhoneIcon className="mr-2 h-4 w-4 m-3" />
+              Contact Support
+            </Button>
+            <Button
+                            variant="outline"
+                            className="mt-2"
+                            onClick={() => navigate ("/dashboard/facility/subscription")}
+                          >
+                            <SubscriptIcon className="mr-2 h-4 w-4" />
+                            Subscription
+                          </Button>
+                          </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={showContactPopup} onOpenChange={setShowContactPopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact Support for Department Management</DialogTitle>
+            <DialogDescription>
+              Our support team will help you activate department management features.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center space-x-2 py-6">
+            <PhoneIcon className="h-5 w-5 text-primary" />
+            <a href="tel:+919886499994" className="text-xl font-medium text-primary underline">
+              +91 98864 99994
+            </a>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowContactPopup(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+)}
 
       {/* <Card>
         <CardHeader>

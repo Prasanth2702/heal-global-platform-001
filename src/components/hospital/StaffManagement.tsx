@@ -1547,6 +1547,8 @@ import {
   Building,
   UserPlus,
   PhoneIcon,
+  AlertCircle,
+  SubscriptIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -1554,6 +1556,7 @@ import mixpanelInstance from "@/utils/mixpanel";
 import { useUser } from "@/hooks/useUser";
 import Loader3 from "../ui/Loader3";
 import { useFacilityLimit } from "@/hooks/useFacilityLimit";
+import { useNavigate } from "react-router-dom";
 
 // Types based on your Supabase schema
 interface Profile {
@@ -1644,6 +1647,7 @@ const StaffManagement = () => {
   const [selectedFacility, setSelectedFacility] = useState<string>("all");
   const [userFacility, setUserFacility] = useState<Facility | null>(null);
  const [isCreatingUser, setIsCreatingUser] = useState(false);
+ const [showLimitMessage, setShowLimitMessage] = useState(false);
   const [formData, setFormData] = useState({
      // User account fields
     email: "",
@@ -1673,13 +1677,14 @@ const StaffManagement = () => {
   status: "active",
   role: "hospital_staff",
   });
-  
+  const navigate = useNavigate();
 const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
   // Track if current user already has a staff record
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userHasStaff, setUserHasStaff] = useState<boolean>(false);
   const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
 const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+const [showContactPopup, setShowContactPopup] = useState(false);
   // Add tracking functions
   const trackStaffAction = (action: string, staffData?: any, additionalData = {}) => {
     mixpanelInstance.track('Staff Management Action', {
@@ -1710,9 +1715,14 @@ useEffect(() => {
   }
 }, [userFacility]);
 
+// const isStaffLimitReached =
+//   limits && limits?.limits?.staff?.allowed === false;
+const staffLimitMax = limits?.limits?.staff?.max ?? 0;
+const staffLimitCurrent = limits?.limits?.staff?.current ?? 0;
 const isStaffLimitReached =
-  limits && limits?.limits?.staff?.allowed === false;
-
+  limits?.limits?.staff?.allowed === false || (staffLimitMax - staffLimitCurrent) <= 0;
+const staffLimitMessage =
+  limits?.message || "You have reached the maximum staff limit.";
 const limitMessage =
   limits?.message ||
   "You have reached the maximum staff limit.";
@@ -2233,6 +2243,7 @@ const renderFieldError = (field: string) => {
       </div>
     );
   }
+  
 return (
   <div className="space-y-6">
     {/* Header – responsive centering + button alignment */}
@@ -2254,15 +2265,39 @@ return (
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogTrigger asChild>
           {(isMaintenance || !userHasStaff || editingStaff)  ? (
-            <Button 
-            onClick={() => {
-              trackStaffAction('add_staff_click');
-              resetForm();
-              setIsAddDialogOpen(true);
-            }}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Staff Member
-            </Button>
+            <>
+            <Button
+  onClick={() => {
+    trackStaffAction('add_staff_click');
+
+    if (isStaffLimitReached) {
+      setShowLimitMessage(true);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    resetForm();
+    setIsAddDialogOpen(true);
+  }}
+>
+  <UserPlus className="mr-2 h-4 w-4" />
+  Add Staff Member
+</Button>
+            </>
+            // <Button 
+            // onClick={() => {
+            //   trackStaffAction('add_staff_click');
+            //   resetForm();
+            //   setIsAddDialogOpen(true);
+            // }}>
+            //   <UserPlus className="mr-2 h-4 w-4" />
+            //   Add Staff Member
+            // </Button>
           ) : (
             <Button 
               disabled 
@@ -2656,6 +2691,86 @@ return (
         </Select>
       </div>
     </div>
+
+    {showLimitMessage && (
+  <div className="mb-6">
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0">
+        <div>
+        <CardTitle>Staff Limit Reached</CardTitle>
+
+        <CardDescription>
+          You have reached the maximum staff limit in your current subscription.
+        </CardDescription>
+</div>
+          <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => setShowLimitMessage(false)}
+  >
+    ✕
+  </Button>
+
+      </CardHeader>
+
+      <CardContent>
+        <div className="text-center py-8 space-y-4 border rounded-lg bg-amber-50 border-amber-200">
+          <AlertCircle className="h-12 w-12 text-amber-600 mx-auto" />
+
+          <h3 className="text-lg font-semibold text-amber-800">
+            Cannot Add More Staff Members
+          </h3>
+
+          <p className="text-amber-700 max-w-md mx-auto">
+            Please contact support to upgrade your subscription and increase your staff limit.
+          </p>
+<div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button
+            variant="outline"
+            onClick={() => setShowContactPopup(true)}
+          >
+            <PhoneIcon className="mr-2 h-4 w-4" />
+            Contact Support
+          </Button>
+          <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => navigate ("/dashboard/facility/subscription")}
+              >
+                <SubscriptIcon className="mr-2 h-4 w-4" />
+                Subscription
+              </Button>
+              </div>
+        </div>
+      </CardContent>
+    </Card>
+    {/* Contact Support Popup */}
+      <Dialog open={showContactPopup} onOpenChange={setShowContactPopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact Support for Staff Management</DialogTitle>
+            <DialogDescription>
+              Our support team will help you activate staff management features.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center space-x-2 py-6">
+            <PhoneIcon className="h-5 w-5 text-primary" />
+            <a
+              href="tel:+919886499994"
+              className="text-xl font-medium text-primary underline"
+            >
+              +91 98864 99994
+            </a>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowContactPopup(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+  </div>
+)}
 
     <Card>
       <CardHeader>

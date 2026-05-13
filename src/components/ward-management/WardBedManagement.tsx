@@ -43,12 +43,29 @@ import {
   AlertTriangle,
   Info,
   Ban,
+  PhoneIcon,
+  SubscriptIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Loader3 from "../ui/Loader3";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useFacilityLimit } from "@/hooks/useFacilityLimit";
-
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 interface Facility {
   id: string;
   facility_name: string;
@@ -294,7 +311,9 @@ const WardBedManagement = ({ facilityId, onSuccess }) => {
     delete?: string;
   }>({});
 const location = useLocation();
+const [showContactPopup, setShowContactPopup] = useState(false);
 const passedBeds = location.state?.beds;
+const navigate = useNavigate();
   // Popup states
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -376,6 +395,7 @@ const passedBeds = location.state?.beds;
   });
 
   const currentBedType = watchBed("bed_type");
+  
 
   // Fetch wards and beds
   useEffect(() => {
@@ -420,8 +440,15 @@ useEffect(() => {
 }, [facilityId, checkLimit]); // dependencies remain, but ref prevents re‑execution
 
 // Compute limit states directly from the limits object
-const isStaffLimitReached = limits?.limits?.beds?.allowed === false;
-const limitMessage = limits?.message || "You have reached the maximum bed limit.";
+// const isStaffLimitReached = limits?.limits?.beds?.allowed === false;
+// const limitMessage = limits?.message || "You have reached the maximum bed limit.";
+// After fetching limits, compute these values:
+const bedLimitMax = limits?.limits?.beds?.max ?? 0;
+const bedLimitCurrent = limits?.limits?.beds?.current ?? 0;
+// Consider limit reached if allowed === false OR max <= 0
+const isStaffLimitReached = 
+  limits?.limits?.beds?.allowed === false || (bedLimitMax - bedLimitCurrent) <= 0;
+const limitMessage = limits?.message || "You have reached the maximum Subscription limit.";
 
   // Function to fetch booked bed IDs for a specific ward
   const fetchBookedBeds = async (wardId: string) => {
@@ -1159,6 +1186,144 @@ const onSubmitBed = async (data) => {
 
  
   return (
+    <>
+  {!editingWard && isStaffLimitReached ? (
+    <div className="container mx-auto p-6 space-y-6">
+
+      {/* Main Ward & Bed Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+          <CardTitle>Ward & Bed Management</CardTitle>
+
+          <CardDescription>
+            Manage hospital wards, monitor bed availability,
+            and allocate beds efficiently for patient admissions.
+          </CardDescription>
+          </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowContactPopup(false)}
+            >
+              ✕
+            </Button>
+        </CardHeader>
+
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              Loading subscription details...
+            </div>
+          ) : (
+            <div className="text-center py-8 space-y-4 border rounded-lg bg-amber-50 border-amber-200">
+
+              <AlertCircle className="h-12 w-12 text-amber-600 mx-auto" />
+
+              <h3 className="text-lg font-semibold text-amber-800">
+                Ward & Bed Management is not available in your current subscription.
+              </h3>
+
+              <p className="text-amber-700 max-w-md mx-auto">
+                Please upgrade your subscription plan to create wards,
+                manage beds, and enable patient bed allocation features.
+              </p>
+<div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => setShowContactPopup(true)}
+              >
+                <PhoneIcon className="mr-2 h-4 w-4" />
+                Contact Support
+              </Button>
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => navigate ("/dashboard/facility/subscription")}
+              >
+                <SubscriptIcon className="mr-2 h-4 w-4" />
+                Subscription
+              </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Popup Dialog */}
+      <Dialog
+        open={showContactPopup}
+        onOpenChange={setShowContactPopup}
+      >
+        <DialogContent className="sm:max-w-md">
+
+          <DialogHeader>
+            <DialogTitle>
+              Contact Support for Ward & Bed Subscription
+            </DialogTitle>
+
+            <DialogDescription>
+              Our support team will help you activate
+              ward and bed management features.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-center space-x-2 py-6">
+            <PhoneIcon className="h-5 w-5 text-primary" />
+
+            <a
+              href="tel:+919886499994"
+              className="text-xl font-medium text-primary underline"
+            >
+              +91 98864 99994
+            </a>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowContactPopup(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  ) : (
+    <>
+      {loading ? (
+        <div className="text-center py-8">
+          Loading subscription details...
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800 font-medium">
+                ✅ Your Ward & Bed Management feature is active.
+              </p>
+            </div>
+
+            {/* Success Section */}
+            <div className="text-center py-8 border rounded-lg bg-gray-50">
+
+              <p className="text-muted-foreground">
+                Congratulations! Ward and bed management
+                features are enabled successfully.
+                You can now create wards, allocate beds,
+                and manage patient admissions efficiently.
+              </p>
+
+            </div>
+          </div>
+        </>
+      )}
+    
+
+
   <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -2780,6 +2945,9 @@ const onSubmitBed = async (data) => {
       </div>
     </div>
   </div>
+  </>)}
+
+  </>
 );
 
 };

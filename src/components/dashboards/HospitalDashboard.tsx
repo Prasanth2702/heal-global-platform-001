@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1 } from "lucide-react";
+import { Building2, Users, Calendar, CreditCard, TrendingUp, Package, FileText, Activity, Settings, Calendar1, Telescope } from "lucide-react";
 import DepartmentManagement from "@/components/hospital/DepartmentManagement";
 import StaffManagement from "@/components/hospital/StaffManagement";
 import TimeSlotManagement from "@/components/hospital/TimeSlotManagement";
@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import CreateBilling from "../facility/CreateBilling";
 import { FacilityLimitDashboard } from "../facility/limitchecker/FacilityLimitDashboard";
 import { Link } from "react-router-dom";
+import TeleconsultationPage from "../doctor/TeleconsultationPage";
 
 interface Appointment {
   id: string;
@@ -51,7 +52,8 @@ const HospitalDashboard = () => {
     | "facilitics"
     | "profile"
     | "appointments"
-    |"new-billing"
+    | "new-billing"
+    | "tele"
   >("overview");
   // const location = window.location;
   const location = useLocation();
@@ -303,6 +305,7 @@ if (!viewError && viewData) {
   else if (path.includes('/inventory')) setActiveTab('inventory');
   else if (path.includes('/facilitics')) setActiveTab('facilitics');
   else if (path.includes('/appointments')) setActiveTab('appointments');
+  else if (path.includes('/tele')) setActiveTab('tele');
   // else if (path.includes('/billing-item')) setActiveTab('new-billing');
   else setActiveTab('overview');
 }, [location.pathname]);
@@ -351,6 +354,8 @@ if (!viewError && viewData) {
       break;
     case 'new-billing':
       navigate(`${basePath}/billing-item`);
+    case 'tele':
+      navigate(`${basePath}/tele`);
       break;
     default:
       navigate(basePath);
@@ -412,6 +417,11 @@ return (
                data-[state=active]:text-white" onClick={() => trackButtonClick("Profile Tab")}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">My profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="tele" className="flex items-center space-x-2 data-[state=active]:bg-blue-600 
+               data-[state=active]:text-white" onClick={() => trackButtonClick("Tele")}>
+            <Telescope className="h-4 w-4" />
+            <span className="hidden sm:inline">Tele consultation booking</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -481,6 +491,15 @@ return (
           >
             <Settings className="h-4 w-4 mr-1" />
             <span>Profile</span>
+          </Button>
+          <Button
+            variant={activeTab === "tele" ? "default" : "outline"}
+            size="sm"
+            className="w-full py-2"
+            onClick={() => handleTabChange("tele")}
+          >
+            <Telescope className="h-4 w-4 mr-1" />
+            <span>Tele consultation booking</span>
           </Button>
         </div>
       </div>
@@ -616,6 +635,10 @@ return (
         {/* Time Slots Tab */}
         <TabsContent value="timeslots">
           <TimeSlotManagement />
+        </TabsContent>
+
+<TabsContent value="tele">
+          <TeleconsultationPage />
         </TabsContent>
 
         {/* Payments Tab (if needed) */}

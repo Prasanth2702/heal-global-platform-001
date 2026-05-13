@@ -2614,6 +2614,16 @@ const earlyCompleteRegistration = async () => {
   //     return false;
   //   }
   // };
+  const generateProfileId = (name: string) => {
+  const cleanName = name.replace(/\s+/g, '').toUpperCase();
+  const randomNumber = Math.floor(
+    1000000000 + Math.random() * 9000000000
+  ); // 10 digit number
+
+  return `${cleanName}${randomNumber}`;
+};
+const profileId = generateProfileId(formData.facilityName);
+
   const saveStep1Data = async (): Promise<boolean> => {
   setIsSubmitting(true);
   const fullPhoneNumber = countryCode + phoneNumber;
@@ -2641,6 +2651,7 @@ const earlyCompleteRegistration = async () => {
           phone_number: fullPhoneNumber,
           avatar_url: profileImage,
           role: 'hospital_admin',
+          profile_id: profileId,
         },
       },
     });
@@ -2689,6 +2700,7 @@ const earlyCompleteRegistration = async () => {
         role: 'hospital_admin',
         email: formData.emailAddress.toLowerCase(),
         updated_at: new Date().toISOString(),
+        profile_id: profileId,
       })
       .eq('email', formData.emailAddress);
       
@@ -2809,7 +2821,7 @@ try {
               facilityName: formData.facilityName,
               facilityType: formData.facilityType,
               licenseNumber: formData.licenseNumber || null,
-              userId: userId,
+              user_id : userId,
             }),
           }
         );

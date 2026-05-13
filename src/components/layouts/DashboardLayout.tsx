@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor, History, DownloadCloudIcon } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor, History, DownloadCloudIcon, SubscriptIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -246,7 +246,7 @@ const checkBedManagementDepartment = async () => {
         },
         {
           path: "/dashboard/patient/chat-history",
-          label: "Chat History",
+          label: "My Chat History",
           icon: History,
         },
       ],
@@ -287,6 +287,11 @@ const checkBedManagementDepartment = async () => {
           path: "/dashboard/doctor/payments-details",
           label: "Payment details",
           icon: CreditCard,
+        },
+        {
+          path: "/dashboard/doctor/subscription",
+          label: "Subscription",
+          icon: SubscriptIcon,
         },
         //  { path: "/dashboard/doctor/banner", label: "Banner", icon: Banana },
       ],
@@ -376,6 +381,11 @@ const checkBedManagementDepartment = async () => {
           path: "/dashboard/facility/my-bills",
           label: "My Bills",
           icon: BrickWallIcon,
+        },
+         {
+          path: "/dashboard/facility/subscription",
+          label: "Subscription",
+          icon: SubscriptIcon,
         },
         // {
         //   path: "/dashboard/facility/limit-checker",

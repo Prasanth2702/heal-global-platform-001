@@ -926,27 +926,27 @@ const LoginForm = () => {
 
   const userTypeConfig = {
     patient: {
-      title: "Patient Login",
+      title: "Patient's Login",
       description: "Access your health dashboard and appointments",
       variant: "patient" as const,
     },
     doctor: {
-      title: "Medical Professional Login", 
+      title: "Doctor's Login", 
       description: "Access your practice management dashboard",
       variant: "doctor" as const,
     },
     "facility-admin": {
-      title: "Facility Admin Login",
+      title: "Facility Admin's Login",
       description: "Manage your facility and staff",
       variant: "facility" as const,
     },
     "facility-staff": {
-      title: "Facility Staff Login",
+      title: "Facility Staff's Login",
       description: "Access assigned hospital operations",
       variant: "facility" as const,
     },
     facility: {
-      title: "Medical Facility Login",
+      title: "Facility Login",
       description: "Manage your facility and staff",
       variant: "facility" as const,
     },

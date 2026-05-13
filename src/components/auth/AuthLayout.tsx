@@ -365,7 +365,7 @@ const AuthLayout = ({ children, title, description, userType = "patient" }: Auth
         </div>
 
         {/* Right side - Hero image with overlay content */}
-        <div className="relative bg-gradient-to-br from-blue-900 to-teal-800">
+        <div className="relative bg-gradient-to-br from-blue-900 to-teal-800 ">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${heroImage})` }}
@@ -383,9 +383,20 @@ const AuthLayout = ({ children, title, description, userType = "patient" }: Auth
                   <p className="text-white/80">Create your account now.</p>
                 </div>
                 <SubscriptionCard />
-                <div className="bg-white/80 rounded-lg p-4 text-center text-sm text-gray-700 mt-6">
-                  <p>✅ Zero upfront cost – start using immediately</p>
-                  <p className="text-xs text-gray-500 mt-1">*Includes basic support and secure data handling</p>
+                <div className="bg-white/80 rounded-lg p-7 text-center text-lg text-gray-700 mt-6  text-[10px]">
+                   <p>✅ Zero upfront cost — get started instantly</p>
+  
+  <p className="mt-2">
+    📣 Free profile promotion across social media channels and our internal healthcare platform
+  </p>
+
+  <p className="text-sm text-gray-500 mt-2">
+    *Includes basic support and visibility across the platform.
+  </p>
+
+  <p className="text-sm text-blue-600 mt-2">
+    For customized promotional campaigns, contact support@pmhssmarthealth.com to connect with the right patients.
+  </p>
                 </div>
               </div>
             ) : (

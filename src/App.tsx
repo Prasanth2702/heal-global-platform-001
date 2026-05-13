@@ -108,6 +108,10 @@ import WardDashboardPageStaff from "./pages/WardDashboardPageStaff";
 import WardDashboardPageView from "./pages/WardDashboardPageView";
 import MyDocumentsView from "./components/patient/MyDocumentsView";
 import PatientChatHistoryView from "./components/patient/PatientChatHistoryView";
+import DoctorSubscriptionPlansView from "./components/subscriptionplans/DoctorSubscriptionPlansView";
+import PaymentStatusPage from "./components/subscriptionplans/PaymentStatusPage";
+import FacilitySubscriptionPlansView from "./components/subscriptionplans/FacilitySubscriptionPlansView";
+import PaymentStatusPageFacility from "./components/subscriptionplans/PaymentStatusPageFacility";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -426,12 +430,15 @@ const App = () => {
 <Route path="/dashboard/facility/appointment-pending" element={<FacilityPendingViewPage />} />
 <Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
 <Route path="/dashboard/facility/limit-checker" element={<FacilityLimitCheckerView />} />
+<Route path="/dashboard/doctor/subscription" element={<DoctorSubscriptionPlansView />} />
+<Route path="/dashboard/facility/subscription" element={<FacilitySubscriptionPlansView />} />
 {/* <Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} /> */}
 <Route path="/dashboard/facility/cash-flow-reports" element={<CashFlowReportsView />} />
 <Route path="/set-password" element={<SetPasswordPage />} />
 <Route path="/dashboard/facility/my-bills" element={<BillingSystemView />} />
 <Route path="/location" element={<LocationPage />} />
-
+<Route path="/dashboard/doctor/payment-status" element={<PaymentStatusPage />} />
+<Route path="/dashboard/facility/payment-status" element={<PaymentStatusPageFacility />} />
 {/* <Route path="/dashboard/facility/billing-system" element={<BillingSystemView />} /> */}
 {/* <Route path="/dashboard/facility/billing-system/:userId/:facilityId" element={<BillingSystem />} /> */}
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}

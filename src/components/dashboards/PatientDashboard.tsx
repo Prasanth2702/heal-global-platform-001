@@ -1219,7 +1219,7 @@ const recentReports = [
         </CardContent>
       </Card>
 {showMessage ? (
-  <div className="fixed bottom-4 right-4 z-50 w-[350px]">
+  <div className="fixed bottom-4 right-4 z-50 w-[450px]">
     <div className="bg-white shadow-2xl border border-blue-100 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 flex justify-between items-center">

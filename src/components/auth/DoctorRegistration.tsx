@@ -2658,6 +2658,19 @@ const [step1Success, setStep1Success] = useState(false);
 //     return null;
 //   }
 // };
+
+// Generate unique profile ID
+const generateProfileId = (name: string) => {
+  const cleanName = name.replace(/\s+/g, '').toUpperCase();
+  const randomNumber = Math.floor(
+    1000000000 + Math.random() * 9000000000
+  ); // 10 digit number
+
+  return `${cleanName}${randomNumber}`;
+};
+
+const profileId = generateProfileId(formData.firstName);
+
 const handleSignUp = async () => {
   setIsSubmitting(true);
   
@@ -2674,6 +2687,7 @@ const handleSignUp = async () => {
           lastName: formData.lastName,
           phone_number: fullPhoneNumber,
           role: 'doctor',
+          profile_id: profileId,
         },
       },
     });
@@ -2707,6 +2721,7 @@ const handleSignUp = async () => {
         last_name: formData.lastName,
         phone_number: fullPhoneNumber,
         role: 'doctor',
+        profile_id: profileId,
       })
       .eq('email', formData.emailAddress);
 
@@ -2793,6 +2808,15 @@ const handleSignUp = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
+
+      const { data: existingProfile, error: checkError } = await supabase
+  .from('medical_professionals')
+  .select('id')
+  .eq('user_id', userId)
+  .maybeSingle();
+
+  const professionalId = existingProfile?.id;
+
       
       if (accessToken) {
         const response = await fetch(
@@ -2808,7 +2832,7 @@ const handleSignUp = async () => {
               password: password,
               firstName: formData.firstName,
               lastName: formData.lastName,
-              userId: userId,
+              professional_id: professionalId,
             }),
           }
         );

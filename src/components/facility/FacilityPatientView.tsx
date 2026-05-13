@@ -6499,7 +6499,8 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
             appointmentId: currentAppointment.id,
             timestamp: new Date().toISOString(),
           });
-          handleJoinVideo(currentAppointment, "facility");
+          handleJoinVideo(currentAppointment, "patient");
+          handleJoinMeeting();
         }}
         disabled={joiningVideo || meetingEnded}
         className="w-full"

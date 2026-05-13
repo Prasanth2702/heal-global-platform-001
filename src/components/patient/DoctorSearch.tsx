@@ -4724,26 +4724,133 @@ const toArray = (value: any): any[] => {
     }
   };
 
-  const handleViewDoctorProfile = async (doctorId: string) => {
-    const doctor = doctors.find(d => d.id === doctorId);
-      await trackPageView(
-    "medical_professional",
-    doctorId,
-    user?.id,
-    { trackTimeSpent: true }
-  );
-  // await manualUpdateTimeSpent("medical_professional", doctorId, 10);
 
-    if (!user) {
-      navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, { state: { doctorData: doctor } });
+
+//   const handleViewDoctorProfile = async (doctorId: string) => {
+//     const doctor = doctors.find(d => d.id === doctorId);
+//       await trackPageView(
+//     "medical_professional",
+//     doctorId,
+//     user?.id,
+//     { trackTimeSpent: true }
+//   );
+//   // await manualUpdateTimeSpent("medical_professional", doctorId, 10);
+//  const { data, error } = await supabase
+//     .from("profiles")
+//     .select("profile_id")
+//     .eq("user_id", doctorId)
+//     .maybeSingle();
+
+//     const profileId =  data?.profile_id;
+
+//     if (!user) {
+//       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${profileId || doctorId}`, { state: { doctorData: doctor } });
+//       return;
+//     }
+//     if (userRole === "patient") {
+//       navigate(`/dashboard/patient/doctor/${createSlug(doctor?.name || "")}/${profileId || doctorId}`);
+//     } else {
+//       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${profileId ||doctorId}`, { state: { doctorData: doctor } });
+//     }
+//   };
+const handleViewDoctorProfile = async (doctorId: string) => {
+  try {
+    // Find selected doctor
+    const doctor = doctors.find((d) => d.id === doctorId);
+
+    if (!doctor) {
+      toast({
+        title: "Error",
+        description: "Doctor not found",
+        variant: "destructive",
+      });
       return;
     }
-    if (userRole === "patient") {
-      navigate(`/dashboard/patient/doctor/${createSlug(doctor?.name || "")}/${doctorId}`);
-    } else {
-      navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${doctorId}`, { state: { doctorData: doctor } });
+
+    // Track page view
+    await trackPageView(
+      "medical_professional",
+      doctorId,
+      user?.id,
+      { trackTimeSpent: true }
+    );
+
+    console.log("Doctor Data:", doctor);
+
+    /**
+     * IMPORTANT:
+     * doctor.user_id = UUID from auth/users table
+     * doctor.id = custom doctor ID like SATHYA1382809832
+     */
+
+    let profileId = doctorId;
+
+    // Only query if user_id exists
+    if (doctor.user_id) {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("profile_id")
+        .eq("user_id", doctorId) // ✅ UUID
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+      }
+
+      if (profileData?.profile_id) {
+        profileId = profileData.profile_id;
+      }
     }
-  };
+
+    console.log("Final Profile ID:", profileId);
+
+    // Create SEO slug
+    const slug = createSlug(doctor.name || "doctor");
+
+    // Public route
+    if (!user) {
+      navigate(
+        `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
+        {
+          state: {
+            doctorData: doctor,
+          },
+        }
+      );
+      return;
+    }
+
+    // Patient route
+    if (userRole === "patient") {
+      navigate(
+        `/dashboard/patient/doctor/${slug}/${profileId}`,
+        {
+          state: {
+            doctorData: doctor,
+          },
+        }
+      );
+    } else {
+      // Other roles
+      navigate(
+        `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
+        {
+          state: {
+            doctorData: doctor,
+          },
+        }
+      );
+    }
+  } catch (err) {
+    console.error("Navigation error:", err);
+
+    toast({
+      title: "Error",
+      description: "Unable to open doctor profile",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleViewHospitalDetails = async(facilityId: string) => {
     const facility = facilities.find(f => f.id === facilityId);
@@ -4818,6 +4925,7 @@ const toArray = (value: any): any[] => {
     });
     return () => subscription.unsubscribe();
   }, [view]);
+  
 
   const handleSearch = () => {
     setDoctorPage(1);

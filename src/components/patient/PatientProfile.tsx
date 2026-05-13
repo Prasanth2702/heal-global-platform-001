@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import { Progress } from '../ui/progress';
+import ChangePassword from '../auth/ChangePassword';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -93,7 +94,8 @@ const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
 const [pendingDocs, setPendingDocs] = useState<File[]>([]);
 const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-const [storageUsage, setStorageUsage] = useState<{
+const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [storageUsage, setStorageUsage] = useState<{
   total_gb: number;
   storage_limit_gb: number;
   utilization_percentage: number;
@@ -761,6 +763,14 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   </div>
 
+  <Button
+  variant="outline"
+  onClick={() => setShowPasswordDialog(true)}
+  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+>
+  Change Password
+</Button>
+
   {/* Desktop Edit Button */}
   <div className="hidden md:block">
     <Button
@@ -970,6 +980,23 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
                       </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Change Password</DialogTitle>
+      <DialogDescription>
+        Enter your old password and choose a new one.
+      </DialogDescription>
+    </DialogHeader>
+    <ChangePassword />
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </div>
+  </DialogContent>
+</Dialog>
       <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
               <DialogContent className={cn(
                 "p-0 overflow-hidden",

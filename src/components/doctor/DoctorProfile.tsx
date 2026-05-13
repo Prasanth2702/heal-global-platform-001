@@ -830,6 +830,7 @@ import {
 import { cn } from '@/lib/utils';
 import Loader1 from '../ui/Loader1';
 import { sendContactEnquiry } from '@/services/contactApi';
+import ChangePassword from '../auth/ChangePassword';
 
 export type UserRole = 'medicalProfessional';
 
@@ -837,6 +838,7 @@ export interface MedicalProfessional {
   firstName: string;
   lastName: string;
   emailAddress: string;
+  profileId:string;
   phoneNumber: string;
   medicalSpeciality: string;
   licenseNumber: string;
@@ -918,6 +920,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     documentUrl: '',
     documentName: '',
     profile_visibility: true,
+    profileId: ''
   });
   const [showOutdatedWarning, setShowOutdatedWarning] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -949,6 +952,8 @@ const [contactForm, setContactForm] = useState({
   subject: "",
   message: "",
 });
+const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+const [profileIdError, setProfileIdError] = useState<string>('');
 const [contactSubmitting, setContactSubmitting] = useState(false);
 const [bannerUrl, setBannerUrl] = useState('');
 const openContactDialog = () => {
@@ -1021,7 +1026,7 @@ useEffect(() => {
           phoneNumber: profilesData.phone_number || '',
           avatarUrl: profilesData.avatar_url || '',
           userType: profilesData.user_type || 'medicalProfessional',
-          
+          profileId:profilesData?.profile_id||'',
           // Medical professional fields
           medicalSpeciality: medicalData?.medical_speciality || '',
           licenseNumber: medicalData?.license_number || '',
@@ -1040,6 +1045,7 @@ useEffect(() => {
           pincode: medicalData?.pincode || '',
           country_code: medicalData?.country_code || '',
           address: medicalData?.address || '',
+          
         });
         // After setting profileData from medicalData
 setEducationList(medicalData?.education || []);
@@ -1315,6 +1321,35 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
 
     let finalFee = Number(profileData.consultationFees) + ADD_FEE;
 
+    const { data: existingProfile, error: profileCheckError } = await supabase
+  .from('profiles')
+  .select('user_id, profile_id')
+  .eq('profile_id', profileData.profileId)
+  .maybeSingle();
+
+if (profileCheckError) {
+  throw new Error(profileCheckError.message);
+}
+
+// If profile_id belongs to another user
+if (
+  existingProfile &&
+  existingProfile.user_id !== user.id
+) {
+  toast({
+    title: 'Profile ID Already Exists',
+    description: 'Please choose another Profile ID.',
+    variant: 'destructive',
+  });
+  
+  setSavingDocs(false);
+  return;
+}
+if (existingProfile) {
+  setProfileIdError('Profile ID already exists. Please choose another one.');
+  setSavingDocs(false);
+  return;
+}
     // Minimum Fee Condition
     if (finalFee < MIN_FEE) {
       finalFee = MIN_FEE;
@@ -1341,6 +1376,7 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
         phone_number: profileData.phoneNumber,
         avatar_url: profileData.avatarUrl,
         updated_at: new Date().toISOString(),
+        profile_id: profileData.profileId
       };
 
       const medicalProfessionalsUpdate = {
@@ -2102,6 +2138,13 @@ const handleViewAccount = () => {
       </div>
     </div>
     <div className="flex items-center space-x-2"></div>
+    <Button
+  variant="outline"
+  onClick={() => setShowPasswordDialog(true)}
+  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+>
+  Change Password
+</Button>
   <Button
     variant="outline"
     onClick={handleViewAccount}
@@ -2359,7 +2402,22 @@ Change your profile visibilty
     </form>
   </DialogContent>
 </Dialog>
-
+<Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Change Password</DialogTitle>
+      <DialogDescription>
+        Enter your old password and choose a new one.
+      </DialogDescription>
+    </DialogHeader>
+    <ChangePassword/>
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </div>
+  </DialogContent>
+</Dialog>
 <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
   <DialogContent className="sm:max-w-md">
     <DialogHeader>
@@ -2640,6 +2698,37 @@ Change your profile visibilty
               )}
             </div>
           </div>
+            <div>
+              <Label htmlFor="lastname" className="text-sm font-semibold text-gray-700">
+                Profile ID (ex. dralbert, drkumarasan) this is used in your profiles url ex. https://www.pmhssmarthealth.com/doctors/profile/{profileData.profileId||"yourprofileid"} or 
+              </Label>
+              {isEditing ? (
+                <>
+                <Input
+                  id="profileId"
+                  value={profileData.profileId}
+                   onChange={e => {
+          setProfileData(prev => ({
+            ...prev,
+            profileId: e.target.value
+          }));
+
+          // clear error while typing
+          setProfileIdError('');
+        }}
+                  // onChange={e => setProfileData(prev => ({ ...prev, profileId: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+                {profileIdError && (
+        <p className="mt-1 text-sm text-red-500 font-medium">
+          {profileIdError}
+        </p>
+      )}
+      </>
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.profileId}</p>
+              )}
+            </div>
           <div>
             <div>
               <Label htmlFor="email" className="text-sm font-semibold text-gray-700">

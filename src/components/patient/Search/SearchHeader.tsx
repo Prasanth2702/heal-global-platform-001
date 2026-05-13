@@ -2654,6 +2654,8 @@ const getAvailableCities = () => {
                 </SelectContent>
               </Select>
             </div>
+
+       
             
             {/* Date Filter */}
             {/* <div className="col-span-1">
@@ -2699,6 +2701,20 @@ const getAvailableCities = () => {
                   : `📊 ${getAvailableCities().length} cities with facilities`}
               </p>
             </div>
+
+                      {/* {activeFilterTab === 'doctors' && selectedDate && setSelectedDate && (
+  <div className="col-span-1">
+    <Label className="text-xs sm:text-sm font-semibold block mb-1 sm:mb-2">
+      📅 Select Date
+    </Label>
+    <Input
+      type="date"
+      value={selectedDate}
+      onChange={(e) => setSelectedDate(e.target.value)}
+      className="h-9 sm:h-10 text-sm"
+    />
+  </div>
+)} */}
           </div>
 
           {/* Active Filters Display - Responsive */}
@@ -2717,6 +2733,7 @@ const getAvailableCities = () => {
                     setSelectedSpecialty("all");
                     setLocationFilter("all");
                     if (setFacilityType) setFacilityType("all");
+                    if (setSelectedDate) setSelectedDate(new Date(Date.now() + 86400000).toISOString().split('T')[0]);
                     onSearch();
                   }}
                   className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
@@ -2754,6 +2771,8 @@ const getAvailableCities = () => {
                     </button>
                   </span>
                 )}
+
+           
                 {facilityType && facilityType !== "all" && activeFilterTab === "hospitals" && (
                   <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
                     <span className="mr-1">🏛️</span>

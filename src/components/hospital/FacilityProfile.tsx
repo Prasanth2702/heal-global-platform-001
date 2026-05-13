@@ -585,6 +585,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { sendContactEnquiry } from '@/services/contactApi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ChangePassword from '../auth/ChangePassword';
 
 export interface MedicalFacility {
   facilityName: string;
@@ -615,6 +616,7 @@ export interface MedicalFacility {
   documentName?: string; // Store the original filename
   bannerUrl?: string;
   profile_visibility:boolean;
+  profileId:string;
 }
 
 interface UploadedDocument {
@@ -663,6 +665,7 @@ const FacilityProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     documentName: '',
     country_code:'',
     profile_visibility: true,
+    profileId: ''
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [user, setUser] = useState<SupabaseUser>(null);
@@ -688,7 +691,8 @@ const [contactForm, setContactForm] = useState({
   message: "",
 });
 const [contactSubmitting, setContactSubmitting] = useState(false);
-
+const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+const [profileIdError, setProfileIdError] = useState<string>('');
   const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
 const openContactDialog = () => {
   setContactForm({
@@ -757,6 +761,7 @@ const handleContactInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTe
           emailAddress: profilesData.email || '',
           phoneNumber: profilesData.phone_number || '',
           avatarUrl: profilesData?.avatar_url || '',
+          profileId:profilesData?.profile_id||''
           // documentUrl: profilesData?.document_url || '',
           // documentName: profilesData?.document_name || ''
         }));
@@ -931,12 +936,43 @@ const fetchUserDocuments = async (userId: string) => {
       return;
     }
 
+    const { data: existingProfile, error: profileCheckError } = await supabase
+      .from('profiles')
+      .select('user_id, profile_id')
+      .eq('profile_id', profileData.profileId)
+      .maybeSingle();
+    
+    if (profileCheckError) {
+      throw new Error(profileCheckError.message);
+    }
+    
+    // If profile_id belongs to another user
+    if (
+      existingProfile &&
+      existingProfile.user_id !== user.id
+    ) {
+      toast({
+        title: 'Profile ID Already Exists',
+        description: 'Please choose another Profile ID.',
+        variant: 'destructive',
+      });
+      
+      setSaving(false);
+      return;
+    }
+    if (existingProfile) {
+      setProfileIdError('Profile ID already exists. Please choose another one.');
+      setSaving(false);
+      return;
+    }
+
     const profilesUpdate = {
       user_id: user.id,
       first_name: profileData.facilityName,
       email: profileData.emailAddress,
       phone_number: profileData.phoneNumber,
       avatar_url: profileData.avatarUrl,
+        profile_id: profileData.profileId
       // document_url: profileData.documentUrl,
       // document_name: profileData.documentName
     };
@@ -1556,6 +1592,13 @@ const handleViewAccount = () => {
       </div>
     </div>
  <div className="flex items-center space-x-2"></div>
+ <Button
+  variant="outline"
+  onClick={() => setShowPasswordDialog(true)}
+  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+>
+  Change Password
+</Button>
   <Button
     variant="outline"
     onClick={handleViewAccount}
@@ -1745,6 +1788,23 @@ const handleViewAccount = () => {
           </div>
         </DialogContent>
       </Dialog> */}
+
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Change Password</DialogTitle>
+      <DialogDescription>
+        Enter your old password and choose a new one.
+      </DialogDescription>
+    </DialogHeader>
+    <ChangePassword />
+    <div className="flex justify-end mt-4">
+      <DialogClose asChild>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </div>
+  </DialogContent>
+</Dialog>
 
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
         <DialogContent className="sm:max-w-md">
@@ -2092,6 +2152,39 @@ const handleViewAccount = () => {
                 <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.facilityType}</p>
               )}
             </div>
+
+             <div>
+                          <Label htmlFor="lastname" className="text-sm font-semibold text-gray-700">
+                            Profile ID (ex. dralbert, drkumarasan) this is used in your profiles url ex. https://www.pmhssmarthealth.com/doctors/profile/{profileData.profileId||"yourprofileid"} or 
+                          </Label>
+                          {isEditing ? (
+                            <>
+                            <Input
+                              id="profileId"
+                              value={profileData.profileId}
+                               onChange={e => {
+                      setProfileData(prev => ({
+                        ...prev,
+                        profileId: e.target.value
+                      }));
+            
+                      // clear error while typing
+                      setProfileIdError('');
+                    }}
+                              // onChange={e => setProfileData(prev => ({ ...prev, profileId: e.target.value }))}
+                              className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                            />
+                            {profileIdError && (
+                    <p className="mt-1 text-sm text-red-500 font-medium">
+                      {profileIdError}
+                    </p>
+                  )}
+                  </>
+                          ) : (
+                            <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium">{profileData.profileId}</p>
+                          )}
+                        </div>
+                        <br/>
 
             <div>
               <Label htmlFor="emailAddress" className="text-sm font-semibold text-gray-700">Email Address</Label>

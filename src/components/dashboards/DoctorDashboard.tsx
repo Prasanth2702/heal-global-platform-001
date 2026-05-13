@@ -577,7 +577,7 @@ const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
           {limits.clinical.remaining} remaining this month
         </p>
       </div>
-      {limits.tele.max > 0 &&(
+      {/* {limits.tele.max > 0 &&( */}
       <div>
         <div className="flex justify-between text-sm">
           <span>Tele-Consultations</span>
@@ -592,7 +592,7 @@ const SubscriptionUsage = ({ professionalId }: { professionalId: string }) => {
           {limits.tele.remaining} remaining this month
         </p>
       </div>
-      )}
+      {/* )} */}
     </div>
   );
 };

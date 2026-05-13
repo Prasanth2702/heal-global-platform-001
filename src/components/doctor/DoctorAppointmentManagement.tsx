@@ -1433,7 +1433,7 @@ import VideoMeeting from "../VideoMeeting";
 import mixpanelInstance from "@/utils/mixpanel";
 import { toast } from "@/hooks/use-toast";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Filter, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import Loader from "../ui/Loader";
@@ -1711,6 +1711,248 @@ export default function DoctorAppointmentManagement() {
     );
   }
 
+const SubscriptionUsage = ({
+  professionalId,
+}: {
+  professionalId: string;
+}) => {
+  const [limits, setLimits] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasSubscription, setHasSubscription] = useState(true);
+
+  useEffect(() => {
+    if (!professionalId) return;
+
+    const fetchLimits = async () => {
+      try {
+        setLoading(true);
+
+        const { data: sessionData } =
+          await supabase.auth.getSession();
+
+        const token =
+          sessionData.session?.access_token;
+
+        const response = await fetch(
+          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              user_auth_id: professionalId,
+            }),
+          }
+        );
+
+        const result = await response.json();
+
+        console.log("LIMIT RESULT:", result);
+
+        setLimits(result);
+
+        setHasSubscription(
+          result?.hasActiveSubscription ?? false
+        );
+      } catch (err) {
+        console.error(
+          "Error fetching subscription limits:",
+          err
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLimits();
+  }, [professionalId]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-3 text-sm text-gray-500">
+        Loading subscription usage...
+      </div>
+    );
+  }
+
+  if (!limits) return null;
+
+  // In-Person Limits
+  const inPersonLimitMax =
+    limits?.limits?.in_person?.max ?? 0;
+
+  const inPersonLimitCurrent =
+    limits?.limits?.in_person?.used ?? 0;
+
+  const inPersonRemaining =
+    limits?.limits?.in_person?.remaining ?? 0;
+
+  const isInPersonLimitReached =
+    inPersonLimitCurrent >= inPersonLimitMax &&
+    inPersonLimitMax > 0;
+
+  // Teleconsultation Limits
+  const teleLimitMax =
+    limits?.limits?.teleconsultation?.max ?? 0;
+
+  const teleLimitCurrent =
+    limits?.limits?.teleconsultation?.used ?? 0;
+
+  const teleRemaining =
+    limits?.limits?.teleconsultation?.remaining ?? 0;
+
+  const isTeleLimitReached =
+    teleLimitCurrent >= teleLimitMax &&
+    teleLimitMax > 0;
+
+  return (
+    <div className="space-y-4">
+      {/* No Subscription */}
+      {!hasSubscription && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          No active subscription found.
+        </div>
+      )}
+
+      {/* Usage Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* In-Person Consultation */}
+        <div
+          className={`rounded-lg border p-4 ${
+            isInPersonLimitReached
+              ? "bg-red-50 border-red-200"
+              : "bg-yellow-50 border-yellow-200"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h3
+              className={`font-semibold ${
+                isInPersonLimitReached
+                  ? "text-red-700"
+                  : "text-yellow-800"
+              }`}
+            >
+              In-Person Consultation
+            </h3>
+
+            <span
+              className={`text-xs px-2 py-1 rounded-full ${
+                isInPersonLimitReached
+                  ? "bg-red-100 text-red-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
+              {limits?.limits?.in_person?.limitType ??
+                "limited"}
+            </span>
+          </div>
+
+          <div className="text-2xl font-bold text-gray-800">
+            {inPersonLimitCurrent} / {inPersonLimitMax}
+          </div>
+
+          <div className="mt-2 text-sm text-gray-600">
+            Remaining: {inPersonRemaining}
+          </div>
+
+          <div className="mt-2 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
+              className={`h-full ${
+                isInPersonLimitReached
+                  ? "bg-red-500"
+                  : "bg-yellow-500"
+              }`}
+              style={{
+                width: `${
+                  limits?.limits?.in_person
+                    ?.percentageUsed ?? 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {isInPersonLimitReached && (
+            <div className="mt-3 text-xs font-medium text-red-700">
+              In-person consultation limit reached.
+            </div>
+          )}
+        </div>
+
+        {/* Teleconsultation */}
+        <div
+          className={`rounded-lg border p-4 ${
+            isTeleLimitReached
+              ? "bg-red-50 border-red-200"
+              : "bg-yellow-50 border-yellow-200"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h3
+              className={`font-semibold ${
+                isTeleLimitReached
+                  ? "text-red-700"
+                  : "text-yellow-800"
+              }`}
+            >
+              Teleconsultation
+            </h3>
+
+            <span
+              className={`text-xs px-2 py-1 rounded-full ${
+                isTeleLimitReached
+                  ? "bg-red-100 text-red-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
+              {limits?.limits?.teleconsultation
+                ?.limitType ?? "none"}
+            </span>
+          </div>
+
+          <div className="text-2xl font-bold text-gray-800">
+            {teleLimitCurrent} / {teleLimitMax}
+          </div>
+
+          <div className="mt-2 text-sm text-gray-600">
+            Remaining: {teleRemaining}
+          </div>
+
+          <div className="mt-2 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
+              className={`h-full ${
+                isTeleLimitReached
+                  ? "bg-red-500"
+                  : "bg-yellow-500"
+              }`}
+              style={{
+                width: `${
+                  limits?.limits?.teleconsultation
+                    ?.percentageUsed ?? 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {isTeleLimitReached && (
+            <div className="mt-3 text-xs font-medium text-red-700">
+              Teleconsultation limit reached.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Backend Message */}
+      {limits?.message && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+          {limits.message}
+        </div>
+      )}
+    </div>
+  );
+};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className={`container mx-auto ${responsive.spacing.containerPadding}`}>
@@ -1724,8 +1966,11 @@ export default function DoctorAppointmentManagement() {
           </p>
         </div>
 
+              <SubscriptionUsage professionalId={doctorUserId} />
+      
+
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mt-6">
           {/* Calendar Card */}
           <div className="lg:col-span-1 order-1 lg:order-1">
             <Card className="sticky top-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">

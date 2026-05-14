@@ -2620,6 +2620,8 @@ const [joiningVideo, setJoiningVideo] = useState(false);
     setPendingCompletion(true);
     setShowUploadModal(true);
   };
+  const [totalMaxReached, setTotalMaxReached] =
+  useState(false);
 const [isCheckingLimit, setIsCheckingLimit] = useState(true);
 const [limitExceeded, setLimitExceeded] = useState(false);
 const [limitMessage, setLimitMessage] = useState("");
@@ -2771,77 +2773,321 @@ const [limitRecommendations, setLimitRecommendations] = useState<string[]>([]);
 
 //   checkSubscription();
 // }, [user, currentAppointment]);
+const [isLimitOnlyExceeded, setIsLimitOnlyExceeded] = useState(false);
 const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+const [doctorLimits, setDoctorLimits] = useState<{ in_person: any; teleconsultation: any } | null>(null);
+// useEffect(() => {
+//   const checkSubscription = async () => {
+//     setIsCheckingLimit(true);   // ✅ start loading
+
+//     try {
+//       if (userRole === "doctor") {
+//         if (!user || !currentAppointment) {   // ✅ use user.id
+//           setLimitExceeded(false);
+//           return;
+//         }
+
+//         const { data: sessionData } = await supabase.auth.getSession();
+//         const token = sessionData.session?.access_token;
+
+//         const response = await fetch(
+//           "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//           {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//               Authorization: `Bearer ${token}`,
+//             },
+//             body: JSON.stringify({
+//               user_auth_id: user,               // ✅ fixed
+//               consultation_type: currentAppointment.type,
+//             }),
+//           }
+//         );
+
+//         const result = await response.json();
+
+//         if (!result.allowed) {
+//           setLimitExceeded(true);
+//           setLimitMessage(result.message || "Subscription limit exceeded");
+//           setLimitRecommendations(result.recommendations || []);
+//         } else {
+//           setLimitExceeded(false);
+//         }
+//       } else {
+//         // non‑doctor branch
+//         if (!user) return;
+
+//          const { data: facility, error: facilityError } = await supabase
+//       .from('facilities')
+//       .select('id')
+//       .eq('admin_user_id', user)
+//       .single()
+
+//       const facilityId = facility?.id;
+//         const result = await checkLimit(facilityId,"clinical");  // ✅ using hook for non‑doctor
+
+//         if (!result.allowed) {
+//           setLimitExceeded(true);
+//           setLimitMessage(result.message || "Facility limit exceeded");
+//           setLimitRecommendations(result.recommendations || []);
+//         } else {
+//           setLimitExceeded(false);
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Subscription check failed:", err);
+//       setLimitExceeded(false);   // allow page on error
+//     } finally {
+//       setIsCheckingLimit(false);  // ✅ always reset loading
+//     }
+//   };
+
+//   checkSubscription();
+// }, [user, currentAppointment, userRole]);   // ✅ added missing deps
+  
+// useEffect(() => {
+//   const checkSubscription = async () => {
+//     setIsCheckingLimit(true);
+
+//     try {
+//   // =========================================
+//       // DOCTOR SUBSCRIPTION CHECK
+//       // =========================================
+//       if (userRole === "doctor") {
+//         if (!user || !currentAppointment) {
+//           setLimitExceeded(false);
+//           setIsLimitOnlyExceeded(false);
+//           return;
+//         }
+
+//         // =========================================
+//         // GET SESSION
+//         // =========================================
+//         const {
+//           data: { session },
+//         } = await supabase.auth.getSession();
+
+//         const token = session?.access_token;
+
+//         if (!token) {
+//           console.error("No access token found");
+
+//           setLimitExceeded(false);
+//           setIsLimitOnlyExceeded(false);
+
+//           return;
+//         }
+
+//         // =========================================
+//         // API CALL
+//         // =========================================
+//         const response = await fetch(
+//           "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
+//           {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//               Authorization: `Bearer ${token}`,
+//             },
+//             body: JSON.stringify({
+//               user_auth_id: user,
+//               consultation_type:
+//                 currentAppointment?.type || "in_person",
+//             }),
+//           }
+//         );
+
+//         const result = await response.json();
+
+//         console.log(
+//           "Doctor Subscription Result:",
+//           result
+//         );
+
+//         // =========================================
+//         // STORE LIMITS
+//         // =========================================
+//         if (result?.limits) {
+//           setDoctorLimits(result.limits);
+//         }
+
+//         // =========================================
+//         // CONSULTATION TYPE
+//         // =========================================
+//         const appointmentType =
+//           currentAppointment?.type || "in_person";
+
+//         // =========================================
+//         // LIMIT DETAILS
+//         // =========================================
+//         const limitForType =
+//           result?.limits?.[appointmentType];
+
+//         const usedSlots =
+//           limitForType?.used || 0;
+
+//         const maxSlots =
+//           limitForType?.max || 0;
+
+//         const remainingSlots =
+//           limitForType?.remaining || 0;
+
+//         const percentageUsed =
+//           limitForType?.percentageUsed || 0;
+
+//           const totalmax =
+//   (usedSlots - maxSlots) <= 0 ;
+
+//         console.log("Limit Data:", {
+//           appointmentType,
+//           usedSlots,
+//           maxSlots,
+//           remainingSlots,
+//           percentageUsed,
+//         });
+
+//         // =========================================
+//         // RESET STATES
+//         // =========================================
+//         setLimitExceeded(false);
+//         setIsLimitOnlyExceeded(false);
+//         setLimitMessage("");
+//         setLimitRecommendations([]);
+
+//         // =========================================
+//         // EXPIRED SUBSCRIPTION
+//         // =========================================
+//         if (result?.isExpired) {
+//           setLimitExceeded(true);
+
+//           setLimitMessage(
+//             result?.message ||
+//               "Your subscription has expired."
+//           );
+
+//           setLimitRecommendations([
+//             "Renew your subscription plan",
+//             "Contact support",
+//           ]);
+
+//           return;
+//         }
+
+//         // =========================================
+//         // LIMIT EXCEEDED CONDITION
+//         // =========================================
+//       if (totalmax) {
+//   setLimitExceeded(true);
+
+//   setIsLimitOnlyExceeded(true);
+
+//   setLimitMessage(
+//     `You have reached your ${appointmentType} consultation limit.`
+//   );
+
+//   setLimitRecommendations([
+//     `Used: ${usedSlots}`,
+//     `Maximum: ${maxSlots}`,
+//     `Remaining: ${remainingSlots}`,
+//     `Usage: ${percentageUsed}%`,
+//     "Upgrade your subscription",
+//     "Wait until next billing cycle",
+//   ]);
+
+//   return;
+// }
+
+//         // =========================================
+//         // GENERAL BLOCK
+//         // =========================================
+//         if (!result?.allowed) {
+//           setLimitExceeded(true);
+
+//           setLimitMessage(
+//             result?.message ||
+//               "Subscription access blocked"
+//           );
+
+//           setLimitRecommendations(
+//             result?.recommendations || []
+//           );
+
+//           return;
+//         }
+
+//         // =========================================
+//         // SUCCESS
+//         // =========================================
+//         setLimitExceeded(false);
+//         setIsLimitOnlyExceeded(false);
+//         setLimitMessage("");
+//         setLimitRecommendations([]);
+//       }
+
+
+//       // =========================
+//       // FACILITY CHECK
+//       // =========================
+//       else {
+//         if (!user) return;
+
+//         const { data: facility, error: facilityError } =
+//           await supabase
+//             .from("facilities")
+//             .select("id")
+//             .eq("admin_user_id", user)
+//             .single();
+
+//         if (facilityError) {
+//           console.error("Facility Error:", facilityError);
+//           setLimitExceeded(false);
+//           return;
+//         }
+
+//         const facilityId = facility?.id;
+
+//         if (!facilityId) {
+//           setLimitExceeded(false);
+//           return;
+//         }
+
+//         const result = await checkLimit(
+//           facilityId,
+//           "clinical"
+//         );
+
+//         console.log("Facility Limit Result:", result);
+
+//         if (!result?.allowed) {
+//           setLimitExceeded(true);
+
+//           setLimitMessage(
+//             result?.message || "Facility limit exceeded"
+//           );
+
+//           setLimitRecommendations(
+//             result?.recommendations || []
+//           );
+//         } else {
+//           setLimitExceeded(false);
+//           setLimitMessage("");
+//           setLimitRecommendations([]);
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Subscription check failed:", err);
+
+//       // optional:
+//       setLimitExceeded(false);
+//     } finally {
+//       setIsCheckingLimit(false);
+//     }
+//   };
+
+//   checkSubscription();
+// }, [user, currentAppointment?.id, userRole]);
 useEffect(() => {
-  const checkSubscription = async () => {
-    setIsCheckingLimit(true);   // ✅ start loading
-
-    try {
-      if (userRole === "doctor") {
-        if (!user || !currentAppointment) {   // ✅ use user.id
-          setLimitExceeded(false);
-          return;
-        }
-
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-
-        const response = await fetch(
-          "https://mnthjabxkmgmbuquefyy.supabase.co/functions/v1/check-professional-limit",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              user_auth_id: user,               // ✅ fixed
-              consultation_type: currentAppointment.type,
-            }),
-          }
-        );
-
-        const result = await response.json();
-
-        if (!result.allowed) {
-          setLimitExceeded(true);
-          setLimitMessage(result.message || "Subscription limit exceeded");
-          setLimitRecommendations(result.recommendations || []);
-        } else {
-          setLimitExceeded(false);
-        }
-      } else {
-        // non‑doctor branch
-        if (!user) return;
-
-         const { data: facility, error: facilityError } = await supabase
-      .from('facilities')
-      .select('id')
-      .eq('admin_user_id', user)
-      .single()
-
-      const facilityId = facility?.id;
-        const result = await checkLimit(facilityId,"clinical");  // ✅ using hook for non‑doctor
-
-        if (!result.allowed) {
-          setLimitExceeded(true);
-          setLimitMessage(result.message || "Facility limit exceeded");
-          setLimitRecommendations(result.recommendations || []);
-        } else {
-          setLimitExceeded(false);
-        }
-      }
-    } catch (err) {
-      console.error("Subscription check failed:", err);
-      setLimitExceeded(false);   // allow page on error
-    } finally {
-      setIsCheckingLimit(false);  // ✅ always reset loading
-    }
-  };
-
-  checkSubscription();
-}, [user, currentAppointment, userRole]);   // ✅ added missing deps
-  useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id || null);
@@ -5031,124 +5277,137 @@ if (isCheckingLimit && viewType === "patient" && userRole === "doctor" && patien
   );
 }
 
-// Show full-page error if limit exceeded
-if (limitExceeded && viewType === "patient" && userRole === "doctor" && patient && currentAppointment?.status === "pending") {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
-      <Card className="max-w-md w-full shadow-xl border-red-200">
-        <CardHeader className="bg-red-600 text-white rounded-t-xl">
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-6 w-6" /> Subscription Limit Exceeded
-          </CardTitle>
-          <CardDescription className="text-red-100">
-            You cannot access this appointment
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6 space-y-4">
-          <div className="bg-red-50 p-4 rounded-lg text-red-800 text-sm">
-            {limitMessage}
-          </div>
+const shouldCheckSubscription =
+  viewType === "patient" &&
+  patient &&
+  currentAppointment?.status === "pending" &&
+  (userRole === "doctor" || userRole === "facility");
 
-          {limitRecommendations.length > 0 && (
-            <div className="space-y-2">
-              <p className="font-medium text-sm text-gray-700">Recommendations:</p>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {limitRecommendations.map((rec, idx) => (
-                  <li key={idx}>{rec}</li>
-                ))}
-              </ul>
-            </div>
-          )}
 
-          {/* <div className="flex gap-3 pt-4">
-            <Button className="flex-1" onClick={() => window.open("/pricing", "_blank")}>
-              Upgrade Plan
-            </Button>
-            <Button variant="outline" className="flex-1" onClick={() => window.open("/contact", "_blank")}>
-              Contact Support
-            </Button>
-          </div> */}
-
-          <p className="text-sm text-muted-foreground">Contact us to update your number</p>
-
-<p className="flex items-center justify-center">
-  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
-  <span className="text-primary">+91 98868 81149</span>
-</p>
-
-          <Button variant="ghost" className="w-full mt-2" onClick={() => navigate(-1)}>
-            Go Back
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-if (isCheckingLimit && viewType === "patient" && userRole === "facility" && patient && currentAppointment?.status === "pending") {
+// ==============================
+// LOADING SCREEN
+// ==============================
+if (isCheckingLimit && shouldCheckSubscription) {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-4 text-muted-foreground">Verifying subscription...</p>
+
+        <p className="mt-4 text-muted-foreground">
+          Verifying subscription...
+        </p>
       </div>
     </div>
   );
 }
 
-// Show full-page error if limit exceeded
-if (limitExceeded && viewType === "patient" && userRole === "facility" && patient && currentAppointment?.status === "pending") {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
-      <Card className="max-w-md w-full shadow-xl border-red-200">
-        <CardHeader className="bg-red-600 text-white rounded-t-xl">
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-6 w-6" /> Subscription Limit Exceeded
-          </CardTitle>
-          <CardDescription className="text-red-100">
-            You cannot access this appointment
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6 space-y-4">
-          <div className="bg-red-50 p-4 rounded-lg text-red-800 text-sm">
-            {limitMessage}
-          </div>
 
-          {limitRecommendations.length > 0 && (
-            <div className="space-y-2">
-              <p className="font-medium text-sm text-gray-700">Recommendations:</p>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {limitRecommendations.map((rec, idx) => (
-                  <li key={idx}>{rec}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+// ==============================
+// LIMIT EXCEEDED SCREEN
+// ==============================
+// if (limitExceeded &&  totalMaxReached   && shouldCheckSubscription) {
+//   const isExpiredSubscription =
+//     limitMessage?.toLowerCase().includes("expired");
 
-          <p className="text-sm text-muted-foreground">Contact us to update your number</p>
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 dark:from-slate-900 dark:to-slate-800 p-4">
+//       <Card className="max-w-md w-full shadow-xl border-red-200 dark:border-slate-700 overflow-hidden">
 
-<p className="flex items-center justify-center">
-  <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
-  <span className="text-primary">+91 98868 81149</span>
-</p>
+//         {/* Header */}
+//         <CardHeader
+//           className={`text-white ${
+//             isExpiredSubscription
+//               ? "bg-orange-600"
+//               : "bg-red-600"
+//           }`}
+//         >
+//           <CardTitle className="flex items-center gap-2 text-lg">
+//             <AlertCircle className="h-6 w-6" />
 
-          {/* <div className="flex gap-3 pt-4">
-            <Button className="flex-1" onClick={() => window.open("/pricing", "_blank")}>
-              Upgrade Plan
-            </Button>
-            <Button variant="outline" className="flex-1" onClick={() => window.open("/contact", "_blank")}>
-              Contact Support
-            </Button>
-          </div> */}
+//             {isExpiredSubscription
+//               ? "Subscription Expired"
+//               : "Subscription Limit Exceeded"}
+//           </CardTitle>
 
-          <Button variant="ghost" className="w-full mt-2" onClick={() => navigate(-1)}>
-            Go Back
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+//           <CardDescription
+//             className={
+//               isExpiredSubscription
+//                 ? "text-orange-100"
+//                 : "text-red-100"
+//             }
+//           >
+//             {isExpiredSubscription
+//               ? "Please renew your subscription"
+//               : "You cannot access this appointment"}
+//           </CardDescription>
+//         </CardHeader>
+
+//         {/* Content */}
+//         <CardContent className="pt-6 space-y-5">
+
+//           {/* Message */}
+//           <div className="bg-red-50 dark:bg-slate-800 p-4 rounded-lg text-sm text-red-800 dark:text-red-300 border border-red-100 dark:border-slate-700">
+//             {limitMessage}
+//           </div>
+
+//           {/* Recommendations */}
+//           {limitRecommendations?.length > 0 && (
+//             <div className="space-y-2">
+//               <p className="font-medium text-sm text-gray-700 dark:text-gray-300">
+//                 Recommendations:
+//               </p>
+
+//               <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+//                 {limitRecommendations.map((rec, idx) => (
+//                   <li key={idx}>{rec}</li>
+//                 ))}
+//               </ul>
+//             </div>
+//           )}
+
+//           {/* Contact */}
+//           <div className="border rounded-lg p-4 bg-gray-50 dark:bg-slate-800 dark:border-slate-700">
+//             <p className="text-sm text-muted-foreground text-center mb-3">
+//               Contact us to update your subscription
+//             </p>
+
+//             <div className="flex items-center justify-center">
+//               <PhoneIcon
+//                 size={18}
+//                 className="text-primary mr-2 flex-shrink-0"
+//               />
+
+//               <span className="text-primary font-medium">
+//                 +91 98868 81149
+//               </span>
+//             </div>
+//           </div>
+
+//           {/* Buttons */}
+//           <div className="flex flex-col gap-3 pt-2">
+
+//             {/* Upgrade Button */}
+//             <Button
+//               className="w-full"
+//               onClick={() => navigate("/pricing")}
+//             >
+//               Upgrade Subscription
+//             </Button>
+
+//             {/* Back Button */}
+//             <Button
+//               variant="outline"
+//               className="w-full"
+//               onClick={() => navigate(-1)}
+//             >
+//               Go Back
+//             </Button>
+//           </div>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// }
 
   // ==================== PATIENT VIEW ====================
   if (viewType === "patient" && patient) {
@@ -6200,6 +6459,164 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
                     <CardDescription className="text-emerald-100">Prescriptions, reports & lab results</CardDescription>
                   </div>
                   <CardContent className="p-6 bg-white dark:bg-slate-800">
+  {documents && documents.length > 0 ? (
+    documents.map((doc) => {
+      let bgColor = "bg-white";
+      let borderColor = "border-gray-200";
+      let roleLabel = "Unknown";
+
+      // Condition for uploader role
+      if (doc?.uploader_role === "patient") {
+        bgColor = "bg-blue-50 dark:bg-blue-900/20";
+        borderColor = "border-blue-200 dark:border-blue-700";
+        roleLabel = "Patient";
+      } else if (doc?.uploader_role === "doctor") {
+        bgColor = "bg-green-50 dark:bg-green-900/20";
+        borderColor = "border-green-200 dark:border-green-700";
+        roleLabel = "Doctor";
+      } else if (doc?.uploader_role === "department") {
+        bgColor = "bg-purple-50 dark:bg-purple-900/20";
+        borderColor = "border-purple-200 dark:border-purple-700";
+        roleLabel = "Department";
+      }
+
+      // Condition for file type
+      const isPdf = doc?.name?.toLowerCase().includes(".pdf");
+      const isImage =
+        doc?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+
+      return (
+        <div
+          key={doc.id}
+          className={`border rounded-lg p-4 mb-3 transition hover:shadow-md ${bgColor} ${borderColor}`}
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            
+            {/* Left Content */}
+            <div className="flex items-start space-x-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+
+              <div>
+                {/* File Name Condition */}
+                <p className="font-semibold text-sm break-all">
+                  {doc?.name || "No File Name"}
+                </p>
+
+                {/* Uploaded Date */}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {doc?.created_at
+                    ? new Date(doc.created_at).toLocaleDateString()
+                    : "No Date"}
+                </p>
+
+                {/* Uploaded Role */}
+                <p className="text-xs mt-1">
+                  Uploaded by:
+                  <span className="font-medium ml-1">
+                    {roleLabel}
+                  </span>
+                </p>
+
+                {/* File Type Condition */}
+                <div className="mt-2">
+                  {isPdf && (
+                    <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-600">
+                      PDF Document
+                    </span>
+                  )}
+
+                  {isImage && (
+                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-600">
+                      Image File
+                    </span>
+                  )}
+
+                  {!isPdf && !isImage && (
+                    <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">
+                      Other File
+                    </span>
+                  )}
+                </div>
+
+                {/* AI Summary Condition */}
+                {/* {doc?.ai_summary ? (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedSummary(doc.ai_summary);
+                        setShowSummaryModal(true);
+                      }}
+                    >
+                      View Full Summary
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-2">
+                    No AI Summary Available
+                  </p>
+                )} */}
+              </div>
+            </div>
+
+            {/* Right Buttons */}
+            <div className="flex items-center gap-2">
+              
+              {/* View Button Condition */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  if (!doc?.file_path) return;
+
+                  const { data, error } = await supabase.storage
+                    .from("patient_files")
+                    .createSignedUrl(doc.file_path, 60);
+
+                  if (data?.signedUrl) {
+                    window.open(data.signedUrl, "_blank");
+                  }
+
+                  if (error) {
+                    console.error(error);
+                  }
+                }}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+
+              {/* Delete Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteDocument(doc)}
+                disabled={deletingDocId === doc.id}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                {deletingDocId === doc.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    })
+  ) : (
+    <div className="text-center py-10 text-muted-foreground">
+      <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+      <p className="text-sm font-medium">
+        No documents uploaded yet
+      </p>
+    </div>
+  )}
+</CardContent>
+                  {/* <CardContent className="p-6 bg-white dark:bg-slate-800">
                     {documents.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground"><FileText className="h-12 w-12 mx-auto mb-3 opacity-30" /><p>No documents uploaded yet</p></div>
                     ) : (
@@ -6222,7 +6639,7 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
                         })}
                       </div>
                     )}
-                  </CardContent>
+                  </CardContent> */}
                   {/* {isPending && <PendingOverlay />} */}
                       {isPending  && <DoctorPendingOverlay />}
 
@@ -6527,7 +6944,7 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
                   <CardTitle className="text-white flex items-center gap-2"><FileText className="h-5 w-5" /> Medical Documents</CardTitle>
                   <CardDescription className="text-emerald-100">Prescriptions, reports & lab results</CardDescription>
                 </div>
-                <CardContent className="p-6 bg-white dark:bg-slate-800">
+                {/* <CardContent className="p-6 bg-white dark:bg-slate-800">
                   {documents.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground"><FileText className="h-12 w-12 mx-auto mb-2 opacity-30" /><p>No documents uploaded yet</p></div>
                   ) : (
@@ -6543,12 +6960,170 @@ if (limitExceeded && viewType === "patient" && userRole === "facility" && patien
                             <Button variant="ghost" size="sm" onClick={async () => { const { data } = await supabase.storage.from("patient_files").createSignedUrl(doc.file_path, 60); if (data?.signedUrl) window.open(data.signedUrl, "_blank"); }}><Eye className="h-4 w-4" /></Button>
                             <Button variant="ghost" size="sm" onClick={() => handleDeleteDocument(doc)} disabled={deletingDocId === doc.id} className="text-red-500 hover:text-red-700 hover:bg-red-50">{deletingDocId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</Button>
                           </div>
-                          {doc.ai_summary && <div className="mt-2 flex items-center justify-between"><Button variant="outline" size="sm" onClick={() => { setSelectedSummary(doc.ai_summary); setShowSummaryModal(true); }}>View Full Summary</Button></div>}
+                           {doc.ai_summary && <div className="mt-2 flex items-center justify-between"><Button variant="outline" size="sm" onClick={() => { setSelectedSummary(doc.ai_summary); setShowSummaryModal(true); }}>View Full Summary</Button></div>} 
                         </div>
                       );
                     })
                   )}
-                </CardContent>
+                </CardContent> */}
+                <CardContent className="p-6 bg-white dark:bg-slate-800">
+  {documents && documents.length > 0 ? (
+    documents.map((doc) => {
+      let bgColor = "bg-white";
+      let borderColor = "border-gray-200";
+      let roleLabel = "Unknown";
+
+      // Condition for uploader role
+      if (doc?.uploader_role === "patient") {
+        bgColor = "bg-blue-50 dark:bg-blue-900/20";
+        borderColor = "border-blue-200 dark:border-blue-700";
+        roleLabel = "Patient";
+      } else if (doc?.uploader_role === "doctor") {
+        bgColor = "bg-green-50 dark:bg-green-900/20";
+        borderColor = "border-green-200 dark:border-green-700";
+        roleLabel = "Doctor";
+      } else if (doc?.uploader_role === "department") {
+        bgColor = "bg-purple-50 dark:bg-purple-900/20";
+        borderColor = "border-purple-200 dark:border-purple-700";
+        roleLabel = "Department";
+      }
+
+      // Condition for file type
+      const isPdf = doc?.name?.toLowerCase().includes(".pdf");
+      const isImage =
+        doc?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+
+      return (
+        <div
+          key={doc.id}
+          className={`border rounded-lg p-4 mb-3 transition hover:shadow-md ${bgColor} ${borderColor}`}
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            
+            {/* Left Content */}
+            <div className="flex items-start space-x-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+
+              <div>
+                {/* File Name Condition */}
+                <p className="font-semibold text-sm break-all">
+                  {doc?.name || "No File Name"}
+                </p>
+
+                {/* Uploaded Date */}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {doc?.created_at
+                    ? new Date(doc.created_at).toLocaleDateString()
+                    : "No Date"}
+                </p>
+
+                {/* Uploaded Role */}
+                <p className="text-xs mt-1">
+                  Uploaded by:
+                  <span className="font-medium ml-1">
+                    {roleLabel}
+                  </span>
+                </p>
+
+                {/* File Type Condition */}
+                <div className="mt-2">
+                  {isPdf && (
+                    <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-600">
+                      PDF Document
+                    </span>
+                  )}
+
+                  {isImage && (
+                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-600">
+                      Image File
+                    </span>
+                  )}
+
+                  {!isPdf && !isImage && (
+                    <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">
+                      Other File
+                    </span>
+                  )}
+                </div>
+
+                {/* AI Summary Condition */}
+                {/* {doc?.ai_summary ? (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedSummary(doc.ai_summary);
+                        setShowSummaryModal(true);
+                      }}
+                    >
+                      View Full Summary
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-2">
+                    No AI Summary Available
+                  </p>
+                )} */}
+              </div>
+            </div>
+
+            {/* Right Buttons */}
+            <div className="flex items-center gap-2">
+              
+              {/* View Button Condition */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  if (!doc?.file_path) return;
+
+                  const { data, error } = await supabase.storage
+                    .from("patient_files")
+                    .createSignedUrl(doc.file_path, 60);
+
+                  if (data?.signedUrl) {
+                    window.open(data.signedUrl, "_blank");
+                  }
+
+                  if (error) {
+                    console.error(error);
+                  }
+                }}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+
+              {/* Delete Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteDocument(doc)}
+                disabled={deletingDocId === doc.id}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                {deletingDocId === doc.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    })
+  ) : (
+    <div className="text-center py-10 text-muted-foreground">
+      <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+      <p className="text-sm font-medium">
+        No documents uploaded yet
+      </p>
+    </div>
+  )}
+</CardContent>
                 {/* {isPending && <PendingOverlay />} */}
               </Card>
             {/* )} */}

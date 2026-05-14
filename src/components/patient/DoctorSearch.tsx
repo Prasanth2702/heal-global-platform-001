@@ -4672,7 +4672,7 @@ const toArray = (value: any): any[] => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         toast({ title: "Authentication Required", description: "Please log in to book an appointment.", variant: "destructive" });
-        navigate('/login');
+        navigate('/login/patient');
         return;
       }
       const { data: sessionData } = await supabase.auth.getSession();

@@ -521,8 +521,9 @@ useEffect(() => {
 //   limits && limits?.limits?.departments?.allowed === false;
 const deptLimitMax = limits?.limits?.departments?.max ?? 0;
 const deptLimitCurrent = limits?.limits?.departments?.current ?? 0;
+const isLoadingData = isLoading || limitLoading;
 const isStaffLimitReached =
-  limits?.limits?.departments?.allowed === false || (deptLimitMax - deptLimitCurrent)<= 0;
+  limits?.limits?.departments?.allowed === false || deptLimitMax >= deptLimitCurrent;
 const limitMessage =
   limits?.message ||
   "You have reached the maximum department limit.";
@@ -602,7 +603,7 @@ const openContactDialog = () => {
   setShowContactDialog(true);
 };
 const [showContactPopup, setShowContactPopup] = useState(false);
-const [currentStep, setCurrentStep] = useState(2);
+const [currentStep, setCurrentStep] = useState(1);
 const [departmentCreated, setDepartmentCreated] = useState(false);
 const [timeCreated, setTimeCreated] = useState(false);
   const [formData, setFormData] = useState({
@@ -1910,7 +1911,7 @@ const renderFieldError = (field: string) => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && isLoadingData ) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -1978,7 +1979,7 @@ const getSubmitHandler = () => {
         <Button onClick={() => {
           trackDepartmentAction('add_department_click');
           
-          if (isStaffLimitReached) {
+          if (limits?.limits?.departments?.current >= limits?.limits?.departments?.max) {
       setShowLimitMessage(true);
 
       window.scrollTo({

@@ -201,7 +201,6 @@ const DoctorHospitals = () => {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
-  
   const [loading, setLoading] = useState(true);
   const [entityType, setEntityType] = useState<"doctor" | "hospital" | null>(null);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -381,7 +380,7 @@ const checkBookingStatus = async (professionalId: string) => {
   try {
     const { data, error } = await supabase
       .from("booking_attempts")
-      .insert({ professionals_id: professionalId ,booking_type: "appointment" })
+      .insert({ professionals_id: professionalId ,booking_type: "appointment", notes: "Since your subscription limit exceed, the appointment booking button is disabled." })
       .eq("professionals_id", professionalId); // ✅ FIXED HERE
      
 
@@ -406,6 +405,16 @@ const checkBookingStatus = async (professionalId: string) => {
 const teleLimit = limits?.limits?.teleconsultation;
 const isTeleBlocked = teleLimit?.remaining === 0;
 const isInPersonBlocked = inPersonLimit?.remaining === 0;
+const limitData =
+  selectedSlot?.slot_type === "clinic"
+    ?  limits?.limits?.in_person
+    : limits?.limits?.teleconsultation;
+
+const used = limitData?.used || 0;
+const max = limitData?.max || 0;
+const remaining = limitData?.remaining || 0;
+const percentageUsed = limitData?.percentageUsed || 0;
+const totalmax = used >= max;
 const isSlotBlocked = (slotType: string) => {
   if (slotType === "teleconsultation" || slotType === "online") {
     return isTeleBlocked;
@@ -415,6 +424,8 @@ const isSlotBlocked = (slotType: string) => {
   }
   return false;
 };
+
+
   //  const fetchTimeSlotsAndBookings = async (doctorId: string) => {
   //     try {
   //       const { data: slotsData, error: slotsError } = await supabase
@@ -532,7 +543,7 @@ const isSlotBlocked = (slotType: string) => {
               description: "Your session is invalid. Please log in again.",
               variant: "destructive",
             });
-            navigate('/login');
+            navigate('/login/patient');
           } else if (errorMsg.includes("No doctors available in this department") ||
               errorMsg.includes("All doctors in this department are booked for this time slot")) {
             toast({
@@ -1520,8 +1531,11 @@ const handleBookAppointmentClick = () => {
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" /> Share
+            <Button variant="outline" size="sm" onClick={handleShare} className="bg-blue-500/20
+    bg-gradient-to-r from-blue-600 to-blue-800 text-white
+    shadow-lg
+    transition-all">
+              <Share2 className="h-4 w-4 mr-2" /> Social Share
             </Button>
             {/* <Button variant="outline" size="sm" onClick={toggleSave}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? "fill-blue-600 text-blue-600" : ""}`} />
@@ -2132,7 +2146,9 @@ selectedDate.setDate(
   variant="default"
   size="sm"
   className="mt-3 w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-  disabled={!selectedSlot}
+  disabled={!selectedSlot 
+    || totalmax
+  }
   onClick={() => {
     console.log("Button clicked", { selectedSlot, selectedDay, doctor });
     if (selectedSlot) {
@@ -2140,7 +2156,9 @@ selectedDate.setDate(
     }
   }}
 >
-  Book Appointment
+   { totalmax 
+    ? "Booking not available right now. Please try after some time."
+    : "Book Appointment"}
   {/* Book Appointment without Payment */}
 </Button>
                                                     </>
@@ -2307,13 +2325,16 @@ selectedDate.setDate(
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" /> Share
+            <Button variant="outline" size="sm" onClick={handleShare} className="bg-blue-500/20
+    bg-gradient-to-r from-blue-600 to-blue-800 text-white
+    shadow-lg
+    transition-all">
+              <Share2 className="h-4 w-4 mr-2" /> Social Share
             </Button>
-            <Button variant="outline" size="sm" onClick={toggleSave}>
+            {/* <Button variant="outline" size="sm" onClick={toggleSave}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? "fill-green-600 text-green-600" : ""}`} />
               {isSaved ? "Saved" : "Save"}
-            </Button>
+            </Button> */}
           </div>
         </div>
 

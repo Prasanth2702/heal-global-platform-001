@@ -2570,8 +2570,32 @@ const DepartmentDetails = () => {
   const [bookingError, setBookingError] = useState<string | null>(null);
 
   // Facility limit
-  const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+  const { checkLimit, limits,  } = useFacilityLimit();
+  useEffect(() => {
+    if (facility) {
+      checkLimit(facility.id, "all");
+      checkBookingStatus(facility.id);
+    }
+  }, [facility]);
   const isClinicalLimitReached = limits?.limits?.clinical && limits.limits.clinical.allowed === false;
+const clinicalLimit = limits?.limits?.clinical;
+const teleLimit = limits?.limits?.tele;
+
+// Detect slot type
+const isTeleSlot = selectedSlot?.slot_type === "tele";
+const isClinicalSlot =
+  selectedSlot?.slot_type === "consultation" ||
+  selectedSlot?.slot_type === "clinic";
+
+// Get correct limit data
+const limitData = isTeleSlot ? teleLimit : clinicalLimit;
+
+// Values
+const used = limitData?.used ?? 0;
+const max = limitData?.max ?? 0;
+const remaining = limitData?.remaining ?? 0;
+const percentageUsed = limitData?.percentageUsed ?? 0;
+const totalmax = used >= max;
 
   // ==================== HELPER FUNCTIONS ====================
   const createSlug = (text: string) => {
@@ -2796,7 +2820,7 @@ const DepartmentDetails = () => {
           variant: "destructive",
         });
 
-        navigate("/login");
+        navigate("/login/patient");
         return;
       }
 
@@ -2938,7 +2962,7 @@ endOfDay.setHours(23, 59, 59, 999);
           description: "Please log in to book an appointment.",
           variant: "destructive",
         });
-        navigate('/login');
+        navigate('/login/patient');
         return;
       }
 
@@ -3028,12 +3052,7 @@ endOfDay.setHours(23, 59, 59, 999);
     if (id) fetchDepartmentDetails();
   }, [id]);
 
-  useEffect(() => {
-    if (facility) {
-      checkLimit(facility.id, "clinical");
-      checkBookingStatus(facility.id);
-    }
-  }, [facility]);
+ 
 
   // ==================== RENDER ====================
   if (loading) {
@@ -3284,10 +3303,12 @@ endOfDay.setHours(23, 59, 59, 999);
                         variant="default"
                         size="sm"
                         className="mt-3 w-full sm:w-auto bg-green-600 hover:bg-green-700"
-                        disabled={!selectedSlot}
+                        disabled={!selectedSlot || totalmax}
                         onClick={() => handleDepartmentBookNow(selectedSlot!, selectedDay, department)}
                       >
-                        Book Appointment
+                        { totalmax 
+    ? "Booking not available right now. Please try after some time."
+    : "Book Appointment"}
                       </Button>
                     </>
                   )}

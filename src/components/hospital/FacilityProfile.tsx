@@ -935,36 +935,60 @@ const fetchUserDocuments = async (userId: string) => {
       });
       return;
     }
-
+ // ✅ FIXED: Profile ID existence check (allow if belongs to current user)
     const { data: existingProfile, error: profileCheckError } = await supabase
       .from('profiles')
       .select('user_id, profile_id')
       .eq('profile_id', profileData.profileId)
       .maybeSingle();
-    
+
     if (profileCheckError) {
       throw new Error(profileCheckError.message);
     }
-    
-    // If profile_id belongs to another user
-    if (
-      existingProfile &&
-      existingProfile.user_id !== user.id
-    ) {
+
+    // Only error if profile_id belongs to another user
+    if (existingProfile && existingProfile.user_id !== user.id) {
       toast({
         title: 'Profile ID Already Exists',
         description: 'Please choose another Profile ID.',
         variant: 'destructive',
       });
-      
-      setSaving(false);
-      return;
-    }
-    if (existingProfile) {
       setProfileIdError('Profile ID already exists. Please choose another one.');
       setSaving(false);
       return;
     }
+
+    // Clear any previous error when ID is valid (or belongs to self)
+    setProfileIdError('');
+    // const { data: existingProfile, error: profileCheckError } = await supabase
+    //   .from('profiles')
+    //   .select('user_id, profile_id')
+    //   .eq('profile_id', profileData.profileId)
+    //   .maybeSingle();
+    
+    // if (profileCheckError) {
+    //   throw new Error(profileCheckError.message);
+    // }
+    
+    // // If profile_id belongs to another user
+    // if (
+    //   existingProfile &&
+    //   existingProfile.user_id !== user.id
+    // ) {
+    //   toast({
+    //     title: 'Profile ID Already Exists',
+    //     description: 'Please choose another Profile ID.',
+    //     variant: 'destructive',
+    //   });
+      
+    //   setSaving(false);
+    //   return;
+    // }
+    // if (existingProfile) {
+    //   setProfileIdError('Profile ID already exists. Please choose another one.');
+    //   setSaving(false);
+    //   return;
+    // }
 
     const profilesUpdate = {
       user_id: user.id,

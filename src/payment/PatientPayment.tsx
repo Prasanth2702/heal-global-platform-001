@@ -36,7 +36,7 @@ const PatientPayment = () => {
       // Get authenticated user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/login');
+        navigate('/login/patient');
         return;
       }
       setUserId(user.id);

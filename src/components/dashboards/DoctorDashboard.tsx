@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TeleconsultationPage from "../doctor/TeleconsultationPage";
+import { DoctorLimitDashboard } from "../doctor/limitcheck/DoctorLimitDashboard";
 
 type UsagePayload = {
   consultation_type: string;
@@ -48,6 +49,7 @@ const [planName, setPlanName] = useState<string | null>(null);
 const [profileVisible, setProfileVisible] = useState(true);
 const [loadingVisibility, setLoadingVisibility] = useState(true);
 const [showTelePopup, setShowTelePopup] = useState(false);
+const [userId, setUserId] = useState<string | null>(null);
 // Add this useEffect to fetch appointments and patients
 useEffect(() => {
   const fetchDoctorData = async () => {
@@ -60,6 +62,8 @@ useEffect(() => {
         setLoading(false);
         return;
       }
+
+      setUserId (user.id)
 
       // Step 1: Get doctor's medical professional record
       const { data: doctorData, error: doctorError } = await supabase
@@ -743,7 +747,7 @@ if (activeTab !== "overview") {
               className={activeTab === "appointments" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" : "hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100"}
             >
               <FileLineChart className="h-4 w-4 mr-1" />
-              Find Appointments
+              My Appointments
             </Button>
             {/* <Button
               variant={activeTab === "schedule" ? "default" : "ghost"}
@@ -797,7 +801,7 @@ if (activeTab !== "overview") {
               className={activeTab === "tele" ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white" : "hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"}
             >
               <Telescope className="h-4 w-4 mr-1" />
-              Tele consultation booking
+              Tele consultation booking Status
             </Button>
           </div>
         </div>
@@ -933,13 +937,13 @@ if (activeTab !== "overview") {
               className="hover:bg-gradient-to-r hover:from-indigo-100 hover:to-blue-100"
             >
               <Telescope className="h-4 w-4 mr-1" />
-              Tele consultation booking
+              Tele consultation booking status
             </Button>
           </div>
 
-           <div className="w-full p-4 rounded-lg border border-green-200 bg-green-50 text-center mb-4">
+           {/* <div className="w-full p-4 rounded-lg border border-green-200 bg-green-50 text-center mb-4">
     <p className="text-red-600 font-medium"> Tele consultation booking is not availble in your current subscription. Please purchase a subscription or contact </p>
-    </div>
+    </div> */}
 
            {loadingVisibility ? (
   <div>Loading...</div>
@@ -1050,7 +1054,7 @@ if (activeTab !== "overview") {
     </CardDescription>
   </CardHeader>
 </Card>
-<Card 
+{/* <Card 
   className="cursor-pointer transition-all hover:shadow-md" 
   onClick={() => setShowTelePopup(true)}
 >
@@ -1067,7 +1071,7 @@ if (activeTab !== "overview") {
       Click to contact support
     </p>
   </CardContent>
-</Card>
+</Card> */}
       </div>
 
       {/* Main Content Grid */}
@@ -1285,6 +1289,18 @@ if (activeTab !== "overview") {
           </div>
         </CardContent>
       </Card>
+
+      <div className="space-y-6">
+        <DoctorLimitDashboard 
+  doctor_id={userId}  // The auth user ID of the doctor
+  autoRefresh={true}
+  refreshInterval={30000}
+  onLimitExceeded={(exceeded) => {
+    console.log('Limits exceeded:', exceeded);
+    // Show warning to doctor
+  }}
+/>
+      </div>
 
       {/* Tele Subscription Popup */}
 <Dialog open={showTelePopup} onOpenChange={setShowTelePopup}>

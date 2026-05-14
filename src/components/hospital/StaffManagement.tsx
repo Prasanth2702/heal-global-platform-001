@@ -1720,7 +1720,7 @@ useEffect(() => {
 const staffLimitMax = limits?.limits?.staff?.max ?? 0;
 const staffLimitCurrent = limits?.limits?.staff?.current ?? 0;
 const isStaffLimitReached =
-  limits?.limits?.staff?.allowed === false || (staffLimitMax - staffLimitCurrent) <= 0;
+  limits?.limits?.staff?.allowed === false || staffLimitMax >= staffLimitCurrent;
 const staffLimitMessage =
   limits?.message || "You have reached the maximum staff limit.";
 const limitMessage =
@@ -2270,7 +2270,7 @@ return (
   onClick={() => {
     trackStaffAction('add_staff_click');
 
-    if (isStaffLimitReached) {
+    if (limits?.limits?.staff?.current >= limits?.limits?.staff?.max) {
       setShowLimitMessage(true);
 
       window.scrollTo({
@@ -2309,7 +2309,7 @@ return (
           )}
         </DialogTrigger>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            {isStaffLimitReached ? (
+            {/* {isStaffLimitReached ? (
     <>
       <DialogHeader>
         <DialogTitle>Subscription Required</DialogTitle>
@@ -2328,7 +2328,7 @@ return (
         <Button onClick={() => setIsAddDialogOpen(false)}>Close</Button>
       </DialogHeader>
     </>
-  ) : (
+  ) : ( */}
     <>
           
           {/* Dialog content exactly as provided – unchanged */}
@@ -2648,7 +2648,7 @@ return (
             </DialogFooter>
           </form>
           </>
-  )}
+  {/* )} */}
         </DialogContent>
       </Dialog>
     </div>

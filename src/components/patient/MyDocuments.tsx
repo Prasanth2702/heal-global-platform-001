@@ -192,7 +192,7 @@ useEffect(() => {
         description: "Please log in to view your documents.",
         variant: "destructive",
       });
-      navigate("/login");
+      navigate("/login/patient");
       return;
     }
 

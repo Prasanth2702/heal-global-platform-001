@@ -1,7 +1,13 @@
 import Rollbar from "rollbar";
 
-// ✅ define levels here (top of file)
 const levels: Rollbar.Level[] = ["warning", "error", "critical", "info"];
+
+// ✅ Build number / commit SHA (Vercel provides this automatically)
+const buildNumber =
+  import.meta.env.VERCEL_GIT_COMMIT_SHA ||          // Vercel Git commit SHA
+  import.meta.env.VERCEL_GITHUB_COMMIT_SHA ||       // GitHub commit SHA
+  import.meta.env.VITE_BUILD_NUMBER ||              // Manual env var (optional)
+  new Date().toISOString().replace(/[:.]/g, "-");   // Fallback: timestamp
 
 const config: Rollbar.Configuration = {
   accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN as string,
@@ -15,7 +21,7 @@ const config: Rollbar.Configuration = {
     triggers: [
       {
         type: "occurrence",
-        level: levels, // ✅ use it here
+        level: levels,
         samplingRatio: 1.0,
       },
     ],
@@ -33,9 +39,11 @@ const config: Rollbar.Configuration = {
   payload: {
     client: {
       javascript: {
-        code_version: "1.0.0",
+        code_version: buildNumber.slice(0, 12), // short version (first 12 chars)
       },
     },
+    // optional: include full build number in a custom field
+    build: buildNumber,
   },
 };
 

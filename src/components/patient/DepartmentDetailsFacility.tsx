@@ -143,7 +143,7 @@ const handleConfirmBooking = async () => {
         description: "Please log in to book an appointment.",
         variant: "destructive",
       });
-      navigate('/login');
+      navigate('/login/patient');
       return;
     }
 

@@ -1321,35 +1321,31 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
 
     let finalFee = Number(profileData.consultationFees) + ADD_FEE;
 
+    // ✅ FIXED: Profile ID existence check (allow if belongs to current user)
     const { data: existingProfile, error: profileCheckError } = await supabase
-  .from('profiles')
-  .select('user_id, profile_id')
-  .eq('profile_id', profileData.profileId)
-  .maybeSingle();
+      .from('profiles')
+      .select('user_id, profile_id')
+      .eq('profile_id', profileData.profileId)
+      .maybeSingle();
 
-if (profileCheckError) {
-  throw new Error(profileCheckError.message);
-}
+    if (profileCheckError) {
+      throw new Error(profileCheckError.message);
+    }
 
-// If profile_id belongs to another user
-if (
-  existingProfile &&
-  existingProfile.user_id !== user.id
-) {
-  toast({
-    title: 'Profile ID Already Exists',
-    description: 'Please choose another Profile ID.',
-    variant: 'destructive',
-  });
-  
-  setSavingDocs(false);
-  return;
-}
-if (existingProfile) {
-  setProfileIdError('Profile ID already exists. Please choose another one.');
-  setSavingDocs(false);
-  return;
-}
+    // Only error if profile_id belongs to another user
+    if (existingProfile && existingProfile.user_id !== user.id) {
+      toast({
+        title: 'Profile ID Already Exists',
+        description: 'Please choose another Profile ID.',
+        variant: 'destructive',
+      });
+      setProfileIdError('Profile ID already exists. Please choose another one.');
+      setSavingDocs(false);
+      return;
+    }
+
+    // Clear any previous error when ID is valid (or belongs to self)
+    setProfileIdError('');
     // Minimum Fee Condition
     if (finalFee < MIN_FEE) {
       finalFee = MIN_FEE;

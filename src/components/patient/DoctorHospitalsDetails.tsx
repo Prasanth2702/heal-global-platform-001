@@ -456,7 +456,7 @@ useEffect(() => {
               description: "Your session is invalid. Please log in again.",
               variant: "destructive",
             });
-            navigate('/login');
+            navigate('/login/patient');
           } else if (errorMsg.includes("No doctors available in this department") ||
               errorMsg.includes("All doctors in this department are booked for this time slot")) {
             toast({
@@ -1545,8 +1545,11 @@ const handleBookAppointmentClick = () => {
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" /> Share
+            <Button variant="outline" size="sm" onClick={handleShare} className="bg-blue-500/20
+    bg-gradient-to-r from-blue-600 to-blue-800 text-white
+    shadow-lg
+    transition-all">
+              <Share2 className="h-4 w-4 mr-2" /> Social Share
             </Button>
             {/* <Button variant="outline" size="sm" onClick={toggleSave}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? "fill-blue-600 text-blue-600" : ""}`} />
@@ -2326,13 +2329,16 @@ selectedDate.setDate(
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" /> Share
+            <Button variant="outline" size="sm" onClick={handleShare} className="bg-blue-500/20
+    bg-gradient-to-r from-blue-600 to-blue-800 text-white
+    shadow-lg
+    transition-all">
+              <Share2 className="h-4 w-4 mr-2" /> Social Share
             </Button>
-            <Button variant="outline" size="sm" onClick={toggleSave}>
+            {/* <Button variant="outline" size="sm" onClick={toggleSave}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? "fill-green-600 text-green-600" : ""}`} />
               {isSaved ? "Saved" : "Save"}
-            </Button>
+            </Button> */}
           </div>
         </div>
 

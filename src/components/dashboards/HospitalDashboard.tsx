@@ -421,7 +421,7 @@ return (
           <TabsTrigger value="tele" className="flex items-center space-x-2 data-[state=active]:bg-blue-600 
                data-[state=active]:text-white" onClick={() => trackButtonClick("Tele")}>
             <Telescope className="h-4 w-4" />
-            <span className="hidden sm:inline">Tele consultation booking</span>
+            <span className="hidden sm:inline">Tele consultation booking status</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -499,7 +499,7 @@ return (
             onClick={() => handleTabChange("tele")}
           >
             <Telescope className="h-4 w-4 mr-1" />
-            <span>Tele consultation booking</span>
+            <span>Tele consultation booking status</span>
           </Button>
         </div>
       </div>

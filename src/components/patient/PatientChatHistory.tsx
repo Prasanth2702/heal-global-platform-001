@@ -68,7 +68,7 @@ export default function PatientChatHistory() {
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          navigate("/login");
+          navigate("/login/patient");
           return;
         }
 

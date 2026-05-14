@@ -1,9 +1,16 @@
 // pages/FacilitySubscriptionPlans.tsx
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Sparkles, Building2, Users, Stethoscope, Bed, CreditCard, BarChart3, AlertCircle } from 'lucide-react';
+import { CheckCircle, Sparkles, Building2, Users, Stethoscope, Bed, CreditCard, BarChart3, AlertCircle, PhoneIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import SubscriptionCheckout from './SubscriptionCheckout';
 import { toast } from '@/hooks/use-toast';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -22,6 +29,7 @@ interface SubscriptionTier {
   yearly_price: number | null;
   tele_consultation_duration: number;
   is_available: boolean;
+  description:string;
 }
 
 interface ActiveSubscription {
@@ -33,6 +41,7 @@ interface ActiveSubscription {
   is_active: boolean;
   consults_used_clinical: number;
   consults_used_tele: number;
+   tier_name?: string;
 }
 
 const FacilitySubscriptionPlans = () => {
@@ -45,7 +54,8 @@ const FacilitySubscriptionPlans = () => {
   const [currentSubscription, setCurrentSubscription] = useState<ActiveSubscription | null>(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [updatingProfile, setUpdatingProfile] = useState(false);
-
+const [showLimitMessage, setShowLimitMessage] = useState(true);
+const [showContactPopup, setShowContactPopup]  = useState(false);
   // Fetch logged-in doctor's professional ID
   useEffect(() => {
     const fetchProfessional = async () => {
@@ -72,22 +82,30 @@ const FacilitySubscriptionPlans = () => {
     try {
       const { data, error } = await supabase
         .from('active_subscriptions')
-        .select('*')
+        .select('*,subscription_tiers (tier_name)')
         .eq('facility_id', facilityID)
         .eq('is_active', true)
         .maybeSingle();
 
       if (error) throw error;
       
-      if (data) {
-        // Check if subscription has expired
-        const isExpired = data.end_date && new Date(data.end_date) < new Date();
-        if (!isExpired) {
-          setCurrentSubscription(data);
-          setHasActiveSubscription(true);
-          return;
-        }
-      }
+      
+     if (data) {
+  const formattedData = {
+    ...data,
+    tier_name: data.subscription_tiers?.tier_name,
+  };
+
+  const isExpired =
+    formattedData.end_date &&
+    new Date(formattedData.end_date) < new Date();
+
+  if (!isExpired) {
+    setCurrentSubscription(formattedData);
+    setHasActiveSubscription(true);
+    return;
+  }
+}
       setCurrentSubscription(null);
       setHasActiveSubscription(false);
     } catch (err) {
@@ -269,6 +287,59 @@ const FacilitySubscriptionPlans = () => {
 
 
   return (
+    <>
+    {hasActiveSubscription && currentSubscription && (
+  <div className="max-w-7xl mx-auto mt-3">
+    <Card className="border-green-300 shadow-lg bg-green-50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-green-700">
+          <CheckCircle className="h-6 w-6" />
+          Current Active Plan
+        </CardTitle>
+
+        <CardDescription className="text-green-700">
+          Your subscription is currently active and running successfully.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg p-4 border shadow-sm">
+            <p className="text-sm text-gray-500">Current Plan</p>
+
+            <h3 className="text-xl font-bold text-gray-800 mt-1">
+              {currentSubscription.tier_name}
+            </h3>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border shadow-sm">
+            <p className="text-sm text-gray-500">Start Date</p>
+
+            <h3 className="text-lg font-semibold text-gray-800 mt-1">
+              {new Date(
+                currentSubscription.start_date
+              ).toLocaleDateString()}
+            </h3>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border shadow-sm">
+            <p className="text-sm text-gray-500">Renewal Date</p>
+
+            <h3 className="text-lg font-semibold text-gray-800 mt-1">
+              {currentSubscription.end_date
+                ? new Date(
+                    currentSubscription.end_date
+                  ).toLocaleDateString()
+                : "Lifetime"}
+            </h3>
+          </div>
+        </div>
+
+      </CardContent>
+    </Card>
+  </div>
+)}
+
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -374,6 +445,54 @@ const FacilitySubscriptionPlans = () => {
               </div>
             );
           })}
+           {showLimitMessage && (
+  <div className="mb-8">
+    <Card className="border-blue-300 shadow-lg">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0">
+        <div>
+          <CardTitle className="text-blue-700">
+            For Customized subscription plan
+          </CardTitle>
+
+          <CardDescription className="mt-1 text-gray-600">
+            Contact our support team for assistance.
+          </CardDescription>
+        </div>
+
+      </CardHeader>
+
+      <CardContent>
+        <div className="text-center py-8 space-y-4 border rounded-lg bg-blue-50 border-blue-200">
+          <AlertCircle className="h-12 w-12 text-blue-600 mx-auto" />
+
+          <h3 className="text-lg font-semibold text-blue-800">
+            Contact Our Support Team
+          </h3>
+
+          <p className="text-blue-700 max-w-md mx-auto leading-relaxed">
+            We are here to help you manage your subscription, upgrade your
+            account, activate advanced features, and resolve any platform-related
+            issues quickly.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex items-center justify-center space-x-2 py-6">
+          <PhoneIcon className="h-5 w-5 text-primary" />
+
+          <a
+            href="tel:+919886499994"
+            className="text-xl font-medium text-primary underline"
+          >
+            +91 98864 99994
+          </a>
+        </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+  </div>
+)}
         </div>
 
         {/* Checkout Section */}
@@ -446,6 +565,7 @@ const FacilitySubscriptionPlans = () => {
         </div>
       </div>)}
     </div>
+    </>
   );
 };
 

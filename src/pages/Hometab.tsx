@@ -2391,8 +2391,8 @@ const Hometab: React.FC = () => {
                     <div className="d-grid gap-2">
                       <PatientProtectedButton 
                         className={`btn btn-outline-primary d-flex justify-content-center align-items-center gap-2 ${getTextSizeClass('', 'text-xs', 'text-sm')}`} 
-                        onClick={() => handleNavigation(`practioner/${doctor.profile_id}`, true)}
-                        path={`practioner/${doctor.profile_id}`}
+                        onClick={() => handleNavigation(`practioner/${doctor.profile_id}||${doctor.id}`, true)}
+                        path={`practioner/${doctor.profile_id}||${doctor.id}`}
                         // onClick={() => handleNavigation(`/dashboard/patient/doctor/${createSlug(doctor.name)}/${doctor.id}`, true)}
                         // path={`/appointment/doctorprofile/doctor/${createSlug(doctor.name)}/${doctor.id}`}
                       >
@@ -2485,8 +2485,8 @@ const Hometab: React.FC = () => {
                         <div className="d-flex gap-2 mt-3">
                           <PatientProtectedButton 
                             className={`btn btn-primary flex-grow-1 ${getTextSizeClass('btn-sm', 'text-xs', 'text-sm')}`} 
-                            onClick={() => handleNavigation(`facility/${hospital.profile_id}`, true)}
-                        path={`facility/${hospital.profile_id}`}
+                            onClick={() => handleNavigation(`facility/${hospital.profile_id}||${hospital.id}`, true)}
+                        path={`facility/${hospital.profile_id}||${hospital.id}`}
                             // onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)}
                             // path={`/appointment/facilityprofile/facility/${createSlug(hospital?.facility_name || "")}/${hospital.id}`}
                           >

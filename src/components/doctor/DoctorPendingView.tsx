@@ -3,6 +3,7 @@ import { Container, Row, Col, Table, Card, Button, Spinner, Badge } from 'react-
 import { CheckCircle, XCircle, ArrowLeft, User, Calendar, Clock, Mail, Phone, FileText, AlertCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 interface PendingAppointment {
   id: string;
@@ -25,10 +26,10 @@ const DoctorPendingView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 const [userId, setUserId] = useState<string>("");
-
+const [activeView, setActiveView] = useState< "pending" | "confirmed" | "cancelled" | "completed">("pending");
   useEffect(() => {
     fetchPendingAppointments();
-  }, []);
+  }, [activeView]);
 
   const fetchPendingAppointments = async () => {
     try {
@@ -67,7 +68,8 @@ const [userId, setUserId] = useState<string>("");
           created_at
         `)
         .eq('doctor_id', medicalProfessional.user_id)  // using user_id as doctor identifier
-        .eq('status', 'pending')
+        // .eq('status', 'pending')
+        .eq("status", activeView)
         .order('created_at', { ascending: false });
 
       if (aptError) throw aptError;
@@ -160,11 +162,12 @@ const [userId, setUserId] = useState<string>("");
             <th>Type</th>
             <th>Status</th>
             <th>Contact</th>
-            <th>Actions</th>
+              {activeView === "pending" &&(<th>Actions</th>)}
           </tr>
         </thead>
         <tbody>
-          {appointments.map((app) => (
+            {appointments.length > 0 ? (
+          appointments.map((app) => (
             <tr key={app.id}>
               <td className="align-middle">
                 <div className="d-flex align-items-center gap-2">
@@ -182,6 +185,7 @@ const [userId, setUserId] = useState<string>("");
                   {app.phoneNumber && <small><Phone size={12} /> {app.phoneNumber}</small>}
                 </div>
               </td>
+                {activeView === "pending" &&(
               <td className="align-middle">
                 <Button
                   variant="outline-primary"
@@ -190,9 +194,15 @@ const [userId, setUserId] = useState<string>("");
                 >
                   <Eye size={14} className="me-1" /> View and confirm
                 </Button>
-              </td>
+              </td>)}
             </tr>
-          ))}
+          ))):(
+            <tr>
+            <td colSpan={7} className="text-center py-5">
+              No {activeView} appointments found
+            </td>
+          </tr>
+          )}
         </tbody>
       </Table>
     </div>
@@ -285,16 +295,16 @@ const [userId, setUserId] = useState<string>("");
     );
   }
 
-  if (appointments.length === 0) {
-    return (
-      <Container fluid className="py-5 text-center">
-        <CheckCircle size={48} className="text-muted mb-3" />
-        <h4>No pending appointments</h4>
-        <p className="text-muted">You have no appointment requests waiting for confirmation.</p>
-        <Button variant="outline-primary" onClick={handleBack}>Go Back</Button>
-      </Container>
-    );
-  }
+  // if (appointments.length === 0) {
+  //   return (
+  //     <Container fluid className="py-5 text-center">
+  //       <CheckCircle size={48} className="text-muted mb-3" />
+  //       <h4>No pending appointments</h4>
+  //       <p className="text-muted">You have no appointment requests waiting for confirmation.</p>
+  //       <Button variant="outline-primary" onClick={handleBack}>Go Back</Button>
+  //     </Container>
+  //   );
+  // }
 
   return (
     <Container fluid className="py-4">
@@ -308,6 +318,24 @@ const [userId, setUserId] = useState<string>("");
           </div>
 
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+               <div className='flex'>
+            <h2 className="h3 mb-0 me-3">Status :</h2>
+            <Select
+  value={activeView}
+  onValueChange={(value: any) => setActiveView(value)}
+>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Select Status" />
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="pending">Pending</SelectItem>
+    <SelectItem value="confirmed">Confirmed</SelectItem>
+    <SelectItem value="cancelled">Cancelled</SelectItem>
+    <SelectItem value="completed">Completed</SelectItem>
+  </SelectContent>
+</Select>
+</div>
             <h2 className="h3 mb-0">Pending Appointments</h2>
             <Badge bg="warning" className="px-3 py-2">
               {appointments.length} request(s)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor, History, DownloadCloudIcon, SubscriptIcon } from "lucide-react";
+import { User, Calendar, FileText, Search, TrendingUp, LogOut, Menu, X, LogIn, RegexIcon, Bed, WalletCards, BookDashedIcon, EqualApproximately, Clock, UserCogIcon, Factory, DockIcon, CreditCard, Banana, Refrigerator, BrickWallIcon, ReplyIcon, BinaryIcon, UserCheck, BrickWall, LucideMonitor, History, DownloadCloudIcon, SubscriptIcon, AlignVerticalDistributeCenter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { register } from "module";
@@ -293,6 +293,16 @@ const checkBedManagementDepartment = async () => {
           label: "Subscription",
           icon: SubscriptIcon,
         },
+      {
+          path: "/dashboard/doctor/time-spent",
+          label: "Time Spent",
+          icon: TrendingUp,
+        },
+      // {
+      //     path: "/dashboard/doctor/analytics",
+      //     label: "Analytics",
+      //     icon: TrendingUp,
+      //   },
         //  { path: "/dashboard/doctor/banner", label: "Banner", icon: Banana },
       ],
   //     routes1: [
@@ -340,6 +350,7 @@ const checkBedManagementDepartment = async () => {
         //   label: "Billing Item",
         //   icon: BrickWall,
         // },
+       
         // {
         //   path: "/dashboard/facility/analytics",
         //   label: "Analytics",
@@ -386,6 +397,11 @@ const checkBedManagementDepartment = async () => {
           path: "/dashboard/facility/subscription",
           label: "Subscription",
           icon: SubscriptIcon,
+        },
+         {
+          path: "/dashboard/facility/time-spent",
+          label: "Time Spent",
+          icon: TrendingUp,
         },
         // {
         //   path: "/dashboard/facility/limit-checker",

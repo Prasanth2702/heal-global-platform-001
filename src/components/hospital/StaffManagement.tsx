@@ -1914,6 +1914,16 @@ const limitMessage =
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
+
+   if (!formData.department_id) {
+    toast({
+      title: "Department Required",
+      description: "Please select the department before saving.",
+      variant: "destructive",
+    });
+    return;
+  }
+
   if (!userFacility?.id) {
     toast({ title: "Error", description: "Facility not found", variant: "destructive" });
     return;
@@ -2635,7 +2645,7 @@ return (
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isCreatingUser}>
+              <Button type="submit" disabled={isCreatingUser || !formData.department_id}>
                 {isCreatingUser ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

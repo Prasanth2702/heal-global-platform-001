@@ -1551,10 +1551,10 @@ const handleViewAccount = () => {
   </CardContent>
 </Card>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between"> */}
 
   {/* Mobile Buttons Top */}
-  <div className="flex justify-between w-full mb-3 md:hidden">
+  {/* <div className="flex justify-between w-full mb-3 md:hidden">
     <Button
       variant="outline"
       onClick={handleBack}
@@ -1591,10 +1591,10 @@ const handleViewAccount = () => {
         </>
       )}
     </Button>
-  </div>
+  </div> */}
 
   {/* Desktop Layout (Unchanged) */}
-  <div className="flex items-center justify-between w-full">
+  {/* <div className="flex items-center justify-between w-full">
     
     <Button
       variant="outline"
@@ -1661,8 +1661,144 @@ const handleViewAccount = () => {
 )}
 
     </Button>
+  </div> */}
+{/* </div> */}
+{/* Header */}
+<Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <CardContent className="p-8">
+<div className="w-full space-y-4">
+
+  {/* Mobile Top Actions */}
+  <div className="flex items-center justify-between md:hidden gap-2">
+    
+    <Button
+      variant="outline"
+      onClick={handleBack}
+      className="flex-1"
+    >
+      <X className="h-4 w-4 mr-1" />
+      Back
+    </Button>
+
+    <Button
+      onClick={() => {
+        mixpanelInstance.track('Facility Profile Edit Click', {
+          currentState: isEditing ? 'saving' : 'editing'
+        });
+
+        isEditing ? handleSave() : setIsEditing(true);
+      }}
+      disabled={saving}
+      className={`flex-1 text-white ${
+        isEditing
+          ? "bg-emerald-600 hover:bg-emerald-700"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+    >
+      {saving ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Saving...
+        </>
+      ) : isEditing ? (
+        <>
+          <Save className="h-4 w-4 mr-2" />
+          Save
+        </>
+      ) : (
+        <>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </>
+      )}
+    </Button>
   </div>
+
+  {/* Main Desktop / Tablet Header */}
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+    {/* Left Section */}
+    <div className="flex items-start gap-4">
+
+      {/* Desktop Back Button */}
+      <Button
+        variant="outline"
+        onClick={handleBack}
+        className="hidden md:flex"
+      >
+        <X className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+
+      {/* Title */}
+    </div>
+
+    {/* Right Actions */}
+    <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
+
+      <Button
+        variant="outline"
+        onClick={() => setShowPasswordDialog(true)}
+        className="border-blue-300 text-white bg-green-600 hover:bg-green-500 w-full sm:w-auto"
+      >
+        Change Password
+      </Button>
+
+      <Button
+        variant="outline"
+        onClick={handleViewAccount}
+        className="border-blue-300 text-white bg-orange-600 hover:bg-orange-500 w-full sm:w-auto"
+      >
+        Profile Visibility Setting
+      </Button>
+
+      <Button
+        onClick={() => {
+          mixpanelInstance.track('Facility Profile Edit Click', {
+            currentState: isEditing ? 'saving' : 'editing'
+          });
+
+          isEditing ? handleSave() : setIsEditing(true);
+        }}
+        disabled={saving}
+        className={`hidden md:flex text-white ${
+          isEditing
+            ? "bg-emerald-600 hover:bg-emerald-700"
+            : "bg-blue-600 hover:bg-blue-700"
+        }`}
+      >
+        {saving ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Saving...
+          </>
+        ) : isEditing ? (
+          <>
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
+          </>
+        ) : (
+          <>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </>
+        )}
+      </Button>
+
+    </div>
+  </div>
+            <div className='items-center justify-center'>
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Facility Profile
+              </h1>
+      
+              <p className="text-sm md:text-base text-muted-foreground">
+                Manage facility details and services
+              </p>
+            </div>
 </div>
+</CardContent>
+</Card>
 
       {/* Facility Image and Documents */}
       <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">

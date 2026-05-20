@@ -23,6 +23,11 @@ import {
 } from "@/components/ui/dialog";
 import TeleconsultationPage from "../doctor/TeleconsultationPage";
 import { DoctorLimitDashboard } from "../doctor/limitcheck/DoctorLimitDashboard";
+import DoctorAnalytics from "../facility/analytics/DoctorAnalytics";
+import BannerDoctor from "../doctor/BannerDoctor";
+import DoctorPendingView from "../doctor/DoctorPendingView";
+import DoctorSubscriptionPlans from "../subscriptionplans/DoctorSubscriptionPlans";
+import PaymentStatusPage from "../subscriptionplans/PaymentStatusPage";
 
 type UsagePayload = {
   consultation_type: string;
@@ -35,7 +40,7 @@ const DoctorDashboard = () => {
 
   const location = useLocation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"overview" | "appointments" | "patients" | "analytics" | "profile" | "calendar"|"payments"|"schedule" |"tele">("overview");
+    const [activeTab, setActiveTab] = useState<"overview"|"subscription" | "appointments" | "patients" | "analytics"|"appointmentpending"|"paymentstatus"|"banner" |"timespent"| "profile" | "calendar"|"payments"|"schedule" |"tele">("overview");
   // Add these states at the top with your existing useState
 const [appointments, setAppointments] = useState([]);
 const [patients, setPatients] = useState([]);
@@ -364,6 +369,11 @@ const transformedAppointments = appointmentsData.map(app => {
       if (path.includes('/appointments')) setActiveTab('appointments');
       else if (path.includes('/patients')) setActiveTab('patients');
       else if (path.includes('/analytics')) setActiveTab('analytics');
+  else if (path.includes('/time-spent')) setActiveTab('timespent');
+  else if (path.includes('/banner')) setActiveTab('banner');
+  else if (path.includes('/appointment-pending')) setActiveTab('appointmentpending');
+  else if (path.includes('/subscription')) setActiveTab('subscription');
+  else if (path.includes('/payment-status')) setActiveTab('paymentstatus');
       else if (path.includes('/profile')) setActiveTab('profile');
       else if (path.includes('/schedule')) setActiveTab('schedule');
       else if (path.includes('/payments')) setActiveTab('payments');
@@ -386,11 +396,16 @@ const transformedAppointments = appointmentsData.map(app => {
         case 'overview': navigate(basePath); break;
         case 'appointments': navigate(`${basePath}/appointments`); break;
         case 'analytics': navigate(`${basePath}/analytics`); break;
+        case 'timespent': navigate(`${basePath}/time-spent`); break;
         case 'profile': navigate(`${basePath}/profile`); break;
         case 'schedule': navigate(`${basePath}/schedule`); break;
         case 'patients': navigate(`${basePath}/patients`); break;
         case 'payments': navigate(`${basePath}/payments-details`); break;
         case 'tele': navigate(`${basePath}/tele-consultation-booking`); break;
+        case 'banner': navigate(`${basePath}/banner`); break;
+        case 'appointmentpending': navigate(`${basePath}/appointment-pending`); break;
+        case 'paymentstatus': navigate(`${basePath}/payment-status`); break;
+        case 'subscription': navigate(`${basePath}/subscription`); break;
       }
     };
      const trackButtonClick = (buttonName: string, additionalData = {}) => {
@@ -757,8 +772,18 @@ if (activeTab !== "overview") {
             >
               <Calendar1 className="h-4 w-4 mr-1" />
              Schedule
-            </Button>
+            </Button>*/}
+
             <Button
+              variant={activeTab === "timespent" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => {handleTabChange("timespent"); trackButtonClick("TimeSpent Tab")}}
+              className={activeTab === "timespent" ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white" : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-teal-100"}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Time Spent
+            </Button> 
+            {/* <Button
               variant={activeTab === "analytics" ? "default" : "ghost"}
               size="sm"
               onClick={() => {handleTabChange("analytics"); trackButtonClick("Analytics Tab")}}
@@ -766,7 +791,7 @@ if (activeTab !== "overview") {
             >
               <Calendar className="h-4 w-4 mr-1" />
               Analytics
-            </Button> */}
+            </Button>  */}
             {/* <Button
               variant={activeTab === "patients" ? "default" : "ghost"}
               size="sm"
@@ -820,6 +845,11 @@ if (activeTab !== "overview") {
          {activeTab === "appointments" && <DoctorAppointmentManagement />}
         {activeTab === "schedule" && <DoctorSchedulePage />}
         {activeTab === "analytics" && <EarningsAnalytics />}
+        {activeTab === "timespent" && <DoctorAnalytics />}
+        {activeTab === "appointmentpending" && <DoctorPendingView />}
+        {activeTab === "paymentstatus" && <PaymentStatusPage />}
+        {activeTab === "subscription" && <DoctorSubscriptionPlans />}
+        {activeTab === "banner" && <BannerDoctor />}
         {activeTab === "profile" && <DoctorProfile />}
         {activeTab === "patients" && <PatientAttendDetails />}
         {/* {activeTab === "payments" && <PaymentManagement />} */}
@@ -902,7 +932,7 @@ if (activeTab !== "overview") {
             >
               <Bed className="h-4 w-4 mr-1" />
               Schedule
-            </Button>
+            </Button>*/}
             <Button
               variant="ghost"
               size="sm"
@@ -911,7 +941,7 @@ if (activeTab !== "overview") {
             >
               <FileText className="h-4 w-4 mr-1" />
               Analytics
-            </Button> */}
+            </Button> 
             <Button
               variant="ghost"
               size="sm"

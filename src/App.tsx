@@ -112,6 +112,10 @@ import DoctorSubscriptionPlansView from "./components/subscriptionplans/DoctorSu
 import PaymentStatusPage from "./components/subscriptionplans/PaymentStatusPage";
 import FacilitySubscriptionPlansView from "./components/subscriptionplans/FacilitySubscriptionPlansView";
 import PaymentStatusPageFacility from "./components/subscriptionplans/PaymentStatusPageFacility";
+import AnalyticsReportsPageView from "./components/facility/analytics/AnalyticsReportsPageView";
+import DoctorAnalytics from "./components/facility/analytics/DoctorAnalytics";
+import DoctorRouteHandler from "./components/patient/DoctorRouteHandler";
+import FacilityRouteHandler from "./pages/facility/FacilityRouteHandler";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -374,16 +378,34 @@ const App = () => {
                     path="/dashboard/doctor/schedule"
                     element={<DoctorSchedulePage />}
                   /> */}
-<Route path="/dashboard/patient/doctor/:id" element={<DoctorHospitals />} />
-<Route path="/dashboard/patient/facility/:id" element={<DoctorHospitals />} />
-      <Route path="/dashboard/patient/doctor/:slug/:id" element={<DoctorHospitals />} />
-      <Route path="/dashboard/patient/facility/:slug/:id" element={<DoctorHospitals />} />
+{/* <Route path="/dashboard/patient/doctor/:id" element={<DoctorHospitals />} /> */}
+{/* <Route path="/dashboard/patient/facility/:id" element={<DoctorHospitals />} /> */}
+      {/* <Route path="/dashboard/patient/doctor/:slug/:id" element={<DoctorHospitals />} />
+      <Route path="/dashboard/patient/doctor/:slug" element={<DoctorHospitals />} /> */}
+      {/* <Route path="/dashboard/patient/facility/:slug/:id" element={<DoctorHospitals />} /> */}
+      {/* <Route path="/dashboard/patient/facility/:slug" element={<DoctorHospitals />} /> */}
+      {/* <Route path="/facility/:views" element={<DoctorHospitals />} /> */}
+      {/* <Route path="/dashboard/patient/facility/:profile_id" element={<DoctorHospitals />} /> */}
 {/* <Route path="/homelogin" element={<HomeLogin />} /> */}
 
-<Route path="/appointment/doctorprofile/doctor/:id" element={<DoctorHospitalsPages />} />
-<Route path="/appointment/facilityprofile/facility/:id" element={<DoctorHospitalsPagess  />} />
-      <Route path="/appointment/doctorprofile/doctor/:slug/:id" element={<DoctorHospitalsPages />} />
-      <Route path="/appointment/facilityprofile/facility/:slug/:id" element={<DoctorHospitalsPagess  />} />
+{/* <Route path="/dashboard/patient/doctor/:id" element={<DoctorHospitals />} /> */}
+      <Route path="/practioner/:views" element={<DoctorRouteHandler />} />
+      {/* <Route path="/dashboard/patient/doctor/:slug" element={<DoctorHospitals />} /> */}
+
+{/* <Route path="/appointment/doctorprofile/doctor/:id" element={<DoctorHospitalsPages />} /> */}
+      {/* <Route path="/practioner/:profile_id" element={<DoctorHospitalsPages />} /> */}
+      {/* <Route path="/appointment/doctorprofile/doctor/:slug" element={<DoctorHospitalsPages />} /> */}
+
+
+{/* <Route path="/appointment/doctorprofile/doctor/:id" element={<DoctorHospitalsPages />} /> */}
+<Route path="/facility/:views" element={<FacilityRouteHandler  />} />
+{/* <Route path="/facility/:views" element={<DoctorHospitalsPagess  />} /> */}
+      {/* <Route path="/appointment/doctorprofile/doctor/:slug/:id" element={<DoctorHospitalsPages />} />
+      <Route path="/appointment/doctorprofile/doctor/:slug" element={<DoctorHospitalsPages />} /> */}
+      {/* <Route path="/appointment/facilityprofile/facility/:slug/:id" element={<DoctorHospitalsPagess  />} /> */}
+      {/* <Route path="/facility/profile_id" element={<DoctorHospitalsPagess  />} /> */}
+      {/* <Route path="/appointment/facilityprofile/facility/:slug/profile_id" element={<DoctorHospitalsPagess  />} />
+      <Route path="/appointment/facilityprofile/facility/:slug" element={<DoctorHospitalsPagess  />} /> */}
 
 <Route  path="/dashboard/patient/department/:id"  element={<DepartmentDetails />}/>
 <Route  path="/dashboard/patient/department/:slug/:id"  element={<DepartmentDetails />}/>
@@ -424,21 +446,23 @@ const App = () => {
 <Route path="/patient/appointment-payment/:appointmentId" element={<PatientPayment />} />
 <Route path="/payment-success" element={<PaymentSuccess />} />
 <Route path="/payment-cancelled" element={<PaymentCancelled />} />
-<Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} />
-<Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} />
+{/* <Route path="/dashboard/doctor/banner" element={<BannerDoctorView />} /> */}
+{/* <Route path="/dashboard/doctor/appointment-pending" element={<DoctorPendingViewPage />} /> */}
 <Route path="/dashboard/staff/appointment-pending" element={<FacilityPendingStaffViewPage />} />
 <Route path="/dashboard/facility/appointment-pending" element={<FacilityPendingViewPage />} />
 <Route path="/dashboard/facility/patient-registration" element={<FacilityPatientManagementview />} />
 <Route path="/dashboard/facility/limit-checker" element={<FacilityLimitCheckerView />} />
-<Route path="/dashboard/doctor/subscription" element={<DoctorSubscriptionPlansView />} />
+{/* <Route path="/dashboard/doctor/subscription" element={<DoctorSubscriptionPlansView />} /> */}
 <Route path="/dashboard/facility/subscription" element={<FacilitySubscriptionPlansView />} />
 {/* <Route path="/dashboard/facility/my-bills" element={<FacilityBillingPageView />} /> */}
 <Route path="/dashboard/facility/cash-flow-reports" element={<CashFlowReportsView />} />
 <Route path="/set-password" element={<SetPasswordPage />} />
 <Route path="/dashboard/facility/my-bills" element={<BillingSystemView />} />
 <Route path="/location" element={<LocationPage />} />
-<Route path="/dashboard/doctor/payment-status" element={<PaymentStatusPage />} />
+{/* <Route path="/dashboard/doctor/payment-status" element={<PaymentStatusPage />} /> */}
 <Route path="/dashboard/facility/payment-status" element={<PaymentStatusPageFacility />} />
+{/* 
+      <Route path="/dashboard/facility/analytics/time-spent" element={<FacilityAnalytices />} /> */}
 {/* <Route path="/dashboard/facility/billing-system" element={<BillingSystemView />} /> */}
 {/* <Route path="/dashboard/facility/billing-system/:userId/:facilityId" element={<BillingSystem />} /> */}
 {/* <Route path="/dashboard/patient/payment-history" element={<PaymentHistoryviews />} /> */}

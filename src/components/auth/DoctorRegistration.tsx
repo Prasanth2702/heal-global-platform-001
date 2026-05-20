@@ -2661,7 +2661,7 @@ const [step1Success, setStep1Success] = useState(false);
 
 // Generate unique profile ID
 const generateProfileId = (name: string) => {
-  const cleanName = name.replace(/\s+/g, '').toUpperCase();
+  const cleanName = name.replace(/\s+/g, '').toLowerCase();
   const randomNumber = Math.floor(
     1000000000 + Math.random() * 9000000000
   ); // 10 digit number

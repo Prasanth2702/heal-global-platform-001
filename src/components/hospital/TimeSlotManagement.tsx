@@ -2421,6 +2421,16 @@ setDepartments(filteredDepartments);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.department_id) {
+    toast({
+      title: "Department Required",
+      description: "Please select the department before saving.",
+      variant: "destructive",
+    });
+    return;
+  }
+  
     
     if (!userFacility?.id) {
       toast({
@@ -2943,8 +2953,8 @@ return (
                           maxAppointments: parseInt(e.target.value) || 10,
                         }))
                       }
-                      placeholder="10"
-                      min="10"
+                      placeholder="1"
+                      min="1"
                       required
                     />
                   </div>
@@ -2985,7 +2995,7 @@ return (
               </div>
               {formData.department_id !== "other" && (
               <DialogFooter>
-                <Button type="submit">
+                <Button type="submit" disabled={!formData.department_id}>
                   {editingSlot ? "Update Time Slot" : "Create Time Slots"}
                 </Button>
               </DialogFooter>

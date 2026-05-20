@@ -1818,6 +1818,7 @@ interface Doctor {
   location?: string;
   distance?: string;
   consultationFee: number;
+  profile_id:string;
   availability: string;
   hospital?: string;
   image?: string;
@@ -1837,6 +1838,7 @@ interface Facility {
   pincode: number;
   total_beds: number;
   rating: number;
+    profile_id:string;
   total_reviews: number;
   is_verified: boolean;
   established_year: number;
@@ -2087,8 +2089,13 @@ const Hometab: React.FC = () => {
             last_name,
             avatar_url,
             user_id
-          )
-        `);
+          ),
+            profiles (
+    profile_id
+  )
+        `)
+      .eq("profile_visibility",true);
+
       if (error) throw error;
       const mapped = data.map((item: any) => {
         const fullName = item.medical_professionals_user_id_fkey
@@ -2099,6 +2106,7 @@ const Hometab: React.FC = () => {
         return {
           id: item.id,
           user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+        profile_id: item.profiles?.profile_id || "",
           name: fullName || "Unknown Doctor",
           specialty: item.medical_speciality,
           rating: item.rating || 4.5,
@@ -2145,13 +2153,17 @@ const Hometab: React.FC = () => {
           admin_user_id,
     profiles:profiles!facilities_admin_user_id_fkey (
       phone_number,
-      email
+      email,
+      profile_id
     )
-        `);
+        `)
+          .eq("profile_visibility",true);
+
       if (facilitiesError) throw facilitiesError;
       if (facilitiesData) {
         const enhancedFacilities = facilitiesData.map(facility => ({
           ...facility,
+            profile_id: facility.profiles?.profile_id || "",
           contact_number: facility.profiles?.phone_number || "Not Available",
   email: facility.profiles?.email || "Not Available",
           // contact_number: "+1 234-567-890" + Math.floor(Math.random() * 10),
@@ -2197,6 +2209,7 @@ const Hometab: React.FC = () => {
         `)
         .eq("current_status","AVAILABLE")
         .eq('is_active', true);
+        
       if (bedsError) throw bedsError;
       if (!bedsData || bedsData.length === 0) {
         setBedBookings([]);
@@ -2222,10 +2235,12 @@ const Hometab: React.FC = () => {
             facility_name,
             city,
             state,
-            facility_type
+            facility_type,
+            profile_visibility
           )
         `)
-        .in('id', wardIds);
+        .in('id', wardIds)
+        .eq('facilities.profile_visibility', true);
       if (wardsError) throw wardsError;
       const wardMap = new Map(wardsData?.map(ward => [ward.id, ward]));
       const transformedData = bedsData.map(bed => {
@@ -2366,7 +2381,7 @@ const Hometab: React.FC = () => {
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div>
                         <small className={`text-muted d-block ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>Consultation Fee</small>
-                        <strong className={`text-primary ${getTextSizeClass('', 'text-sm', 'text-base')}`}>₹{doctor.consultationFee + 150}</strong>
+                        <strong className={`text-primary ${getTextSizeClass('', 'text-sm', 'text-base')}`}>{doctor.consultationFee ? `₹ ${doctor.consultationFee}` : "Free"}</strong>
                       </div>
                       {/* <div className="text-end">
                         <small className={`text-muted d-block ${getTextSizeClass('', 'text-xs', 'text-xs')}`}>Patients</small>
@@ -2376,8 +2391,10 @@ const Hometab: React.FC = () => {
                     <div className="d-grid gap-2">
                       <PatientProtectedButton 
                         className={`btn btn-outline-primary d-flex justify-content-center align-items-center gap-2 ${getTextSizeClass('', 'text-xs', 'text-sm')}`} 
-                        onClick={() => handleNavigation(`/dashboard/patient/doctor/${createSlug(doctor.name)}/${doctor.id}`, true)}
-                        path={`/appointment/doctorprofile/doctor/${createSlug(doctor.name)}/${doctor.id}`}
+                        onClick={() => handleNavigation(`practioner/${doctor.profile_id}`, true)}
+                        path={`practioner/${doctor.profile_id}`}
+                        // onClick={() => handleNavigation(`/dashboard/patient/doctor/${createSlug(doctor.name)}/${doctor.id}`, true)}
+                        // path={`/appointment/doctorprofile/doctor/${createSlug(doctor.name)}/${doctor.id}`}
                       >
                         <PersonStanding size={deviceType === 'mobile' ? 14 : 18} />
                         <span>View Profile</span>
@@ -2468,8 +2485,10 @@ const Hometab: React.FC = () => {
                         <div className="d-flex gap-2 mt-3">
                           <PatientProtectedButton 
                             className={`btn btn-primary flex-grow-1 ${getTextSizeClass('btn-sm', 'text-xs', 'text-sm')}`} 
-                            onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)}
-                            path={`/appointment/facilityprofile/facility/${createSlug(hospital?.facility_name || "")}/${hospital.id}`}
+                            onClick={() => handleNavigation(`facility/${hospital.profile_id}`, true)}
+                        path={`facility/${hospital.profile_id}`}
+                            // onClick={() => handleNavigation(`/dashboard/patient/facility/${createSlug(hospital.facility_name)}/${hospital.id}`, true)}
+                            // path={`/appointment/facilityprofile/facility/${createSlug(hospital?.facility_name || "")}/${hospital.id}`}
                           >
                             View Details
                           </PatientProtectedButton>

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Clock, ChevronRight, Calendar, ExpandIcon } from "lucide-react";
+import { usePageViewTrackerWithTimeSpent } from "@/hooks/usePageViewTrackerWithTimeSpent";
 
 export interface Doctor {
   id: string;
@@ -130,6 +131,33 @@ const DoctorCard: React.FC<DoctorCardProps> = ({
   formatTimePretty,
   
 }) => {
+  //   const {
+  //   trackPageView,
+  //   stopTracking,
+  //   manualUpdateTimeSpent,
+  // } = usePageViewTrackerWithTimeSpent();
+
+  // useEffect(() => {
+  //   if (expandedDoctorId === doctor.user_id) {
+  //     trackPageView(
+  //       "medical_professional",
+  //       doctor.id
+  //     );
+  //   }
+
+  //   return () => {
+  //     stopTracking(
+  //       "medical_professional",
+  //       doctor.id
+  //     );
+  //   };
+  // }, [
+  //   expandedDoctorId,
+  //   doctor.user_id,
+  //   doctor.id,
+  //   trackPageView,
+  //   stopTracking,
+  // ]);
   return (
   <div >
   {/* <div className="col-12 col-md-6 col-lg-4 mb-4"> */}

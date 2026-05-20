@@ -285,7 +285,7 @@ const Footer = () => {
       { name: 'Book Appointment', path: '/appointment/beds', icon: CalendarCheck },
       { name: 'Help & Support', path: '/help', icon: HelpCircle},
       { name: 'Medical Library', path: '/conditions', icon: BookOpen},
-      { name: 'Subscriptions Information', path: 'https://services.pmhssmarthealth.com/' , icon: Server, external: true},
+      { name: 'Features & Services Information', path: 'https://services.pmhssmarthealth.com/' , icon: Server, external: true},
       // { name: 'Health Checkup', path: '/health-checkup', icon: Activity },
       // { name: 'Pharmacy', path: '/pharmacy', icon: Pill },
       // { name: 'Ambulance', path: '/ambulance', icon: Ambulance },
@@ -438,7 +438,7 @@ const Footer = () => {
               <p className="text-white-50 small mb-0">
                 © {currentYear} PMHS Smart Health. All rights reserved. Site Maintained by{' '}
                 <a 
-                  href="https://pmhstechsolutions.com/" 
+                  href="https://pmhstechsolutions.com/?utm_source=pmhssmarthealth" 
                   className="text-blue-500" 
                   target="_blank" 
                   rel="noopener noreferrer"

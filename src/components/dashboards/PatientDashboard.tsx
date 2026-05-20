@@ -1241,7 +1241,8 @@ const recentReports = [
       </div>
 
       {/* Chat Body */}
-      <div className="h-[350px] overflow-y-auto p-3 bg-gray-50 space-y-3">
+      <div className="h-[250px] overflow-y-auto p-3 bg-gray-50 space-y-3">
+      {/* <div className="h-[350px] overflow-y-auto p-3 bg-gray-50 space-y-3"> */}
         {chatMessages.length === 0 && (
           <div className="text-center text-sm text-gray-500 mt-10">
             Start your medical conversation...

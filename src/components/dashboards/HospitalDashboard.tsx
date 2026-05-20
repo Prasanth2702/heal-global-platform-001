@@ -21,6 +21,7 @@ import CreateBilling from "../facility/CreateBilling";
 import { FacilityLimitDashboard } from "../facility/limitchecker/FacilityLimitDashboard";
 import { Link } from "react-router-dom";
 import TeleconsultationPage from "../doctor/TeleconsultationPage";
+import AnalyticsReportsPageView from "../facility/analytics/AnalyticsReportsPageView";
 
 interface Appointment {
   id: string;
@@ -48,6 +49,7 @@ const HospitalDashboard = () => {
     | "timeslots"
     | "payments"
     | "earnings"
+    | "analytics"
     | "inventory"
     | "facilitics"
     | "profile"
@@ -302,6 +304,7 @@ if (!viewError && viewData) {
   else if (path.includes('/timeslots')) setActiveTab('timeslots');
   else if (path.includes('/payments')) setActiveTab('payments');
   else if (path.includes('/analytics')) setActiveTab('earnings');
+  else if (path.includes('/time-spent')) setActiveTab('analytics');
   else if (path.includes('/inventory')) setActiveTab('inventory');
   else if (path.includes('/facilitics')) setActiveTab('facilitics');
   else if (path.includes('/appointments')) setActiveTab('appointments');
@@ -339,6 +342,9 @@ if (!viewError && viewData) {
       break;
     case 'earnings':
       navigate(`${basePath}/analytics`);
+      break;
+    case 'analytics':
+      navigate(`${basePath}/time-spent`);
       break;
     case 'inventory':
       navigate(`${basePath}/inventory`);
@@ -383,7 +389,7 @@ return (
     <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as typeof activeTab)} className="space-y-6">
       {/* Desktop/Tablet tab bar - hidden on mobile */}
       <div className="hidden md:block">
-        <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8 lg:grid-cols-8">
           <TabsTrigger value="overview" className="flex items-center space-x-2  data-[state=active]:bg-blue-600 
                data-[state=active]:text-white" onClick={() => trackButtonClick("Overview Tab")}>
             <Activity className="h-4 w-4" />
@@ -649,6 +655,9 @@ return (
         {/* Earnings Tab (if needed) */}
         <TabsContent value="earnings">
           <HospitalEarnings />
+        </TabsContent>
+        <TabsContent value="analytics">
+          <AnalyticsReportsPageView />
         </TabsContent>
 
         {/* Inventory Tab (if needed) */}

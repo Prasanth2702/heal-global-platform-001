@@ -4243,6 +4243,7 @@ export interface Facility {
 
 interface DoctorSearchProps {
   view: "all" | "doctors" | "hospitals";
+  hideSearchHeader?: boolean; 
 }
 
 interface LatLng {
@@ -4252,11 +4253,11 @@ interface LatLng {
 
 const DEFAULT_LOCATION: LatLng = { lat: 12.9716, lng: 77.5946 }; // Bengaluru
 
-const DoctorSearch: React.FC<DoctorSearchProps> = ({ view }) => {
+const DoctorSearch: React.FC<DoctorSearchProps> = ({ view, hideSearchHeader = false  }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-const { trackPageView } = usePageViewTrackerWithTimeSpent();
+const { trackPageView, stopTracking, manualUpdateTimeSpent} = usePageViewTrackerWithTimeSpent();
 // const { trackPageView,manualUpdateTimeSpent } = usePageViewTrackerWithTimeSpent();
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -4324,7 +4325,25 @@ const { trackPageView } = usePageViewTrackerWithTimeSpent();
   ];
 
   // Helper Functions
-  const createSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+//   const createSlug = (text: string, useHyphens = true) => {
+//   let slug = text.toLowerCase().replace(/[^a-z0-9\s]/g, ''); // remove special chars
+//   if (useHyphens) {
+//     slug = slug.replace(/\s+/g, '-');  // spaces → hyphens
+//   } else {
+//     slug = slug.replace(/\s+/g, '');   // spaces → nothing (continuous)
+//   }
+//   return slug.replace(/^-+|-+$/g, '');
+// };
+const createSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
+
+  // const createSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const formatDayLabel = (date: Date, index: number) => {
     if (index === 0) return "Today";
     if (index === 1) return "Tomorrow";
@@ -4753,9 +4772,133 @@ const toArray = (value: any): any[] => {
 //       navigate(`/appointment/doctorprofile/doctor/${createSlug(doctor?.name || "")}/${profileId ||doctorId}`, { state: { doctorData: doctor } });
 //     }
 //   };
+// const handleViewDoctorProfile = async (doctorId: string) => {
+//   try {
+//     // Find selected doctor
+//     const doctor = doctors.find((d) => d.id === doctorId);
+
+//     if (!doctor) {
+//       toast({
+//         title: "Error",
+//         description: "Doctor not found",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     // Track page view
+//     await trackPageView(
+//       "medical_professional",
+//       doctorId,
+//       user?.id,
+//       { trackTimeSpent: true }
+//     );
+
+//     console.log("Doctor Data:", doctor);
+
+//     /**
+//      * IMPORTANT:
+//      * doctor.user_id = UUID from auth/users table
+//      * doctor.id = custom doctor ID like SATHYA1382809832
+//      */
+
+//     let profileId = doctorId;
+//     let profileName = doctorId;
+
+//      const { data, error } = await supabase
+//     .from("medical_professionals")
+//     .select("user_id")
+//     .eq("id", doctorId)
+//     .maybeSingle();
+
+//     const userId =  data?.user_id;
+
+//     // Only query if user_id exists
+//     if (doctor.user_id) {
+//       const { data: profileData, error: profileError } = await supabase
+//         .from("profiles")
+//         .select("first_name,last_name, profile_id")
+//         .eq("user_id", userId) // ✅ UUID
+//         .maybeSingle();
+
+//       if (profileError) {
+//         console.error("Profile fetch error:", profileError);
+//       }
+
+//       if (profileData?.profile_id) {
+//         profileId = profileData.profile_id;
+//       }
+//       if (profileData?.last_name && profileData?.first_name) {
+//         profileName = profileData.first_name + profileData.last_name;
+//       }
+      
+//     }
+
+//     console.log("Final Profile ID:", profileId);
+
+//     // Create SEO slug
+//     const slug = createSlug(profileName );
+// // DYNAMIC URL
+// const publicUrl = profileId
+//   ? `/appointment/doctorprofile/doctor/${slug}/${profileId}`
+//   : `/appointment/doctorprofile/doctor/${slug}`;
+
+// // PUBLIC ROUTE
+// if (!user) {
+//   navigate(publicUrl, {
+//     state: {
+//       doctorData: doctor,
+//     },
+//   });
+
+//   return;
+// }
+//     // // Public route
+//     // if (!user) {
+//     //   navigate(
+//     //     `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
+//     //     {
+//     //       state: {
+//     //         doctorData: doctor,
+//     //       },
+//     //     }
+//     //   );
+//     //   return;
+//     // }
+
+//     // Patient route
+//     if (userRole === "patient") {
+//       navigate(
+//         `/dashboard/patient/doctor/${slug}/${profileId}`,
+//         {
+//           state: {
+//             doctorData: doctor,
+//           },
+//         }
+//       );
+//     } else {
+//       // Other roles
+//       navigate(
+//         `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
+//         {
+//           state: {
+//             doctorData: doctor,
+//           },
+//         }
+//       );
+//     }
+//   } catch (err) {
+//     console.error("Navigation error:", err);
+
+//     toast({
+//       title: "Error",
+//       description: "Unable to open doctor profile",
+//       variant: "destructive",
+//     });
+//   }
+// };
 const handleViewDoctorProfile = async (doctorId: string) => {
   try {
-    // Find selected doctor
     const doctor = doctors.find((d) => d.id === doctorId);
 
     if (!doctor) {
@@ -4767,80 +4910,67 @@ const handleViewDoctorProfile = async (doctorId: string) => {
       return;
     }
 
-    // Track page view
-    await trackPageView(
+     trackPageView(
       "medical_professional",
       doctorId,
       user?.id,
       { trackTimeSpent: true }
     );
+// await trackPageView("medical_professional", doctorId, user?.id, { trackTimeSpent: true });
 
-    console.log("Doctor Data:", doctor);
-
-    /**
-     * IMPORTANT:
-     * doctor.user_id = UUID from auth/users table
-     * doctor.id = custom doctor ID like SATHYA1382809832
-     */
-
+// Give the final "stop" API call a moment to complete (prevents race condition)
+    await new Promise(resolve => setTimeout(resolve, 100));
     let profileId = doctorId;
+    let views  = doctorId;
+    let profileName = doctor.name || "doctor";
 
-    // Only query if user_id exists
+    // KEEP YOUR QUERY
+    const { data, error } = await supabase
+      .from("medical_professionals")
+      .select("user_id")
+      .eq("id", doctorId)
+      .maybeSingle();
+
+    const userId = data?.user_id;
+
+    // KEEP YOUR QUERY
     if (doctor.user_id) {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("profile_id")
-        .eq("user_id", doctorId) // ✅ UUID
+        .select("first_name,last_name, profile_id")
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (profileError) {
-        console.error("Profile fetch error:", profileError);
+        console.error(profileError);
       }
 
+      // profile id
       if (profileData?.profile_id) {
         profileId = profileData.profile_id;
+        views=profileData.profile_id;
       }
+
+      // name
+      profileName = `${profileData?.first_name || ""} ${profileData?.last_name || ""}`.trim();
     }
 
-    console.log("Final Profile ID:", profileId);
+    // slug
+    const slug = createSlug(profileName || profileId);
 
-    // Create SEO slug
-    const slug = createSlug(doctor.name || "doctor");
 
-    // Public route
-    if (!user) {
-      navigate(
-        `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
-        {
-          state: {
-            doctorData: doctor,
-          },
-        }
-      );
-      return;
-    }
+// If logged in patient
+// if (user) {
+// } else {
+  navigate(`/practioner/${views}`, {
+    state: { doctorData: doctor },
+  });
+  // Public URL
+//   navigate(`/practioner/${profileId}`, {
+//     state: { doctorData: doctor },
+//   });
+// }
 
-    // Patient route
-    if (userRole === "patient") {
-      navigate(
-        `/dashboard/patient/doctor/${slug}/${profileId}`,
-        {
-          state: {
-            doctorData: doctor,
-          },
-        }
-      );
-    } else {
-      // Other roles
-      navigate(
-        `/appointment/doctorprofile/doctor/${slug}/${profileId}`,
-        {
-          state: {
-            doctorData: doctor,
-          },
-        }
-      );
-    }
   } catch (err) {
     console.error("Navigation error:", err);
 
@@ -4851,31 +4981,271 @@ const handleViewDoctorProfile = async (doctorId: string) => {
     });
   }
 };
+// const handleViewDoctorProfile = async (doctorId: string) => {
+//   try {
+//     const doctor = doctors.find((d) => d.id === doctorId);
 
-  const handleViewHospitalDetails = async(facilityId: string) => {
+//     if (!doctor) {
+//       toast({
+//         title: "Error",
+//         description: "Doctor not found",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     //  trackPageView(
+//     //   "medical_professional",
+//     //   doctorId,
+//     //   user?.id,
+//     //   { trackTimeSpent: true }
+//     // );
+// await trackPageView("medical_professional", doctorId, user?.id, { trackTimeSpent: true });
+
+// // Give the final "stop" API call a moment to complete (prevents race condition)
+//     await new Promise(resolve => setTimeout(resolve, 100));
+//     let profileId = doctorId;
+//     let profileName = doctor.name || "doctor";
+
+//     // KEEP YOUR QUERY
+//     const { data, error } = await supabase
+//       .from("medical_professionals")
+//       .select("user_id")
+//       .eq("id", doctorId)
+//       .maybeSingle();
+
+//     const userId = data?.user_id;
+
+//     // KEEP YOUR QUERY
+//     if (doctor.user_id) {
+//       const { data: profileData, error: profileError } = await supabase
+//         .from("profiles")
+//         .select("first_name,last_name, profile_id")
+//         .eq("user_id", userId)
+//         .maybeSingle();
+
+//       if (profileError) {
+//         console.error(profileError);
+//       }
+
+//       // profile id
+//       if (profileData?.profile_id) {
+//         profileId = profileData.profile_id;
+//       }
+
+//       // name
+//       profileName = `${profileData?.first_name || ""} ${profileData?.last_name || ""}`.trim();
+//     }
+
+//     // slug
+//     const slug = createSlug(profileName || profileId);
+
+//     // final path
+//     const path =
+//       userRole === "patient"
+//         ? "/dashboard/patient/doctor"
+//         : "/appointment/doctorprofile/doctor";
+
+//     // FINAL URL
+//   navigate(
+//   profileId
+//     ? `${path}/${slug}/${profileId}`
+//     : `${path}/${slug}`,
+//   {
+//     state: {
+//       doctorData: doctor,
+//     },
+//   }
+// );
+//   } catch (err) {
+//     console.error("Navigation error:", err);
+
+//     toast({
+//       title: "Error",
+//       description: "Unable to open doctor profile",
+//       variant: "destructive",
+//     });
+//   }
+// };
+const handleViewHospitalDetails = async (facilityId: string) => {
+  try {
     const facility = facilities.find(f => f.id === facilityId);
-     await trackPageView(
-    "facility",
-    facilityId,
-    user?.id,
-    { trackTimeSpent: true }
-  );
-  // await manualUpdateTimeSpent("facility", facilityId, 10);
-    const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
-    navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'overview', from: 'search' } });
-  };
+    if (!facility) {
+      toast({ title: "Error", description: "Facility not found", variant: "destructive" });
+      return;
+    }
+
+    // Start time tracking
+     trackPageView("facility", facilityId, user?.id, { trackTimeSpent: true });
+let views = facilityId;
+    let profileId = facilityId; // fallback to facility ID
+    let profileName = facility.facility_name;
+
+    // Get admin_user_id from facilities table
+    const { data: facilityData, error: facilityError } = await supabase
+      .from("facilities")
+      .select("admin_user_id")
+      .eq("id", facilityId)
+      .maybeSingle();
+
+    if (facilityError) console.error("Error fetching facility admin:", facilityError);
+
+    const adminUserId = facilityData?.admin_user_id;
+
+    // If admin user exists, fetch profile_id and name
+    if (adminUserId) {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, profile_id")
+        .eq("user_id", adminUserId)
+        .maybeSingle();
+
+      if (profileError) console.error("Error fetching profile:", profileError);
+
+      // ✅ FIX: Assign profileId from profileData.profile_id
+      if (profileData?.profile_id) {
+        profileId = profileData.profile_id;
+        views = profileData.profile_id;
+      }
+    }
+
+    // Create slug using the resolved profile name
+    const slug = createSlug(profileName || profileId);
+
+
+      navigate(`/facility/${views}`, {
+    state: { facilityData: facility,
+          activeTab: "overview",
+          from: "search", },
+  });
+    // If logged in patient
+// if (user) {
+//   navigate(`/facility/${views}`, {
+//     state: {  facilityData: facility,
+//           activeTab: "overview",
+//           from: "search", },
+//   });
+// } else {
+//   // Public URL
+//   navigate(`/facility/${profileId}`, {
+//     state: {  facilityData: facility,
+//           activeTab: "overview",
+//           from: "search", },
+//   });
+// }
+
+    // // Determine base path
+    // const path = userRole === "patient"
+    //   ? "/facility"
+    //   : "/appointment/facilityprofile/facility";
+
+    // // Navigate with slug and profileId (now correctly set)
+    // navigate(
+    //   profileId ? `${path}/${profileId}` : `${path}/${slug}`,
+    //   {
+    //     state: {
+    //       facilityData: facility,
+    //       activeTab: "overview",
+    //       from: "search",
+    //     },
+    //   }
+    // );
+  } catch (err) {
+    console.error("Navigation error:", err);
+    toast({
+      title: "Error",
+      description: "Unable to open facility profile",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleViewHospitalDepartmentDetails = async (facilityId: string) => {
     const facility = facilities.find(f => f.id === facilityId);
-     await trackPageView(
+     trackPageView(
     "facility",
     facilityId,
     user?.id,
     { trackTimeSpent: true }
   );
+  let views =facilityId
+    let profileFacilityId = facilityId;
+    let profileName = facility.facility_name ;
+
+    // KEEP YOUR QUERY
+    const { data, error } = await supabase
+      .from("facilities")
+      .select("admin_user_id")
+      .eq("id", facilityId)
+      .maybeSingle();
+
+    const adminUserId  = data?.admin_user_id;
+
+    // KEEP YOUR QUERY
+    if (adminUserId ) {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name,last_name, profile_id")
+        .eq("user_id", adminUserId )
+        .maybeSingle();
+
+      if (profileError) {
+        console.error(profileError);
+      }
+
+      // profile id
+      if (profileData?.profile_id) {
+        profileFacilityId = profileData.profile_id;
+        views = profileData.profile_id;
+      }
+
+    }
+
+    // slug
+    const slug = createSlug(facility.facility_name || profileFacilityId);
+
+    // final path
+    // const path =
+    //   userRole === "patient"
+    //     ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
+
+    // FINAL URL
+//   navigate(
+//   profileFacilityId
+//     ? `${path}/${slug}/${profileFacilityId}`
+//     : `${path}/${slug}`,
+//   {
+//     state: {
+//       facilityData: facility,
+//       activeTab: 'overview',
+//        from: 'search'
+//     },
+//   }
+// );
+
+  navigate(`/facility/${views}`, {
+    state: { facilityData: facility,
+          activeTab: "departments",
+          from: "search", },
+  });
+// if (user) {
+//   navigate(`/facility/${views}`, {
+//     state: {  facilityData: facility,
+//           activeTab: "departments",
+//           from: "search", },
+//   });
+// } else {
+//   // Public URL
+//   navigate(`/facility/${profileFacilityId}`, {
+//     state: {  facilityData: facility,
+//           activeTab: "departments",
+//           from: "search", },
+//   });
+// }
+
   // await manualUpdateTimeSpent("facility", facilityId, 10);
-    const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
-    navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'departments', from: 'search' } });
+    // const path = user ? '/dashboard/patient/facility' : '/appointment/facilityprofile/facility';
+    // navigate(`${path}/${createSlug(facility?.facility_name || "")}/${facilityId}`, { state: { activeTab: 'departments', from: 'search' } });
   };
 
   const handleViewDepartment = async (department: Department) => {
@@ -5100,6 +5470,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 py-6">
+      {!hideSearchHeader && (
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold">
           {activeFilterTab === "doctors" ? "Find Doctor / Specialists" :
@@ -5111,7 +5482,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
           </Button>
         )}
       </div>
-
+      )}
       {/* <div className="w-full mb-6">
   <div className="grid grid-cols-2 border rounded-lg overflow-hidden">
     
@@ -5171,14 +5542,14 @@ const handleViewDoctorProfile = async (doctorId: string) => {
       {/* <label className="block text-sm font-medium mb-1">Search Google Map Location  ({activeFilterTab === "doctors" ? "please search Doctor Location " :
            activeFilterTab === "hospitals" ? "please Search Facility name " : ""})
       </label>*/}
-
+{!hideSearchHeader && (
       <GooglePlaceSearch  setSelectedLocation={(location) => {
     setSelectedLocation(location);
     setShowMap(true);
   }}/> 
-
+)}
       {/* Map Section */}
-      {showMap && (
+      {!hideSearchHeader && (showMap && (
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-semibold">Location Map</h3>
@@ -5200,7 +5571,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
           activeTab={activeFilterTab}
         />
       </div>
-      )}
+      ))}
       {/* </> */}
 {/* // )} */}
       {/* Results Count */}
@@ -5211,7 +5582,6 @@ const handleViewDoctorProfile = async (doctorId: string) => {
           {activeFilterTab === "all" && <>Found <span className="text-blue-600">{filteredDoctors.length}</span> doctors & <span className="text-green-600">{combinedFacilities.length}</span> hospitals</>}
         </h3>
       </div>
-
       <SearchHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -5235,7 +5605,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
         setSelectedDate={setSelectedDate}
         // setSelectedLocation={setSelectedLocation} 
       />
-
+    
       {/* Results Sections */}
   {/* {activeFilterTab !== "hospitals" && (
   <div className="mb-8">

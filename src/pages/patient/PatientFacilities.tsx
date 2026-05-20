@@ -1913,7 +1913,8 @@ const [checkingRole, setCheckingRole] = useState(false);
 
       const { data: facilityData, error: facilityError } = await supabase
         .from("facilities")
-        .select("*");
+        .select("*")
+        .eq('profile_visibility', true);
 
       if (facilityError) throw facilityError;
 

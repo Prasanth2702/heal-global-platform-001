@@ -2561,7 +2561,7 @@ const DepartmentDetails = () => {
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [slotAvailability, setSlotAvailability] = useState<Record<string, SlotAvailability>>({});
-
+const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   // Booking dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
@@ -2677,7 +2677,40 @@ const totalmax = used >= max;
   };
 
   // ==================== FETCH AVAILABILITY FOR A SPECIFIC DAY ====================
+  // const fetchAvailabilityForDay = async (dayIndex: number) => {
+  //    try {
+  //   setIsLoadingSlots(true);
+  //   const dayOffset = dayIndex + 1;
+  //   const selectedDate = new Date();
+  //   selectedDate.setDate(selectedDate.getDate() + dayOffset);
+  //   const dateISO = selectedDate.toISOString().split("T")[0];
+  //   const dayOfWeek = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
+
+  //   const slotsForDay = timeSlots.filter((s) => s.day_of_week === dayOfWeek);
+  //      if (slotsForDay.length === 0) {
+  //   setSlotAvailability({});
+  //   return;
+  // }
+  //   const results: Record<string, SlotAvailability> = {};
+
+  //   await Promise.all(
+  //     slotsForDay.map(async (slot) => {
+  //       const res = await checkSlotAvailability(slot.id, dateISO, dayOfWeek);
+  //       if (res) results[slot.id] = res;
+  //     })
+  //   );
+
+  //   setSlotAvailability(results);
+  //   return { selectedDate, dateISO, dayOfWeek };
+  //   } catch (error) {
+  //   console.error("fetchAvailabilityForDay error:", error);
+  // } finally {
+  //   setIsLoadingSlots(false);
+  // }
+  // };
   const fetchAvailabilityForDay = async (dayIndex: number) => {
+  try {
+    setIsLoadingSlots(true);
     const dayOffset = dayIndex + 1;
     const selectedDate = new Date();
     selectedDate.setDate(selectedDate.getDate() + dayOffset);
@@ -2685,18 +2718,24 @@ const totalmax = used >= max;
     const dayOfWeek = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
 
     const slotsForDay = timeSlots.filter((s) => s.day_of_week === dayOfWeek);
+    if (slotsForDay.length === 0) {
+      setSlotAvailability({});
+      return;
+    }
     const results: Record<string, SlotAvailability> = {};
-
     await Promise.all(
       slotsForDay.map(async (slot) => {
         const res = await checkSlotAvailability(slot.id, dateISO, dayOfWeek);
         if (res) results[slot.id] = res;
       })
     );
-
     setSlotAvailability(results);
-    return { selectedDate, dateISO, dayOfWeek };
-  };
+  } catch (error) {
+    console.error("fetchAvailabilityForDay error:", error);
+  } finally {
+    setIsLoadingSlots(false);
+  }
+};
 
   // ==================== FETCH TIME SLOTS & BOOKINGS ====================
   const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
@@ -2723,24 +2762,62 @@ const totalmax = used >= max;
   };
 
   // ==================== TOGGLE DEPARTMENT EXPAND ====================
+  // const toggleExpandDepartment = async (department: Department) => {
+  //   if (expandedTimeSlotId === department.id) {
+  //     setExpandedTimeSlotId(null);
+  //     setSelectedSlot(null);
+  //     setTimeSlots([]);
+  //     setBookings([]);
+  //     setSelectedDay(0);
+  //     setSlotAvailability({});
+  //     setIsLoadingSlots(false);
+  //     return;
+  //   }
+  //   setExpandedTimeSlotId(department.id);
+  //   setSelectedSlot(null);
+  //   setTimeSlots([]);
+  //   setBookings([]);
+  //   setSelectedDay(0);
+  //   setSlotAvailability({});
+  //    setIsLoadingSlots(true); 
+  //   await fetchTimeSlotsAndDepartmentBookings(department);
+    
+  // };
+
   const toggleExpandDepartment = async (department: Department) => {
-    if (expandedTimeSlotId === department.id) {
-      setExpandedTimeSlotId(null);
-      setSelectedSlot(null);
-      setTimeSlots([]);
-      setBookings([]);
-      setSelectedDay(0);
-      setSlotAvailability({});
-      return;
-    }
+  if (expandedTimeSlotId === department.id) {
+    setExpandedTimeSlotId(null);
+    setSelectedSlot(null);
+    setTimeSlots([]);
+    setBookings([]);
+    setSelectedDay(0);
+    setSlotAvailability({});
+    setIsLoadingSlots(false);
+    return;
+  }
+
+  try {
     setExpandedTimeSlotId(department.id);
     setSelectedSlot(null);
     setTimeSlots([]);
     setBookings([]);
     setSelectedDay(0);
     setSlotAvailability({});
+
+    // START LOADER
+    setIsLoadingSlots(true);
+
+    // FETCH DATA
     await fetchTimeSlotsAndDepartmentBookings(department);
-  };
+
+
+  } catch (error) {
+    console.error("toggleExpandDepartment error:", error);
+  } finally {
+    // STOP LOADER
+    setIsLoadingSlots(false);
+  }
+};
 
   // ==================== FETCH DEPARTMENT DETAILS ====================
   const fetchDepartmentDetails = async () => {
@@ -3219,7 +3296,16 @@ endOfDay.setHours(23, 59, 59, 999);
 
                       {/* Slots for selected day */}
                       <div className="mt-4">
-                        {(() => {
+
+                                  {isLoadingSlots ? (
+                                     <div className="flex justify-center items-center py-10">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
+      <span className="ml-3 text-sm text-gray-600">
+        Loading slots...
+      </span>
+    </div>
+                                    ):(
+                        (() => {
                           const dayOffset = selectedDay + 1;
                           const selectedDate = new Date();
                           selectedDate.setDate(selectedDate.getDate() + dayOffset);
@@ -3244,6 +3330,7 @@ endOfDay.setHours(23, 59, 59, 999);
                                 const isSelected = selectedSlot?.id === slot.id;
 
                                 return (
+                                  
                                   <div
                                     key={slot.id}
                                     onClick={() => {
@@ -3266,22 +3353,16 @@ endOfDay.setHours(23, 59, 59, 999);
 
                                     {/* FIXED: status message – only one condition shown */}
                                     <div className="text-[11px] mt-1 font-semibold">
-                                      {!avail?.success ? (
-                                        <span className="text-gray-400">Checking...</span>
-                                      ) : alreadyBookedByUser ? (
+                                      {alreadyBookedByUser ? (
                                         <span className="text-orange-600">Already booked by you</span>
-                                      ) : isFull ? (
-                                        <span className="text-red-500">
-                                          Full ({avail.booked_count}/{avail.max_appointments})
-                                        </span>
-                                      ) : (
+                                                                            ) : (
                                         <>
                                         <span className="text-green-600">
-                                          {avail.remaining_count} left
+                                          {avail?.remaining_count} left
                                         </span>
                                         <br/>
                                         <span className="text-green-500">
-                                          Full ({avail.booked_count}/{avail.max_appointments})
+                                          status
                                         </span>
                                         </>
                                       )}
@@ -3291,11 +3372,12 @@ endOfDay.setHours(23, 59, 59, 999);
                               })}
                             </div>
                           );
-                        })()}
+                        })()
+                      )}
                       </div>
 
                       {!selectedSlot && (
-                        <p className="text-gray-500 text-xs mt-2">
+                        <p className="text-red-500 text-lg mt-2">
                           Please select a slot to book an appointment.
                         </p>
                       )}

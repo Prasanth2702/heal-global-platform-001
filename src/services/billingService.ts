@@ -978,6 +978,53 @@ private async callEdgeFunction(url: string, body: any) {
 
   return response.json()
 }
+
+// Get current user's profile (role, etc.)
+  async getCurrentUserProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, role, user_id, first_name, last_name, email')
+      .eq('user_id', user.id)
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  // Get staff record if user is hospital_staff
+  async getCurrentStaffRecord() {
+    const profile = await this.getCurrentUserProfile();
+    if (!profile || profile.role !== 'hospital_staff') return null;
+    const { data, error } = await supabase
+      .from('staff')
+      .select('id, facility_id, position, role')
+      .eq('user_id', profile.user_id)
+      .single();
+    if (error) return null;
+    return data;
+  }
+
+  // Get the facility ID the current user belongs to (admin or staff)
+  async getCurrentFacilityId() {
+    const profile = await this.getCurrentUserProfile();
+    if (!profile) return null;
+    if (profile.role === 'hospital_admin') {
+      const { data } = await supabase
+        .from('facilities')
+        .select('id')
+        .eq('admin_user_id', profile.user_id)
+        .single();
+      return data?.id;
+    }
+    if (profile.role === 'hospital_staff') {
+      const staff = await this.getCurrentStaffRecord();
+      return staff?.facility_id;
+    }
+    return null;
+  }
+
+
   async getPatientInfo(patientId: string): Promise<PatientInfo | null> {
     const { data, error } = await supabase
       .from('profiles')

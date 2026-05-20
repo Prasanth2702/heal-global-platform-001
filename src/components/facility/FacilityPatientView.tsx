@@ -2774,7 +2774,7 @@ const [limitRecommendations, setLimitRecommendations] = useState<string[]>([]);
 //   checkSubscription();
 // }, [user, currentAppointment]);
 const [isLimitOnlyExceeded, setIsLimitOnlyExceeded] = useState(false);
-const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
+// const { checkLimit, limits, loading: limitLoading } = useFacilityLimit();
 const [doctorLimits, setDoctorLimits] = useState<{ in_person: any; teleconsultation: any } | null>(null);
 // useEffect(() => {
 //   const checkSubscription = async () => {
@@ -5266,40 +5266,40 @@ const CompletionMessage = () => {
 
 // Show loader while checking subscription
 
-if (isCheckingLimit && viewType === "patient" && userRole === "doctor" && patient && currentAppointment?.status === "pending") {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-4 text-muted-foreground">Verifying subscription...</p>
-      </div>
-    </div>
-  );
-}
+// if ( viewType === "patient" && userRole === "doctor" && patient && currentAppointment?.status === "pending") {
+//   return (
+//     <div className="flex items-center justify-center h-screen">
+//       <div className="text-center">
+//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+//         <p className="mt-4 text-muted-foreground">Verifying subscription...</p>
+//       </div>
+//     </div>
+//   );
+// }
 
-const shouldCheckSubscription =
-  viewType === "patient" &&
-  patient &&
-  currentAppointment?.status === "pending" &&
-  (userRole === "doctor" || userRole === "facility");
+// const shouldCheckSubscription =
+//   viewType === "patient" &&
+//   patient &&
+//   currentAppointment?.status === "pending" &&
+//   (userRole === "doctor" || userRole === "facility");
 
 
 // ==============================
 // LOADING SCREEN
 // ==============================
-if (isCheckingLimit && shouldCheckSubscription) {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+// if ( shouldCheckSubscription) {
+//   return (
+//     <div className="flex items-center justify-center h-screen">
+//       <div className="text-center">
+//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
 
-        <p className="mt-4 text-muted-foreground">
-          Verifying subscription...
-        </p>
-      </div>
-    </div>
-  );
-}
+//         <p className="mt-4 text-muted-foreground">
+//           Verifying subscription...
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
 
 
 // ==============================

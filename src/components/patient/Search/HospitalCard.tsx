@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Building2, ChevronRight } from "lucide-react";
+import { usePageViewTrackerWithTimeSpent } from "@/hooks/usePageViewTrackerWithTimeSpent";
 
 export interface Doctor {
   id: string;
@@ -139,6 +140,16 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
   // Determine which departments to show
   const displayedDepts = showAllDepartments ? filteredDepts : filteredDepts.slice(0, 3);
   const hasMoreDepartments = filteredDepts.length > 3;
+  //  const { stopTracking } = usePageViewTrackerWithTimeSpent();  // ✅ get stopTracking
+
+  // // Stop tracking when component unmounts (e.g., user clicks back)
+  // useEffect(() => {
+  //   return () => {
+  //    if (facility?.id) {
+  //       stopTracking("facility", facility.id);
+  //     }
+  //   };
+  // }, [ facility, stopTracking]);
 
   return (
 <>
@@ -275,6 +286,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => onViewDepartment(dept)}
+                      className="bg-green-600 text-white"
                       >
                         View Time Slots availability for this department
                       </Button>

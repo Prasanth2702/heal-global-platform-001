@@ -5311,7 +5311,7 @@ let views = facilityId;
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-blue-600">
-            {searchPerformed ? "Doctors Matching Your Search" : "Doctors List"}
+            {searchPerformed ? "Doctors Matching Your Search" : "Doctors / Specialists List"}
             {/* {searchPerformed ? "Doctors Matching Your Search" : "Recommended Doctors"} */}
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({filteredDoctors.length} found)
@@ -5395,7 +5395,7 @@ let views = facilityId;
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-green-600">
-            {searchPerformed ? "Hospitals Matching Your Search" : "Hospitals / Facility List"}
+            {searchPerformed ? "Hospitals Matching Your Search" : "Facility / Services List"}
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({filteredFacilities.length} found)
             </span>

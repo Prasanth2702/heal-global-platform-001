@@ -115,17 +115,17 @@ setDoctorViews(totalViews);
 
   const fetchAppointments = async (doctorId: string) => {
     try {
-      const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    //   const today = new Date();
+    // const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    // const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
       const { data: { user } } = await supabase.auth.getUser();
       // First get all appointments for today
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from("appointments")
         .select("*")
         .eq("doctor_id", user.id)
-        .gte("appointment_date", startOfDay)
-      .lte("appointment_date", endOfDay)
+      //   .gte("appointment_date", startOfDay)
+      // .lte("appointment_date", endOfDay)
         .order("appointment_date", { ascending: true });
         
 

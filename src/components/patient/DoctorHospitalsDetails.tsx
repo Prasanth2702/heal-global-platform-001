@@ -555,7 +555,7 @@ newDate.setDate(newDate.getDate() + dayOffset);
     const { data } = await supabase
       .from("profiles")
       .select("user_id")
-      .eq("profile_id", views)
+      .ilike("profile_id", views)
       .maybeSingle();
   
     profileData = data;
@@ -1618,6 +1618,16 @@ const handleBookAppointmentClick = () => {
       });
     }
   }, 100);
+};
+
+const handleBack = () => {
+  const referrer = document.referrer;
+  const isInternal = referrer && new URL(referrer).hostname === window.location.hostname;
+  if (isInternal) {
+    navigate(-1);
+  } else {
+    navigate("/dashboard/patient/search");
+  }
 };
 
   if (loading) {

@@ -2730,12 +2730,42 @@ const totalmax = used >= max;
       })
     );
     setSlotAvailability(results);
+    // AUTO SELECT FIRST AVAILABLE SLOT
+    const firstAvailable = slotsForDay.find((slot) => {
+      const avail = results[slot.id];
+
+      return (
+        avail?.success &&
+        !avail.user_has_booked &&
+        avail.remaining_count > 0
+      );
+    });
+
+    if (firstAvailable) {
+      setSelectedSlot(firstAvailable);
+    } else {
+      setSelectedSlot(null);
+    }
   } catch (error) {
     console.error("fetchAvailabilityForDay error:", error);
   } finally {
     setIsLoadingSlots(false);
   }
 };
+
+// Auto load first available day slots
+useEffect(() => {
+  const autoLoadAvailability = async () => {
+    if (
+      expandedTimeSlotId &&
+      timeSlots.length > 0
+    ) {
+      await fetchAvailabilityForDay(0);
+    }
+  };
+
+  autoLoadAvailability();
+}, [expandedTimeSlotId, timeSlots]);
 
   // ==================== FETCH TIME SLOTS & BOOKINGS ====================
   const fetchTimeSlotsAndDepartmentBookings = async (department: Department) => {
@@ -2813,9 +2843,9 @@ const totalmax = used >= max;
 
   } catch (error) {
     console.error("toggleExpandDepartment error:", error);
-  } finally {
-    // STOP LOADER
-    setIsLoadingSlots(false);
+  // } finally {
+  //   // STOP LOADER
+  //   setIsLoadingSlots(false);
   }
 };
 

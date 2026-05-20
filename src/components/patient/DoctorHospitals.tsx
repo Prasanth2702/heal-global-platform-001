@@ -793,7 +793,7 @@ if (views) {
   const { data } = await supabase
     .from("profiles")
     .select("user_id")
-    .eq("profile_id", views)
+    .ilike("profile_id", views)
     .maybeSingle();
 
   profileData = data;
@@ -844,6 +844,7 @@ const { data: doctorData, error: doctorError } = await supabase
         .from("facilities")
         .select("*")
         // .eq("id", id)
+        .eq("admin_user_id", profileData.user_id)
         .maybeSingle();
 
       if (facilityData && !facilityError) {

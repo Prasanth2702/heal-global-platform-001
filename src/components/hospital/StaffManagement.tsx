@@ -1549,6 +1549,7 @@ import {
   PhoneIcon,
   AlertCircle,
   SubscriptIcon,
+  Loader,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -2276,7 +2277,7 @@ return (
         <DialogTrigger asChild>
           {(isMaintenance || !userHasStaff || editingStaff)  ? (
             <>
-            <Button
+            {/* <Button
   onClick={() => {
     trackStaffAction('add_staff_click');
 
@@ -2297,6 +2298,48 @@ return (
 >
   <UserPlus className="mr-2 h-4 w-4" />
   Add Staff Member
+</Button> */}
+<Button
+  onClick={async () => {
+    trackStaffAction("add_staff_click");
+
+    // Stop action while loading
+    if (limitLoading) return;
+
+    // Re-fetch latest limits
+    await checkLimit(userFacility?.id, "staff");
+
+    // Check staff limit after loading
+    if (
+      limits?.limits?.staff?.current >=
+      limits?.limits?.staff?.max
+    ) {
+      setShowLimitMessage(true);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    resetForm();
+    setIsAddDialogOpen(true);
+  }}
+  disabled={limitLoading}
+>
+  {limitLoading ? (
+    <>
+      <Loader className="mr-2 h-4 w-4 animate-spin" />
+      Loading...
+    </>
+  ) : (
+    <>
+      <UserPlus className="mr-2 h-4 w-4" />
+      Add Staff Member
+    </>
+  )}
 </Button>
             </>
             // <Button 

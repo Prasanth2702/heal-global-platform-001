@@ -589,6 +589,7 @@ const departmentOptions = [
 const [showContactDialog, setShowContactDialog] = useState(false);
 const [contactSubmitting, setContactSubmitting] = useState(false);
 const [showLimitMessage, setShowLimitMessage] = useState(false);
+const [showMessage, setShowMessage] = useState(false);
 const [contactForm, setContactForm] = useState({
   name: "",
   subject: "",
@@ -1976,10 +1977,51 @@ const getSubmitHandler = () => {
     {/* Department Dialog */}
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => {
+        {/* <Button onClick={() => {
           trackDepartmentAction('add_department_click');
           
           if (limits?.limits?.departments?.current >= limits?.limits?.departments?.max) {
+            setShowMessage(true);
+            setShowLimitMessage(true);
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
+            
+            return;
+          }
+          
+    resetForm();
+    setCurrentStep(1); // Set to step 1 when opening
+          setIsAddDialogOpen(true);
+ 
+        }}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Department
+        </Button> */}
+        <Button
+  onClick={async () => {
+    trackDepartmentAction("add_department_click");
+
+    // Prevent action while limits are loading
+    if (limitLoading) {
+      return;
+    }
+
+    // Re-check latest limits before opening dialog
+    await checkLimit(userFacility?.id, "departments");
+
+    // Wait until loading completes
+    if (limitLoading) {
+      return;
+    }
+
+    // Check department limit AFTER loading
+    if (
+      limits?.limits?.departments?.current >=
+      limits?.limits?.departments?.max
+    ) {
+      setShowMessage(true);
       setShowLimitMessage(true);
 
       window.scrollTo({
@@ -1990,14 +2032,25 @@ const getSubmitHandler = () => {
       return;
     }
 
+    // Open dialog only if limit not reached
     resetForm();
-    setCurrentStep(1); // Set to step 1 when opening
-          setIsAddDialogOpen(true);
- 
-        }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Department
-        </Button>
+    setCurrentStep(1);
+    setIsAddDialogOpen(true);
+  }}
+  disabled={limitLoading}
+>
+  {limitLoading ? (
+    <>
+      <Loader className="mr-2 h-4 w-4 animate-spin" />
+      Loading...
+    </>
+  ) : (
+    <>
+      <Plus className="mr-2 h-4 w-4" />
+      Add Department
+    </>
+  )}
+</Button>
       </DialogTrigger>
        {!showLimitMessage && (
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
@@ -3432,7 +3485,7 @@ const getSubmitHandler = () => {
   </DialogContent>
 </Dialog>
 
-{showLimitMessage &&(
+{showMessage &&(
   <div className="container mx-auto p-6 space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -3445,7 +3498,7 @@ const getSubmitHandler = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowLimitMessage(false)}
+              onClick={() => setShowMessage(false)}
             >
               ✕
             </Button>

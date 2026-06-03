@@ -417,12 +417,13 @@ useEffect(() => {
           doctor_specialty: doctorDetails?.specialty,
           doctor_rating: doctorDetails?.rating || 0,
           doctor_experience: doctorDetails?.experience || 0,
+          doctor_prefix: doctorDetails?.prefix || '',
           doctor_first_name: doctorDetails?.first_name,
           doctor_last_name: doctorDetails?.last_name,
           doctor_email: doctorDetails?.email,
           doctor_phone: doctorDetails?.phone,
           display_doctor_name: app.doctor_name || 
-            (doctorDetails?.first_name ? `Dr. ${doctorDetails.first_name} ${doctorDetails.last_name || ''}` : "Unknown Doctor")
+            (doctorDetails?.first_name ? `${doctorDetails.prefix.charAt(0).toUpperCase() + doctorDetails.prefix.slice(1) || ''} ${doctorDetails.first_name} ${doctorDetails.last_name || ''}` : "Unknown Doctor")
         };
       });
 

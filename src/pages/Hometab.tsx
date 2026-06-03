@@ -2085,8 +2085,10 @@ const Hometab: React.FC = () => {
         .select(`
           *,
           medical_professionals_user_id_fkey (
+
             first_name,
             last_name,
+            prefix,
             avatar_url,
             user_id
           ),
@@ -2099,13 +2101,14 @@ const Hometab: React.FC = () => {
       if (error) throw error;
       const mapped = data.map((item: any) => {
         const fullName = item.medical_professionals_user_id_fkey
-          ? `${item.medical_professionals_user_id_fkey.first_name || ""} ${
+          ? `${item.medical_professionals_user_id_fkey.prefix?.charAt(0)?.toUpperCase() + item.medical_professionals_user_id_fkey.prefix?.slice(1) || ''} ${item.medical_professionals_user_id_fkey.first_name || ""} ${
               item.medical_professionals_user_id_fkey.last_name || ""
             }`.trim()
           : "Unknown Doctor";
         return {
           id: item.id,
           user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+          prefix: item.medical_professionals_user_id_fkey?.prefix || "",
         profile_id: item.profiles?.profile_id || "",
           name: fullName || "Unknown Doctor",
           specialty: item.medical_speciality,

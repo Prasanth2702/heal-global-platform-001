@@ -2017,7 +2017,7 @@ import { supabase } from "@/integrations/supabase/client";
 import '../../styles/form-input-styles.css';
 import mixpanelInstance from "@/utils/mixpanel";
 import { Country, State } from "country-state-city";
-import { Camera, Check, Eye, EyeOff, Upload } from "lucide-react";
+import { AlertCircle, Camera, Check, Eye, EyeOff, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -2208,7 +2208,8 @@ const FacilityRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [facilityId, setFacilityId] = useState<string | null>(null);
-  
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
   const [countries] = useState(Country.getAllCountries());
   const [states, setStates] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
@@ -2655,6 +2656,39 @@ const profileId = generateProfileId(formData.facilityName);
         },
       },
     });
+
+      if (signUpError?.message?.includes("User already registered")) {
+      setErrorMessage(
+        `This email address (${formData.emailAddress}) is already registered. If this is your account, use the Forgot Password option to reset your password. Otherwise, please use a different email address to create a new account.`
+      );
+      setErrorDialogOpen(true);
+      toast({
+            title: 'Registration Failed',
+            description: signUpError.message,
+            variant: 'destructive',
+          });
+             rollbar.error("Supabase SignUp Error", signUpError, {
+    email: formData.emailAddress,
+    facilityName: formData.facilityName,
+  });
+          setIsSubmitting(false);
+          return null;
+    }
+        if (signUpError) {
+      setErrorMessage(signUpError.message);
+      setErrorDialogOpen(true);
+      toast({
+            title: 'Registration Failed',
+            description: signUpError.message,
+            variant: 'destructive',
+          });
+              rollbar.error("Supabase SignUp Error", signUpError, {
+    email: formData.emailAddress,
+    facilityName: formData.facilityName,
+  });
+          setIsSubmitting(false);
+          return null;
+    }
 
     if (signUpError) {
       rollbar.error("Supabase SignUp Error", signUpError, {
@@ -4368,6 +4402,35 @@ const Step1SuccessPage = ({ onContinue }: { onContinue: () => void }) => {
         </form>
       </div>
       
+      <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <div className="flex flex-col items-center gap-4 py-4">
+            {/* Red Circle with Icon */}
+            <div className="rounded-full bg-red-100 p-3">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+      
+            {/* Content */}
+            <div className="text-center space-y-2">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
+                Registration Failed
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                {errorMessage}
+              </DialogDescription>
+            </div>
+      
+            {/* Single Action Button */}
+            <Button
+              onClick={() => setErrorDialogOpen(false)}
+              className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white rounded-lg"
+            >
+              Dismiss
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <SuccessPopup 
         isOpen={showSuccessPopup}
         onClose={handleSuccessPopupClose}

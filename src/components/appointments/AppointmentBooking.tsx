@@ -31,12 +31,12 @@ export default function AppointmentBooking() {
 
       const { data: doc } = await supabase
         .from("profiles")
-        .select("first_name, last_name")
+        .select("first_name, last_name ,prefix")
         .eq("user_id", doctor_id)
         .single(); 
 
       if (doc) {
-        setDoctorName(`Dr. ${doc.first_name} ${doc.last_name}`);
+        setDoctorName(`${doc.prefix.charAt(0).toUpperCase() + doc.prefix.slice(1)} ${doc.first_name} ${doc.last_name}`);
       }
     })();
   }, [doctor_id]);

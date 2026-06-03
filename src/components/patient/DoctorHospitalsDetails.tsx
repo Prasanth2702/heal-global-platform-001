@@ -71,6 +71,7 @@ import DoctorSearch from "./DoctorSearch";
 interface Doctor {
   id: string;
   user_id: string;
+  prefix?: string;
   name: string;
   specialty: string;
   rating: number;
@@ -291,6 +292,7 @@ useEffect(() => {
       .select(`
         *,
         medical_professionals_user_id_fkey (
+        prefix,
           first_name,
           last_name,
           avatar_url
@@ -307,7 +309,7 @@ useEffect(() => {
       const mapped = doctorsData.map((item: any) => ({
         id: item.id,
         user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-        name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+        name: `${item.medical_professionals_user_id_fkey?.prefix || ""} ${item.medical_professionals_user_id_fkey?.first_name || ""} ${
           item.medical_professionals_user_id_fkey?.last_name || ""
         }`.trim() || "Unknown Doctor",
         specialty: item.medical_speciality,
@@ -572,6 +574,7 @@ newDate.setDate(newDate.getDate() + dayOffset);
     .select(`
       *,
       medical_professionals_user_id_fkey (
+      prefix,
         first_name,
         last_name,
         avatar_url,
@@ -585,7 +588,7 @@ newDate.setDate(newDate.getDate() + dayOffset);
           // Fetch profile data using user_id from medical_professionals
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("email, phone_number, first_name, last_name")
+            .select("email, phone_number, first_name, last_name ,prefix")
             .eq("user_id", doctorData.user_id)
             .maybeSingle();
   
@@ -594,6 +597,7 @@ newDate.setDate(newDate.getDate() + dayOffset);
             email: profileData?.email || "",
             phone_number: profileData?.phone_number || "",
             profiles: profileData,
+            prefix: profileData?.prefix || "",
           };
   
           setEntityType("doctor");
@@ -986,7 +990,7 @@ newDate.setDate(newDate.getDate() + dayOffset);
 // };
 const fetchDoctorDetails = async (doctorData: any) => {
   const fullName = doctorData.medical_professionals_user_id_fkey
-    ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
+    ? `${doctorData.medical_professionals_user_id_fkey.prefix?.charAt(0)?.toUpperCase() + doctorData.medical_professionals_user_id_fkey.prefix?.slice(1) || ''} ${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
         doctorData.medical_professionals_user_id_fkey.last_name || ""
       }`.trim()
     : "Unknown Doctor";
@@ -1087,6 +1091,7 @@ const fetchDoctorDetails = async (doctorData: any) => {
     .select(`
       *,
       medical_professionals_user_id_fkey (
+      prefix,
         first_name,
         last_name,
         avatar_url
@@ -1100,7 +1105,7 @@ const fetchDoctorDetails = async (doctorData: any) => {
     const mapped = similarData.map((item: any) => ({
       id: item.id,
       user_id: item.user_id,
-      name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+      name: `${item.medical_professionals_user_id_fkey?.prefix?.charAt(0)?.toUpperCase() + item.medical_professionals_user_id_fkey?.prefix?.slice(1) || ''} ${item.medical_professionals_user_id_fkey?.first_name || ""} ${
         item.medical_professionals_user_id_fkey?.last_name || ""
       }`.trim() || "Unknown Doctor",
       specialty: item.medical_speciality,
@@ -1224,6 +1229,7 @@ const fetchFacilityDetails = async (facilityData: any) => {
       .select(`
         *,
         medical_professionals_user_id_fkey (
+        prefix,
           first_name,
           last_name,
           avatar_url
@@ -1236,7 +1242,7 @@ const fetchFacilityDetails = async (facilityData: any) => {
       const mapped = doctorsData.map((item: any) => ({
         id: item.id,
         user_id: item.medical_professionals_user_id_fkey?.user_id || "",
-        name: `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+        name: `${item.medical_professionals_user_id_fkey?.prefix?.charAt(0)?.toUpperCase() + item.medical_professionals_user_id_fkey?.prefix?.slice(1) || ''} ${item.medical_professionals_user_id_fkey?.first_name || ""} ${
           item.medical_professionals_user_id_fkey?.last_name || ""
         }`.trim() || "Unknown Doctor",
         specialty: item.medical_speciality,

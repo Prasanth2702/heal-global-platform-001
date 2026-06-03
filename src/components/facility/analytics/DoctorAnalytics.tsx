@@ -122,11 +122,11 @@ const DoctorAnalytics = () => {
       let doctorName = "Unknown Doctor";
       const { data: profile } = await supabase
         .from("profiles")
-        .select("first_name, last_name")
+        .select("first_name, last_name, prefix")
         .eq("user_id", user.id)
         .maybeSingle();
       if (profile) {
-        doctorName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Doctor";
+        doctorName = `${profile.prefix?.charAt(0)?.toUpperCase() + profile.prefix?.slice(1) || ''} ${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Doctor";
       }
 
       const statsArr: TimeSpentDoctorStats[] = [];
@@ -208,11 +208,11 @@ const DoctorAnalytics = () => {
       let doctorName = "Unknown Doctor";
       const { data: profile } = await supabase
         .from("profiles")
-        .select("first_name, last_name")
+        .select("first_name, last_name, prefix")
         .eq("user_id", user.id)
         .maybeSingle();
       if (profile) {
-        doctorName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Doctor";
+        doctorName = `${profile.prefix?.charAt(0)?.toUpperCase() + profile.prefix?.slice(1) || ''} ${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Doctor";
       }
 
       // Fetch page_view_logs for this doctor

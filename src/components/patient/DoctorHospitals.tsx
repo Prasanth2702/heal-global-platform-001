@@ -70,6 +70,7 @@ import DoctorSearch from "./DoctorSearch";
 interface Doctor {
   id: string;
   user_id: string;
+  prefix?: string;
   name: string;
   specialty: string;
   rating: number;
@@ -810,6 +811,7 @@ const { data: doctorData, error: doctorError } = await supabase
   .select(`
     *,
     medical_professionals_user_id_fkey (
+    prefix,
       first_name,
       last_name,
       avatar_url,
@@ -823,7 +825,7 @@ const { data: doctorData, error: doctorError } = await supabase
         // Fetch profile data using user_id from medical_professionals
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("email, phone_number, first_name, last_name")
+          .select("email, phone_number, first_name, last_name, prefix")
           .eq("user_id", doctorData.user_id)
           .maybeSingle();
 
@@ -832,6 +834,7 @@ const { data: doctorData, error: doctorError } = await supabase
           email: profileData?.email || "",
           phone_number: profileData?.phone_number || "",
           profiles: profileData,
+          prefix: profileData?.prefix || "",
         };
 
         setEntityType("doctor");
@@ -887,7 +890,7 @@ const { data: doctorData, error: doctorError } = await supabase
   };
   const fetchDoctorDetails = async (doctorData: any) => {
     const fullName = doctorData.medical_professionals_user_id_fkey
-      ? `${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
+      ? `${doctorData.medical_professionals_user_id_fkey.prefix?.charAt(0)?.toUpperCase() + doctorData.medical_professionals_user_id_fkey.prefix?.slice(1) || ''} ${doctorData.medical_professionals_user_id_fkey.first_name || ""} ${
           doctorData.medical_professionals_user_id_fkey.last_name || ""
         }`.trim()
       : "Unknown Doctor";
@@ -995,6 +998,7 @@ const { data: doctorData, error: doctorError } = await supabase
         `
       *,
       medical_professionals_user_id_fkey (
+      prefix,
         first_name,
         last_name,
         avatar_url
@@ -1011,7 +1015,7 @@ const { data: doctorData, error: doctorError } = await supabase
         id: item.id,
         user_id: item.user_id,
         name:
-          `${item.medical_professionals_user_id_fkey?.first_name || ""} ${
+          `${item.medical_professionals_user_id_fkey?.prefix?.charAt(0)?.toUpperCase() + item.medical_professionals_user_id_fkey?.prefix?.slice(1) || ''} ${item.medical_professionals_user_id_fkey?.first_name || ""} ${
             item.medical_professionals_user_id_fkey?.last_name || ""
           }`.trim() || "Unknown Doctor",
         specialty: item.medical_speciality,
@@ -1366,7 +1370,7 @@ const { data: doctorData, error: doctorError } = await supabase
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(
       entityType === "doctor" && doctor
-        ? `👨‍⚕️ Dr. ${doctor.name} - ${doctor.specialty}`
+        ? `👨‍⚕️ ${doctor.prefix?.charAt(0)?.toUpperCase() + doctor.prefix?.slice(1) || ''} ${doctor.name} - ${doctor.specialty}`
         : facility
           ? `🏥 ${facility.facility_name} - ${facility.facility_type}`
           : "Check out this profile",

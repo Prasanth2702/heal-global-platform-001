@@ -839,6 +839,7 @@ export interface MedicalProfessional {
   lastName: string;
   emailAddress: string;
   profileId:string;
+  prefix: string;
   phoneNumber: string;
   medicalSpeciality: string;
   licenseNumber: string;
@@ -920,7 +921,8 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ onBack }) => {
     documentUrl: '',
     documentName: '',
     profile_visibility: true,
-    profileId: ''
+    profileId: '',
+    prefix: '',
   });
   const [showOutdatedWarning, setShowOutdatedWarning] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -1027,6 +1029,7 @@ useEffect(() => {
           avatarUrl: profilesData.avatar_url || '',
           userType: profilesData.user_type || 'medicalProfessional',
           profileId:profilesData?.profile_id||'',
+          prefix:profilesData?.prefix || '',
           // Medical professional fields
           medicalSpeciality: medicalData?.medical_speciality || '',
           licenseNumber: medicalData?.license_number || '',
@@ -1372,7 +1375,8 @@ const ADD_FEE = Number(import.meta.env.VITE_DOCTOR_PROFILE_FEE );
         phone_number: profileData.phoneNumber,
         avatar_url: profileData.avatarUrl,
         updated_at: new Date().toISOString(),
-        profile_id: profileData.profileId
+        profile_id: profileData.profileId,
+        prefix: profileData.prefix,
       };
 
       const medicalProfessionalsUpdate = {
@@ -2662,7 +2666,22 @@ Change your profile visibilty
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <Label htmlFor="firstname" className="text-sm font-semibold text-gray-700">
+                Prefix
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="prefix"
+                  value={profileData.prefix.charAt(0).toUpperCase() + profileData.prefix.slice(1)}
+                  onChange={e => setProfileData(prev => ({ ...prev, prefix: e.target.value }))}
+                  className="mt-2 border-2 focus:border-blue-500 transition-colors"
+                />
+              ) : (
+                <p className="mt-2 p-3 bg-gray-50 rounded-lg font-medium"> {profileData.prefix.charAt(0).toUpperCase() + profileData.prefix.slice(1)}</p>
+              )}
+            </div>
             <div>
               <Label htmlFor="firstname" className="text-sm font-semibold text-gray-700">
                 First Name

@@ -19,7 +19,7 @@ import VideoMeeting from "../VideoMeeting";
 interface DoctorProfile {
   id: string; user_id: string; medical_speciality: string; license_number: string;
   years_experience: number; consultation_fee: number; is_verified: boolean;
-  address?: string; city?: string; state?: string;
+  address?: string; city?: string; state?: string;prefix?: string;
 }
 
 interface Appointment {
@@ -138,7 +138,7 @@ const DoctorAppointmentView: React.FC = () => {
           setCurrentAppointment({
             id: aptData.id, appointment_date: aptData.appointment_date, duration_minutes: aptData.duration_minutes,
             type: aptData.type, status: aptData.status, department_name: departmentName, department_id: aptData.department_id,
-            doctor_name: `Dr. ${profileData?.first_name} ${profileData?.last_name}`, doctor_specialty: doctorData.medical_speciality,
+            doctor_name: `${profileData?.prefix?.charAt(0)?.toUpperCase() + profileData?.prefix?.slice(1) || ''} ${profileData?.first_name} ${profileData?.last_name}`, doctor_specialty: doctorData.medical_speciality,
             facility_id: aptData.facility_id, doctor_id: aptData.doctor_id, chief_complaint: aptData.chief_complaint,
             notes: aptData.notes, consultation_fee: aptData.consultation_fee, video_room_id: aptData.video_room_id,
             reminder_sent: aptData.reminder_sent, payment_requested: aptData.payment_requested,
@@ -172,7 +172,7 @@ const DoctorAppointmentView: React.FC = () => {
     setVideoMeeting({
       showMeeting: true,
       meetingId: appointment.video_room_id,
-      participantName: `Dr. ${doctorProfile?.first_name} ${doctorProfile?.last_name}`,
+      participantName: `${doctorProfile?.prefix?.charAt(0)?.toUpperCase() + doctorProfile?.prefix?.slice(1) || ''} ${doctorProfile?.first_name} ${doctorProfile?.last_name}`,
       appointmentId: appointment.id,
       userRole: "doctor",
     });
@@ -295,7 +295,7 @@ const DoctorAppointmentView: React.FC = () => {
             <Card>
               <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white"><CardTitle><Stethoscope className="inline mr-2" /> Doctor Information</CardTitle></CardHeader>
               <CardContent className="p-6 space-y-2">
-                <div><span className="font-medium">Name:</span> Dr. {doctorProfile?.first_name} {doctorProfile?.last_name}</div>
+                <div><span className="font-medium">Name:</span> {doctorProfile?.prefix?.charAt(0)?.toUpperCase() + doctorProfile?.prefix?.slice(1) || ''} {doctorProfile?.first_name} {doctorProfile?.last_name}</div>
                 <div><span className="font-medium">Specialty:</span> {doctor.medical_speciality}</div>
                 <div><span className="font-medium">License:</span> {doctor.license_number}</div>
                 <div><span className="font-medium">Experience:</span> {doctor.years_experience} years</div>

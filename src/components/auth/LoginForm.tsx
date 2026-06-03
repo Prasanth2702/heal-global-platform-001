@@ -897,8 +897,15 @@ import AuthLayout from "./AuthLayout";
 import OTPLogin from "./OTPLogin";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
-import { Eye, EyeOff } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Mail } from "lucide-react";
 import rollbar from "@/lib/rollbar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -913,7 +920,8 @@ const LoginForm = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const from = location.state?.from;
-
+const [showRoleDialog, setShowRoleDialog] = useState(false);
+const [detectedRole, setDetectedRole] = useState("");
   
   // Map URL userType params to actual profile roles
   const getExpectedRoles = (userTypeParam: string): string[] => {
@@ -994,6 +1002,18 @@ const LoginForm = () => {
     return data; // { email, role } or null
   };
 
+
+  const getUserRoleByEmail = async (email: string) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("email", email.toLowerCase())
+    .single();
+
+  if (error) return null;
+
+  return data.role;
+};
   /**
    * Check if an email exists in profiles (any role) – used to distinguish not found vs wrong role.
    */
@@ -1046,9 +1066,21 @@ const LoginForm = () => {
         return;
       }
 
+      
+
       // Then check if it has the correct role for this login page
       const profileData = await checkEmailInProfiles(email);
+if (!profileData) {
+  const actualRole = await getUserRoleByEmail(email);
 
+  if (actualRole) {
+    setDetectedRole(actualRole);
+    setShowRoleDialog(true);
+  }
+
+  setIsLoading(false);
+  return;
+}
       if (!profileData) {
         // Email exists but role does not match
         // toast({
@@ -1280,6 +1312,116 @@ const LoginForm = () => {
         </TabsContent>
       </Tabs>
 
+      {/* <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Account Found</DialogTitle>
+
+      <DialogDescription>
+        This email is already registered as a{" "}
+        <strong>{detectedRole.replace("_", " ")}</strong>.
+        <br />
+        Would you like to go to the correct login page?
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="flex justify-end gap-2 mt-4">
+      <Button
+        variant="outline"
+        onClick={() => setShowRoleDialog(false)}
+      >
+        Cancel
+      </Button>
+
+      <Button
+        onClick={() => {
+          const roleRouteMap: Record<string, string> = {
+            patient: "/login/patient",
+            doctor: "/login/doctor",
+            hospital_admin: "/login/facility-admin",
+            hospital_staff: "/login/facility-staff",
+          };
+
+          navigate(roleRouteMap[detectedRole]);
+
+          setShowRoleDialog(false);
+        }}
+      >
+        Go to Login Page
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog> */}
+<Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+  <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+    {/* Gradient Header */}
+    <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 pb-4 border-b">
+      <DialogHeader>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Mail className="h-5 w-5 text-primary" />
+          </div>
+          <DialogTitle className="text-xl font-semibold">
+            Account Found
+          </DialogTitle>
+        </div>
+        <DialogDescription className="text-sm text-muted-foreground mt-2">
+          This email is already registered as a{" "}
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+            {detectedRole.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+          </span>
+          .
+        </DialogDescription>
+      </DialogHeader>
+    </div>
+
+    {/* Content */}
+    <div className="p-6 pt-4">
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div className="flex gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-amber-800">
+              Redirect Notice
+            </p>
+            <p className="text-sm text-amber-700">
+              You're trying to access a different portal. Would you like to go to the correct login page for {detectedRole.replace(/_/g, " ")}?
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={() => setShowRoleDialog(false)}
+          className="px-4"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          onClick={() => {
+            const roleRouteMap: Record<string, string> = {
+              patient: "/login/patient",
+              doctor: "/login/doctor",
+              hospital_admin: "/login/facility-admin",
+              hospital_staff: "/login/facility-staff",
+              admin: "/login/admin",
+            };
+
+            navigate(roleRouteMap[detectedRole] || `/login/${detectedRole}`);
+            setShowRoleDialog(false);
+          }}
+          className="px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary"
+        >
+          Go to Login Page
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
       {/* Show registration link only for patient, doctor, facility */}
       {canRegister && (
         <div className="text-center text-sm text-muted-foreground mt-3">

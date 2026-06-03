@@ -2,6 +2,7 @@ export type UserRole = 'medicalProfessional';
 
 export interface MedicalProfessional {
   firstName: string;
+  prefix?: string;
   lastName: string;
   emailAddress: string;
   phoneNumber: string;         

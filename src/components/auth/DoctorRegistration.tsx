@@ -2015,9 +2015,16 @@ import {
   ArrowLeft, ArrowRight, Heart, Shield, Sparkles,
   Calendar, BookOpen, Briefcase, Camera, Upload, CheckCircle,
   EyeOff,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import AuthLayout from "./AuthLayout";
 import { MedicalProfessional } from "@/Models/MedicalProfessional";
 import { supabase } from "@/integrations/supabase/client";
@@ -2191,9 +2198,13 @@ const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   );
   const [selectedType, setSelectedType] = useState<'Clinic' | 'Tele'>('Clinic');
   const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-const [step1Success, setStep1Success] = useState(false);
+const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
+
+  const [step1Success, setStep1Success] = useState(false);
   const [formData, setFormData] = useState<MedicalProfessional>({
     firstName: "",
+    prefix: "",
     lastName: "",
     emailAddress: "",
     phoneNumber: "",
@@ -2224,6 +2235,26 @@ const [step1Success, setStep1Success] = useState(false);
     "Dentist", "Physiotherapist", "Dietician", "Ayurveda Practitioner",
     "Homeopath", "Psychologist", "ENT Specialist", "Ophthalmologist"
   ];
+
+  const doctorSpecialties = [
+  "General Physician",
+  "Cardiologist",
+  "Dermatologist",
+  "Neurologist",
+  "Orthopedic",
+  "Pediatrician",
+  "Gynecologist",
+  "Psychiatrist",
+  "Dentist",
+  "Ayurveda Practitioner",
+  "Homeopath",
+  "ENT Specialist",
+  "Ophthalmologist",
+];
+
+const isDoctorSpecialty = doctorSpecialties.includes(
+  formData.medicalSpeciality
+);
 
   // Calculate progress
   const totalSteps = 6;
@@ -2271,6 +2302,11 @@ const [step1Success, setStep1Success] = useState(false);
 
     if (!formData.lastName) {
       errors.lastName = "Last name is required";
+      valid = false;
+    }
+
+     if (!formData.medicalSpeciality) {
+      errors.medicalSpeciality = "Medical specialty is required";
       valid = false;
     }
 
@@ -2348,10 +2384,7 @@ const [step1Success, setStep1Success] = useState(false);
     const errors: { [key: string]: string } = {};
     let valid = true;
 
-    if (!formData.medicalSpeciality) {
-      errors.medicalSpeciality = "Medical specialty is required";
-      valid = false;
-    }
+   
 
     // if (!formData.licenseNumber) {
     //   errors.licenseNumber = "License number is required";
@@ -2688,19 +2721,53 @@ const handleSignUp = async () => {
           phone_number: fullPhoneNumber,
           role: 'doctor',
           profile_id: profileId,
+          prefix: formData.prefix || "",
         },
       },
     });
 
-    if (signUpError) {
-      toast({
+    if (signUpError?.message?.includes("User already registered")) {
+  setErrorMessage(
+    `This email address (${formData.emailAddress}) is already registered. If this is your account, use the Forgot Password option to reset your password. Otherwise, please use a different email address to create a new account.`
+  );
+  setErrorDialogOpen(true);
+  toast({
         title: 'Registration Failed',
         description: signUpError.message,
         variant: 'destructive',
       });
+          rollbar.warning("Signup Failed", {
+        message: signUpError.message,
+        email: formData.emailAddress,
+      });
       setIsSubmitting(false);
       return null;
-    }
+}
+    if (signUpError) {
+  setErrorMessage(signUpError.message);
+  setErrorDialogOpen(true);
+  toast({
+        title: 'Registration Failed',
+        description: signUpError.message,
+        variant: 'destructive',
+      });
+          rollbar.warning("Signup Failed", {
+        message: signUpError.message,
+        email: formData.emailAddress,
+      });
+      setIsSubmitting(false);
+      return null;
+}
+
+    // if (signUpError) {
+    //   toast({
+    //     title: 'Registration Failed',
+    //     description: signUpError.message,
+    //     variant: 'destructive',
+    //   });
+    //   setIsSubmitting(false);
+    //   return null;
+    // }
 
     const userId = signUpData.user?.id;
     if (!userId) {
@@ -2722,6 +2789,7 @@ const handleSignUp = async () => {
         phone_number: fullPhoneNumber,
         role: 'doctor',
         profile_id: profileId,
+        prefix: formData.prefix || "",
       })
       .eq('email', formData.emailAddress);
 
@@ -2866,8 +2934,10 @@ const handleSignUp = async () => {
     
   } catch (error) {
     console.error('Error saving step 1:', error);
-
+setErrorMessage(error?.message || "Something went wrong");
+  setErrorDialogOpen(true);
     rollbar.error("Doctor Step 1 Signup Failed", {
+      
     error,
     email: formData.emailAddress,
   });
@@ -3421,7 +3491,40 @@ const earlyCompleteRegistration = async () => {
         <p className="text-sm text-gray-500">Enter your basic information</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+       <div className="space-y-2">
+        <Label htmlFor="specialty" className="label-required text-sm font-semibold text-gray-700">
+          <Stethoscope className="inline h-4 w-4 mr-1 text-blue-500" />
+          Medical Specialty
+        </Label>
+        <Select value={formData.medicalSpeciality} onValueChange={(value) => setFormData({ ...formData, medicalSpeciality: value, prefix: doctorSpecialties.includes(value) ? "Dr." : "", })}>
+          <SelectTrigger className={`border-2 ${errors.medicalSpeciality ? "border-red-500" : "border-gray-200"}`}>
+            <SelectValue placeholder="Select your specialty" />
+          </SelectTrigger>
+          <SelectContent>
+            {specialties.map((specialty) => (
+              <SelectItem key={specialty} value={specialty}>
+                {specialty}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.medicalSpeciality && <p className="text-red-500 text-xs">{errors.medicalSpeciality}</p>}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+         <div className="space-y-2">
+    <Label className="text-sm font-semibold text-gray-700">
+      Prefix
+    </Label>
+
+    <Input
+      value={ formData.prefix.charAt(0).toUpperCase() + formData.prefix.slice(1)}
+       onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
+       maxLength={4}
+      className="border-2 border-gray-200 bg-gray-100"
+      placeholder="prefix"
+    />
+  </div>
         <div className="space-y-2">
           <Label htmlFor="firstName" className="label-required text-sm font-semibold text-gray-700">
             First Name
@@ -3450,6 +3553,7 @@ const earlyCompleteRegistration = async () => {
           {errors.lastName && <p className="text-red-500 text-xs">{errors.lastName}</p>}
         </div>
       </div>
+
 
       <div className="space-y-2">
         <Label htmlFor="email" className="label-required text-sm font-semibold text-gray-700">
@@ -3886,25 +3990,7 @@ const earlyCompleteRegistration = async () => {
         <p className="text-sm text-gray-500">Tell us about your medical career</p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="specialty" className="label-required text-sm font-semibold text-gray-700">
-          <Stethoscope className="inline h-4 w-4 mr-1 text-blue-500" />
-          Medical Specialty
-        </Label>
-        <Select value={formData.medicalSpeciality} onValueChange={(value) => setFormData({ ...formData, medicalSpeciality: value })}>
-          <SelectTrigger className={`border-2 ${errors.medicalSpeciality ? "border-red-500" : "border-gray-200"}`}>
-            <SelectValue placeholder="Select your specialty" />
-          </SelectTrigger>
-          <SelectContent>
-            {specialties.map((specialty) => (
-              <SelectItem key={specialty} value={specialty}>
-                {specialty}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.medicalSpeciality && <p className="text-red-500 text-xs">{errors.medicalSpeciality}</p>}
-      </div>
+     
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -4405,7 +4491,34 @@ const earlyCompleteRegistration = async () => {
           </div>
         </form>
       </div>
+<Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+  <DialogContent className="sm:max-w-md rounded-2xl">
+    <div className="flex flex-col items-center gap-4 py-4">
+      {/* Red Circle with Icon */}
+      <div className="rounded-full bg-red-100 p-3">
+        <AlertCircle className="h-8 w-8 text-red-600" />
+      </div>
 
+      {/* Content */}
+      <div className="text-center space-y-2">
+        <DialogTitle className="text-xl font-semibold text-gray-900">
+          Registration Failed
+        </DialogTitle>
+        <DialogDescription className="text-gray-600">
+          {errorMessage}
+        </DialogDescription>
+      </div>
+
+      {/* Single Action Button */}
+      <Button
+        onClick={() => setErrorDialogOpen(false)}
+        className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white rounded-lg"
+      >
+        Dismiss
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
       <SuccessPopup 
         isOpen={showSuccessPopup}
         onClose={() => {

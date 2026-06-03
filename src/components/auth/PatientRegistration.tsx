@@ -2104,7 +2104,10 @@ const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   // Store Step 1 Data After Submission
   const [step1Completed, setStep1Completed] = useState(false);
   const [savedUserId, setSavedUserId] = useState<string>('');
-const isAtLeast16 = (date: Date) => {
+const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
+
+  const isAtLeast16 = (date: Date) => {
   const currentYear = new Date().getFullYear();
 
   const minDate = new Date(
@@ -2513,7 +2516,30 @@ const saveStep1Data = async () => {
         },
       },
     });
-
+if (signUpError?.message?.includes("User already registered")) {
+  setErrorMessage(
+    `This email address (${formData.emailAddress}) is already registered. If this is your account, use the Forgot Password option to reset your password. Otherwise, please use a different email address to create a new account.`
+  );
+  setErrorDialogOpen(true);
+  toast({
+        title: 'Registration Failed',
+        description: signUpError.message,
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return null;
+}
+    if (signUpError) {
+  setErrorMessage(signUpError.message);
+  setErrorDialogOpen(true);
+  toast({
+        title: 'Registration Failed',
+        description: signUpError.message,
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return null;
+}
     if (signUpError) {
       rollbar.warning("Signup Failed", {
   message: signUpError.message,
@@ -4089,6 +4115,36 @@ const earlyCompleteRegistration = async () => {
           </div>
         </form>
       </div>
+
+
+      <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <div className="flex flex-col items-center gap-4 py-4">
+            {/* Red Circle with Icon */}
+            <div className="rounded-full bg-red-100 p-3">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+      
+            {/* Content */}
+            <div className="text-center space-y-2">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
+                Registration Failed
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                {errorMessage}
+              </DialogDescription>
+            </div>
+      
+            {/* Single Action Button */}
+            <Button
+              onClick={() => setErrorDialogOpen(false)}
+              className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white rounded-lg"
+            >
+              Dismiss
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <SuccessPopup 
         isOpen={showSuccessPopup}

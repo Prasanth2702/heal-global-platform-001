@@ -13,6 +13,7 @@ interface Payment {
     appointment_date: string;
     type: string;
     doctor: {
+      prefix: string;
       first_name: string;
       last_name: string;
       medical_speciality: string;
@@ -72,7 +73,8 @@ const appointmentIds = paymentsData
         medical_speciality,
         profiles!user_id (
           first_name,
-          last_name
+          last_name,
+          prefix
         )
       `)
       .in('user_id', doctorIds);
@@ -94,6 +96,7 @@ const appointmentIds = paymentsData
           appointment_date: appointment?.appointment_date || '',
           type: appointment?.type || '',
           doctor: {
+            prefix: doctor?.profiles?.prefix || 'Dr.',
             first_name: doctor?.profiles?.first_name || 'N/A',
             last_name: doctor?.profiles?.last_name || '',
             medical_speciality: doctor?.medical_speciality || 'General',
@@ -190,7 +193,7 @@ const appointmentIds = paymentsData
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Doctor:</span>
-                <span>Dr. {selectedReceipt.appointment.doctor.first_name} {selectedReceipt.appointment.doctor.last_name}</span>
+                <span>{selectedReceipt.appointment.doctor.prefix?.charAt(0)?.toUpperCase() + selectedReceipt.appointment.doctor.prefix?.slice(1) || ''} {selectedReceipt.appointment.doctor.first_name} {selectedReceipt.appointment.doctor.last_name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Specialty:</span>

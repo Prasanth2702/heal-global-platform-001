@@ -4157,6 +4157,7 @@ export interface Doctor {
   user_id: string;
   name: string;
   specialty: string;
+  prefix?: string;
   rating: number;
   experience: string;
   location?: string;
@@ -4422,6 +4423,7 @@ const toArray = (value: any): any[] => {
       const { data, error } = await supabase.from("medical_professionals").select(`
         *,
         medical_professionals_user_id_fkey (
+        prefix,
           first_name,
           last_name,
           avatar_url,
@@ -4433,11 +4435,12 @@ const toArray = (value: any): any[] => {
       if (error) throw error;
       const mapped = data.map((item: any) => {
         const fullName = item.medical_professionals_user_id_fkey
-          ? `${item.medical_professionals_user_id_fkey.first_name || ""} ${item.medical_professionals_user_id_fkey.last_name || ""}`.trim()
+          ? `${item.medical_professionals_user_id_fkey.prefix?.charAt(0)?.toUpperCase() + item.medical_professionals_user_id_fkey.prefix?.slice(1) || ''} ${item.medical_professionals_user_id_fkey.first_name || ""} ${item.medical_professionals_user_id_fkey.last_name || ""}`.trim()
           : "Unknown Doctor";
         return {
           id: item.id,
           user_id: item.medical_professionals_user_id_fkey?.user_id || "",
+          prefix: item.medical_professionals_user_id_fkey?.prefix || "",
           name: fullName,
           specialty: item.medical_speciality,
           rating: item.rating || 0,
@@ -4937,7 +4940,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
     if (doctor.user_id) {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("first_name,last_name, profile_id")
+        .select("first_name,last_name, profile_id ,prefix")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -4952,7 +4955,7 @@ const handleViewDoctorProfile = async (doctorId: string) => {
       }
 
       // name
-      profileName = `${profileData?.first_name || ""} ${profileData?.last_name || ""}`.trim();
+      profileName = `${profileData?.prefix?.charAt(0)?.toUpperCase() + profileData?.prefix?.slice(1) || ''} ${profileData?.first_name || ""} ${profileData?.last_name || ""}`.trim();
     }
 
     // slug

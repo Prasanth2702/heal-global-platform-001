@@ -1488,6 +1488,7 @@ interface DoctorFullDetails {
     email: string;
     phone_number: string;
     avatar_url?: string;
+    prefix?: string;
   };
 }
 
@@ -1721,7 +1722,7 @@ const VideoMeeting = ({
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("first_name, last_name, email, phone_number, avatar_url")
+        .select("first_name, last_name, email, phone_number, avatar_url, prefix")
         .eq("user_id", doctorUserId)
         .single();
 
@@ -2095,7 +2096,7 @@ if (type === "facility" && !facilityDetails) return null;
             )}
             {type === "doctor" && d && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "12px" }}>
-                <div><strong>Name:</strong> Dr. {d.profile?.first_name} {d.profile?.last_name}</div>
+                <div><strong>Name:</strong> { d.profile.prefix.charAt(0).toUpperCase() + d.profile.prefix.slice(1)} {d.profile?.first_name} {d.profile?.last_name}</div>
                 <div><strong>Specialty:</strong> {d.medical_speciality}</div>
                 <div><strong>License:</strong> {d.license_number}</div>
                 <div><strong>Experience:</strong> {d.years_experience} years</div>

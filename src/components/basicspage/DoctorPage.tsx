@@ -34,6 +34,7 @@ interface Doctor {
   email?: string;
   phone_number?: string;
   avatar_url?: string;
+  prefix?: string;
   // Derived fields
   name?: string;
   role?: string;
@@ -139,7 +140,7 @@ const DoctorPage: React.FC = () => {
     if (userIds.length > 0) {
       const profilePromise = supabase
         .from('profiles')
-        .select('user_id, first_name, last_name, email, phone_number, avatar_url')
+        .select('user_id, first_name, last_name, email, phone_number, avatar_url, prefix')
         .in('user_id', userIds);
       
       const { data, error } = await profilePromise;
@@ -185,7 +186,8 @@ const DoctorPage: React.FC = () => {
       // Build doctor name
       const firstName = profile.first_name || '';
       const lastName = profile.last_name || '';
-      const doctorName = `Dr. ${firstName} ${lastName}`.trim();
+      const prefix = profile.prefix || '';
+      const doctorName = `${prefix.charAt(0).toUpperCase() + prefix.slice(1)} ${firstName} ${lastName}`.trim();
       
       // Build hospital address
       const hospitalAddress = facility.address || 
@@ -205,6 +207,7 @@ const DoctorPage: React.FC = () => {
         name: doctorName,
         first_name: firstName,
         last_name: lastName,
+        prefix: profile.prefix || '',
         email: profile.email,
         phone_number: profile.phone_number,
         image: profile.avatar_url || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=random`,

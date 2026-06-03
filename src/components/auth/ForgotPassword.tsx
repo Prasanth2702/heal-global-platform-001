@@ -3484,79 +3484,122 @@ const ForgotPassword = () => {
   const [profileInfo, setProfileInfo] = useState<{ role: string | null; exists: boolean }>({ role: null, exists: false });
 
   // Check if we have a recovery token in the URL hash (Supabase puts it there)
-  useEffect(() => {
+//   useEffect(() => {
+//     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+//     const accessToken = hashParams.get("access_token");
+//     const refreshToken = hashParams.get("refresh_token");
+//     const type = hashParams.get("type");
+
+//     // if (accessToken && type === "recovery") {
+//     //   // Set session explicitly
+//     //   supabase.auth.setSession({
+//     //     access_token: accessToken,
+//     //     refresh_token: refreshToken || "",
+//     //   }).then(({ error }) => {
+//     //     if (error) {
+//     //       console.error("Session error:", error);
+//     //       toast({
+//     //         title: "Invalid or expired link",
+//     //         description: "Please request a new password reset link.",
+//     //         variant: "destructive",
+//     //       });
+//     //       navigate(`/login/${userType}`);
+//     //     } else {
+//     //       setStep("newPassword");
+//     //     }
+//     //   });
+//     // }
+
+//     if (accessToken && type === "recovery") {
+//   supabase.auth.setSession({
+//     access_token: accessToken,
+//     refresh_token: refreshToken || "",
+//   }).then(async ({ error }) => {
+//     if (error) {
+//       toast({
+//         title: "Invalid or expired link",
+//         description: "Please request a new password reset link.",
+//         variant: "destructive",
+//       });
+
+//       navigate(`/login/${userType}`);
+//       return;
+//     }
+
+//     try {
+//       // Get authenticated user
+//       const {
+//         data: { user },
+//       } = await supabase.auth.getUser();
+
+//       const userEmail = user?.email?.toLowerCase();
+
+//       if (!userEmail) {
+//         throw new Error("User email not found");
+//       }
+
+//       // Fetch role from profiles
+//       const { data: profile, error: profileError } = await supabase
+//         .from("profiles")
+//         .select("role")
+//         .eq("email", userEmail)
+//         .single();
+
+//       if (profileError || !profile) {
+//         throw new Error("Profile not found");
+//       }
+
+//       const allowedRoles = getAllowedRoles();
+
+//       if (!allowedRoles.includes(profile.role)) {
+//         toast({
+//           title: "Portal Mismatch",
+//           description: `This account belongs to ${getFriendlyRoleName(
+//             profile.role
+//           )}. Please use the correct portal.`,
+//           variant: "destructive",
+//         });
+
+//         navigate(`/login/${userType}`);
+//         return;
+//       }
+
+//       // Role matched
+//       setStep("newPassword");
+//     } catch (err) {
+//       console.error(err);
+
+//       toast({
+//         title: "Verification Failed",
+//         description: "Unable to verify account information.",
+//         variant: "destructive",
+//       });
+
+//       navigate(`/login/${userType}`);
+//     }
+//   });
+// }
+
+//   }, [userType, navigate, toast]);
+
+useEffect(() => {
+  const handleRecovery = async () => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
     const accessToken = hashParams.get("access_token");
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
 
-    // if (accessToken && type === "recovery") {
-    //   // Set session explicitly
-    //   supabase.auth.setSession({
-    //     access_token: accessToken,
-    //     refresh_token: refreshToken || "",
-    //   }).then(({ error }) => {
-    //     if (error) {
-    //       console.error("Session error:", error);
-    //       toast({
-    //         title: "Invalid or expired link",
-    //         description: "Please request a new password reset link.",
-    //         variant: "destructive",
-    //       });
-    //       navigate(`/login/${userType}`);
-    //     } else {
-    //       setStep("newPassword");
-    //     }
-    //   });
-    // }
-
     if (accessToken && type === "recovery") {
-  supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken || "",
-  }).then(async ({ error }) => {
-    if (error) {
-      toast({
-        title: "Invalid or expired link",
-        description: "Please request a new password reset link.",
-        variant: "destructive",
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken || "",
       });
 
-      navigate(`/login/${userType}`);
-      return;
-    }
-
-    try {
-      // Get authenticated user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const userEmail = user?.email?.toLowerCase();
-
-      if (!userEmail) {
-        throw new Error("User email not found");
-      }
-
-      // Fetch role from profiles
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("email", userEmail)
-        .single();
-
-      if (profileError || !profile) {
-        throw new Error("Profile not found");
-      }
-
-      const allowedRoles = getAllowedRoles();
-
-      if (!allowedRoles.includes(profile.role)) {
+      if (error) {
         toast({
-          title: "Portal Mismatch",
-          description: `This account belongs to ${getFriendlyRoleName(
-            profile.role
-          )}. Please use the correct portal.`,
+          title: "Invalid or expired link",
+          description: "Please request a new password reset link.",
           variant: "destructive",
         });
 
@@ -3564,23 +3607,97 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Role matched
-      setStep("newPassword");
-    } catch (err) {
-      console.error(err);
+      // Get authenticated user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      toast({
-        title: "Verification Failed",
-        description: "Unable to verify account information.",
-        variant: "destructive",
+      const email = user?.email?.toLowerCase();
+
+      if (!email) {
+        navigate("/login/patient");
+        return;
+      }
+
+      // Get profile role
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("email", email)
+        .single();
+
+      if (profileError || !profile) {
+        navigate("/login/patient");
+        return;
+      }
+
+      // Store profile info
+      setProfileInfo({
+        role: profile.role,
+        exists: true,
       });
 
-      navigate(`/login/${userType}`);
-    }
-  });
-}
+      // Validate portal against role
+      let roleMatched = false;
 
-  }, [userType, navigate, toast]);
+      switch (profile.role) {
+        case "patient":
+          roleMatched = userType === "patient";
+          break;
+
+        case "doctor":
+          roleMatched = userType === "doctor";
+          break;
+
+        case "hospital_admin":
+          roleMatched =
+            userType === "facility" ||
+            userType === "facility-admin";
+          break;
+
+        case "hospital_staff":
+          roleMatched =
+            userType === "facility" ||
+            userType === "facility-staff";
+          break;
+
+        case "admin":
+          roleMatched = userType === "admin";
+          break;
+      }
+
+      if (!roleMatched) {
+        toast({
+          title: "Incorrect Portal",
+          description: `This account belongs to ${profile.role.replace(
+            "_",
+            " "
+          )}. Redirecting to the correct password reset page.`,
+          variant: "destructive",
+        });
+
+        const roleRouteMap: Record<string, string> = {
+          patient: "/forgot-password/patient",
+          doctor: "/forgot-password/doctor",
+          hospital_admin: "/forgot-password/facility-admin",
+          hospital_staff: "/forgot-password/facility-staff",
+          admin: "/forgot-password/admin",
+        };
+
+        setTimeout(() => {
+          navigate(roleRouteMap[profile.role] || "/forgot-password/patient");
+        }, 1500);
+
+        return;
+      }
+
+      // Correct portal
+      setStep("newPassword");
+    }
+  };
+
+  handleRecovery();
+}, [userType, navigate, toast]);
 
   // const userTypeConfig: Record<
   //   string,

@@ -3490,25 +3490,96 @@ const ForgotPassword = () => {
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
 
+    // if (accessToken && type === "recovery") {
+    //   // Set session explicitly
+    //   supabase.auth.setSession({
+    //     access_token: accessToken,
+    //     refresh_token: refreshToken || "",
+    //   }).then(({ error }) => {
+    //     if (error) {
+    //       console.error("Session error:", error);
+    //       toast({
+    //         title: "Invalid or expired link",
+    //         description: "Please request a new password reset link.",
+    //         variant: "destructive",
+    //       });
+    //       navigate(`/login/${userType}`);
+    //     } else {
+    //       setStep("newPassword");
+    //     }
+    //   });
+    // }
+
     if (accessToken && type === "recovery") {
-      // Set session explicitly
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || "",
-      }).then(({ error }) => {
-        if (error) {
-          console.error("Session error:", error);
-          toast({
-            title: "Invalid or expired link",
-            description: "Please request a new password reset link.",
-            variant: "destructive",
-          });
-          navigate(`/login/${userType}`);
-        } else {
-          setStep("newPassword");
-        }
+  supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken || "",
+  }).then(async ({ error }) => {
+    if (error) {
+      toast({
+        title: "Invalid or expired link",
+        description: "Please request a new password reset link.",
+        variant: "destructive",
       });
+
+      navigate(`/login/${userType}`);
+      return;
     }
+
+    try {
+      // Get authenticated user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const userEmail = user?.email?.toLowerCase();
+
+      if (!userEmail) {
+        throw new Error("User email not found");
+      }
+
+      // Fetch role from profiles
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("email", userEmail)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error("Profile not found");
+      }
+
+      const allowedRoles = getAllowedRoles();
+
+      if (!allowedRoles.includes(profile.role)) {
+        toast({
+          title: "Portal Mismatch",
+          description: `This account belongs to ${getFriendlyRoleName(
+            profile.role
+          )}. Please use the correct portal.`,
+          variant: "destructive",
+        });
+
+        navigate(`/login/${userType}`);
+        return;
+      }
+
+      // Role matched
+      setStep("newPassword");
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: "Verification Failed",
+        description: "Unable to verify account information.",
+        variant: "destructive",
+      });
+
+      navigate(`/login/${userType}`);
+    }
+  });
+}
+
   }, [userType, navigate, toast]);
 
   // const userTypeConfig: Record<

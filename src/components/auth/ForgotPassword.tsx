@@ -3666,6 +3666,14 @@ useEffect(() => {
           break;
       }
 
+      const roleRouteMap: Record<string, string> = {
+        patient: "/forgot-password/patient",
+        doctor: "/forgot-password/doctor",
+        hospital_admin: "/forgot-password/facility-admin",
+        hospital_staff: "/forgot-password/facility-staff",
+        admin: "/forgot-password/admin",
+      };
+
       if (!roleMatched) {
         toast({
           title: "Incorrect Portal",
@@ -3676,22 +3684,14 @@ useEffect(() => {
           variant: "destructive",
         });
 
-        const roleRouteMap: Record<string, string> = {
-          patient: "/forgot-password/patient",
-          doctor: "/forgot-password/doctor",
-          hospital_admin: "/forgot-password/facility-admin",
-          hospital_staff: "/forgot-password/facility-staff",
-          admin: "/forgot-password/admin",
-        };
-
         setTimeout(() => {
-          navigate(roleRouteMap[profile.role] || "/forgot-password/patient");
+          navigate(roleRouteMap[profile.role]);
         }, 1500);
-
-        return;
+        
+        return; // ✅ Stop execution here - don't proceed to setStep
       }
 
-      // Correct portal
+      // ✅ Correct portal - only reach this line if role matches
       setStep("newPassword");
     }
   };
@@ -3863,6 +3863,14 @@ const userTypeConfig: Record<
 
   const handleSendResetEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+ if (!email || !email.includes('@')) {
+    toast({
+      title: "Invalid email",
+      description: `Please enter a valid email address "@".`,
+      variant: "destructive",
+    });
+    return;
+  }
 
     mixpanelInstance.track("Forgot Password - Send Reset Attempt", { email, userType });
     setLoading(true);
@@ -3910,7 +3918,7 @@ const userTypeConfig: Record<
         variant: "destructive",
       });
     } finally {
-      // setLoading(false);
+      setLoading(false);
     }
   };
 

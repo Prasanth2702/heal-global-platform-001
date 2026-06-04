@@ -25,7 +25,6 @@ const NewPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profileInfo, setProfileInfo] = useState<{ role: string | null; exists: boolean }>({ role: null, exists: false });
@@ -54,10 +53,6 @@ const NewPassword = () => {
 
         const email = user?.email?.toLowerCase();
 
-        if (!email) {
-          navigate("/login/patient");
-          return;
-        }
 
         // Get profile role
         const { data: profile, error: profileError } = await supabase
@@ -66,10 +61,7 @@ const NewPassword = () => {
           .eq("email", email)
           .single();
 
-        if (profileError || !profile) {
-          navigate("/login/patient");
-          return;
-        }
+        
 
         // Store profile info
         setProfileInfo({
@@ -247,66 +239,6 @@ const NewPassword = () => {
     return { role: data.role, exists: true };
   };
 
-  const handleSendResetEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: `Please enter a valid email address "@".`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    mixpanelInstance.track("Forgot Password - Send Reset Attempt", { email, userType });
-    setLoading(true);
-
-    try {
-      const profileData = await getProfileInfo(email);
-      setProfileInfo(profileData);
-      
-      const emailExists = await checkEmailInProfiles(email);
-      
-      const isStaff = userType === "hospital_staff";
-
-      const redirectUrl = isStaff
-        ? `${window.location.origin}/set-password?type=recovery&userType=${userType}`
-        : `${window.location.origin}/forgot-password/${userType}`;
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) {
-        console.error("Supabase reset error:", error);
-        toast({
-          title: "Failed to send reset email",
-          description: error.message || "An error occurred. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setResetSent(true);
-      toast({
-        title: "Reset Email Sent",
-        description: "Check your email for the password reset link. The link will expire in 1 hour.",
-        duration: 6000,
-      });
-      mixpanelInstance.track("Forgot Password - Reset Email Sent", { email, userType });
-    } catch (error: any) {
-      console.error("Error sending reset email:", error);
-      rollbar.error("Forgot Password - Send Reset Error", error);
-      toast({
-        title: "Failed to send reset email",
-        description: error.message || "An error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -526,7 +458,6 @@ const NewPassword = () => {
           </Button>
         </form>
 
-        {!resetSent && (
           <Card className="bg-muted/50">
             <CardContent className="pt-4 pb-3 px-4">
               <div className="flex items-start gap-2 text-sm">
@@ -540,7 +471,7 @@ const NewPassword = () => {
               </div>
             </CardContent>
           </Card>
-        )}
+        
       </div>
     </AuthLayout>
   );

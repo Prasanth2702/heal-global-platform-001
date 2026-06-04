@@ -4866,115 +4866,142 @@ const ForgotPassword = () => {
   const [profileInfo, setProfileInfo] = useState<{ role: string | null; exists: boolean }>({ role: null, exists: false });
   const [verifiedEmail, setVerifiedEmail] = useState<string>(""); // New state for verified email
 
-  useEffect(() => {
-    const handleRecovery = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  // useEffect(() => {
+  //   const handleRecovery = async () => {
+  //     const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const type = hashParams.get("type");
+  //     const accessToken = hashParams.get("access_token");
+  //     const refreshToken = hashParams.get("refresh_token");
+  //     const type = hashParams.get("type");
 
-      if (accessToken && type === "recovery") {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || "",
-        });
+  //     if (accessToken && type === "recovery") {
+  //       const { error } = await supabase.auth.setSession({
+  //         access_token: accessToken,
+  //         refresh_token: refreshToken || "",
+  //       });
 
-        if (error) {
-          toast({
-            title: "Invalid or expired link",
-            description: "Please request a new password reset link.",
-            variant: "destructive",
-          });
+  //       if (error) {
+  //         toast({
+  //           title: "Invalid or expired link",
+  //           description: "Please request a new password reset link.",
+  //           variant: "destructive",
+  //         });
 
-          navigate(`/login/${userType}`);
-          return;
-        }
+  //         navigate(`/login/${userType}`);
+  //         return;
+  //       }
 
-        // Get authenticated user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+  //       // Get authenticated user
+  //       const {
+  //         data: { user },
+  //       } = await supabase.auth.getUser();
 
-        const email = user?.email?.toLowerCase();
+  //       const email = user?.email?.toLowerCase();
 
-        if (!email) {
-          navigate("/login/patient");
-          return;
-        }
+  //       if (!email) {
+  //         navigate("/login/patient");
+  //         return;
+  //       }
 
-        // Get profile role
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("email", email)
-          .single();
+  //       // Get profile role
+  //       const { data: profile, error: profileError } = await supabase
+  //         .from("profiles")
+  //         .select("role")
+  //         .eq("email", email)
+  //         .single();
 
-        if (profileError || !profile) {
-          navigate("/login/patient");
-          return;
-        }
+  //       if (profileError || !profile) {
+  //         navigate("/login/patient");
+  //         return;
+  //       }
 
-        // Store profile info
-        setProfileInfo({
-          role: profile.role,
-          exists: true,
-        });
+  //       // Store profile info
+  //       setProfileInfo({
+  //         role: profile.role,
+  //         exists: true,
+  //       });
 
-        // Validate portal against role
-        let roleMatched = false;
+  //       // Validate portal against role
+  //       let roleMatched = false;
 
-        switch (profile.role) {
-          case "patient":
-            roleMatched = userType === "patient";
-            break;
+  //       switch (profile.role) {
+  //         case "patient":
+  //           roleMatched = userType === "patient";
+  //           break;
 
-          case "doctor":
-            roleMatched = userType === "doctor";
-            break;
+  //         case "doctor":
+  //           roleMatched = userType === "doctor";
+  //           break;
 
-          case "hospital_admin":
-            roleMatched =
-              userType === "facility" ||
-              userType === "facility-admin";
-            break;
+  //         case "hospital_admin":
+  //           roleMatched =
+  //             userType === "facility" ||
+  //             userType === "facility-admin";
+  //           break;
 
-          case "hospital_staff":
-            roleMatched =
-              userType === "facility" ||
-              userType === "facility-staff";
-            break;
+  //         case "hospital_staff":
+  //           roleMatched =
+  //             userType === "facility" ||
+  //             userType === "facility-staff";
+  //           break;
 
-          case "admin":
-            roleMatched = userType === "admin";
-            break;
-        }
+  //         case "admin":
+  //           roleMatched = userType === "admin";
+  //           break;
+  //       }
 
-        const roleRouteMap: Record<string, string> = {
-          patient: "/new-password/patient",
-          doctor: "/new-password/doctor",
-          hospital_admin: "/new-password/facility-admin",
-          hospital_staff: "/new-password/facility-staff",
-          admin: "/new-password/admin",
-        };
+  //       const roleRouteMap: Record<string, string> = {
+  //         patient: "/new-password/patient",
+  //         doctor: "/new-password/doctor",
+  //         hospital_admin: "/new-password/facility-admin",
+  //         hospital_staff: "/new-password/facility-staff",
+  //         admin: "/new-password/admin",
+  //       };
 
-        if (!roleMatched) {
+  //       if (!roleMatched) {
           
 
-          setTimeout(() => {
-            navigate(roleRouteMap[profile.role]);
-          }, 1500);
+  //         setTimeout(() => {
+  //           navigate(roleRouteMap[profile.role]);
+  //         }, 1500);
           
-          return;
-        }
+  //         return;
+  //       }
 
-        // Correct portal - store the verified email and proceed
-        setVerifiedEmail(email); 
-      }
-    };
+  //       // Correct portal - store the verified email and proceed
+  //       setVerifiedEmail(email); 
+  //     }
+  //   };
 
-    handleRecovery();
-  }, [userType, navigate, toast]);
+  //   handleRecovery();
+  // }, [userType, navigate, toast]);
+
+  //   useEffect(() => {
+  //   const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  //   const accessToken = hashParams.get("access_token");
+  //   const refreshToken = hashParams.get("refresh_token");
+  //   const type = hashParams.get("type");
+
+  //   if (accessToken && type === "recovery") {
+  //     // Set session explicitly
+  //     supabase.auth.setSession({
+  //       access_token: accessToken,
+  //       refresh_token: refreshToken || "",
+  //     }).then(({ error }) => {
+  //       if (error) {
+  //         console.error("Session error:", error);
+  //         toast({
+  //           title: "Invalid or expired link",
+  //           description: "Please request a new password reset link.",
+  //           variant: "destructive",
+  //         });
+  //         navigate(`/login/${userType}`);
+  //       } else {
+  //         navigate(`/new-password/${userType}`);
+  //       }
+  //     });
+  //   }
+  // }, [userType, navigate, toast]);
 
   const userTypeConfig: Record<
     string,
@@ -5117,7 +5144,7 @@ const ForgotPassword = () => {
 
       const redirectUrl = isStaff
         ? `${window.location.origin}/set-password?type=recovery&userType=${userType}`
-        : `${window.location.origin}/forgot-password/${userType}`;
+        : `${window.location.origin}/new-password/${userType}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectUrl,

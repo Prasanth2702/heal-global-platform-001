@@ -422,7 +422,7 @@ const Footer = () => {
                 </li>
                 <li className="mb-2 d-flex align-items-center">
                   <PhoneIcon size={18} className="text-primary me-2 flex-shrink-0" />
-                  <span className="text-white-50">+91 98868 81149</span>
+                  <span className="text-white-50">{import.meta.env.VITE_SUPPORT_PHONE_NUMBER}</span>
                 </li>
                 <li className="mb-2 d-flex align-items-center">
                   <MailIcon size={18} className="text-primary me-2 flex-shrink-0" />

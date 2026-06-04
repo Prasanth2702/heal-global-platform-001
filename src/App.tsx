@@ -235,9 +235,13 @@ const App = () => {
                     element={<MyDocumentsView />}
                   />
                   <Route
-                    path="/dashboard/patient/chat-history"
+                    path="/dashboard/patient/communication-history"
                     element={<PatientChatHistoryView />}
                   />
+                  {/* <Route
+                    path="/dashboard/patient/chat-history"
+                    element={<PatientChatHistoryView />}
+                  /> */}
                   {/* <Route
                     path="/dashboard/patient/my_bed_bookings"
                     element={<PatientDetailsPage />}

@@ -245,10 +245,15 @@ const checkBedManagementDepartment = async () => {
           icon: DownloadCloudIcon,
         },
         {
-          path: "/dashboard/patient/chat-history",
-          label: "My Chat History",
+          path: "/dashboard/patient/communication-history",
+          label: "Communication History",
           icon: History,
         },
+        // {
+        //   path: "/dashboard/patient/chat-history",
+        //   label: "My Chat History",
+        //   icon: History,
+        // },
       ],
   //     routes1: [
   //     {

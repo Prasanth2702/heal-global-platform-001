@@ -480,10 +480,10 @@ const [showContactPopup, setShowContactPopup]  = useState(false);
           <PhoneIcon className="h-5 w-5 text-primary" />
 
           <a
-            href="tel:+919886499994"
+            href={`tel:${import.meta.env.VITE_SUPPORT_PHONE_NUMBER}`}
             className="text-xl font-medium text-primary underline"
           >
-            +91 98864 99994
+           {import.meta.env.VITE_SUPPORT_PHONE_NUMBER}
           </a>
         </div>
           </div>

@@ -1074,7 +1074,7 @@ if (activeTab !== "overview") {
 
 <p className="flex items-center justify-center">
   <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
-  <span className="text-primary">+91 98868 81149</span>
+  <span className="text-primary">{import.meta.env.VITE_SUPPORT_PHONE_NUMBER}</span>
 </p>
 
 
@@ -1343,8 +1343,11 @@ if (activeTab !== "overview") {
     </DialogHeader>
     <div className="flex items-center justify-center space-x-2 py-4">
       <PhoneIcon className="h-5 w-5 text-primary" />
-      <a href="tel:+919886499994" className="text-lg font-medium text-primary underline">
-        +91 98864 99994
+      <a
+        href={`tel:${import.meta.env.VITE_SUPPORT_PHONE_NUMBER}`}
+        className="text-lg font-medium text-primary underline"
+      >
+        {import.meta.env.VITE_SUPPORT_PHONE_NUMBER}
       </a>
     </div>
     <DialogFooter>

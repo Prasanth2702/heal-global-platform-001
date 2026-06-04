@@ -411,7 +411,7 @@ const { data: sessionData } = await supabase.auth.getSession();
 
 <p className="flex items-center justify-center">
   <PhoneIcon size={18} className="text-primary mr-2 flex-shrink-0" />
-  <span className="text-primary">+91 98868 81149</span>
+  <span className="text-primary">{import.meta.env.VITE_SUPPORT_PHONE_NUMBER}</span>
 </p>
         </div>
       )}

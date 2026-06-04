@@ -3545,8 +3545,11 @@ const getSubmitHandler = () => {
           </DialogHeader>
           <div className="flex items-center justify-center space-x-2 py-6">
             <PhoneIcon className="h-5 w-5 text-primary" />
-            <a href="tel:+919886499994" className="text-xl font-medium text-primary underline">
-              +91 98864 99994
+            <a
+              href={`tel:${import.meta.env.VITE_SUPPORT_PHONE_NUMBER}`}
+              className="text-xl font-medium text-primary underline"
+            >
+              {import.meta.env.VITE_SUPPORT_PHONE_NUMBER}
             </a>
           </div>
           <DialogFooter>

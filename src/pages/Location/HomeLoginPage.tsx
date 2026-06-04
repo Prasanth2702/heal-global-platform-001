@@ -1478,7 +1478,7 @@ const Sidebar = () => (
               </div>
               <h5 className="fw-bold mb-2">Emergency</h5>
               <p className="text-muted mb-2">24/7 Helpline</p>
-              <h4 className="text-primary">+91 98868 81149</h4>
+              <h4 className="text-primary">{import.meta.env.VITE_SUPPORT_PHONE_NUMBER}</h4>
             </div>
           </div>
           

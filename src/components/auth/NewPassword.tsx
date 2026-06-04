@@ -1,6 +1,3 @@
-// export default ForgotPassword;
-
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,48 +8,72 @@ import AuthLayout from "./AuthLayout";
 import { supabase } from "@/integrations/supabase/client";
 import mixpanelInstance from "@/utils/mixpanel";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Mail, ArrowLeft, Loader2, EyeOff, Eye, AlertTriangle } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, EyeOff, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import rollbar from "@/lib/rollbar";
-
 
 const NewPassword = () => {
   const { userType } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [profileInfo, setProfileInfo] = useState<{ role: string | null; exists: boolean }>({ role: null, exists: false });
-  const [verifiedEmail, setVerifiedEmail] = useState<string>(""); // New state for verified email
+  const [verifiedEmail, setVerifiedEmail] = useState<string>("");
+  const [isValidSession, setIsValidSession] = useState(false);
 
   useEffect(() => {
     const handleRecovery = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const type = hashParams.get("type");
 
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const type = hashParams.get("type");
+        // If we have recovery tokens in the URL, set the session
+        if (accessToken && type === "recovery") {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || "",
+          });
 
-      if (accessToken && type === "recovery") {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || "",
-        });
+          if (sessionError) {
+            console.error("Session error:", sessionError);
+            toast({
+              title: "Invalid or expired link",
+              description: "Please request a new password reset link.",
+              variant: "destructive",
+            });
+            navigate(`/forgot-password/${userType}`);
+            return;
+          }
+        }
 
-    
-
-        // Get authenticated user
+        // Get the current authenticated user
         const {
           data: { user },
+          error: userError,
         } = await supabase.auth.getUser();
 
-        const email = user?.email?.toLowerCase();
+        if (userError || !user) {
+          console.error("User error:", userError);
+          toast({
+            title: "Session expired",
+            description: "Please request a new password reset link.",
+            variant: "destructive",
+          });
+          navigate(`/forgot-password/${userType}`);
+          return;
+        }
 
+        const email = user.email?.toLowerCase();
+        
+        if (!email) {
+          navigate(`/login/${userType}`);
+          return;
+        }
 
         // Get profile role
         const { data: profile, error: profileError } = await supabase
@@ -61,13 +82,16 @@ const NewPassword = () => {
           .eq("email", email)
           .single();
 
-        
-
-        // Store profile info
-        setProfileInfo({
-          role: profile.role,
-          exists: true,
-        });
+        if (profileError || !profile) {
+          console.error("Profile error:", profileError);
+          toast({
+            title: "Account not found",
+            description: "No account found with this email address.",
+            variant: "destructive",
+          });
+          navigate(`/forgot-password/${userType}`);
+          return;
+        }
 
         // Validate portal against role
         let roleMatched = false;
@@ -76,23 +100,15 @@ const NewPassword = () => {
           case "patient":
             roleMatched = userType === "patient";
             break;
-
           case "doctor":
             roleMatched = userType === "doctor";
             break;
-
           case "hospital_admin":
-            roleMatched =
-              userType === "facility" ||
-              userType === "facility-admin";
+            roleMatched = userType === "facility" || userType === "facility-admin";
             break;
-
           case "hospital_staff":
-            roleMatched =
-              userType === "facility" ||
-              userType === "facility-staff";
+            roleMatched = userType === "facility" || userType === "facility-staff";
             break;
-
           case "admin":
             roleMatched = userType === "admin";
             break;
@@ -107,16 +123,30 @@ const NewPassword = () => {
         };
 
         if (!roleMatched) {
+          toast({
+            title: "Redirecting",
+            description: `You are being redirected to the ${profile.role} portal.`,
+            variant: "default",
+          });
           
           setTimeout(() => {
             navigate(roleRouteMap[profile.role]);
           }, 1500);
-          
           return;
         }
 
-        // Correct portal - store the verified email and proceed
-        setVerifiedEmail(email); 
+        // Valid session and role match
+        setVerifiedEmail(email);
+        setIsValidSession(true);
+        
+      } catch (error) {
+        console.error("Recovery error:", error);
+        toast({
+          title: "Error",
+          description: "An error occurred. Please request a new password reset link.",
+          variant: "destructive",
+        });
+        navigate(`/forgot-password/${userType}`);
       }
     };
 
@@ -126,67 +156,39 @@ const NewPassword = () => {
   const userTypeConfig: Record<
     string,
     {
-      emailTitle: string;
-      emailDescription: string;
       passwordTitle: string;
       passwordDescription: string;
-      successTitle: string;
-      successDescription: string;
       variant: "patient" | "doctor" | "facility" | "admin";
     }
   > = {
     patient: {
-      emailTitle: "Reset Patient Password",
-      emailDescription: "Enter your email to receive a password reset link for your patient account",
       passwordTitle: "Create New Patient Password",
       passwordDescription: "Choose a strong password to secure your health dashboard",
-      successTitle: "Patient Password Reset requested!",
-      successDescription: "",
       variant: "patient",
     },
     doctor: {
-      emailTitle: "Reset Medical Professional Password",
-      emailDescription: "Enter your email to receive a reset link for your medical professional account",
       passwordTitle: "Create New Medical Professional Password",
       passwordDescription: "Choose a strong password to secure your practice management dashboard",
-      successTitle: "Medical Professional Password Reset requested!",
-      successDescription: "",
       variant: "doctor",
     },
     facility: {
-      emailTitle: "Reset Medical Facility Password",
-      emailDescription: "Enter your email to receive a reset link for your facility management account",
       passwordTitle: "Create New Facility Password",
       passwordDescription: "Choose a strong password to secure your facility management dashboard",
-      successTitle: "Facility Password Reset requested!",
-      successDescription: "",
       variant: "facility",
     },
     "facility-admin": {
-      emailTitle: "Reset Facility Admin Password",
-      emailDescription: "Enter your email to receive a reset link for your facility admin account",
       passwordTitle: "Create New Admin Password",
       passwordDescription: "Choose a strong password to secure your facility administration access",
-      successTitle: "Facility Admin Password Reset requested!",
-      successDescription: "",
       variant: "facility",
     },
     "facility-staff": {
-      emailTitle: "Reset Facility Staff Password",
-      emailDescription: "Enter your email to receive a reset link for your staff account",
       passwordTitle: "Create New Staff Password",
       passwordDescription: "Choose a strong password to secure your assigned operations access",
-      successTitle: "Facility Staff Password Reset requested!",
-      successDescription: "",
       variant: "facility",
     },
     admin: {
-      emailTitle: "Reset Admin Password",
-      emailDescription: "Enter your email to receive a reset link for your administrator account",
       passwordTitle: "Create New Admin Password",
       passwordDescription: "Choose a strong password to secure your platform administration access",
-      successTitle: "Admin Password Reset requested!",
-      successDescription: "",
       variant: "admin",
     },
   };
@@ -195,50 +197,9 @@ const NewPassword = () => {
     userTypeConfig[userType as keyof typeof userTypeConfig] ||
     userTypeConfig.patient;
 
-  const getAllowedRoles = (): string[] => {
-    if (userType === "facility" || userType === "facility-admin" || userType === "facility-staff") {
-      return ["hospital_admin", "hospital_staff"];
-    }
-    return [userType || "patient"];
-  };
-
   useEffect(() => {
-    mixpanelInstance.track("Forgot Password Page Viewed", { userType });
+    mixpanelInstance.track("New Password Page Viewed", { userType });
   }, [userType]);
-
-  const checkEmailInProfiles = async (email: string): Promise<boolean> => {
-    const lowerCaseEmail = email.toLowerCase();
-
-    let query = supabase
-      .from("profiles")
-      .select("email")
-      .eq("email", lowerCaseEmail);
-
-    const { data, error } = await query.maybeSingle();
-    if (error) {
-      console.error("Error checking email:", error);
-      return false;
-    }
-    return !!data;
-  };
-
-  const getProfileInfo = async (email: string): Promise<{ role: string | null; exists: boolean }> => {
-    const lowerCaseEmail = email.toLowerCase();
-    
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("email", lowerCaseEmail)
-      .maybeSingle();
-    
-    if (error || !data) {
-      console.error("Error getting profile info:", error);
-      return { role: null, exists: false };
-    }
-    
-    return { role: data.role, exists: true };
-  };
-
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,7 +222,7 @@ const NewPassword = () => {
       return;
     }
 
-    mixpanelInstance.track("Forgot Password - Reset Attempt", { email: verifiedEmail, userType });
+    mixpanelInstance.track("New Password - Reset Attempt", { email: verifiedEmail, userType });
     setLoading(true);
 
     try {
@@ -282,7 +243,7 @@ const NewPassword = () => {
       if (user.email?.toLowerCase() !== verifiedEmail.toLowerCase()) {
         toast({
           title: "Email Mismatch",
-          description: "Security validation failed. The email in your session doesn't match the reset request.",
+          description: "Security validation failed. Please request a new password reset link.",
           variant: "destructive",
         });
         navigate(`/forgot-password/${userType}`);
@@ -301,20 +262,22 @@ const NewPassword = () => {
         return;
       }
 
+      // Sign out after password reset to ensure new password is used
+      await supabase.auth.signOut();
+
       toast({
         title: "Password Reset Successful!",
-        description: `Password for ${verifiedEmail} has been updated. Please login with your new password.`,
+        description: `Your password has been updated. Please login with your new password.`,
       });
 
-      mixpanelInstance.track("Forgot Password - Success", { email: verifiedEmail, userType });
-
-      window.location.hash = "";
+      mixpanelInstance.track("New Password - Success", { email: verifiedEmail, userType });
 
       setTimeout(() => {
         navigate(`/login/${userType}`);
       }, 2000);
     } catch (error: any) {
       console.error("Error resetting password:", error);
+      rollbar.error("New Password - Reset Error", error);
       toast({
         title: "Reset Failed",
         description: error.message || "Failed to reset password. Please try again.",
@@ -329,43 +292,20 @@ const NewPassword = () => {
     navigate(`/login/${userType}`);
   };
 
-  const isRoleMismatch = (): boolean => {
-    if (!profileInfo.exists || !profileInfo.role) return false;
-    const allowedRoles = getAllowedRoles();
-    return !allowedRoles.includes(profileInfo.role);
-  };
-
-  const getFriendlyRoleName = (role: string): string => {
-    const roleMap: Record<string, string> = {
-      patient: "Patient",
-      doctor: "Doctor",
-      hospital_admin: "Facility Admin",
-      hospital_staff: "Facility Staff",
-      admin: "Administrator",
-    };
-    return roleMap[role] || role;
-  };
-
-  const getExpectedRoleName = (): string => {
-    const allowedRoles = getAllowedRoles();
-    if (allowedRoles.includes("hospital_admin") || allowedRoles.includes("hospital_staff")) {
-      return "Facility";
-    }
-    return getFriendlyRoleName(allowedRoles[0]);
-  };
-
-  const getCurrentTitle = () => {
-    return config.passwordTitle;
-  };
-
-  const getCurrentDescription = () => {
-    return config.passwordDescription;
-  };
+  if (!isValidSession && verifiedEmail === "") {
+    return (
+      <AuthLayout title="Loading..." description="Please wait" userType={config.variant}>
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
-      title={getCurrentTitle()}
-      description={getCurrentDescription()}
+      title={config.passwordTitle}
+      description={config.passwordDescription}
       userType={config.variant}
     >
       <div className="space-y-6">
@@ -458,20 +398,19 @@ const NewPassword = () => {
           </Button>
         </form>
 
-          <Card className="bg-muted/50">
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-start gap-2 text-sm">
-                <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <p className="text-muted-foreground">
-                  Having trouble? Contact support at{" "}
-                  <a href="mailto:support@pmhssmarthealth.com" className="text-primary hover:underline">
-                    support@pmhssmarthealth.com
-                  </a>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        
+        <Card className="bg-muted/50">
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-start gap-2 text-sm">
+              <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-muted-foreground">
+                Having trouble? Contact support at{" "}
+                <a href="mailto:support@pmhssmarthealth.com" className="text-primary hover:underline">
+                  support@pmhssmarthealth.com
+                </a>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AuthLayout>
   );

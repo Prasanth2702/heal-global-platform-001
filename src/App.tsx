@@ -116,6 +116,7 @@ import AnalyticsReportsPageView from "./components/facility/analytics/AnalyticsR
 import DoctorAnalytics from "./components/facility/analytics/DoctorAnalytics";
 import DoctorRouteHandler from "./components/patient/DoctorRouteHandler";
 import FacilityRouteHandler from "./pages/facility/FacilityRouteHandler";
+import NewPassword from "./components/auth/NewPassword";
 
 const queryClient = new QueryClient();
 const MAINTENANCE = false;
@@ -208,6 +209,7 @@ const App = () => {
                   />
                   <Route path="/login/:userType" element={<LoginForm />} />
                   <Route path="/forgot-password/:userType" element={<ForgotPassword />} />
+                  <Route path="/new-password/:userType" element={<NewPassword />} />
 
                   {/* Onboarding Routes */}
                   <Route
